@@ -15,7 +15,9 @@
   },
   "include": [
     "code.ts",
-    "types.ts"
+    "types.ts",
+    "design-system-scanner.ts",
+    "compliance-analyzer.ts"
   ],
   "exclude": [
     "node_modules",

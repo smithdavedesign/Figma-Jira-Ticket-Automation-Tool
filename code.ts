@@ -1,11 +1,47 @@
 /// <reference path="./types.ts" />
+/// <reference path="./design-system-scanner.ts" />
+/// <reference path="./compliance-analyzer.ts" />
+
+// Global design system state
+let designSystemScanner: DesignSystemScanner | null = null;
+let complianceAnalyzer: ComplianceAnalyzer | null = null;
+let detectedDesignSystem: DesignSystem | null = null;
 
 // Main plugin code that runs in Figma's sandbox environment
 figma.showUI(__html__, { 
   width: 500, 
-  height: 600,
+  height: 700, // Increased height for design system info
   themeColors: true 
 });
+
+// Initialize design system detection on plugin load
+initializeDesignSystem();
+
+async function initializeDesignSystem() {
+  try {
+    console.log('🚀 Initializing design system detection...');
+    designSystemScanner = new DesignSystemScanner();
+    detectedDesignSystem = await designSystemScanner.scanDesignSystem();
+    
+    if (detectedDesignSystem) {
+      complianceAnalyzer = new ComplianceAnalyzer(detectedDesignSystem);
+      console.log('✅ Design system initialized:', detectedDesignSystem.name);
+      
+      // Send design system info to UI
+      figma.ui.postMessage({
+        type: 'design-system-detected',
+        designSystem: detectedDesignSystem
+      });
+    } else {
+      console.log('ℹ️ No design system detected in this file');
+      figma.ui.postMessage({
+        type: 'no-design-system'
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error initializing design system:', error);
+  }
+}
 
 // Listen for messages from the UI
 figma.ui.onmessage = async (msg: PluginMessage) => {
@@ -41,7 +77,7 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
 };
 
 // Extract comprehensive data from a Figma node
-async function extractFrameData(node: SceneNode): Promise<FrameData> {
+async function extractFrameData(node: SceneNode): Promise<EnhancedFrameData> {
   const frameData: FrameData = {
     name: node.name,
     id: node.id,
@@ -125,7 +161,39 @@ async function extractFrameData(node: SceneNode): Promise<FrameData> {
     frameData.hasPrototype = true;
   }
 
-  return frameData;
+  // Create enhanced frame data with design system context
+  const enhancedFrameData: EnhancedFrameData = {
+    ...frameData
+  };
+
+  // Add design system analysis if available
+  if (detectedDesignSystem && complianceAnalyzer && node.type === 'FRAME') {
+    try {
+      console.log('🔍 Analyzing design system compliance for:', node.name);
+      const complianceReport = await complianceAnalyzer.analyzeFrame(node as FrameNode);
+      const usedTokens = complianceReport.usedTokens;
+      const violations = complianceReport.violations;
+      const recommendations = complianceReport.recommendations;
+
+      enhancedFrameData.designSystemContext = {
+        designSystem: detectedDesignSystem,
+        complianceReport,
+        usedTokens,
+        violations,
+        recommendations
+      };
+
+      console.log('📊 Compliance analysis complete:', {
+        overallScore: complianceReport.overallScore,
+        violations: violations.length,
+        recommendations: recommendations.length
+      });
+    } catch (error) {
+      console.warn('Could not analyze design system compliance:', error);
+    }
+  }
+
+  return enhancedFrameData;
 }
 
 // Extract color information from nodes
