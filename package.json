@@ -1,0 +1,31 @@
+{
+  "name": "figma-ai-ticket-generator",
+  "version": "1.0.0",
+  "description": "Figma plugin to generate Jira tickets using AI from design frames",
+  "main": "dist/code.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "npm run watch"
+  },
+  "keywords": [
+    "figma",
+    "plugin",
+    "jira",
+    "ai",
+    "automation",
+    "ticket",
+    "openai"
+  ],
+  "author": "David",
+  "license": "MIT",
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.90.0",
+    "typescript": "^5.0.0"
+  },
+  "figma": {
+    "manifest": "manifest.json",
+    "main": "dist/code.js",
+    "ui": "ui.html"
+  }
+}
