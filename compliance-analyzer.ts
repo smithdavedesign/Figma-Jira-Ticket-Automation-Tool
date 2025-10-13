@@ -157,10 +157,14 @@ class ComplianceAnalyzer {
       node.type === 'INSTANCE' || node.type === 'COMPONENT'
     ) || [];
 
-    for (const componentNode of componentNodes) {
+    // Limit to first 20 components to avoid performance issues
+    const maxComponents = Math.min(componentNodes.length, 20);
+    
+    for (let i = 0; i < maxComponents; i++) {
+      const componentNode = componentNodes[i];
       totalComponents++;
 
-      if (this.isStandardComponent(componentNode)) {
+      if (await this.isStandardComponent(componentNode)) {
         standardComponents++;
       } else {
         customComponents++;
@@ -222,13 +226,21 @@ class ComplianceAnalyzer {
   /**
    * Check if component is from the design system
    */
-  private isStandardComponent(componentNode: any): boolean {
-    if (componentNode.type === 'INSTANCE' && componentNode.masterComponent) {
-      const masterComponentId = componentNode.masterComponent.id;
-      
-      return this.designSystem.components.components.some(component =>
-        component.id === masterComponentId
-      );
+  private async isStandardComponent(componentNode: any): Promise<boolean> {
+    if (componentNode.type === 'INSTANCE') {
+      try {
+        const masterComponent = await (componentNode as any).getMainComponentAsync();
+        if (masterComponent) {
+          const masterComponentId = masterComponent.id;
+          
+          return this.designSystem.components.components.some(component =>
+            component.id === masterComponentId
+          );
+        }
+      } catch (error) {
+        // Skip if component can't be resolved
+        return false;
+      }
     }
 
     return false;

@@ -23,16 +23,30 @@ class DesignSystemScanner {
     try {
       console.log('🔍 Starting design system scan...');
       
-      // Step 1: Detect design system pages
+      // Add timeout to prevent freezing
+      const startTime = Date.now();
+      const maxDuration = 10000; // 10 seconds max
+      
+      // Step 1: Detect design system pages (quick)
       const designSystemPages = await this.detectDesignSystemPages();
       
-      // Step 2: Extract style tokens
+      if (Date.now() - startTime > maxDuration) {
+        console.warn('⏰ Scan timeout - returning partial results');
+        return null;
+      }
+      
+      // Step 2: Extract style tokens (quick)
       const colorTokens = await this.extractColorTokens();
       const typographyTokens = await this.extractTypographyTokens();
       const effectTokens = await this.extractEffectTokens();
       
-      // Step 3: Build component library
-      const componentLibrary = await this.buildComponentLibrary();
+      if (Date.now() - startTime > maxDuration) {
+        console.warn('⏰ Scan timeout - returning partial results');
+        return null;
+      }
+      
+      // Step 3: Build component library (potentially slow)
+      const componentLibrary = await this.buildComponentLibrary(designSystemPages);
       
       // Step 4: Extract spacing tokens (derived from components)
       const spacingTokens = await this.extractSpacingTokens();
@@ -83,31 +97,80 @@ class DesignSystemScanner {
    */
   private async detectDesignSystemPages(): Promise<DesignSystemPage[]> {
     const pages: DesignSystemPage[] = [];
-    const designSystemKeywords = [
-      'design system', 'components', 'tokens', 'styles', 'library',
-      'atoms', 'molecules', 'organisms', 'foundation', 'primitives'
+    
+    // Enhanced keywords based on common design system naming conventions
+    const highConfidenceKeywords = [
+      'design system', 'ui kit', 'style guide', 'component library', 
+      'design tokens', 'design guide', 'ui toolkit', 'component kit'
+    ];
+    
+    const mediumConfidenceKeywords = [
+      'components', 'tokens', 'styles', 'library', 'foundation',
+      'atoms', 'molecules', 'organisms', 'primitives', 'elements',
+      'patterns', 'guidelines', 'standards', 'brand', 'colors',
+      'typography', 'spacing', 'buttons', 'forms', 'icons'
     ];
 
-    for (const page of this.file.children) {
+    // First pass: Only analyze pages with promising names
+    const candidatePages = this.file.children.filter((page: any) => {
+      const pageName = page.name.toLowerCase();
+      
+      // High confidence matches - definitely check these
+      const hasHighConfidence = highConfidenceKeywords.some(keyword => 
+        pageName.includes(keyword)
+      );
+      
+      // Medium confidence matches - check if short name (likely organized)
+      const hasMediumConfidence = mediumConfidenceKeywords.some(keyword => 
+        pageName.includes(keyword)
+      ) && pageName.length < 30; // Avoid long descriptive page names
+      
+      // Skip common non-design-system pages
+      const isExcluded = [
+        'archive', 'old', 'temp', 'test', 'draft', 'backup',
+        'meeting', 'notes', 'wireframe', 'sketch', 'exploration'
+      ].some(excluded => pageName.includes(excluded));
+      
+      return (hasHighConfidence || hasMediumConfidence) && !isExcluded;
+    });
+
+    console.log(`🔍 Analyzing ${candidatePages.length} of ${this.file.children.length} pages based on naming patterns`);
+
+    for (const page of candidatePages) {
       const pageName = page.name.toLowerCase();
       let confidence = 0;
       let type: DesignSystemPage['type'] = 'documentation';
 
-      // Check page name against keywords
-      for (const keyword of designSystemKeywords) {
+      // High confidence keyword scoring
+      for (const keyword of highConfidenceKeywords) {
         if (pageName.includes(keyword)) {
-          confidence += 0.3;
+          confidence += 0.5; // Higher score for definitive matches
+          break; // Only count once
+        }
+      }
+      
+      // Medium confidence keyword scoring
+      for (const keyword of mediumConfidenceKeywords) {
+        if (pageName.includes(keyword)) {
+          confidence += 0.2;
           
           // Determine page type based on keywords
-          if (keyword.includes('component')) type = 'components';
-          else if (keyword.includes('token') || keyword.includes('style')) type = 'tokens';
-          else if (keyword.includes('foundation') || keyword.includes('primitive')) type = 'styles';
+          if (['component', 'atom', 'molecule', 'organism', 'button', 'form', 'element'].some(k => keyword.includes(k))) {
+            type = 'components';
+          } else if (['token', 'style', 'color', 'typography', 'spacing'].some(k => keyword.includes(k))) {
+            type = 'tokens';
+          } else if (['foundation', 'primitive', 'brand'].some(k => keyword.includes(k))) {
+            type = 'styles';
+          }
+          break; // Only count once per category
         }
       }
 
-      // Analyze page content for design system indicators
-      const contentScore = await this.analyzePageContent(page);
-      confidence += contentScore;
+      // Only analyze page content if name suggests design system relevance
+      if (confidence > 0.1) {
+        const contentScore = await this.analyzePageContent(page);
+        confidence += contentScore;
+      }
 
       // Only include pages with reasonable confidence
       if (confidence > 0.2) {
@@ -132,6 +195,9 @@ class DesignSystemScanner {
     let publishedStyleCount = 0;
 
     try {
+      // Load the page first before accessing its content
+      await page.loadAsync();
+      
       // Count components on this page
       const components = page.findAll((node: any) => 
         node.type === 'COMPONENT' || node.type === 'COMPONENT_SET'
@@ -167,7 +233,7 @@ class DesignSystemScanner {
     const colorTokens: ColorToken[] = [];
 
     try {
-      const paintStyles = figma.getLocalPaintStyles();
+      const paintStyles = await (figma as any).getLocalPaintStylesAsync();
       
       for (const style of paintStyles) {
         if (style.paints.length > 0 && style.paints[0].type === 'SOLID') {
@@ -196,7 +262,7 @@ class DesignSystemScanner {
     const typographyTokens: TypographyToken[] = [];
 
     try {
-      const textStyles = figma.getLocalTextStyles();
+      const textStyles = await (figma as any).getLocalTextStylesAsync();
       
       for (const style of textStyles) {
         const fontSize = style.fontSize;
@@ -228,7 +294,7 @@ class DesignSystemScanner {
     const effectTokens: EffectToken[] = [];
 
     try {
-      const effectStyles = figma.getLocalEffectStyles();
+      const effectStyles = await (figma as any).getLocalEffectStylesAsync();
       
       for (const style of effectStyles) {
         if (style.effects.length > 0) {
@@ -250,51 +316,109 @@ class DesignSystemScanner {
   }
 
   /**
-   * Build component library by analyzing all components in the file
+   * Build component library by analyzing components in likely design system pages
    */
-  private async buildComponentLibrary(): Promise<ComponentLibrary> {
+  private async buildComponentLibrary(designSystemPages: DesignSystemPage[] = []): Promise<ComponentLibrary> {
     const components: ComponentMetadata[] = [];
     const variants: ComponentVariant[] = [];
 
     try {
-      const allComponents = figma.root.findAll((node: any) => 
-        node.type === 'COMPONENT' || node.type === 'COMPONENT_SET'
-      );
-
-      for (const component of allComponents) {
-        if (component.type === 'COMPONENT') {
-          // Count instances of this component
-          const instances = figma.root.findAll((node: any) => 
-            node.type === 'INSTANCE' && node.masterComponent?.id === component.id
+      // Use the design system pages we already identified instead of all pages
+      let pagesToAnalyze: any[] = [];
+      if (designSystemPages.length > 0) {
+        pagesToAnalyze = designSystemPages.map((dsPage: any) => 
+          figma.root.children.find((page: any) => page.name === dsPage.name)
+        ).filter(Boolean);
+      } else {
+        // Fallback: look for pages with component-related names
+        pagesToAnalyze = figma.root.children.filter((page: any) => {
+          const name = page.name.toLowerCase();
+          return ['component', 'atom', 'molecule', 'button', 'form', 'ui'].some(keyword => 
+            name.includes(keyword)
           );
+        }).slice(0, 3); // Limit to 3 pages max
+      }
+      
+      console.log(`🔍 Analyzing components in ${pagesToAnalyze.length} targeted pages`);
+      
+      const allComponents: any[] = [];
+      
+      for (const page of pagesToAnalyze) {
+        await (page as any).loadAsync();
+        const pageComponents = page.findAll((node: any) => 
+          node.type === 'COMPONENT' || node.type === 'COMPONENT_SET'
+        );
+        // Limit components per page to prevent excessive processing
+        allComponents.push(...pageComponents.slice(0, 30));
+      }
+
+      // Limit total components to analyze
+      const componentsToAnalyze = allComponents.slice(0, 50);      for (const component of componentsToAnalyze) {
+        if (component.type === 'COMPONENT') {
+          // Count instances of this component across analyzed pages (simplified approach)
+          let totalInstances = 0;
+          for (const page of pagesToAnalyze) {
+            const instances = page.findAll((node: any) => node.type === 'INSTANCE');
+            
+            // Sample only first few instances to estimate usage instead of checking all
+            const sampleSize = Math.min(instances.length, 5); // Further reduced sample size
+            let sampledMatches = 0;
+            
+            for (let i = 0; i < sampleSize; i++) {
+              try {
+                const masterComponent = await (instances[i] as any).getMainComponentAsync();
+                if (masterComponent && masterComponent.id === component.id) {
+                  sampledMatches++;
+                }
+              } catch (error) {
+                // Skip instances that can't be resolved
+                continue;
+              }
+            }
+            
+            // Estimate total instances based on sample
+            if (sampleSize > 0) {
+              totalInstances += Math.round((sampledMatches / sampleSize) * instances.length);
+            }
+          }
 
           components.push({
             id: component.id,
             name: component.name,
             description: component.description,
             category: this.inferComponentCategory(component.name),
-            instances: instances.length
+            instances: totalInstances
           });
         } else if (component.type === 'COMPONENT_SET') {
-          // Handle component sets (variants)
-          const variantComponents = component.children || [];
-          
-          components.push({
-            id: component.id,
-            name: component.name,
-            description: component.description,
-            category: this.inferComponentCategory(component.name),
-            instances: 0, // Will be calculated from all variants
-            variants: variantComponents.map((v: any) => v.name)
-          });
-
-          // Add individual variants
-          for (const variant of variantComponents) {
-            variants.push({
-              id: variant.id,
-              parentId: component.id,
-              properties: this.extractVariantProperties(variant)
+          // Handle component sets (variants) with error protection
+          try {
+            const variantComponents = component.children || [];
+            
+            components.push({
+              id: component.id,
+              name: component.name,
+              description: component.description,
+              category: this.inferComponentCategory(component.name),
+              instances: 0, // Will be calculated from all variants
+              variants: variantComponents.map((v: any) => v.name)
             });
+
+            // Add individual variants with error handling
+            for (const variant of variantComponents) {
+              try {
+                variants.push({
+                  id: variant.id,
+                  parentId: component.id,
+                  properties: this.extractVariantProperties(variant)
+                });
+              } catch (variantError) {
+                console.warn(`Error processing variant ${variant.name}:`, variantError);
+                // Continue with other variants
+              }
+            }
+          } catch (componentSetError) {
+            console.warn(`Error processing component set ${component.name}:`, componentSetError);
+            // Skip this component set and continue
           }
         }
       }
@@ -314,9 +438,16 @@ class DesignSystemScanner {
 
     try {
       // Analyze frames and components for common spacing patterns
-      const frames = figma.root.findAll((node: any) => node.type === 'FRAME');
+      const pages = figma.root.children;
+      const allFrames: any[] = [];
       
-      for (const frame of frames) {
+      for (const page of pages) {
+        await (page as any).loadAsync();
+        const pageFrames = page.findAll((node: any) => node.type === 'FRAME');
+        allFrames.push(...pageFrames);
+      }
+      
+      for (const frame of allFrames) {
         // Analyze padding and spacing within the frame
         if (frame.paddingLeft) spacingValues.set(frame.paddingLeft, (spacingValues.get(frame.paddingLeft) || 0) + 1);
         if (frame.paddingTop) spacingValues.set(frame.paddingTop, (spacingValues.get(frame.paddingTop) || 0) + 1);
@@ -390,10 +521,15 @@ class DesignSystemScanner {
     // Extract variant properties from component instance
     const properties: { [key: string]: string } = {};
     
-    if (variant.variantProperties) {
-      for (const [key, value] of Object.entries(variant.variantProperties)) {
-        properties[key] = String(value);
+    try {
+      if (variant && variant.variantProperties) {
+        for (const [key, value] of Object.entries(variant.variantProperties)) {
+          properties[key] = String(value);
+        }
       }
+    } catch (error) {
+      console.warn('Error extracting variant properties:', error);
+      // Return empty properties if there's an error
     }
     
     return properties;
