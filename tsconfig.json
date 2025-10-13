@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "lib": ["ES2018", "DOM"],
+    "target": "ES2017",
+    "lib": ["ES2017", "DOM"],
     "module": "CommonJS",
     "strict": true,
     "esModuleInterop": true,
@@ -10,8 +10,7 @@
     "moduleResolution": "node",
     "declaration": true,
     "outDir": "./dist",
-    "rootDir": "./",
-    "typeRoots": ["@figma/plugin-typings"]
+    "rootDir": "./"
   },
   "include": [
     "code.ts",

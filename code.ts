@@ -162,9 +162,7 @@ async function extractFrameData(node: SceneNode): Promise<EnhancedFrameData> {
   }
 
   // Create enhanced frame data with design system context
-  const enhancedFrameData: EnhancedFrameData = {
-    ...frameData
-  };
+  const enhancedFrameData: EnhancedFrameData = Object.assign({}, frameData);
 
   // Add design system analysis if available
   if (detectedDesignSystem && complianceAnalyzer && node.type === 'FRAME') {

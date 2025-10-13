@@ -193,6 +193,156 @@
     .ds-name {
       font-weight: 600;
       color: var(--figma-color-text);
+      font-size: 13px;
+    }
+    
+    .ds-confidence {
+      background: var(--figma-color-bg-success);
+      color: var(--figma-color-text-onbrand);
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    
+    .ds-stats {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .ds-stat {
+      color: var(--figma-color-text-secondary);
+      font-size: 11px;
+    }
+    
+    .compliance-info {
+      background: var(--figma-color-bg-tertiary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+    
+    .compliance-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .compliance-title {
+      font-weight: 600;
+      font-size: 12px;
+    }
+    
+    .compliance-score {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .compliance-breakdown {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .compliance-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px;
+      background: var(--figma-color-bg);
+      border-radius: 4px;
+      border: 1px solid var(--figma-color-border);
+    }
+    
+    .item-label {
+      font-size: 10px;
+      color: var(--figma-color-text-secondary);
+      margin-bottom: 2px;
+    }
+    
+    .item-score {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 8px;
+      color: white;
+    }
+    
+    .recommendations {
+      border-top: 1px solid var(--figma-color-border);
+      padding-top: 12px;
+    }
+    
+    .rec-title {
+      font-weight: 600;
+      font-size: 11px;
+      margin-bottom: 8px;
+      color: var(--figma-color-text);
+    }
+    
+    .rec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .rec-item {
+      padding: 8px;
+      border-radius: 4px;
+      border-left: 3px solid;
+    }
+    
+    .rec-item.high {
+      background: var(--figma-color-bg-danger-tertiary);
+      border-left-color: var(--figma-color-bg-danger);
+    }
+    
+    .rec-item.medium {
+      background: var(--figma-color-bg-warning-tertiary);
+      border-left-color: var(--figma-color-bg-warning);
+    }
+    
+    .rec-item.low {
+      background: var(--figma-color-bg-success-tertiary);
+      border-left-color: var(--figma-color-bg-success);
+    }
+    
+    .rec-message {
+      font-size: 11px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      color: var(--figma-color-text);
+    }
+    
+    .rec-suggestion {
+      font-size: 10px;
+      color: var(--figma-color-text-secondary);
+    }
+  </style>    /* Design System Styles */
+    .design-system-detected {
+      background: linear-gradient(135deg, var(--figma-color-bg-success-tertiary), var(--figma-color-bg-brand-tertiary));
+      border: 1px solid var(--figma-color-border-success);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .ds-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .ds-name {
+      font-weight: 600;
+      color: var(--figma-color-text);
       font-size: 12px;
     }
     
