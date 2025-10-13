@@ -5,7 +5,10 @@ A Figma plugin that automatically generates Jira ticket drafts from selected des
 ## ✨ Features
 
 - **Smart Frame Analysis**: Extracts frame names, dimensions, components, text content, and colors
-- **AI-Powered Generation**: Uses OpenAI to create structured ticket drafts
+- **🎨 Design System Integration**: Auto-detects design systems and analyzes compliance
+- **AI-Powered Generation**: Uses OpenAI to create structured ticket drafts with design system context
+- **Compliance Scoring**: Real-time analysis of color, typography, and component compliance
+- **Smart Recommendations**: Actionable suggestions for design system violations
 - **Multiple Templates**: Support for UI components, features, bug fixes, and pages
 - **Copy-Paste Workflow**: No direct Jira integration needed - just copy and paste
 - **Custom Prompts**: Add specific requirements and instructions
@@ -48,6 +51,28 @@ npm run build
 3. **Add Instructions**: Optionally add custom requirements or notes
 4. **Generate**: Click "Generate Ticket from Selection"
 5. **Copy & Paste**: Copy the generated ticket and paste it into your Jira
+
+### 🎨 Design System Features
+
+The plugin automatically detects design systems in your Figma files and provides:
+
+- **Auto-Discovery**: Scans for design system pages, published styles, and component libraries
+- **Compliance Analysis**: Real-time scoring for color, typography, and component compliance
+- **Smart Recommendations**: Actionable suggestions for maintaining design consistency
+- **Token Integration**: Identifies and references specific design tokens in generated tickets
+- **Violation Detection**: Highlights deviations from established design patterns
+
+**Design System Information Panel:**
+- Shows detected design system name and confidence level
+- Displays counts of colors, typography styles, and components
+- Real-time compliance scores for selected frames
+- Recommendations for improving design system adherence
+
+**Enhanced Tickets Include:**
+- Design system compliance scores
+- Specific design token references
+- Violation descriptions and suggested fixes
+- Recommendations for maintaining consistency
 
 ### Template Types
 
