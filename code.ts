@@ -20,6 +20,14 @@ initializeDesignSystem();
 async function initializeDesignSystem() {
   try {
     console.log('🚀 Initializing design system detection...');
+    
+    // Send file context to UI
+    figma.ui.postMessage({
+      type: 'file-context',
+      fileKey: figma.fileKey,
+      fileName: figma.root.name
+    });
+    
     designSystemScanner = new DesignSystemScanner();
     detectedDesignSystem = await designSystemScanner.scanDesignSystem();
     

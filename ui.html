@@ -459,9 +459,19 @@
     modelSelect.onchange = saveSettings;
     templateSelect.onchange = saveSettings;
 
+    // Global variables for file context
+    let globalFileKey = '';
+    let globalFileName = '';
+
     // Message handling from Figma plugin
     onmessage = async (event) => {
       const msg = event.data.pluginMessage;
+      
+      if (msg.type === 'file-context') {
+        globalFileKey = msg.fileKey || '';
+        globalFileName = msg.fileName || '';
+        console.log('📁 File context received:', { fileKey: globalFileKey, fileName: globalFileName });
+      }
       
       if (msg.type === 'frame-data') {
         frameDataList = msg.data;
@@ -648,7 +658,10 @@
         }
         
         // Create proper Figma deep link
-        const figmaLink = `https://www.figma.com/design/${frame.fileKey}/?node-id=${encodeURIComponent(frame.id)}&t=${Date.now()}`;
+        const fileKey = frame.fileKey || globalFileKey || '';
+        const nodeId = frame.id.replace(':', '-'); // Convert colon to hyphen format
+        const fileName = globalFileName ? `/${encodeURIComponent(globalFileName)}` : '';
+        const figmaLink = `https://www.figma.com/design/${fileKey}${fileName}?node-id=${nodeId}&t=${Date.now()}`;
         prompt += `\\n- Figma link: ${figmaLink}\\n`;
         prompt += `- Frame ID: ${frame.id} (for developer reference)\\n\\n`;
       });

@@ -392,7 +392,18 @@ class DesignSystemScanner {
         } else if (component.type === 'COMPONENT_SET') {
           // Handle component sets (variants) with error protection
           try {
+            // Check if component set has errors before processing
+            if (component.errors && component.errors.length > 0) {
+              console.warn(`Skipping component set with errors: ${component.name}`);
+              continue;
+            }
+            
             const variantComponents = component.children || [];
+            
+            // Filter out any obviously problematic variants
+            const validVariants = variantComponents.filter((v: any) => {
+              return v && v.id && v.name && (!v.errors || v.errors.length === 0);
+            });
             
             components.push({
               id: component.id,
@@ -400,19 +411,24 @@ class DesignSystemScanner {
               description: component.description,
               category: this.inferComponentCategory(component.name),
               instances: 0, // Will be calculated from all variants
-              variants: variantComponents.map((v: any) => v.name)
+              variants: validVariants.map((v: any) => v.name)
             });
 
-            // Add individual variants with error handling
-            for (const variant of variantComponents) {
+            // Add individual variants with error handling - only process valid variants
+            for (const variant of validVariants) {
               try {
+                // Additional safety check before processing
+                if (!variant || !variant.id) {
+                  continue;
+                }
+                
                 variants.push({
                   id: variant.id,
                   parentId: component.id,
                   properties: this.extractVariantProperties(variant)
                 });
               } catch (variantError) {
-                console.warn(`Error processing variant ${variant.name}:`, variantError);
+                console.warn(`Error processing variant ${variant?.name || 'unknown'}:`, variantError);
                 // Continue with other variants
               }
             }
@@ -522,14 +538,28 @@ class DesignSystemScanner {
     const properties: { [key: string]: string } = {};
     
     try {
-      if (variant && variant.variantProperties) {
+      // Multiple defensive checks to avoid corrupted component errors
+      if (!variant) {
+        return properties;
+      }
+      
+      // Check if the variant has any obvious error indicators
+      if (variant.errors && variant.errors.length > 0) {
+        console.warn('Skipping variant with errors:', variant.name || 'unnamed');
+        return properties;
+      }
+      
+      // Try to access variantProperties with additional safety
+      if (variant.variantProperties && typeof variant.variantProperties === 'object') {
         for (const [key, value] of Object.entries(variant.variantProperties)) {
-          properties[key] = String(value);
+          if (key && value !== undefined && value !== null) {
+            properties[key] = String(value);
+          }
         }
       }
     } catch (error) {
-      console.warn('Error extracting variant properties:', error);
-      // Return empty properties if there's an error
+      console.warn('Error extracting variant properties for variant:', variant?.name || 'unknown', error);
+      // Return empty properties if there's any error
     }
     
     return properties;
