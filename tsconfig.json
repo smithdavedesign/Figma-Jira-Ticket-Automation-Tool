@@ -2,21 +2,18 @@
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["ES2017", "DOM"],
-    "module": "CommonJS",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "declaration": true,
-    "outDir": "./dist",
-    "rootDir": "./"
+    "declaration": false,
+    "outFile": "./dist/code.js"
   },
   "include": [
-    "code.ts",
     "types.ts",
     "design-system-scanner.ts",
-    "compliance-analyzer.ts"
+    "compliance-analyzer.ts", 
+    "code.ts"
   ],
   "exclude": [
     "node_modules",
