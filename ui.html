@@ -377,12 +377,13 @@
 
       frameDataList.forEach((frame, index) => {
         prompt += `**Frame ${index + 1}: ${frame.name}**\\n`;
+        prompt += `- Page: ${frame.pageName}\\n`;
         prompt += `- Type: ${frame.type}\\n`;
         prompt += `- Dimensions: ${frame.dimensions.width}x${frame.dimensions.height}px\\n`;
         prompt += `- Child elements: ${frame.nodeCount}\\n`;
         
         if (frame.textContent.length > 0) {
-          prompt += `- Text content: ${frame.textContent.map(t => t.content).join(', ')}\\n`;
+          prompt += `- Text content: ${frame.textContent.map(t => `"${t.content}"`).join(', ')}\\n`;
         }
         
         if (frame.components.length > 0) {
@@ -397,7 +398,10 @@
           prompt += `- Has interactive prototype\\n`;
         }
         
-        prompt += `- Figma link: https://www.figma.com/file/${frame.fileKey}/?node-id=${frame.id}\\n\\n`;
+        // Create proper Figma deep link
+        const figmaLink = `https://www.figma.com/design/${frame.fileKey}/?node-id=${encodeURIComponent(frame.id)}&t=${Date.now()}`;
+        prompt += `- Figma link: ${figmaLink}\\n`;
+        prompt += `- Frame ID: ${frame.id} (for developer reference)\\n\\n`;
       });
 
       if (customInstructions) {
@@ -407,8 +411,10 @@
       prompt += `Please format the response as:\\n\\n`;
       prompt += `**Title:** [Concise ticket title]\\n\\n`;
       prompt += `**Description:**\\n[Detailed description with context and requirements]\\n\\n`;
+      prompt += `**Figma Reference:**\\n[Include the Figma link and frame details for easy access]\\n\\n`;
       prompt += `**Acceptance Criteria:**\\n1. [Specific, testable criteria]\\n2. [Another criteria]\\n3. [etc.]\\n\\n`;
-      prompt += `**Technical Notes:**\\n[Any implementation details, dependencies, or considerations]`;
+      prompt += `**Technical Notes:**\\n[Any implementation details, dependencies, or considerations]\\n\\n`;
+      prompt += `**Design Specs:**\\n[Key measurements, colors, fonts, and visual requirements from the Figma frame]`;
 
       return prompt;
     }
@@ -455,14 +461,64 @@
 
     function copyToClipboard() {
       if (output.value.trim()) {
-        navigator.clipboard.writeText(output.value).then(() => {
+        // Try modern clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(output.value).then(() => {
+            showStatus('Copied to clipboard!', 'success');
+          }).catch(() => {
+            // Fallback to legacy method
+            fallbackCopyToClipboard();
+          });
+        } else {
+          // Use fallback method
+          fallbackCopyToClipboard();
+        }
+      }
+    }
+
+    function fallbackCopyToClipboard() {
+      try {
+        // Create a temporary textarea element
+        const textArea = document.createElement('textarea');
+        textArea.value = output.value;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        
+        // Select and copy the text
+        textArea.focus();
+        textArea.select();
+        
+        // Try the legacy execCommand
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
           showStatus('Copied to clipboard!', 'success');
-        }).catch(() => {
-          // Fallback for older browsers
+        } else {
+          // If all else fails, select the text for manual copying
           output.select();
-          document.execCommand('copy');
-          showStatus('Copied to clipboard!', 'success');
-        });
+          output.setSelectionRange(0, 99999); // For mobile devices
+          showStatus('Text selected - press Ctrl+C (or Cmd+C) to copy', 'error');
+        }
+      } catch (error) {
+        // Final fallback - just select the text
+        output.select();
+        output.setSelectionRange(0, 99999);
+        showStatus('Text selected - press Ctrl+C (or Cmd+C) to copy', 'error');
+      }
+    }
+
+    // Check if localStorage is available
+    function isLocalStorageAvailable() {
+      try {
+        const test = '__localStorage_test__';
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
+      } catch(e) {
+        return false;
       }
     }
 
@@ -472,17 +528,39 @@
         model: modelSelect.value,
         template: templateSelect.value
       };
-      localStorage.setItem('aiTicketGenerator', JSON.stringify(settings));
+      
+      if (isLocalStorageAvailable()) {
+        try {
+          localStorage.setItem('aiTicketGenerator', JSON.stringify(settings));
+        } catch (error) {
+          // Fallback to session storage
+          window.tempSettings = settings;
+        }
+      } else {
+        // Store in memory for session
+        window.tempSettings = settings;
+      }
     }
 
     function loadSettings() {
-      try {
-        const settings = JSON.parse(localStorage.getItem('aiTicketGenerator') || '{}');
+      if (isLocalStorageAvailable()) {
+        try {
+          const settings = JSON.parse(localStorage.getItem('aiTicketGenerator') || '{}');
+          if (settings.apiKey) apiKeyInput.value = settings.apiKey;
+          if (settings.model) modelSelect.value = settings.model;
+          if (settings.template) templateSelect.value = settings.template;
+          return; // Exit early if localStorage worked
+        } catch (error) {
+          // Continue to fallback
+        }
+      }
+      
+      // Fallback: try session storage
+      if (window.tempSettings) {
+        const settings = window.tempSettings;
         if (settings.apiKey) apiKeyInput.value = settings.apiKey;
         if (settings.model) modelSelect.value = settings.model;
         if (settings.template) templateSelect.value = settings.template;
-      } catch (e) {
-        // Ignore parsing errors
       }
     }
   </script>

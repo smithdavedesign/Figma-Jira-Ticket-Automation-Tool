@@ -53,7 +53,7 @@ async function extractFrameData(node: SceneNode): Promise<FrameData> {
     colors: [],
     textContent: [],
     hasPrototype: false,
-    fileKey: figma.fileKey,
+    fileKey: figma.fileKey || '',
     pageId: figma.currentPage.id,
     pageName: figma.currentPage.name
   };
@@ -72,23 +72,51 @@ async function extractFrameData(node: SceneNode): Promise<FrameData> {
     
     // Extract text content
     if (node.findAll) {
-      const textNodes = node.findAll((n: any) => n.type === 'TEXT');
-      frameData.textContent = textNodes.map((textNode: any) => ({
-        content: textNode.characters || '',
-        fontSize: typeof textNode.fontSize === 'number' ? textNode.fontSize : 'mixed',
-        fontName: typeof textNode.fontName === 'object' && textNode.fontName ? textNode.fontName.family : 'mixed'
-      }));
+      try {
+        const textNodes = node.findAll((n: any) => n.type === 'TEXT');
+        frameData.textContent = textNodes.map((textNode: any) => ({
+          content: textNode.characters || '',
+          fontSize: typeof textNode.fontSize === 'number' ? textNode.fontSize : 'mixed',
+          fontName: typeof textNode.fontName === 'object' && textNode.fontName ? textNode.fontName.family : 'mixed'
+        }));
+      } catch (error) {
+        console.warn('Could not extract text content:', error);
+        frameData.textContent = [];
+      }
 
       // Extract component instances
-      const componentNodes = node.findAll((n: any) => n.type === 'INSTANCE');
-      frameData.components = componentNodes.map((comp: any) => ({
-        name: comp.name || 'Unknown',
-        masterComponent: comp.masterComponent?.name || 'Unknown'
-      }));
+      try {
+        const componentNodes = node.findAll((n: any) => n.type === 'INSTANCE');
+        const componentPromises = componentNodes.map(async (comp: any) => {
+          let masterComponentName = 'Unknown';
+          try {
+            if (comp.getMainComponentAsync) {
+              const masterComponent = await comp.getMainComponentAsync();
+              masterComponentName = masterComponent?.name || 'Unknown';
+            }
+          } catch (error) {
+            console.warn('Could not get master component:', error);
+          }
+          return {
+            name: comp.name || 'Unknown',
+            masterComponent: masterComponentName
+          };
+        });
+        
+        frameData.components = await Promise.all(componentPromises);
+      } catch (error) {
+        console.warn('Could not extract components:', error);
+        frameData.components = [];
+      }
 
       // Extract colors from fills
-      const nodesWithFills = node.findAll((n: any) => 'fills' in n && n.fills !== figma.mixed);
-      frameData.colors = extractColorsFromNodes(nodesWithFills);
+      try {
+        const nodesWithFills = node.findAll((n: any) => 'fills' in n && n.fills !== figma.mixed);
+        frameData.colors = extractColorsFromNodes(nodesWithFills);
+      } catch (error) {
+        console.warn('Could not extract colors:', error);
+        frameData.colors = [];
+      }
     }
   }
 

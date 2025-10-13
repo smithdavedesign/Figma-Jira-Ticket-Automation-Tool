@@ -8,5 +8,6 @@
   "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": ["https://api.openai.com"]
-  }
+  },
+  "permissions": ["currentuser"]
 }
