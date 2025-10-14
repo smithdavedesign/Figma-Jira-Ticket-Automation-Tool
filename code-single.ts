@@ -52,6 +52,154 @@ interface PluginMessage {
 }
 
 // ==========================================
+// ENHANCED LOGGING SYSTEM
+// ==========================================
+
+enum LogLevel {
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
+  CRITICAL = 4
+}
+
+class Logger {
+  private static instance: Logger;
+  private logLevel: LogLevel = LogLevel.INFO;
+  private enableConsoleOutput: boolean = true;
+  private logHistory: Array<{timestamp: Date, level: LogLevel, context: string, message: string, data?: any}> = [];
+  private maxHistorySize: number = 1000;
+
+  static getInstance(): Logger {
+    if (!Logger.instance) {
+      Logger.instance = new Logger();
+    }
+    return Logger.instance;
+  }
+
+  setLevel(level: LogLevel): void {
+    this.logLevel = level;
+  }
+
+  setConsoleOutput(enabled: boolean): void {
+    this.enableConsoleOutput = enabled;
+  }
+
+  private log(level: LogLevel, context: string, message: string, data?: any): void {
+    if (level < this.logLevel) return;
+
+    const logEntry = {
+      timestamp: new Date(),
+      level,
+      context,
+      message,
+      data
+    };
+
+    // Add to history (with size limit)
+    this.logHistory.push(logEntry);
+    if (this.logHistory.length > this.maxHistorySize) {
+      this.logHistory.shift();
+    }
+
+    // Console output
+    if (this.enableConsoleOutput) {
+      const emoji = this.getLevelEmoji(level);
+      const timestamp = logEntry.timestamp.toISOString().substr(11, 12);
+      const prefix = `${emoji} [${timestamp}] [${context}]`;
+      
+      switch (level) {
+        case LogLevel.DEBUG:
+          console.log(`${prefix} ${message}`, data || '');
+          break;
+        case LogLevel.INFO:
+          console.log(`${prefix} ${message}`, data || '');
+          break;
+        case LogLevel.WARN:
+          console.warn(`${prefix} ${message}`, data || '');
+          break;
+        case LogLevel.ERROR:
+        case LogLevel.CRITICAL:
+          console.error(`${prefix} ${message}`, data || '');
+          if (data && data.stack) {
+            console.error('Stack trace:', data.stack);
+          }
+          break;
+      }
+    }
+
+    // Send critical errors to UI for user notification
+    if (level >= LogLevel.ERROR) {
+      try {
+        FigmaAPI.postMessage({
+          type: 'log-entry',
+          data: {
+            level: LogLevel[level],
+            context,
+            message,
+            timestamp: logEntry.timestamp.toISOString()
+          }
+        });
+      } catch (error) {
+        // Fallback if postMessage fails
+        console.error('Failed to send log to UI:', error);
+      }
+    }
+  }
+
+  private getLevelEmoji(level: LogLevel): string {
+    switch (level) {
+      case LogLevel.DEBUG: return '🔍';
+      case LogLevel.INFO: return '✅';
+      case LogLevel.WARN: return '⚠️';
+      case LogLevel.ERROR: return '❌';
+      case LogLevel.CRITICAL: return '🚨';
+      default: return '📝';
+    }
+  }
+
+  debug(context: string, message: string, data?: any): void {
+    this.log(LogLevel.DEBUG, context, message, data);
+  }
+
+  info(context: string, message: string, data?: any): void {
+    this.log(LogLevel.INFO, context, message, data);
+  }
+
+  warn(context: string, message: string, data?: any): void {
+    this.log(LogLevel.WARN, context, message, data);
+  }
+
+  error(context: string, message: string, data?: any): void {
+    this.log(LogLevel.ERROR, context, message, data);
+  }
+
+  critical(context: string, message: string, data?: any): void {
+    this.log(LogLevel.CRITICAL, context, message, data);
+  }
+
+  getHistory(): Array<{timestamp: Date, level: LogLevel, context: string, message: string, data?: any}> {
+    return [...this.logHistory];
+  }
+
+  clearHistory(): void {
+    this.logHistory = [];
+  }
+
+  // Performance logging
+  time(context: string, label: string): void {
+    this.debug(context, `Timer started: ${label}`);
+  }
+
+  timeEnd(context: string, label: string): void {
+    this.debug(context, `Timer ended: ${label}`);
+  }
+}
+
+// Global logger instance
+const logger = Logger.getInstance();
+
+// ==========================================
 // TIMEOUT UTILITIES
 // ==========================================
 
@@ -268,7 +416,7 @@ class FigmaAPI {
     try {
       // Primary method - direct fileKey access
       if (figma.fileKey && figma.fileKey !== '0:0') {
-        console.log('✅ File key found via figma.fileKey:', figma.fileKey);
+        logger.info('FileKey', 'File key found via figma.fileKey', figma.fileKey);
         return figma.fileKey;
       }
       
@@ -277,13 +425,13 @@ class FigmaAPI {
       
       // Check if there's a file property with key
       if (figmaAny.file && figmaAny.file.key) {
-        console.log('✅ File key found via figma.file.key:', figmaAny.file.key);
+        logger.info('FileKey', 'File key found via figma.file.key', figmaAny.file.key);
         return figmaAny.file.key;
       }
       
       // Check if there's a fileId property
       if (figmaAny.fileId && figmaAny.fileId !== '0:0') {
-        console.log('✅ File key found via figma.fileId:', figmaAny.fileId);
+        logger.info('FileKey', 'File key found via figma.fileId', figmaAny.fileId);
         return figmaAny.fileId;
       }
       
@@ -291,14 +439,14 @@ class FigmaAPI {
       if (typeof window !== 'undefined') {
         const windowAny = window as any;
         if (windowAny.figma && windowAny.figma.fileKey && windowAny.figma.fileKey !== '0:0') {
-          console.log('✅ File key found via window.figma.fileKey:', windowAny.figma.fileKey);
+          logger.info('FileKey', 'File key found via window.figma.fileKey', windowAny.figma.fileKey);
           return windowAny.figma.fileKey;
         }
       }
       
       // Debug: Log all available properties
-      console.log('🔍 Available figma properties:', Object.getOwnPropertyNames(figma));
-      console.log('🔍 Available figma values:', {
+      logger.debug('FileKey', 'Available figma properties', Object.getOwnPropertyNames(figma));
+      logger.debug('FileKey', 'Available figma values', {
         fileKey: figma.fileKey,
         rootId: figma.root?.id,
         rootName: figma.root?.name,
@@ -306,14 +454,14 @@ class FigmaAPI {
         currentPageParent: figma.currentPage?.parent?.id
       });
       
-      console.error('❌ Could not retrieve valid file key from any source');
+      logger.error('FileKey', 'Could not retrieve valid file key from any source');
       
     } catch (error) {
-      console.error('❌ Error getting file key:', error);
+      logger.error('FileKey', 'Error getting file key', error);
     }
     
     // Return a clear indicator that file key is unavailable
-    console.warn('⚠️ File key unavailable - Figma links will not work');
+    logger.warn('FileKey', 'File key unavailable - Figma links will not work');
     return 'FIGMA_FILE_KEY_UNAVAILABLE';
   }
 
@@ -321,17 +469,20 @@ class FigmaAPI {
     try {
       // Try to get the file name from the root document
       if (figma.root && figma.root.name) {
+        logger.info('FileName', 'File name found via figma.root.name', figma.root.name);
         return figma.root.name;
       }
       
       // Try other methods
       if ((figma as any).fileName) {
+        logger.info('FileName', 'File name found via figma.fileName', (figma as any).fileName);
         return (figma as any).fileName;
       }
       
+      logger.warn('FileName', 'File name not available, using fallback');
       return 'Untitled';
     } catch (error) {
-      console.error('❌ Error getting file name:', error);
+      logger.error('FileName', 'Error getting file name', error);
       return 'Untitled';
     }
   }

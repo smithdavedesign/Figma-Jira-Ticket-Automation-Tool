@@ -1751,6 +1751,15 @@ input[type="password"] {
             }
             break;
             
+          case 'log-entry':
+            // Handle log entries from plugin backend
+            if (msg.data.level === 'ERROR' || msg.data.level === 'CRITICAL') {
+              const errorMsg = `[${msg.data.context}] ${msg.data.message}`;
+              handleError(new Error(errorMsg), msg.data.context, false);
+            }
+            console.log(`📝 [${msg.data.level}] [${msg.data.context}] ${msg.data.message}`);
+            break;
+            
           case 'frame-data':
             console.log('📋 Frame data received');
             if (msg.data && Array.isArray(msg.data)) {
