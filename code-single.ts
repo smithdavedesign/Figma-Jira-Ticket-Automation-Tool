@@ -42,6 +42,12 @@ interface PluginMessage {
   compliance?: any;
   selectionCount?: number;
   designSystem?: any;
+  processingSummary?: {
+    processed: number;
+    skipped: number;
+    total: number;
+    message: string;
+  };
 }
 
 // ==========================================
@@ -98,6 +104,149 @@ async function withRetry<T>(
   }
   
   throw lastError!;
+}
+
+// ==========================================
+// FRAME PROCESSING LIMITS
+// ==========================================
+
+interface ProcessingLimits {
+  maxSelectionCount: number;
+  maxNodeDepth: number;
+  maxNodesPerFrame: number;
+  maxTextLength: number;
+  maxComponentsPerFrame: number;
+  maxColorsPerFrame: number;
+  maxProcessingTimeMs: number;
+}
+
+class ProcessingLimitError extends Error {
+  constructor(message: string, public limitType: string) {
+    super(message);
+    this.name = 'ProcessingLimitError';
+  }
+}
+
+const PROCESSING_LIMITS: ProcessingLimits = {
+  maxSelectionCount: 5,        // Maximum frames to process at once
+  maxNodeDepth: 10,            // Maximum nesting depth to traverse
+  maxNodesPerFrame: 1000,      // Maximum nodes to process per frame
+  maxTextLength: 50000,        // Maximum total text content length
+  maxComponentsPerFrame: 200,   // Maximum components to catalog per frame
+  maxColorsPerFrame: 100,      // Maximum colors to extract per frame
+  maxProcessingTimeMs: 30000   // Maximum processing time per selection
+};
+
+class ProcessingTracker {
+  private nodeCount = 0;
+  private textLength = 0;
+  private componentCount = 0;
+  private colorCount = 0;
+  private startTime = Date.now();
+
+  reset() {
+    this.nodeCount = 0;
+    this.textLength = 0;
+    this.componentCount = 0;
+    this.colorCount = 0;
+    this.startTime = Date.now();
+  }
+
+  checkTimeLimit() {
+    const elapsed = Date.now() - this.startTime;
+    if (elapsed > PROCESSING_LIMITS.maxProcessingTimeMs) {
+      throw new ProcessingLimitError(
+        `Processing time exceeded ${PROCESSING_LIMITS.maxProcessingTimeMs}ms (took ${elapsed}ms)`,
+        'time'
+      );
+    }
+  }
+
+  incrementNode() {
+    this.nodeCount++;
+    if (this.nodeCount > PROCESSING_LIMITS.maxNodesPerFrame) {
+      throw new ProcessingLimitError(
+        `Too many nodes in frame (${this.nodeCount} > ${PROCESSING_LIMITS.maxNodesPerFrame})`,
+        'nodes'
+      );
+    }
+  }
+
+  addText(text: string) {
+    this.textLength += text.length;
+    if (this.textLength > PROCESSING_LIMITS.maxTextLength) {
+      throw new ProcessingLimitError(
+        `Too much text content (${this.textLength} > ${PROCESSING_LIMITS.maxTextLength} characters)`,
+        'text'
+      );
+    }
+  }
+
+  incrementComponent() {
+    this.componentCount++;
+    if (this.componentCount > PROCESSING_LIMITS.maxComponentsPerFrame) {
+      throw new ProcessingLimitError(
+        `Too many components (${this.componentCount} > ${PROCESSING_LIMITS.maxComponentsPerFrame})`,
+        'components'
+      );
+    }
+  }
+
+  incrementColor() {
+    this.colorCount++;
+    if (this.colorCount > PROCESSING_LIMITS.maxColorsPerFrame) {
+      throw new ProcessingLimitError(
+        `Too many colors (${this.colorCount} > ${PROCESSING_LIMITS.maxColorsPerFrame})`,
+        'colors'
+      );
+    }
+  }
+
+  getStats() {
+    return {
+      nodeCount: this.nodeCount,
+      textLength: this.textLength,
+      componentCount: this.componentCount,
+      colorCount: this.colorCount,
+      elapsedTime: Date.now() - this.startTime
+    };
+  }
+}
+
+function validateSelection(selection: readonly SceneNode[]): void {
+  if (selection.length > PROCESSING_LIMITS.maxSelectionCount) {
+    throw new ProcessingLimitError(
+      `Too many items selected (${selection.length} > ${PROCESSING_LIMITS.maxSelectionCount}). Please select fewer frames to prevent memory issues.`,
+      'selection'
+    );
+  }
+
+  // Check for overly complex single nodes
+  for (const node of selection) {
+    if ('children' in node && node.children) {
+      const nodeCount = countNodesRecursive(node, 0);
+      if (nodeCount > PROCESSING_LIMITS.maxNodesPerFrame) {
+        throw new ProcessingLimitError(
+          `Frame "${node.name}" is too complex (${nodeCount} nodes > ${PROCESSING_LIMITS.maxNodesPerFrame}). Please select simpler frames or break them into smaller parts.`,
+          'complexity'
+        );
+      }
+    }
+  }
+}
+
+function countNodesRecursive(node: SceneNode, depth: number): number {
+  if (depth > PROCESSING_LIMITS.maxNodeDepth) {
+    return 1; // Stop counting at max depth to prevent infinite recursion
+  }
+
+  let count = 1;
+  if ('children' in node && node.children) {
+    for (const child of node.children) {
+      count += countNodesRecursive(child, depth + 1);
+    }
+  }
+  return count;
 }
 
 // ==========================================
@@ -352,18 +501,40 @@ async function extractFrameData(node: FrameNode | ComponentNode | InstanceNode):
   const textContent: Array<{ content: string; style: any }> = [];
   const components: Array<{ masterComponent: string }> = [];
   const colors: string[] = [];
+  const tracker = new ProcessingTracker();
 
-  async function traverseNode(n: SceneNode): Promise<void> {
+  console.log(`🔍 Starting frame extraction for: ${node.name} (${node.type})`);
+
+  async function traverseNode(n: SceneNode, depth: number = 0): Promise<void> {
+    // Check processing limits
+    tracker.checkTimeLimit();
+    tracker.incrementNode();
+
+    // Prevent infinite recursion
+    if (depth > PROCESSING_LIMITS.maxNodeDepth) {
+      console.warn(`⚠️ Max depth reached at ${depth} for node: ${n.name}`);
+      return;
+    }
+
     if (n.type === 'TEXT') {
       const textNode = n as TextNode;
+      const characters = textNode.characters || '';
+      
+      // Check text length limits
+      tracker.addText(characters);
+      
       textContent.push({
-        content: textNode.characters,
+        content: characters,
         style: textNode.fontName
       });
     }
 
     if (n.type === 'INSTANCE') {
       const instance = n as InstanceNode;
+      
+      // Check component limits
+      tracker.incrementComponent();
+      
       try {
         const mainComponent = await withTimeout(
           instance.getMainComponentAsync(),
@@ -393,44 +564,106 @@ async function extractFrameData(node: FrameNode | ComponentNode | InstanceNode):
     if ('fills' in n && n.fills && Array.isArray(n.fills)) {
       n.fills.forEach(fill => {
         if (fill.type === 'SOLID' && fill.color) {
-          const color = fill.color;
-          const hex = `#${Math.round(color.r * 255).toString(16).padStart(2, '0')}${Math.round(color.g * 255).toString(16).padStart(2, '0')}${Math.round(color.b * 255).toString(16).padStart(2, '0')}`;
-          if (!colors.includes(hex)) {
-            colors.push(hex);
+          // Check color limits before adding
+          if (colors.length < PROCESSING_LIMITS.maxColorsPerFrame) {
+            tracker.incrementColor();
+            
+            const color = fill.color;
+            const hex = `#${Math.round(color.r * 255).toString(16).padStart(2, '0')}${Math.round(color.g * 255).toString(16).padStart(2, '0')}${Math.round(color.b * 255).toString(16).padStart(2, '0')}`;
+            if (!colors.includes(hex)) {
+              colors.push(hex);
+            }
           }
         }
       });
     }
 
-    if ('children' in n) {
+    if ('children' in n && n.children) {
       for (const child of n.children) {
-        await traverseNode(child);
+        try {
+          await traverseNode(child, depth + 1);
+        } catch (error) {
+          if (error instanceof ProcessingLimitError) {
+            console.warn(`⚠️ Processing limit reached for child ${child.name}:`, error.message);
+            // Continue processing other children
+          } else {
+            throw error; // Re-throw non-limit errors
+          }
+        }
       }
     }
   }
 
-  if ('children' in node) {
-    for (const child of node.children) {
-      await traverseNode(child);
+  try {
+    if ('children' in node && node.children) {
+      for (const child of node.children) {
+        await traverseNode(child, 0);
+      }
     }
-  }
 
-  return {
-    id: node.id,
-    name: node.name,
-    type: node.type,
-    pageName: FigmaAPI.currentPage.name,
-    dimensions: {
-      width: Math.round(node.width),
-      height: Math.round(node.height)
-    },
-    nodeCount: 'children' in node ? node.children.length : 0,
-    textContent,
-    components,
-    colors,
-    hasPrototype: false, // Simplified for now
-    fileKey: FigmaAPI.fileKey
-  };
+    const stats = tracker.getStats();
+    console.log(`✅ Frame extraction completed for ${node.name}:`, stats);
+
+    // Count total nodes for the return data
+    const nodeCount = stats.nodeCount;
+
+    return {
+      id: node.id,
+      name: node.name,
+      type: node.type,
+      pageName: figma.currentPage.name,
+      dimensions: { width: node.width, height: node.height },
+      nodeCount: nodeCount,
+      textContent: textContent,
+      components: components,
+      colors: colors,
+      hasPrototype: false, // TODO: Implement prototype detection
+      fileKey: figma.fileKey || 'unknown',
+      designSystemContext: {
+        processingStats: stats,
+        limitsApplied: {
+          maxDepthReached: stats.nodeCount >= PROCESSING_LIMITS.maxNodesPerFrame * 0.8,
+          textTruncated: stats.textLength >= PROCESSING_LIMITS.maxTextLength * 0.8,
+          componentsTruncated: stats.componentCount >= PROCESSING_LIMITS.maxComponentsPerFrame * 0.8,
+          colorsTruncated: stats.colorCount >= PROCESSING_LIMITS.maxColorsPerFrame * 0.8
+        }
+      }
+    };
+  } catch (error) {
+    if (error instanceof ProcessingLimitError) {
+      const stats = tracker.getStats();
+      console.warn(`⚠️ Processing limit reached for frame ${node.name}:`, error.message, stats);
+      
+      // Return partial data with limit information
+      return {
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        pageName: figma.currentPage.name,
+        dimensions: { width: node.width, height: node.height },
+        nodeCount: stats.nodeCount,
+        textContent: textContent,
+        components: components,
+        colors: colors,
+        hasPrototype: false,
+        fileKey: figma.fileKey || 'unknown',
+        designSystemContext: {
+          processingStats: stats,
+          limitReached: {
+            type: error.limitType,
+            message: error.message
+          },
+          limitsApplied: {
+            maxDepthReached: true,
+            textTruncated: error.limitType === 'text',
+            componentsTruncated: error.limitType === 'components',
+            colorsTruncated: error.limitType === 'colors'
+          }
+        }
+      };
+    }
+    throw error; // Re-throw non-limit errors
+  }
 }
 
 // ==========================================
@@ -479,23 +712,57 @@ class MessageHandler {
         return;
       }
 
+      // Validate selection against processing limits
+      try {
+        validateSelection(selection);
+        console.log('✅ Selection validation passed');
+      } catch (error) {
+        if (error instanceof ProcessingLimitError) {
+          console.warn('⚠️ Selection validation failed:', error.message);
+          FigmaAPI.postMessage({
+            type: 'error',
+            message: error.message
+          });
+          return;
+        }
+        throw error; // Re-throw non-limit errors
+      }
+
       const frameDataList: FrameData[] = [];
+      let processedCount = 0;
+      let skippedCount = 0;
 
       for (let index = 0; index < selection.length; index++) {
         const node = selection[index];
-        console.log(`🔍 Processing node ${index + 1}:`, node.type, node.name);
+        console.log(`🔍 Processing node ${index + 1}/${selection.length}:`, node.type, node.name);
+        
         if (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') {
           try {
-            console.log(`⏱️ Extracting frame data with timeout protection...`);
+            console.log(`⏱️ Extracting frame data with limit protection...`);
             const frameData = await withRetry(
               () => extractFrameData(node as FrameNode),
               2, // Max 2 retries
               10000 // 10 second timeout for complete frame extraction
             );
             frameDataList.push(frameData);
-            console.log('✅ Successfully extracted frame data for:', node.name);
+            processedCount++;
+            
+            // Log if limits were applied during processing
+            const limits = frameData.designSystemContext?.limitsApplied;
+            if (limits && (limits.maxDepthReached || limits.textTruncated || limits.componentsTruncated || limits.colorsTruncated)) {
+              console.log(`⚠️ Processing limits applied to ${node.name}:`, limits);
+            }
+            
+            console.log(`✅ Successfully extracted frame data for: ${node.name} (${processedCount}/${selection.length})`);
           } catch (error) {
             console.error('❌ Error extracting frame data for:', node.name, error);
+            skippedCount++;
+            
+            if (error instanceof ProcessingLimitError) {
+              console.warn(`⚠️ Skipping ${node.name} due to processing limits:`, error.message);
+              // Continue with other frames instead of failing completely
+              continue;
+            }
             FigmaAPI.postMessage({
               type: 'error',
               message: `Error processing ${node.name}: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -508,17 +775,36 @@ class MessageHandler {
       }
 
       if (frameDataList.length === 0) {
-        FigmaAPI.postMessage({
-          type: 'error',
-          message: 'Please select frames, components, or instances to generate tickets. Current selection contains unsupported node types.'
-        });
+        if (skippedCount > 0) {
+          FigmaAPI.postMessage({
+            type: 'error',
+            message: `All ${skippedCount} selected frame(s) exceeded processing limits. Try selecting simpler frames or components with fewer nested elements.`
+          });
+        } else {
+          FigmaAPI.postMessage({
+            type: 'error',
+            message: 'Please select frames, components, or instances to generate tickets. Current selection contains unsupported node types.'
+          });
+        }
         return;
       }
 
-      console.log('✅ Successfully processed', frameDataList.length, 'frames');
+      // Create processing summary
+      let summaryMessage = `✅ Successfully processed ${frameDataList.length} frame(s)`;
+      if (skippedCount > 0) {
+        summaryMessage += ` (${skippedCount} skipped due to complexity limits)`;
+      }
+      
+      console.log(summaryMessage);
       FigmaAPI.postMessage({
         type: 'frame-data',
-        data: frameDataList
+        data: frameDataList,
+        processingSummary: {
+          processed: processedCount,
+          skipped: skippedCount,
+          total: selection.length,
+          message: summaryMessage
+        }
       });
     } catch (error) {
       console.error('❌ Error in handleGenerateTicket:', error);

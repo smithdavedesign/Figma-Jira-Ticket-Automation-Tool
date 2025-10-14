@@ -1345,7 +1345,32 @@ input[type="password"] {
             console.log('📋 Frame data received');
             if (msg.data && Array.isArray(msg.data)) {
               frameDataList = msg.data;
-              showTicketStatus(`✅ Processed ${msg.data.length} frame(s)`, 'success');
+              
+              // Show processing summary with limits information
+              let statusMessage = `✅ Processed ${msg.data.length} frame(s)`;
+              let statusType = 'success';
+              
+              if (msg.processingSummary) {
+                const summary = msg.processingSummary;
+                statusMessage = summary.message;
+                
+                if (summary.skipped > 0) {
+                  statusType = 'warning';
+                  statusMessage += `\n\n⚠️ Some frames were simplified due to complexity:\n• ${summary.skipped} frame(s) had processing limits applied\n• This helps prevent memory issues and ensures good performance`;
+                }
+              }
+              
+              // Check for limit information in frame data
+              const framesWithLimits = msg.data.filter(frame => 
+                frame.designSystemContext?.limitsApplied && 
+                Object.values(frame.designSystemContext.limitsApplied).some(applied => applied)
+              );
+              
+              if (framesWithLimits.length > 0) {
+                statusMessage += `\n\n📊 Processing optimization applied to ${framesWithLimits.length} complex frame(s)`;
+              }
+              
+              showTicketStatus(statusMessage, statusType);
               setTicketGenerating(false);
             } else {
               handleError(new ValidationError(ERROR_MESSAGES.FRAME_READ_ERROR), 'Frame data processing', false);
