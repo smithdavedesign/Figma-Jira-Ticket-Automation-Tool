@@ -19,13 +19,16 @@ cp -r src/ui/* dist/ui/
 
 # Inline CSS for Figma compatibility
 echo "🎨 Inlining CSS..."
-# Read the CSS content and escape it for sed
-CSS_CONTENT=$(cat src/ui/styles/main.css | sed 's/\\/\\\\/g' | sed 's/&/\\&/g')
-# Replace the link tag with inline styles
-sed -i.bak "s|<link rel=\"stylesheet\" href=\"styles/main.css\">|<style>\n$CSS_CONTENT\n</style>|" dist/ui/index.html
-rm -f dist/ui/index.html.bak
+# Use a more robust method to inline CSS
+node -e "
+const fs = require('fs');
+const css = fs.readFileSync('src/ui/styles/main.css', 'utf8');
+let html = fs.readFileSync('dist/ui/index.html', 'utf8');
+html = html.replace('<link rel=\"stylesheet\" href=\"styles/main.css\">', \`<style>\${css}</style>\`);
+fs.writeFileSync('dist/ui/index.html', html);
+"
 
-# Update manifest to point to correct relative paths for distribution
+# Create distribution manifest (for packaging)
 echo "📝 Creating distribution manifest..."
 sed 's|dist/ui/index.html|ui/index.html|g' manifest.json > dist/manifest.json
 
@@ -35,10 +38,12 @@ cp dist/code.js code.js
 
 echo "✅ Build complete!"
 echo "📁 Output:"
-echo "   - dist/code.js (Plugin code)"
-echo "   - dist/ui/ (UI assets)"
-echo "   - dist/manifest.json (Distribution manifest)"
-echo "   - code.js (Development code copy)"
-echo "   - manifest.json (Development manifest pointing to dist/ui/)"
+echo "   🎯 FOR FIGMA TESTING:"
+echo "      - manifest.json (Import this into Figma)"
+echo "      - code.js (Plugin logic)"
+echo "      - dist/ui/ (Built UI with inlined CSS)"
 echo ""
-echo "🧪 For Figma testing: Import manifest.json from root directory"
+echo "   📦 FOR DISTRIBUTION:"
+echo "      - dist/ (Complete package for publishing)"
+echo ""
+echo "🧪 To test: Import manifest.json from root directory into Figma"

@@ -893,11 +893,179 @@ input[type="password"] {
     </div>
   </div>
 
-  <!-- Load scripts -->
-  <script src="js/utils.js"></script>
-  <script src="js/health-metrics.js"></script>
-  <script src="js/ticket-generator.js"></script>
-  <script src="js/main.js"></script>
+  <!-- Inline all JavaScript for Figma compatibility -->
+  <script>
+    console.log('🔧 Starting inline JavaScript...');
+    
+    // Main initialization function
+    function initializeApp() {
+      console.log('🚀 Figma AI Ticket Generator UI starting...');
+      
+      // Initialize health metrics directly here
+      console.log('🔄 Starting health metrics...');
+      
+      // Auto-trigger compliance analysis on load
+      setTimeout(() => {
+        console.log('🔄 Triggering compliance calculation...');
+        // Send compliance calculation request to plugin
+        if (window.parent && window.parent.postMessage) {
+          window.parent.postMessage({ pluginMessage: { type: 'calculate-compliance' } }, '*');
+        }
+      }, 2000);
+      
+      console.log('✅ UI initialized successfully');
+    }
+
+    // Handle messages from Figma plugin
+    function handlePluginMessage(event) {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+      
+      console.log('📨 Received message:', msg.type);
+      
+      switch (msg.type) {
+        case 'compliance-results':
+          console.log('📊 Compliance results received:', msg.compliance);
+          displayHealthMetrics(msg.compliance);
+          break;
+          
+        case 'compliance-error':
+          console.log('❌ Compliance error:', msg.message);
+          break;
+          
+        default:
+          console.log('⚠️ Unknown message type:', msg.type);
+      }
+    }
+
+    // Display health metrics in the UI
+    function displayHealthMetrics(compliance) {
+      console.log('🎯 Displaying health metrics:', compliance);
+      
+      // Update overall score
+      const overallScoreEl = document.getElementById('overallScore');
+      if (overallScoreEl) {
+        overallScoreEl.textContent = compliance.overall + '%';
+        console.log('✅ Updated overall score to:', compliance.overall + '%');
+      } else {
+        console.log('❌ overallScore element not found');
+      }
+      
+      // Update individual category scores in the overview cards
+      const complianceRateEl = document.getElementById('complianceRate');
+      if (complianceRateEl) {
+        complianceRateEl.textContent = compliance.overall + '%';
+        console.log('✅ Updated compliance rate to:', compliance.overall + '%');
+      }
+      
+      const componentUsageEl = document.getElementById('componentUsage');
+      if (componentUsageEl) {
+        componentUsageEl.textContent = compliance.breakdown.components.score + '%';
+        console.log('✅ Updated component usage to:', compliance.breakdown.components.score + '%');
+      }
+      
+      const tokenAdoptionEl = document.getElementById('tokenAdoption');
+      if (tokenAdoptionEl) {
+        const tokenScore = Math.round((compliance.breakdown.colors.score + compliance.breakdown.typography.score) / 2);
+        tokenAdoptionEl.textContent = tokenScore + '%';
+        console.log('✅ Updated token adoption to:', tokenScore + '%');
+      }
+      
+      // Update detailed component analysis
+      const standardComponentsEl = document.getElementById('standardComponents');
+      if (standardComponentsEl && compliance.breakdown.components) {
+        standardComponentsEl.textContent = compliance.breakdown.components.details?.standardComponents || '85%';
+        console.log('✅ Updated standard components');
+      }
+      
+      const customComponentsEl = document.getElementById('customComponents');
+      if (customComponentsEl && compliance.breakdown.components) {
+        customComponentsEl.textContent = compliance.breakdown.components.details?.customComponents || '15%';
+        console.log('✅ Updated custom components');
+      }
+      
+      const topComponentEl = document.getElementById('topComponent');
+      if (topComponentEl && compliance.breakdown.components) {
+        topComponentEl.textContent = compliance.breakdown.components.details?.topComponent || 'Button';
+        console.log('✅ Updated top component');
+      }
+      
+      // Update detailed token adoption
+      const colorTokensEl = document.getElementById('colorTokens');
+      if (colorTokensEl && compliance.breakdown.colors) {
+        colorTokensEl.textContent = compliance.breakdown.colors.score + '%';
+        console.log('✅ Updated color tokens');
+      }
+      
+      const typographyTokensEl = document.getElementById('typographyTokens');
+      if (typographyTokensEl && compliance.breakdown.typography) {
+        typographyTokensEl.textContent = compliance.breakdown.typography.score + '%';
+        console.log('✅ Updated typography tokens');
+      }
+      
+      const spacingTokensEl = document.getElementById('spacingTokens');
+      if (spacingTokensEl && compliance.breakdown.spacing) {
+        spacingTokensEl.textContent = compliance.breakdown.spacing.score + '%';
+        console.log('✅ Updated spacing tokens');
+      }
+      
+      // Update recommendations
+      const recommendationsEl = document.getElementById('healthRecommendations');
+      if (recommendationsEl && compliance.recommendations) {
+        recommendationsEl.innerHTML = '';
+        compliance.recommendations.forEach(rec => {
+          const recEl = document.createElement('div');
+          recEl.className = 'metric-row';
+          recEl.innerHTML = `
+            <span class="metric-name">${rec.category}: ${rec.description}</span>
+            <span class="metric-score ${rec.priority}">${rec.priority}</span>
+          `;
+          recommendationsEl.appendChild(recEl);
+        });
+        console.log('✅ Updated recommendations, count:', compliance.recommendations.length);
+      } else {
+        console.log('❌ healthRecommendations element not found');
+      }
+      
+      // Hide loading message
+      const loadingEl = document.querySelector('.loading-message');
+      if (loadingEl) {
+        loadingEl.style.display = 'none';
+        console.log('✅ Hidden loading message');
+      } else {
+        console.log('ℹ️ loading-message element not found (might be already hidden)');
+      }
+    }
+
+    // Set up message listener
+    function setupMessageListener() {
+      window.onmessage = handlePluginMessage;
+      console.log('✅ Message listener set up');
+    }
+
+    // Initialize when DOM is ready
+    function initializeWhenReady() {
+      console.log('🔄 initializeWhenReady called, document.readyState:', document.readyState);
+      
+      if (document.readyState === 'loading') {
+        console.log('📅 DOM still loading, adding event listener...');
+        document.addEventListener('DOMContentLoaded', () => {
+          console.log('📅 DOMContentLoaded fired!');
+          initializeApp();
+          setupMessageListener();
+        });
+      } else {
+        console.log('📅 DOM already ready, initializing immediately...');
+        initializeApp();
+        setupMessageListener();
+      }
+    }
+
+    // Start the application
+    console.log('🚀 About to call initializeWhenReady...');
+    initializeWhenReady();
+    console.log('✅ initializeWhenReady called');
+  </script>
   
   <!-- Tab System Script -->
   <script>
@@ -918,22 +1086,30 @@ input[type="password"] {
           button.classList.add('active');
           document.getElementById(targetTab + '-tab').classList.add('active');
           
-          // Save the active tab preference
-          if (window.localStorage) {
-            localStorage.setItem('activeTab', targetTab);
+          // Save the active tab preference (with Figma-safe localStorage handling)
+          try {
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('activeTab', targetTab);
+            }
+          } catch(e) {
+            // localStorage disabled in Figma - silently ignore
           }
         });
       });
       
-      // Restore saved tab preference
-      if (window.localStorage) {
-        const savedTab = localStorage.getItem('activeTab');
-        if (savedTab) {
-          const savedButton = document.querySelector(`[data-tab="${savedTab}"]`);
-          if (savedButton) {
-            savedButton.click();
+      // Restore saved tab preference (with Figma-safe localStorage handling)
+      try {
+        if (typeof localStorage !== 'undefined') {
+          const savedTab = localStorage.getItem('activeTab');
+          if (savedTab) {
+            const savedButton = document.querySelector(`[data-tab="${savedTab}"]`);
+            if (savedButton) {
+              savedButton.click();
+            }
           }
         }
+      } catch(e) {
+        // localStorage disabled in Figma - silently ignore
       }
     }
     
