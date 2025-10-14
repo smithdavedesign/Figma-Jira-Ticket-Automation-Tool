@@ -1,219 +1,148 @@
-# 🎫 Figma AI Ticket Generator
+# 🎨 Figma AI Ticket Generator
 
-A Figma plugin that automatically generates Jira ticket drafts from selected design frames using AI. Perfect for on-premise Jira setups where you want automation benefits without API complications.
+A sophisticated Figma plugin that automatically generates Jira tickets from design frames using AI, with advanced design system integration and compliance analysis.
 
-## ✨ Features
-
-- **Smart Frame Analysis**: Extracts frame names, dimensions, components, text content, and colors
-- **🎨 Design System Integration**: Auto-detects design systems and analyzes compliance
-- **AI-Powered Generation**: Uses OpenAI to create structured ticket drafts with design system context
-- **Compliance Scoring**: Real-time analysis of color, typography, and component compliance
-- **Smart Recommendations**: Actionable suggestions for design system violations
-- **Multiple Templates**: Support for UI components, features, bug fixes, and pages
-- **Copy-Paste Workflow**: No direct Jira integration needed - just copy and paste
-- **Custom Prompts**: Add specific requirements and instructions
-- **Multi-Frame Support**: Generate tickets for multiple selected frames
-
-## 🚀 Quick Start
-
-### 1. Install Dependencies
-
-```bash
-cd figma-ticket-generator
-npm install
-```
-
-### 2. Build the Plugin
-
-```bash
-npm run build
-```
-
-### 3. Install in Figma
-
-1. Open Figma Desktop App
-2. Go to **Plugins** → **Development** → **Import plugin from manifest...**
-3. Select the `manifest.json` file from this folder
-4. The plugin will appear in your plugins list
-
-### 4. Set Up OpenAI API
-
-1. Get an OpenAI API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Open the plugin in Figma
-3. Enter your API key in the configuration section
-
-## 📖 How to Use
-
-### Basic Workflow
-
-1. **Select Frames**: Choose one or more frames/components in your Figma file
-2. **Configure Template**: Select the appropriate ticket type (Component, Feature, Bug, Page)
-3. **Add Instructions**: Optionally add custom requirements or notes
-4. **Generate**: Click "Generate Ticket from Selection"
-5. **Copy & Paste**: Copy the generated ticket and paste it into your Jira
-
-### 🎨 Design System Features
-
-The plugin automatically detects design systems in your Figma files and provides:
-
-- **Auto-Discovery**: Scans for design system pages, published styles, and component libraries
-- **Compliance Analysis**: Real-time scoring for color, typography, and component compliance
-- **Smart Recommendations**: Actionable suggestions for maintaining design consistency
-- **Token Integration**: Identifies and references specific design tokens in generated tickets
-- **Violation Detection**: Highlights deviations from established design patterns
-
-**Design System Information Panel:**
-- Shows detected design system name and confidence level
-- Displays counts of colors, typography styles, and components
-- Real-time compliance scores for selected frames
-- Recommendations for improving design system adherence
-
-**Enhanced Tickets Include:**
-- Design system compliance scores
-- Specific design token references
-- Violation descriptions and suggested fixes
-- Recommendations for maintaining consistency
-
-### Template Types
-
-- **UI Component**: For implementing reusable UI elements
-- **Feature**: For new functionality implementation
-- **Bug Fix**: For addressing UI/UX issues
-- **Page/Screen**: For complete page implementations
-- **Custom**: For specialized requirements
-
-### Example Output
-
-```
-**Title:** Implement Primary Button Component
-
-**Description:**
-Create a reusable primary button component based on the Figma design. The button should support multiple sizes and states including default, hover, pressed, and disabled.
-
-**Acceptance Criteria:**
-1. Button matches design specifications (24px height, 8px border-radius)
-2. Implements all required states (default, hover, pressed, disabled)
-3. Uses design system color tokens (#007AFF for primary)
-4. Includes proper accessibility attributes and focus states
-5. Supports different sizes (small, medium, large)
-
-**Technical Notes:**
-- Component should be built using the existing design system
-- Ensure proper TypeScript types are defined
-- Include unit tests for all interactive states
-```
-
-## 🛠️ Development
-
-### Project Structure
+## 🏗️ Architecture
 
 ```
 figma-ticket-generator/
-├── manifest.json       # Figma plugin manifest
-├── code.ts            # Main plugin logic
-├── ui.html            # Plugin UI interface
-├── types.ts           # TypeScript type definitions
-├── package.json       # Dependencies and scripts
-├── tsconfig.json      # TypeScript configuration
-└── README.md          # Documentation
+├── src/                    # Source code
+│   ├── plugin/            # Figma plugin code (sandbox)
+│   │   ├── main.ts       # Entry point
+│   │   ├── handlers/     # Message handlers
+│   │   └── utils/        # Plugin utilities
+│   ├── core/             # Core business logic
+│   │   ├── design-system/    # Design system detection & analysis
+│   │   ├── compliance/       # Compliance scoring
+│   │   ├── ai/              # AI ticket generation
+│   │   └── types/           # TypeScript definitions
+│   ├── ui/               # User interface
+│   │   ├── components/   # UI components
+│   │   ├── styles/       # CSS styles
+│   │   ├── js/           # JavaScript logic
+│   │   └── index.html    # Main HTML
+│   └── shared/           # Shared utilities
+├── docs/                 # Documentation
+├── dist/                 # Built files
+├── config/               # Configuration files
+└── build.sh              # Build script
 ```
 
-### Development Workflow
+## 🚀 Features
 
-1. **Watch Mode**: Run `npm run watch` to automatically rebuild on changes
-2. **Test Changes**: Reload the plugin in Figma to test updates
-3. **Debug**: Use `console.log()` statements - they appear in Figma's developer console
+### Phase 1: Design System Integration ✅
+- **Automatic Design System Detection**: Scans Figma files to identify design systems
+- **Token Extraction**: Extracts colors, typography, spacing, and effect tokens
+- **Component Library Analysis**: Identifies and catalogs design system components
 
-### Key Files
+### Phase 2: Health Metrics Dashboard 🚧
+- **Overall Compliance Scoring**: Real-time design system adherence analysis
+- **Component Usage Statistics**: Track which components are used and how frequently
+- **Token Adoption Rates**: Monitor color, typography, and spacing token usage
+- **Consistency Recommendations**: AI-powered suggestions for design improvements
 
-- **`code.ts`**: Runs in Figma's sandbox, handles frame selection and data extraction
-- **`ui.html`**: Plugin interface with AI configuration and ticket generation
-- **`types.ts`**: TypeScript definitions for Figma API and plugin messages
+### Phase 3: AI Ticket Generation
+- **Smart Frame Analysis**: Extracts comprehensive data from selected Figma frames
+- **Multiple AI Models**: Support for GPT-4o, GPT-4o-mini, and GPT-3.5-turbo
+- **Template System**: Pre-built templates for components, features, bugs, and pages
+- **Design System Context**: Includes compliance data in generated tickets
 
-## 🔧 Configuration Options
+## 🛠️ Development
 
-### AI Settings
+### Prerequisites
+- Node.js 16+
+- TypeScript 5+
+- Figma Desktop App
 
-- **API Key**: Your OpenAI API key (stored locally)
-- **Model**: Choose between GPT-4o Mini (recommended), GPT-4o, or GPT-3.5 Turbo
-- **Template**: Pre-built prompts for different ticket types
+### Setup
+```bash
+# Install dependencies
+npm install
 
-### Custom Prompts
+# Build the plugin
+npm run build
 
-Add specific instructions like:
-- "Include accessibility requirements"
-- "Use Material Design guidelines"
-- "Reference existing component library"
-- "Include mobile responsive considerations"
+# Development with watch mode
+npm run dev
+```
 
-## 🎯 Best Practices
+### Project Structure
 
-### Frame Naming
+#### Core Modules
+- **`src/core/types/`**: Centralized TypeScript definitions
+- **`src/core/design-system/`**: Design system detection and analysis
+- **`src/core/compliance/`**: Compliance scoring algorithms
+- **`src/core/ai/`**: AI integration and prompt templates
 
-Use descriptive frame names like:
-- `Button / Primary / Default`
-- `Navigation / Mobile / Collapsed`
-- `Form / Contact / Validation States`
+#### Plugin Architecture
+- **`src/plugin/main.ts`**: Main entry point, coordinates all functionality
+- **`src/plugin/handlers/`**: Message handling between plugin and UI
+- **`src/plugin/utils/`**: Figma API adapters and utilities
 
-### Selection Tips
+#### UI Architecture
+- **`src/ui/index.html`**: Main HTML structure
+- **`src/ui/styles/main.css`**: Comprehensive styling system
+- **`src/ui/js/`**: Modular JavaScript components
+- **`src/ui/components/`**: Reusable UI components
 
-- Select the main frame/component, not individual elements
-- Include all relevant states and variations
-- Name frames consistently for better AI context
+### Build System
+The project uses a custom build script (`build.sh`) that:
+1. Compiles TypeScript using the configured tsconfig.json
+2. Copies UI assets to the dist folder
+3. Updates manifest paths for production
 
-### Prompt Engineering
+## 📊 Health Metrics Implementation
 
-- Be specific about requirements
-- Include relevant design system references
-- Mention accessibility needs
-- Specify technical constraints
+### Overall Compliance Scoring
+- **Color Compliance**: Checks if fills match design system color tokens
+- **Typography Compliance**: Validates text styles against design system standards
+- **Component Compliance**: Identifies design system vs. custom components
+- **Spacing Compliance**: Validates spacing follows standard increments
 
-## 🔐 Security & Privacy
+### Scoring Algorithm
+```typescript
+overallScore = (colorScore * 0.3) + 
+               (typographyScore * 0.25) + 
+               (componentScore * 0.3) + 
+               (spacingScore * 0.15)
+```
 
-- **API Keys**: Stored locally in browser localStorage, never transmitted to third parties
-- **Design Data**: Only selected frame metadata is sent to OpenAI (names, dimensions, basic properties)
-- **No File Upload**: Your actual design files are never uploaded or shared
+### Real-time Analysis
+- Automatic compliance calculation when design system is detected
+- Smart throttling to prevent performance issues
+- Detailed breakdown with actionable recommendations
+
+## 🔧 Configuration
+
+### TypeScript Configuration
+- Modular compilation with path mapping
+- Separate compilation for plugin and UI code
+- Type-safe imports with barrel exports
+
+### Figma Plugin Manifest
+- Dynamic page access for design system scanning
+- Network access for OpenAI API integration
+- Current user permissions for personalized features
+
+## 📖 Documentation
+
+- **[Quick Start Guide](docs/QUICK_START.md)**: Get up and running quickly
+- **[Design System Integration](docs/DESIGN_SYSTEM_INTEGRATION.md)**: Technical details
+- **[Health Metrics Roadmap](docs/HEALTH_METRICS_ROADMAP.md)**: Feature planning
+- **[Phase 1 Complete](docs/PHASE_1_COMPLETE.md)**: Implementation summary
+- **[Prompt Templates](docs/PROMPT_TEMPLATES.md)**: AI prompt engineering
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly in Figma
-5. Submit a pull request
+1. Follow the established architecture patterns
+2. Add TypeScript definitions for new features
+3. Update documentation for significant changes
+4. Test with real Figma files before submitting
 
-## 📄 License
+## 📜 License
 
-MIT License - feel free to use and modify for your team's needs.
-
-## 🆘 Troubleshooting
-
-### Common Issues
-
-**Plugin won't load**
-- Ensure you've run `npm run build`
-- Check that `dist/code.js` exists
-- Verify manifest.json is valid
-
-**API calls failing**
-- Verify your OpenAI API key is correct
-- Check your API usage limits
-- Ensure you have internet connectivity
-
-**Empty ticket generation**
-- Make sure frames are properly selected
-- Check that frame names are descriptive
-- Try different template types
-
-**TypeScript errors**
-- Run `npm run build` to see detailed error messages
-- Ensure all dependencies are installed
-- Check tsconfig.json configuration
-
-### Support
-
-For issues and feature requests, please create an issue in the repository.
+MIT License - see LICENSE file for details.
 
 ---
 
-Built with ❤️ for design-development collaboration
+**Built with ❤️ for the design and development community**

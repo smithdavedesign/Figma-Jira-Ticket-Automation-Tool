@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AI Ticket Generator</title>
+  <style>
+/**
+ * Main CSS Styles for Figma AI Ticket Generator
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+/* Main Layout - 50/50 Split */
+.main-container {
+  display: flex;
+  gap: 24px;
+  min-height: calc(100vh - 40px);
+  min-width: 800px; /* Increased minimum width for less cramped layout */
+}
+
+.panel {
+  flex: 1;
+  min-width: 380px; /* Increased minimum width for each panel */
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--figma-color-border);
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--figma-color-text);
+  margin: 0;
+}
+
+.panel-subtitle {
+  font-size: 11px;
+  color: var(--figma-color-text-secondary);
+  margin: 4px 0 0 0;
+}
+
+/* Health Metrics Panel Styles */
+.health-panel {
+  background: var(--figma-color-bg);
+  border-right: 1px solid var(--figma-color-border);
+  padding-right: 20px;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  background: var(--figma-color-bg-secondary);
+  border: 1px solid var(--figma-color-border);
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.metric-value.excellent { color: #0d9f3c; }
+.metric-value.good { color: #f4a113; }
+.metric-value.needs-attention { color: #e34f47; }
+
+.metric-label {
+  font-size: 11px;
+  color: var(--figma-color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailed-metrics {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--figma-color-text);
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--figma-color-border-subtle);
+}
+
+.metric-name {
+  font-size: 11px;
+  color: var(--figma-color-text-secondary);
+}
+
+.metric-score {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.metric-score.high {
+  background: var(--figma-color-bg-success-tertiary);
+  color: var(--figma-color-text-success);
+}
+
+.metric-score.medium {
+  background: var(--figma-color-bg-warning-tertiary);
+  color: var(--figma-color-text-warning);
+}
+
+.metric-score.low {
+  background: var(--figma-color-bg-danger-tertiary);
+  color: var(--figma-color-text-danger);
+}
+
+/* Ticket Panel Styles */
+.ticket-panel {
+  background: var(--figma-color-bg);
+  padding-left: 20px;
+}
+
+/* Compliance Analysis Styles */
+.analysis-summary {
+  margin-bottom: 12px;
+  padding: 8px;
+  background: var(--figma-color-bg-secondary);
+  border-radius: 4px;
+}
+
+.summary-stat {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stat-label {
+  color: var(--figma-color-text-secondary);
+  font-size: 11px;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: var(--figma-color-text);
+}
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.breakdown-item {
+  padding: 8px;
+  background: var(--figma-color-bg-secondary);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.breakdown-label {
+  font-size: 10px;
+  color: var(--figma-color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.breakdown-score {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.breakdown-score.excellent {
+  color: var(--figma-color-text-success);
+}
+
+.breakdown-score.good {
+  color: var(--figma-color-text-success);
+}
+
+.breakdown-score.medium {
+  color: var(--figma-color-text-warning);
+}
+
+.breakdown-score.needs-attention {
+  color: var(--figma-color-text-warning);
+}
+
+.breakdown-score.poor {
+  color: var(--figma-color-text-danger);
+}
+
+.breakdown-details {
+  font-size: 10px;
+  color: var(--figma-color-text-tertiary);
+}
+
+/* Recommendation Styles */
+.recommendation-item {
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  border-left: 3px solid;
+}
+
+.recommendation-item.high {
+  background: var(--figma-color-bg-danger-tertiary);
+  border-color: var(--figma-color-border-danger);
+}
+
+.recommendation-item.medium {
+  background: var(--figma-color-bg-warning-tertiary);
+  border-color: var(--figma-color-border-warning);
+}
+
+.recommendation-item.low {
+  background: var(--figma-color-bg-secondary);
+  border-color: var(--figma-color-border);
+}
+
+.rec-priority {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--figma-color-text-secondary);
+  margin-bottom: 2px;
+}
+
+.rec-category {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--figma-color-text);
+  margin-bottom: 4px;
+}
+
+.rec-description {
+  font-size: 10px;
+  color: var(--figma-color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.rec-action {
+  font-size: 10px;
+  color: var(--figma-color-text);
+  font-style: italic;
+}
+
+.placeholder-text.error {
+  color: var(--figma-color-text-danger);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 24px;
+  background-color: var(--figma-color-bg);
+  color: var(--figma-color-text);
+  font-size: 12px;
+  line-height: 1.4;
+  min-width: 850px; /* Ensure minimum plugin width */
+}
+
+.header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: var(--figma-color-text);
+}
+
+.subtitle {
+  font-size: 11px;
+  color: var(--figma-color-text-secondary);
+  margin: 0;
+}
+
+.config-section {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--figma-color-bg-secondary);
+  border-radius: 6px;
+}
+
+.config-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--figma-color-text);
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--figma-color-text);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--figma-color-border);
+  border-radius: 4px;
+  font-size: 11px;
+  background: var(--figma-color-bg);
+  color: var(--figma-color-text);
+  resize: vertical;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--figma-color-border-selected);
+  box-shadow: 0 0 0 1px var(--figma-color-border-selected);
+}
+
+input[type="password"] {
+  font-family: monospace;
+}
+
+.button {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--figma-color-bg-brand);
+  color: var(--figma-color-text-onbrand);
+  transition: background-color 0.2s ease;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--figma-color-bg-brand-hover);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button.button-secondary {
+  background: var(--figma-color-bg);
+  color: var(--figma-color-text);
+  border: 1px solid var(--figma-color-border);
+}
+
+.button.button-secondary:hover:not(:disabled) {
+  background: var(--figma-color-bg-hover);
+}
+
+.output-section {
+  margin-top: 16px;
+}
+
+.output-section textarea {
+  min-height: 200px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.status {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.status.loading {
+  background: var(--figma-color-bg-secondary);
+  color: var(--figma-color-text-secondary);
+}
+
+.status.success {
+  background: var(--figma-color-bg-success);
+  color: var(--figma-color-text-onsuccess);
+}
+
+.status.error {
+  background: var(--figma-color-bg-danger);
+  color: var(--figma-color-text-ondanger);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.template-select {
+  border-bottom: 1px solid var(--figma-color-border);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+/* Frame info display */
+.frame-info {
+  background: var(--figma-color-bg-secondary);
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 12px;
+  font-size: 10px;
+}
+
+.frame-item {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--figma-color-border);
+}
+
+.frame-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.frame-name {
+  font-weight: 600;
+  color: var(--figma-color-text);
+  margin-bottom: 4px;
+}
+
+.frame-details {
+  color: var(--figma-color-text-secondary);
+  line-height: 1.3;
+}
+
+/* Design System Styles */
+.design-system-detected {
+  background: linear-gradient(135deg, var(--figma-color-bg-success-tertiary), var(--figma-color-bg-brand-tertiary));
+  border: 1px solid var(--figma-color-border-success);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.ds-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ds-name {
+  font-weight: 600;
+  color: var(--figma-color-text);
+  font-size: 13px;
+}
+
+.ds-confidence {
+  background: var(--figma-color-bg-success);
+  color: var(--figma-color-text-onbrand);
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.ds-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.ds-stat {
+  color: var(--figma-color-text-secondary);
+  font-size: 11px;
+}
+
+.compliance-info {
+  background: var(--figma-color-bg-tertiary);
+  border: 1px solid var(--figma-color-border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.compliance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.compliance-title {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.compliance-score {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+}
+
+.compliance-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.compliance-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background: var(--figma-color-bg);
+  border-radius: 4px;
+  border: 1px solid var(--figma-color-border);
+}
+
+.item-label {
+  font-size: 10px;
+  color: var(--figma-color-text-secondary);
+  margin-bottom: 2px;
+}
+
+.item-score {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 8px;
+  color: white;
+}
+
+.recommendations {
+  border-top: 1px solid var(--figma-color-border);
+  padding-top: 12px;
+}
+
+.rec-title {
+  font-weight: 600;
+  font-size: 11px;
+  margin-bottom: 8px;
+  color: var(--figma-color-text);
+}
+
+.rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rec-item {
+  padding: 8px;
+  border-radius: 4px;
+  border-left: 3px solid;
+}
+
+.rec-item.high {
+  background: var(--figma-color-bg-danger-tertiary);
+  border-left-color: var(--figma-color-bg-danger);
+}
+
+.rec-item.medium {
+  background: var(--figma-color-bg-warning-tertiary);
+  border-left-color: var(--figma-color-bg-warning);
+}
+
+.rec-item.low {
+  background: var(--figma-color-bg-success-tertiary);
+  border-left-color: var(--figma-color-bg-success);
+}
+
+.rec-message {
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  color: var(--figma-color-text);
+}
+
+.rec-suggestion {
+  font-size: 10px;
+  color: var(--figma-color-text-secondary);
+}
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <!-- Health Metrics Panel (Left Side) -->
+    <div class="panel health-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">📊 Design System Health</h2>
+      </div>
+      <p class="panel-subtitle">Real-time compliance and usage metrics</p>
+      
+      <!-- Overall Health Score -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-value excellent" id="overallScore">--</div>
+          <div class="metric-label">Overall Score</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value good" id="complianceRate">--</div>
+          <div class="metric-label">Compliance Rate</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value good" id="componentUsage">--</div>
+          <div class="metric-label">Component Usage</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value needs-attention" id="tokenAdoption">--</div>
+          <div class="metric-label">Token Adoption</div>
+        </div>
+      </div>
+      
+      <!-- Detailed Metrics -->
+      <div class="detailed-metrics">
+        <div class="section-title">Component Analysis</div>
+        <div class="metric-row">
+          <span class="metric-name">Standard Components</span>
+          <span class="metric-score high" id="standardComponents">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Custom Components</span>
+          <span class="metric-score medium" id="customComponents">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Most Used Component</span>
+          <span class="metric-score high" id="topComponent">--</span>
+        </div>
+      </div>
+      
+      <div class="detailed-metrics">
+        <div class="section-title">Token Adoption</div>
+        <div class="metric-row">
+          <span class="metric-name">Color Tokens</span>
+          <span class="metric-score high" id="colorTokens">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Typography Tokens</span>
+          <span class="metric-score medium" id="typographyTokens">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Spacing Tokens</span>
+          <span class="metric-score low" id="spacingTokens">--</span>
+        </div>
+      </div>
+      
+      <!-- Health Recommendations -->
+      <div class="detailed-metrics">
+        <div class="section-title">Recommendations</div>
+        <div id="healthRecommendations">
+          <div class="metric-row">
+            <span class="metric-name">Loading health data...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Ticket Generation Panel (Right Side) -->
+    <div class="panel ticket-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">🎫 AI Ticket Generator</h2>
+      </div>
+      <p class="panel-subtitle">Generate Jira tickets from selected Figma frames</p>
+
+      <div class="config-section">
+        <div class="config-title">AI Configuration</div>
+        
+        <div class="form-group">
+          <label for="apiKey">OpenAI API Key</label>
+          <input type="password" id="apiKey" placeholder="sk-..." />
+        </div>
+        
+        <div class="form-group">
+          <label for="model">Model</label>
+          <select id="model">
+            <option value="gpt-4o-mini">GPT-4o Mini (Recommended)</option>
+            <option value="gpt-4o">GPT-4o</option>
+            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Ticket Template</div>
+        
+        <div class="form-group template-select">
+          <label for="template">Template Type</label>
+          <select id="template">
+            <option value="component">UI Component</option>
+            <option value="feature">Feature Implementation</option>
+            <option value="bug">Bug Fix</option>
+            <option value="page">Page/Screen</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="customPrompt">Additional Instructions (Optional)</label>
+          <textarea id="customPrompt" rows="3" placeholder="e.g., Include accessibility requirements, use specific design tokens..."></textarea>
+        </div>
+      </div>
+
+      <!-- Design System Integration for Tickets -->
+      <div id="designSystemSection" class="config-section hidden">
+        <div class="config-title">🎨 Design System Integration</div>
+        
+        <div id="designSystemInfo">
+          <div class="design-system-detected">
+            <div class="ds-header">
+              <span class="ds-name" id="dsName">Design System Detected</span>
+              <span class="ds-confidence" id="dsConfidence">85%</span>
+            </div>
+            <div class="ds-stats">
+              <span class="ds-stat" id="dsColors">12 colors</span>
+              <span class="ds-stat" id="dsTypography">8 text styles</span>
+              <span class="ds-stat" id="dsComponents">24 components</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="complianceInfo" class="compliance-info hidden">
+          <div class="compliance-header">
+            <span class="compliance-title">Compliance Analysis</span>
+            <span class="compliance-score" id="complianceScore">92%</span>
+          </div>
+          <div class="compliance-breakdown">
+            <div class="compliance-item">
+              <span class="item-label">Colors:</span>
+              <span class="item-score" id="colorScore">95%</span>
+            </div>
+            <div class="compliance-item">
+              <span class="item-label">Typography:</span>
+              <span class="item-score" id="typographyScore">88%</span>
+            </div>
+            <div class="compliance-item">
+              <span class="item-label">Components:</span>
+              <span class="item-score" id="componentScore">94%</span>
+            </div>
+          </div>
+          
+          <div id="recommendations" class="recommendations hidden">
+            <div class="rec-title">Recommendations:</div>
+            <div id="recList" class="rec-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="frameInfo" class="hidden"></div>
+      <div id="status" class="hidden"></div>
+
+      <button id="generate" class="button">
+        📋 Generate Ticket from Selection
+      </button>
+
+      <div class="output-section">
+        <label for="output">Generated Ticket</label>
+        <textarea id="output" placeholder="Select frames in Figma and click 'Generate Ticket' to create a Jira ticket draft..."></textarea>
+        
+        <button id="copy" class="button button-secondary" disabled>
+          📋 Copy to Clipboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/health-metrics.js"></script>
+  <script src="js/ticket-generator.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

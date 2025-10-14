@@ -1,6 +1,8 @@
 // Type definitions for Figma Plugin API
-declare const figma: PluginAPI;
-declare const __html__: string;
+// Note: Global figma and __html__ are provided by Figma plugin environment
+
+// Add export to make this an external module
+export {};
 
 interface PluginAPI {
   showUI(html: string, options?: { width?: number; height?: number; themeColors?: boolean }): void;
@@ -174,6 +176,43 @@ interface DesignSystem {
   spacing: SpacingToken[];
   effects: EffectToken[];
   detectionConfidence: number; // 0-1 score
+  compliance?: ComplianceScore; // New compliance scoring
+}
+
+// Compliance Scoring Types
+interface ComplianceScore {
+  overall: number; // 0-100 percentage
+  breakdown: {
+    colors: ComplianceBreakdown;
+    typography: ComplianceBreakdown;
+    components: ComplianceBreakdown;
+    spacing: ComplianceBreakdown;
+  };
+  lastCalculated: number; // timestamp
+  recommendations: ComplianceRecommendation[];
+}
+
+interface ComplianceBreakdown {
+  score: number; // 0-100 percentage
+  compliantCount: number;
+  totalCount: number;
+  violations: ComplianceViolation[];
+}
+
+interface ComplianceViolation {
+  type: 'color' | 'typography' | 'component' | 'spacing';
+  severity: 'low' | 'medium' | 'high';
+  description: string;
+  elementId?: string;
+  suggestion: string;
+}
+
+interface ComplianceRecommendation {
+  priority: 'low' | 'medium' | 'high';
+  category: string;
+  description: string;
+  action: string;
+  impact: string;
 }
 
 interface DesignSystemPage {
@@ -311,5 +350,26 @@ interface NoDesignSystemMessage {
   type: 'no-design-system';
 }
 
-type PluginMessage = GenerateTicketMessage | ClosePluginMessage;
-type UIMessage = FrameDataMessage | ErrorMessage | DesignSystemDetectedMessage | NoDesignSystemMessage;
+interface CalculateComplianceMessage {
+  type: 'calculate-compliance';
+}
+
+interface ComplianceResultsMessage {
+  type: 'compliance-results';
+  compliance: ComplianceScore;
+  selectionCount: number;
+}
+
+interface ComplianceErrorMessage {
+  type: 'compliance-error';
+  message: string;
+}
+
+interface FileContextMessage {
+  type: 'file-context';
+  fileKey: string;
+  fileName: string;
+}
+
+type PluginMessage = GenerateTicketMessage | ClosePluginMessage | CalculateComplianceMessage;
+type UIMessage = FrameDataMessage | ErrorMessage | DesignSystemDetectedMessage | NoDesignSystemMessage | ComplianceResultsMessage | ComplianceErrorMessage | FileContextMessage;

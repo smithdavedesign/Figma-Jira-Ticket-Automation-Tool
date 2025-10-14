@@ -1,9 +1,9 @@
 {
   "name": "AI Ticket Generator",
-  "id": "figma-ai-ticket-generator-2024",
+  "id": "ai-ticket-generator",
   "api": "1.0.0",
   "main": "code.js",
-  "ui": "dist/ui/index.html",
+  "ui": "src/ui/index.html",
   "editorType": ["figma", "figjam"],
   "documentAccess": "dynamic-page",
   "networkAccess": {
