@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 
 /**
- * Figma AI Ticket Generator - Standalone Server
+ * Figma AI Ticket Generator - Enhanced MCP Server with Figma Integration
  * 
- * Strategic design-to-code automation server for testing.
+ * Strategic design-to-code automation server with direct Figma MCP integration.
  * This server provides project-level intelligence and workflow automation capabilities
- * that complement Figma's tactical approach for individual frame processing.
+ * that complement and orchestrate with Figma's tactical MCP server.
  */
 
 import { createServer } from 'http';
+import { FigmaWorkflowOrchestrator } from './figma/figma-mcp-client.js';
 
 /**
  * Tool implementations for demonstration
@@ -76,16 +77,24 @@ class ProjectAnalyzer {
 }
 
 class TicketGenerator {
+  private figmaOrchestrator: FigmaWorkflowOrchestrator;
+
+  constructor() {
+    this.figmaOrchestrator = new FigmaWorkflowOrchestrator();
+  }
+
   async generate(args: any): Promise<ToolResult> {
     const { 
       frameData = [], 
       template = 'component', 
       projectName = 'Design Implementation',
       figmaContext = {},
-      instructions = ''
+      instructions = '',
+      enableFigmaMCP = true
     } = args;
 
     console.log('🎫 Generating enhanced tickets for:', frameData.length, 'frames');
+    console.log('🤝 Figma MCP integration:', enableFigmaMCP ? 'enabled' : 'disabled');
     
     if (!frameData || frameData.length === 0) {
       return {
@@ -98,7 +107,31 @@ class TicketGenerator {
       };
     }
 
-    const tickets = frameData.map((frame: any) => this.generateDetailedTicket(frame, template, figmaContext, instructions));
+    // Enhanced ticket generation with optional Figma MCP integration
+    const tickets = await Promise.all(
+      frameData.map(async (frame: any) => {
+        if (enableFigmaMCP && figmaContext.figmaUrl) {
+          try {
+            // Use enhanced workflow with Figma MCP integration
+            const enhancedTicket = await this.figmaOrchestrator.generateEnhancedTicket(
+              figmaContext.figmaUrl,
+              template,
+              instructions
+            );
+            
+            return this.convertToTicketFormat(enhancedTicket, frame, figmaContext);
+          } catch (error) {
+            console.warn('⚠️ Figma MCP integration failed, using strategic-only generation:', error);
+            // Fallback to strategic-only generation
+            return this.generateDetailedTicket(frame, template, figmaContext, instructions);
+          }
+        } else {
+          // Strategic-only generation (existing behavior)
+          return this.generateDetailedTicket(frame, template, figmaContext, instructions);
+        }
+      })
+    );
+
     const combinedTicket = this.combineTickets(tickets, projectName, figmaContext);
 
     return {
@@ -109,6 +142,91 @@ class TicketGenerator {
         },
       ],
     };
+  }
+
+  /**
+   * Convert enhanced ticket from Figma MCP integration to our format
+   */
+  private convertToTicketFormat(enhancedTicket: any, frame: any, figmaContext: any): any {
+    const name = frame.name || enhancedTicket.title || 'Enhanced Component';
+    const frameUrl = figmaContext.frameUrls?.find((url: string) => url.includes(frame.id)) || figmaContext.figmaUrl;
+    
+    return {
+      title: enhancedTicket.title || `Enhanced: ${name}`,
+      priority: this.calculatePriority(frame),
+      storyPoints: this.estimateStoryPoints(frame),
+      figmaLink: frameUrl,
+      description: this.generateEnhancedDescription(enhancedTicket, frame, figmaContext),
+      acceptanceCriteria: enhancedTicket.acceptanceCriteria || [
+        '✅ Implementation matches Figma design exactly',
+        '🎨 Uses design system tokens from Figma variables',
+        '📱 Responsive design works across breakpoints',
+        '♿ Meets accessibility standards (WCAG 2.1 AA)',
+      ],
+      technicalNotes: this.generateMCPTechnicalNotes(enhancedTicket),
+      designSystemNotes: this.generateDesignSystemNotes(frame),
+      subtasks: this.generateSubtasks(frame, enhancedTicket.template || 'component'),
+    };
+  }
+
+  /**
+   * Generate enhanced description combining strategic analysis with Figma MCP tactical details
+   */
+  private generateEnhancedDescription(enhancedTicket: any, frame: any, _figmaContext: any): string {
+    let description = `## 🎯 Enhanced Implementation with Figma MCP Integration\n\n`;
+    
+    description += `**Component**: ${frame.name || 'Unnamed Component'}\n`;
+    
+    if (enhancedTicket.strategicAnalysis) {
+      description += `**Strategic Analysis**: ${enhancedTicket.strategicAnalysis}\n`;
+    }
+    
+    if (enhancedTicket.tacticalImplementation?.code) {
+      description += `\n## 🔧 Tactical Implementation (via Figma MCP)\n\n`;
+      description += `\`\`\`tsx\n${enhancedTicket.tacticalImplementation.code.substring(0, 500)}...\n\`\`\`\n\n`;
+    }
+    
+    if (enhancedTicket.tacticalImplementation?.variables) {
+      description += `## 🎨 Design Variables\n${enhancedTicket.tacticalImplementation.variables}\n\n`;
+    }
+    
+    description += `## 📋 Implementation Guidelines\n`;
+    description += `This component has been analyzed using both strategic project-level insights and tactical Figma MCP integration for comprehensive implementation guidance.\n\n`;
+    
+    if (enhancedTicket.fallbackMode) {
+      description += `⚠️ **Note**: Generated in strategic-only mode due to Figma MCP unavailability.\n\n`;
+    }
+    
+    return description;
+  }
+
+  /**
+   * Generate enhanced technical notes with Figma MCP insights
+   */
+  private generateMCPTechnicalNotes(enhancedTicket: any): string {
+    let notes = `## 🔧 Enhanced Technical Implementation\n\n`;
+    
+    if (enhancedTicket.tacticalImplementation?.code) {
+      notes += `### Code Generation via Figma MCP\n`;
+      notes += `- React + Tailwind implementation provided\n`;
+      notes += `- Component structure optimized for design system integration\n`;
+      notes += `- Responsive design patterns included\n\n`;
+    }
+    
+    if (enhancedTicket.tacticalImplementation?.variables) {
+      notes += `### Design System Integration\n`;
+      notes += `- Design tokens extracted from Figma\n`;
+      notes += `- Variable mappings provided for consistency\n`;
+      notes += `- Color and typography tokens included\n\n`;
+    }
+    
+    notes += `### Strategic Implementation Guidelines\n`;
+    notes += `- Follow project conventions and patterns\n`;
+    notes += `- Ensure accessibility compliance (WCAG 2.1 AA)\n`;
+    notes += `- Implement responsive design across all breakpoints\n`;
+    notes += `- Use design system components where possible\n\n`;
+    
+    return notes;
   }
 
   private calculatePriority(frame: any): string {
