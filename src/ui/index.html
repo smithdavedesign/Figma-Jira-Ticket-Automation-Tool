@@ -598,6 +598,44 @@ input[type="password"] {
   margin-left: 8px;
 }
 
+/* Completion state styles */
+.progress-complete {
+  border: 1px solid var(--figma-color-border-success);
+  border-radius: 6px;
+  background: var(--figma-color-bg-success-secondary);
+  padding: 8px;
+  margin-top: 4px;
+}
+
+.progress-error {
+  border: 1px solid var(--figma-color-border-danger);
+  border-radius: 6px;
+  background: var(--figma-color-bg-danger-secondary);
+  padding: 8px;
+  margin-top: 4px;
+}
+
+.completion-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--figma-color-border);
+}
+
+.progress-complete .completion-indicator {
+  color: var(--figma-color-text-success);
+  border-top-color: var(--figma-color-border-success);
+}
+
+.progress-error .completion-indicator {
+  color: var(--figma-color-text-danger);
+  border-top-color: var(--figma-color-border-danger);
+}
+
 /* Detailed progress info */
 .progress-details {
   margin-top: 6px;
@@ -1591,12 +1629,33 @@ input[type="password"] {
         
         this.updateDisplay();
         
-        // Auto-remove after delay
-        setTimeout(() => {
-          if (this.progressElement) {
-            this.progressElement.remove();
+        // Keep progress visible - don't auto-remove
+        // Add a subtle visual indicator that the process is complete
+        if (this.progressElement) {
+          this.progressElement.classList.add(success ? 'progress-complete' : 'progress-error');
+          
+          // Optional: Add a small "completed" or "error" indicator
+          const completionIndicator = document.createElement('div');
+          completionIndicator.className = 'completion-indicator';
+          completionIndicator.innerHTML = success ? 
+            '✅ <span>Process completed successfully</span>' : 
+            '❌ <span>Process completed with errors</span>';
+          
+          // Add a small dismiss button
+          const dismissButton = document.createElement('button');
+          dismissButton.innerHTML = '×';
+          dismissButton.className = 'dismiss-button';
+          dismissButton.style.cssText = 'margin-left: auto; background: none; border: none; color: currentColor; cursor: pointer; font-size: 14px; padding: 2px 4px;';
+          dismissButton.title = 'Clear progress indicator';
+          dismissButton.onclick = () => this.clear();
+          
+          completionIndicator.appendChild(dismissButton);
+          
+          // Only add if not already present
+          if (!this.progressElement.querySelector('.completion-indicator')) {
+            this.progressElement.appendChild(completionIndicator);
           }
-        }, success ? 3000 : 5000);
+        }
       }
       
       setDetails(visible) {
@@ -1609,6 +1668,17 @@ input[type="password"] {
             detailsEl.classList.remove('visible');
           }
         }
+      }
+      
+      clear() {
+        if (this.progressElement) {
+          this.progressElement.remove();
+          this.progressElement = null;
+        }
+        // Reset tracker state
+        this.currentStep = 0;
+        this.steps = [];
+        this.startTime = null;
       }
     }
     
@@ -2382,12 +2452,13 @@ ${f.bold('Notes:')}
           throw new ValidationError(ERROR_MESSAGES.EMPTY_RESPONSE);
         }
         
-        progressTracker.completeStep(3, `Generated ${Math.round(ticket.length/1000)}k character response`);
+        const ticketContent = data.choices[0].message.content;
+        progressTracker.completeStep(3, `Generated ${Math.round(ticketContent.length/1000)}k character response`);
         
         // Step 3: Format and finalize
         progressTracker.updateProgress(4, 'active', 'Applying Jira formatting and metadata');
         
-        const enhancedTicket = addJiraMetadata(ticket);
+        const enhancedTicket = addJiraMetadata(ticketContent);
         
         await new Promise(resolve => setTimeout(resolve, 200)); // Brief pause for UX
         progressTracker.completeStep(4, 'Applied formatting and Figma links');
@@ -2469,12 +2540,32 @@ ${f.bold('Notes:')}
       
       // Generate Figma file link from frame data
       let figmaFileUrl = '';
-      if (frameDataList.length > 0 && frameDataList[0].fileKey) {
-        figmaFileUrl = `https://www.figma.com/design/${frameDataList[0].fileKey}`;
-        if (frameDataList[0].id) {
-          figmaFileUrl += `?node-id=${encodeURIComponent(frameDataList[0].id.replace(':', '-'))}`;
+      if (frameDataList.length > 0) {
+        const frame = frameDataList[0];
+        const hasValidFileKey = frame.fileKey && 
+                               frame.fileKey !== 'FIGMA_FILE_KEY_UNAVAILABLE' && 
+                               frame.fileKey !== 'file-key-unavailable' &&
+                               frame.fileKey !== '0:0';
+        
+        if (hasValidFileKey) {
+          const fileName = frame.fileName || 'Design File';
+          figmaFileUrl = `https://www.figma.com/design/${frame.fileKey}`;
+          if (frame.id) {
+            figmaFileUrl += `?node-id=${encodeURIComponent(frame.id.replace(':', '-'))}`;
+          }
+          prompt += `\n**Figma File:** [${fileName}](${figmaFileUrl})\n`;
+        } else {
+          const fileName = frame.fileName || 'Design File';
+          const nodeId = frame.id ? frame.id.replace(':', '-') : '';
+          prompt += `\n**Figma File:** ${fileName}\n`;
+          if (nodeId) {
+            prompt += `**Figma Link:** \`https://www.figma.com/design/[YOUR_FILE_KEY]?node-id=${encodeURIComponent(nodeId)}\`\n`;
+            prompt += `**Instructions:** Replace \`[YOUR_FILE_KEY]\` with your actual Figma file key from the URL.\n`;
+            prompt += `**How to find file key:** Copy your Figma file URL - it looks like \`figma.com/design/ABC123XYZ/...\` where \`ABC123XYZ\` is your file key.\n`;
+          } else {
+            prompt += `**Instructions:** Please manually share the Figma file link for reference.\n`;
+          }
         }
-        prompt += `\n**Figma File Link:** ${figmaFileUrl}\n`;
       }
       
       frameDataList.forEach((frame, index) => {
@@ -2485,9 +2576,20 @@ ${f.bold('Notes:')}
         prompt += `- Elements: ${frame.nodeCount} child elements\n`;
         
         // Add individual frame link
-        if (frame.fileKey && frame.id) {
+        const hasValidFileKey = frame.fileKey && 
+                               frame.fileKey !== 'FIGMA_FILE_KEY_UNAVAILABLE' && 
+                               frame.fileKey !== 'file-key-unavailable' &&
+                               frame.fileKey !== '0:0';
+        
+        if (hasValidFileKey && frame.id) {
           const frameUrl = `https://www.figma.com/design/${frame.fileKey}?node-id=${encodeURIComponent(frame.id.replace(':', '-'))}`;
-          prompt += `- Direct Link: ${frameUrl}\n`;
+          prompt += `- Direct Link: [${frame.name}](${frameUrl})\n`;
+        } else if (frame.id) {
+          const nodeId = frame.id.replace(':', '-');
+          prompt += `- Direct Link: \`https://www.figma.com/design/[YOUR_FILE_KEY]?node-id=${encodeURIComponent(nodeId)}\`\n`;
+          prompt += `  (Replace \`[YOUR_FILE_KEY]\` with your Figma file key)\n`;
+        } else {
+          prompt += `- Direct Link: Please share frame link manually\n`;
         }
         
         if (frame.textContent.length > 0) {

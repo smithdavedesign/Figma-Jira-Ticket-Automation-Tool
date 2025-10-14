@@ -30,6 +30,7 @@ interface FrameData {
   colors: string[];
   hasPrototype: boolean;
   fileKey?: string;
+  fileName?: string;
   designSystemContext?: any;
 }
 
@@ -263,7 +264,76 @@ class FigmaAPI {
   }
 
   static get fileKey(): string {
-    return figma.fileKey || '';
+    // Try multiple ways to get the file key
+    try {
+      // Primary method - direct fileKey access
+      if (figma.fileKey && figma.fileKey !== '0:0') {
+        console.log('✅ File key found via figma.fileKey:', figma.fileKey);
+        return figma.fileKey;
+      }
+      
+      // Try accessing through different properties
+      const figmaAny = figma as any;
+      
+      // Check if there's a file property with key
+      if (figmaAny.file && figmaAny.file.key) {
+        console.log('✅ File key found via figma.file.key:', figmaAny.file.key);
+        return figmaAny.file.key;
+      }
+      
+      // Check if there's a fileId property
+      if (figmaAny.fileId && figmaAny.fileId !== '0:0') {
+        console.log('✅ File key found via figma.fileId:', figmaAny.fileId);
+        return figmaAny.fileId;
+      }
+      
+      // Try to get from window/global context
+      if (typeof window !== 'undefined') {
+        const windowAny = window as any;
+        if (windowAny.figma && windowAny.figma.fileKey && windowAny.figma.fileKey !== '0:0') {
+          console.log('✅ File key found via window.figma.fileKey:', windowAny.figma.fileKey);
+          return windowAny.figma.fileKey;
+        }
+      }
+      
+      // Debug: Log all available properties
+      console.log('🔍 Available figma properties:', Object.getOwnPropertyNames(figma));
+      console.log('🔍 Available figma values:', {
+        fileKey: figma.fileKey,
+        rootId: figma.root?.id,
+        rootName: figma.root?.name,
+        currentPageId: figma.currentPage?.id,
+        currentPageParent: figma.currentPage?.parent?.id
+      });
+      
+      console.error('❌ Could not retrieve valid file key from any source');
+      
+    } catch (error) {
+      console.error('❌ Error getting file key:', error);
+    }
+    
+    // Return a clear indicator that file key is unavailable
+    console.warn('⚠️ File key unavailable - Figma links will not work');
+    return 'FIGMA_FILE_KEY_UNAVAILABLE';
+  }
+
+  static get fileName(): string {
+    try {
+      // Try to get the file name from the root document
+      if (figma.root && figma.root.name) {
+        return figma.root.name;
+      }
+      
+      // Try other methods
+      if ((figma as any).fileName) {
+        return (figma as any).fileName;
+      }
+      
+      return 'Untitled';
+    } catch (error) {
+      console.error('❌ Error getting file name:', error);
+      return 'Untitled';
+    }
   }
 
   static get root(): DocumentNode {
@@ -523,9 +593,24 @@ async function extractFrameData(node: FrameNode | ComponentNode | InstanceNode):
       // Check text length limits
       tracker.addText(characters);
       
+      // Safely serialize font information
+      let fontInfo = 'Default';
+      try {
+        if (textNode.fontName && typeof textNode.fontName === 'object') {
+          if ('family' in textNode.fontName && 'style' in textNode.fontName) {
+            fontInfo = `${textNode.fontName.family} ${textNode.fontName.style}`;
+          } else {
+            fontInfo = 'Mixed Fonts';
+          }
+        }
+      } catch (error) {
+        console.warn('Error reading font info:', error);
+        fontInfo = 'Unknown Font';
+      }
+      
       textContent.push({
         content: characters,
-        style: textNode.fontName
+        style: fontInfo // Use serializable string instead of Figma object
       });
     }
 
@@ -607,18 +692,20 @@ async function extractFrameData(node: FrameNode | ComponentNode | InstanceNode):
     // Count total nodes for the return data
     const nodeCount = stats.nodeCount;
 
-    return {
+    // Create a clean, serializable return object
+    const frameData = {
       id: node.id,
       name: node.name,
       type: node.type,
       pageName: figma.currentPage.name,
-      dimensions: { width: node.width, height: node.height },
+      dimensions: { width: Math.round(node.width), height: Math.round(node.height) },
       nodeCount: nodeCount,
       textContent: textContent,
       components: components,
       colors: colors,
       hasPrototype: false, // TODO: Implement prototype detection
-      fileKey: figma.fileKey || 'unknown',
+      fileKey: FigmaAPI.fileKey,
+      fileName: FigmaAPI.fileName,
       designSystemContext: {
         processingStats: stats,
         limitsApplied: {
@@ -629,24 +716,58 @@ async function extractFrameData(node: FrameNode | ComponentNode | InstanceNode):
         }
       }
     };
-  } catch (error) {
-    if (error instanceof ProcessingLimitError) {
-      const stats = tracker.getStats();
-      console.warn(`⚠️ Processing limit reached for frame ${node.name}:`, error.message, stats);
-      
-      // Return partial data with limit information
+
+    // Ensure the object is serializable by converting to JSON and back
+    try {
+      const serializedData = JSON.parse(JSON.stringify(frameData));
+      return serializedData;
+    } catch (serializationError) {
+      console.error('❌ Serialization error:', serializationError);
+      // Return a minimal safe object
       return {
         id: node.id,
         name: node.name,
         type: node.type,
         pageName: figma.currentPage.name,
-        dimensions: { width: node.width, height: node.height },
+        dimensions: { width: Math.round(node.width), height: Math.round(node.height) },
+        nodeCount: nodeCount,
+        textContent: [],
+        components: [],
+        colors: [],
+        hasPrototype: false,
+        fileKey: FigmaAPI.fileKey,
+        fileName: FigmaAPI.fileName,
+        designSystemContext: {
+          processingStats: stats,
+          limitsApplied: {
+            maxDepthReached: false,
+            textTruncated: false,
+            componentsTruncated: false,
+            colorsTruncated: false
+          },
+          serializationError: 'Serialization error - returned minimal data'
+        }
+      };
+    }
+  } catch (error) {
+    if (error instanceof ProcessingLimitError) {
+      const stats = tracker.getStats();
+      console.warn(`⚠️ Processing limit reached for frame ${node.name}:`, error.message, stats);
+      
+      // Return partial data with limit information - ensure serializable
+      const partialData = {
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        pageName: figma.currentPage.name,
+        dimensions: { width: Math.round(node.width), height: Math.round(node.height) },
         nodeCount: stats.nodeCount,
         textContent: textContent,
         components: components,
         colors: colors,
         hasPrototype: false,
-        fileKey: figma.fileKey || 'unknown',
+        fileKey: FigmaAPI.fileKey,
+        fileName: FigmaAPI.fileName,
         designSystemContext: {
           processingStats: stats,
           limitReached: {
@@ -661,6 +782,40 @@ async function extractFrameData(node: FrameNode | ComponentNode | InstanceNode):
           }
         }
       };
+      
+      // Ensure serializable before returning
+      try {
+        return JSON.parse(JSON.stringify(partialData));
+      } catch (serializationError) {
+        console.error('❌ Serialization error in limit case:', serializationError);
+        return {
+          id: node.id,
+          name: node.name,
+          type: node.type,
+          pageName: figma.currentPage.name,
+          dimensions: { width: Math.round(node.width), height: Math.round(node.height) },
+          nodeCount: stats.nodeCount,
+          textContent: [],
+          components: [],
+          colors: [],
+          hasPrototype: false,
+          fileKey: FigmaAPI.fileKey,
+          fileName: FigmaAPI.fileName,
+          designSystemContext: {
+            processingStats: stats,
+            limitReached: {
+              type: error.limitType,
+              message: error.message
+            },
+            limitsApplied: {
+              maxDepthReached: true,
+              textTruncated: false,
+              componentsTruncated: false,
+              colorsTruncated: false
+            }
+          }
+        };
+      }
     }
     throw error; // Re-throw non-limit errors
   }
