@@ -4,1062 +4,821 @@
   <meta charset="utf-8">
   <title>AI Ticket Generator</title>
   <style>
-/**
- * Main CSS Styles for Figma AI Ticket Generator
- */
-
-* {
-  box-sizing: border-box;
-}
-
-/* Main Layout - 50/50 Split */
-.main-container {
-  display: flex;
-  gap: 24px;
-  min-height: calc(100vh - 100px); /* Adjusted for tab header */
-}
-
-.panel {
-  flex: 1;
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--figma-color-border);
-}
-
-.panel-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--figma-color-text);
-  margin: 0;
-}
-
-.panel-subtitle {
-  font-size: 11px;
-  color: var(--figma-color-text-secondary);
-  margin: 4px 0 0 0;
-}
-
-/* Health Metrics Panel Styles */
-.health-panel {
-  background: var(--figma-color-bg);
-  border-right: 1px solid var(--figma-color-border);
-  padding-right: 20px;
-}
-
-.metric-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-@media (max-width: 600px) {
-  .metric-grid {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-}
-
-.metric-card {
-  background: var(--figma-color-bg-secondary);
-  border: 1px solid var(--figma-color-border);
-  border-radius: 6px;
-  padding: 16px;
-  text-align: center;
-}
-
-.metric-value {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.metric-value.excellent { color: #0d9f3c; }
-.metric-value.good { color: #f4a113; }
-.metric-value.needs-attention { color: #e34f47; }
-
-.metric-label {
-  font-size: 11px;
-  color: var(--figma-color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.detailed-metrics {
-  margin-bottom: 20px;
-}
-
-.section-title {
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: var(--figma-color-text);
-}
-
-.metric-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--figma-color-border-subtle);
-}
-
-.metric-name {
-  font-size: 11px;
-  color: var(--figma-color-text-secondary);
-}
-
-.metric-score {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
-.metric-score.high {
-  background: var(--figma-color-bg-success-tertiary);
-  color: var(--figma-color-text-success);
-}
-
-.metric-score.medium {
-  background: var(--figma-color-bg-warning-tertiary);
-  color: var(--figma-color-text-warning);
-}
-
-.metric-score.low {
-  background: var(--figma-color-bg-danger-tertiary);
-  color: var(--figma-color-text-danger);
-}
-
-/* Ticket Panel Styles */
-.ticket-panel {
-  background: var(--figma-color-bg);
-  padding-left: 20px;
-}
-
-/* Compliance Analysis Styles */
-.analysis-summary {
-  margin-bottom: 12px;
-  padding: 8px;
-  background: var(--figma-color-bg-secondary);
-  border-radius: 4px;
-}
-
-.summary-stat {
-  display: flex;
-  justify-content: space-between;
-}
-
-.stat-label {
-  color: var(--figma-color-text-secondary);
-  font-size: 11px;
-}
-
-.stat-value {
-  font-weight: 600;
-  color: var(--figma-color-text);
-}
-
-.breakdown-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.breakdown-item {
-  padding: 8px;
-  background: var(--figma-color-bg-secondary);
-  border-radius: 4px;
-  text-align: center;
-}
-
-.breakdown-label {
-  font-size: 10px;
-  color: var(--figma-color-text-secondary);
-  margin-bottom: 4px;
-}
-
-.breakdown-score {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.breakdown-score.excellent {
-  color: var(--figma-color-text-success);
-}
-
-.breakdown-score.good {
-  color: var(--figma-color-text-success);
-}
-
-.breakdown-score.medium {
-  color: var(--figma-color-text-warning);
-}
-
-.breakdown-score.needs-attention {
-  color: var(--figma-color-text-warning);
-}
-
-.breakdown-score.poor {
-  color: var(--figma-color-text-danger);
-}
-
-.breakdown-details {
-  font-size: 10px;
-  color: var(--figma-color-text-tertiary);
-}
-
-/* Recommendation Styles */
-.recommendation-item {
-  padding: 8px;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  border-left: 3px solid;
-}
-
-.recommendation-item.high {
-  background: var(--figma-color-bg-danger-tertiary);
-  border-color: var(--figma-color-border-danger);
-}
-
-.recommendation-item.medium {
-  background: var(--figma-color-bg-warning-tertiary);
-  border-color: var(--figma-color-border-warning);
-}
-
-.recommendation-item.low {
-  background: var(--figma-color-bg-secondary);
-  border-color: var(--figma-color-border);
-}
-
-.rec-priority {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--figma-color-text-secondary);
-  margin-bottom: 2px;
-}
-
-.rec-category {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--figma-color-text);
-  margin-bottom: 4px;
-}
-
-.rec-description {
-  font-size: 10px;
-  color: var(--figma-color-text-secondary);
-  margin-bottom: 4px;
-}
-
-.rec-action {
-  font-size: 10px;
-  color: var(--figma-color-text);
-  font-style: italic;
-}
-
-.placeholder-text.error {
-  color: var(--figma-color-text-danger);
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  margin: 0;
-  padding: 20px;
-  background-color: var(--figma-color-bg);
-  color: var(--figma-color-text);
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.header {
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-  color: var(--figma-color-text);
-}
-
-.subtitle {
-  font-size: 11px;
-  color: var(--figma-color-text-secondary);
-  margin: 0;
-}
-
-.config-section {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: var(--figma-color-bg-secondary);
-  border-radius: 6px;
-}
-
-.config-title {
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--figma-color-text);
-}
-
-.form-group {
-  margin-bottom: 12px;
-}
-
-.form-group:last-child {
-  margin-bottom: 0;
-}
-
-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 500;
-  margin-bottom: 4px;
-  color: var(--figma-color-text);
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 6px 8px;
-  border: 1px solid var(--figma-color-border);
-  border-radius: 4px;
-  font-size: 11px;
-  background: var(--figma-color-bg);
-  color: var(--figma-color-text);
-  resize: vertical;
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--figma-color-border-selected);
-  box-shadow: 0 0 0 1px var(--figma-color-border-selected);
-}
-
-input[type="password"] {
-  font-family: monospace;
-}
-
-.button {
-  width: 100%;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  background: var(--figma-color-bg-brand);
-  color: var(--figma-color-text-onbrand);
-  transition: background-color 0.2s ease;
-}
-
-.button:hover:not(:disabled) {
-  background: var(--figma-color-bg-brand-hover);
-}
-
-.button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.button.button-secondary {
-  background: var(--figma-color-bg);
-  color: var(--figma-color-text);
-  border: 1px solid var(--figma-color-border);
-}
-
-.button.button-secondary:hover:not(:disabled) {
-  background: var(--figma-color-bg-hover);
-}
-
-.output-section {
-  margin-top: 16px;
-}
-
-.output-section textarea {
-  min-height: 200px;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-.status {
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 11px;
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.status.loading {
-  background: var(--figma-color-bg-secondary);
-  color: var(--figma-color-text-secondary);
-}
-
-.status.success {
-  background: var(--figma-color-bg-success);
-  color: var(--figma-color-text-onsuccess);
-}
-
-.status.error {
-  background: var(--figma-color-bg-danger);
-  color: var(--figma-color-text-ondanger);
-}
-
-.hidden {
-  display: none !important;
-}
-
-.template-select {
-  border-bottom: 1px solid var(--figma-color-border);
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-}
-
-/* Template Preview */
-.template-preview {
-  background: var(--figma-color-bg-secondary);
-  border: 1px solid var(--figma-color-border);
-  border-radius: 6px;
-  padding: 12px;
-  margin-top: 16px;
-}
-
-.preview-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--figma-color-text);
-  margin-bottom: 8px;
-}
-
-.preview-content {
-  font-size: 10px;
-  color: var(--figma-color-text-secondary);
-  line-height: 1.4;
-  white-space: pre-line;
-}
-
-.preview-content.loaded {
-  color: var(--figma-color-text);
-}
-
-/* Priority and story points styling */
-#priority option {
-  padding: 4px;
-}
-
-#storyPoints {
-  color: var(--figma-color-text);
-}
-
-#labels {
-  font-family: monospace;
-  font-size: 11px;
-}
-
-/* Format help text */
-.format-help {
-  font-size: 10px;
-  color: var(--figma-color-text-secondary);
-  margin-top: 4px;
-  padding: 4px 8px;
-  background: var(--figma-color-bg-secondary);
-  border-radius: 4px;
-  border-left: 3px solid var(--figma-color-border);
-}
-
-/* Status messages */
-.status-message {
-  padding: 8px 12px;
-  border-radius: 4px;
-  margin-bottom: 12px;
-  font-size: 11px;
-  font-weight: 500;
-  display: none;
-}
-
-.status-message.loading {
-  background: var(--figma-color-bg-secondary);
-  color: var(--figma-color-text);
-  border: 1px solid var(--figma-color-border);
-  display: block;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Enhanced Progress Indicators */
-.progress-container {
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 4px;
-  background: var(--figma-color-bg-tertiary);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--figma-color-bg-brand);
-  border-radius: 2px;
-  transition: width 0.3s ease;
-  width: 0%;
-}
-
-.progress-steps {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 6px;
-  font-size: 11px;
-  color: var(--figma-color-text-secondary);
-}
-
-.progress-step {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-}
-
-.progress-step.active {
-  color: var(--figma-color-text-brand);
-  font-weight: 500;
-}
-
-.progress-step.completed {
-  color: var(--figma-color-text-success);
-}
-
-.progress-step.error {
-  color: var(--figma-color-text-danger);
-}
-
-.step-indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid currentColor;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8px;
-}
-
-.step-indicator.completed {
-  background: currentColor;
-  color: white;
-}
-
-.step-indicator.active {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* Loading spinner for active operations */
-.loading-spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--figma-color-border);
-  border-top: 2px solid var(--figma-color-bg-brand);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  display: inline-block;
-  margin-right: 6px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Time indicator */
-.time-indicator {
-  font-size: 10px;
-  color: var(--figma-color-text-tertiary);
-  margin-left: 8px;
-}
-
-/* Completion state styles */
-.progress-complete {
-  border: 1px solid var(--figma-color-border-success);
-  border-radius: 6px;
-  background: var(--figma-color-bg-success-secondary);
-  padding: 8px;
-  margin-top: 4px;
-}
-
-.progress-error {
-  border: 1px solid var(--figma-color-border-danger);
-  border-radius: 6px;
-  background: var(--figma-color-bg-danger-secondary);
-  padding: 8px;
-  margin-top: 4px;
-}
-
-.completion-indicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 500;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--figma-color-border);
-}
-
-.progress-complete .completion-indicator {
-  color: var(--figma-color-text-success);
-  border-top-color: var(--figma-color-border-success);
-}
-
-.progress-error .completion-indicator {
-  color: var(--figma-color-text-danger);
-  border-top-color: var(--figma-color-border-danger);
-}
-
-/* Detailed progress info */
-.progress-details {
-  margin-top: 6px;
-  padding: 6px 8px;
-  background: var(--figma-color-bg-tertiary);
-  border-radius: 3px;
-  font-size: 11px;
-  color: var(--figma-color-text-secondary);
-  display: none;
-}
-
-.progress-details.visible {
-  display: block;
-}
-
-.status-message.success {
-  background: #e7f5e7;
-  color: #2d5a2d;
-  border: 1px solid #5cb85c;
-  display: block;
-}
-
-.status-message.error {
-  background: #f8e7e7;
-  color: #722d2d;
-  border: 1px solid #d9534f;
-  display: block;
-}
-
-.status-message.warning {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
-  display: block;
-}
-
-/* Retry button for error scenarios */
-.retry-button {
-  background: var(--figma-color-bg-brand);
-  color: var(--figma-color-text-onbrand);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.retry-button:hover {
-  background: var(--figma-color-bg-brand-hover);
-}
-
-.retry-button:active {
-  background: var(--figma-color-bg-brand-pressed);
-}
-
-/* Frame info display */
-.frame-info {
-  background: var(--figma-color-bg-secondary);
-  border-radius: 4px;
-  padding: 8px;
-  margin-bottom: 12px;
-  font-size: 10px;
-}
-
-.frame-item {
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--figma-color-border);
-}
-
-.frame-item:last-child {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-}
-
-.frame-name {
-  font-weight: 600;
-  color: var(--figma-color-text);
-  margin-bottom: 4px;
-}
-
-.frame-details {
-  color: var(--figma-color-text-secondary);
-  line-height: 1.3;
-}
-
-/* Design System Styles */
-.design-system-detected {
-  background: linear-gradient(135deg, var(--figma-color-bg-success-tertiary), var(--figma-color-bg-brand-tertiary));
-  border: 1px solid var(--figma-color-border-success);
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 12px;
-}
-
-.ds-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.ds-name {
-  font-weight: 600;
-  color: var(--figma-color-text);
-  font-size: 13px;
-}
-
-.ds-confidence {
-  background: var(--figma-color-bg-success);
-  color: var(--figma-color-text-onbrand);
-  padding: 2px 6px;
-  border-radius: 12px;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.ds-stats {
-  display: flex;
-  gap: 12px;
-}
-
-.ds-stat {
-  color: var(--figma-color-text-secondary);
-  font-size: 11px;
-}
-
-.compliance-info {
-  background: var(--figma-color-bg-tertiary);
-  border: 1px solid var(--figma-color-border);
-  border-radius: 6px;
-  padding: 12px;
-  margin-top: 8px;
-}
-
-.compliance-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.compliance-title {
-  font-weight: 600;
-  font-size: 12px;
-}
-
-.compliance-score {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  color: white;
-}
-
-.compliance-breakdown {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.compliance-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px;
-  background: var(--figma-color-bg);
-  border-radius: 4px;
-  border: 1px solid var(--figma-color-border);
-}
-
-.item-label {
-  font-size: 10px;
-  color: var(--figma-color-text-secondary);
-  margin-bottom: 2px;
-}
-
-.item-score {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 8px;
-  color: white;
-}
-
-.recommendations {
-  border-top: 1px solid var(--figma-color-border);
-  padding-top: 12px;
-}
-
-.rec-title {
-  font-weight: 600;
-  font-size: 11px;
-  margin-bottom: 8px;
-  color: var(--figma-color-text);
-}
-
-.rec-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.rec-item {
-  padding: 8px;
-  border-radius: 4px;
-  border-left: 3px solid;
-}
-
-.rec-item.high {
-  background: var(--figma-color-bg-danger-tertiary);
-  border-left-color: var(--figma-color-bg-danger);
-}
-
-.rec-item.medium {
-  background: var(--figma-color-bg-warning-tertiary);
-  border-left-color: var(--figma-color-bg-warning);
-}
-
-.rec-item.low {
-  background: var(--figma-color-bg-success-tertiary);
-  border-left-color: var(--figma-color-bg-success);
-}
-
-.rec-message {
-  font-size: 11px;
-  font-weight: 500;
-  margin-bottom: 2px;
-  color: var(--figma-color-text);
-}
-
-.rec-suggestion {
-  font-size: 10px;
-  color: var(--figma-color-text-secondary);
-}
-
-/* Tab System Styles */
-.tab-container {
-  width: 100%;
-}
-
-.tab-header {
-  display: flex;
-  border-bottom: 1px solid var(--figma-color-border);
-  margin-bottom: 20px;
-  background: var(--figma-color-bg-secondary);
-  border-radius: 6px 6px 0 0;
-}
-
-.tab-button {
-  flex: 1;
-  padding: 12px 16px;
-  border: none;
-  background: transparent;
-  color: var(--figma-color-text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.tab-button:first-child {
-  border-radius: 6px 0 0 0;
-}
-
-.tab-button:last-child {
-  border-radius: 0 6px 0 0;
-}
-
-.tab-button:hover {
-  background: var(--figma-color-bg-hover);
-  color: var(--figma-color-text);
-}
-
-.tab-button.active {
-  background: var(--figma-color-bg);
-  color: var(--figma-color-text);
-  border-bottom-color: var(--figma-color-border-brand);
-  font-weight: 600;
-}
-
-.tab-content {
-  display: none;
-  animation: fadeIn 0.3s ease;
-}
-
-.tab-content.active {
-  display: block;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Adjust main container for single tab view */
-.tab-content .panel {
-  width: 100%;
-  margin: 0 auto;
-}
-
-.tab-content .main-container {
-  display: block; /* Stack vertically in tab view */
-  gap: 0;
-}
-
-/* Remove side-by-side layout styles when in tab view */
-.health-panel {
-  border-right: none;
-  padding-right: 0;
-}
-
-.ticket-panel {
-  padding-left: 0;
-}
+    * {
+      box-sizing: border-box;
+    }
+    
+    /* Main Layout - 50/50 Split */
+    .main-container {
+      display: flex;
+      gap: 20px;
+      min-height: calc(100vh - 40px);
+    }
+    
+    .panel {
+      flex: 1;
+      min-width: 0; /* Prevents flex items from overflowing */
+    }
+    
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--figma-color-border);
+    }
+    
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--figma-color-text);
+      margin: 0;
+    }
+    
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      margin: 4px 0 0 0;
+    }
+    
+    /* Health Metrics Panel Styles */
+    .health-panel {
+      background: var(--figma-color-bg);
+      border-right: 1px solid var(--figma-color-border);
+      padding-right: 20px;
+    }
+    
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .metric-card {
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .metric-value.excellent { color: #0d9f3c; }
+    .metric-value.good { color: #f4a113; }
+    .metric-value.needs-attention { color: #e34f47; }
+    
+    .metric-label {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .detailed-metrics {
+      margin-bottom: 20px;
+    }
+    
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--figma-color-text);
+    }
+    
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--figma-color-border-subtle);
+    }
+    
+    .metric-row:last-child {
+      border-bottom: none;
+    }
+    
+    .metric-name {
+      font-size: 11px;
+      color: var(--figma-color-text);
+    }
+    
+    .metric-score {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    
+    .metric-score.high {
+      background: var(--figma-color-bg-success-tertiary);
+      color: var(--figma-color-text-success);
+    }
+    
+    .metric-score.medium {
+      background: var(--figma-color-bg-warning-tertiary);
+      color: var(--figma-color-text-warning);
+    }
+    
+    .metric-score.low {
+      background: var(--figma-color-bg-danger-tertiary);
+      color: var(--figma-color-text-danger);
+    }
+    
+    /* Ticket Panel Styles */
+    .ticket-panel {
+      background: var(--figma-color-bg);
+      padding-left: 20px;
+    }
+    
+    /* Compliance Analysis Styles */
+    .analysis-summary {
+      margin-bottom: 12px;
+      padding: 8px;
+      background: var(--figma-color-bg-secondary);
+      border-radius: 4px;
+    }
+    
+    .summary-stat {
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .stat-label {
+      color: var(--figma-color-text-secondary);
+      font-size: 11px;
+    }
+    
+    .stat-value {
+      font-weight: 600;
+      color: var(--figma-color-text);
+    }
+    
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    
+    .breakdown-item {
+      padding: 8px;
+      background: var(--figma-color-bg-secondary);
+      border-radius: 4px;
+      text-align: center;
+    }
+    
+    .breakdown-label {
+      font-size: 10px;
+      color: var(--figma-color-text-secondary);
+      margin-bottom: 4px;
+    }
+    
+    .breakdown-score {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    
+    .breakdown-score.excellent {
+      color: var(--figma-color-text-success);
+    }
+    
+    .breakdown-score.good {
+      color: var(--figma-color-text-success);
+    }
+    
+    .breakdown-score.medium {
+      color: var(--figma-color-text-warning);
+    }
+    
+    .breakdown-score.needs-attention {
+      color: var(--figma-color-text-warning);
+    }
+    
+    .breakdown-score.poor {
+      color: var(--figma-color-text-danger);
+    }
+    
+    .breakdown-details {
+      font-size: 10px;
+      color: var(--figma-color-text-tertiary);
+    }
+    
+    /* Recommendation Styles */
+    .recommendation-item {
+      padding: 8px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      border-left: 3px solid;
+    }
+    
+    .recommendation-item.high {
+      background: var(--figma-color-bg-danger-tertiary);
+      border-color: var(--figma-color-border-danger);
+    }
+    
+    .recommendation-item.medium {
+      background: var(--figma-color-bg-warning-tertiary);
+      border-color: var(--figma-color-border-warning);
+    }
+    
+    .recommendation-item.low {
+      background: var(--figma-color-bg-secondary);
+      border-color: var(--figma-color-border);
+    }
+    
+    .rec-priority {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--figma-color-text-secondary);
+      margin-bottom: 2px;
+    }
+    
+    .rec-category {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--figma-color-text);
+      margin-bottom: 4px;
+    }
+    
+    .rec-description {
+      font-size: 10px;
+      color: var(--figma-color-text-secondary);
+      margin-bottom: 4px;
+    }
+    
+    .rec-action {
+      font-size: 10px;
+      color: var(--figma-color-text);
+      font-style: italic;
+    }
+    
+    .placeholder-text.error {
+      color: var(--figma-color-text-danger);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      font-size: 12px;
+      line-height: 1.4;
+      min-height: 100vh;
+    }
+    
+    .header {
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--figma-color-text);
+    }
+    
+    .subtitle {
+      color: var(--figma-color-text-secondary);
+      font-size: 11px;
+      margin-bottom: 16px;
+    }
+    
+    .config-section {
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .config-title {
+      font-weight: 600;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    
+    .form-group {
+      margin-bottom: 12px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: 4px;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      font-size: 12px;
+      font-family: inherit;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--figma-color-border-selected);
+      box-shadow: 0 0 0 1px var(--figma-color-border-selected);
+    }
+    
+    .button {
+      background: var(--figma-color-bg-brand);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    
+    .button:hover {
+      background: var(--figma-color-bg-brand-hover);
+    }
+    
+    .button:disabled {
+      background: var(--figma-color-bg-disabled);
+      color: var(--figma-color-text-disabled);
+      cursor: not-allowed;
+    }
+    
+    .button-secondary {
+      background: var(--figma-color-bg-secondary);
+      color: var(--figma-color-text);
+      border: 1px solid var(--figma-color-border);
+    }
+    
+    .button-secondary:hover {
+      background: var(--figma-color-bg-hover);
+    }
+    
+    /* Radio Button Styles */
+    .mode-selection {
+      margin-bottom: 16px;
+    }
+    
+    .radio-group {
+      margin-bottom: 12px;
+    }
+    
+    .radio-group input[type="radio"] {
+      display: none;
+    }
+    
+    .radio-group label {
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--figma-color-bg);
+    }
+    
+    .radio-group input[type="radio"]:checked + label {
+      border-color: var(--figma-color-border-brand);
+      background: var(--figma-color-bg-brand-secondary);
+    }
+    
+    .radio-group label:hover {
+      border-color: var(--figma-color-border-brand);
+    }
+    
+    .radio-label {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--figma-color-text);
+      margin-bottom: 4px;
+    }
+    
+    .radio-description {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      line-height: 1.4;
+    }
+    
+    .mcp-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--figma-color-bg-secondary);
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    
+    .status-indicator {
+      font-size: 14px;
+    }
+    
+    .status-text {
+      color: var(--figma-color-text-secondary);
+    }
+    
+    .output-section {
+      margin-top: 16px;
+    }
+    
+    #output {
+      min-height: 200px;
+      resize: vertical;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    
+    .status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 11px;
+    }
+    
+    .status.error {
+      background: var(--figma-color-bg-danger);
+      color: var(--figma-color-text-onbrand);
+      border: 1px solid var(--figma-color-border-danger);
+    }
+    
+    .status.success {
+      background: var(--figma-color-bg-success);
+      color: var(--figma-color-text-onbrand);
+      border: 1px solid var(--figma-color-border-success);
+    }
+    
+    .status.loading {
+      background: var(--figma-color-bg-secondary);
+      color: var(--figma-color-text);
+      border: 1px solid var(--figma-color-border);
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .frame-info {
+      background: var(--figma-color-bg-secondary);
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      border-left: 3px solid var(--figma-color-bg-brand);
+      font-size: 11px;
+    }
+    
+    .frame-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .frame-details {
+      color: var(--figma-color-text-secondary);
+    }
+    
+    .template-select {
+      margin-bottom: 16px;
+    }
+    
+    /* Design System Styles */
+    .design-system-detected {
+      background: linear-gradient(135deg, var(--figma-color-bg-success-tertiary), var(--figma-color-bg-brand-tertiary));
+      border: 1px solid var(--figma-color-border-success);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .ds-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .ds-name {
+      font-weight: 600;
+      color: var(--figma-color-text);
+      font-size: 13px;
+    }
+    
+    .ds-confidence {
+      background: var(--figma-color-bg-success);
+      color: var(--figma-color-text-onbrand);
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    
+    .ds-stats {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .ds-stat {
+      color: var(--figma-color-text-secondary);
+      font-size: 11px;
+    }
+    
+    .compliance-info {
+      background: var(--figma-color-bg-tertiary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+    
+    .compliance-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .compliance-title {
+      font-weight: 600;
+      font-size: 12px;
+    }
+    
+    .compliance-score {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .compliance-breakdown {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .compliance-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px;
+      background: var(--figma-color-bg);
+      border-radius: 4px;
+      border: 1px solid var(--figma-color-border);
+    }
+    
+    .item-label {
+      font-size: 10px;
+      color: var(--figma-color-text-secondary);
+      margin-bottom: 2px;
+    }
+    
+    .item-score {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 8px;
+      color: white;
+    }
+    
+    .recommendations {
+      border-top: 1px solid var(--figma-color-border);
+      padding-top: 12px;
+    }
+    
+    .rec-title {
+      font-weight: 600;
+      font-size: 11px;
+      margin-bottom: 8px;
+      color: var(--figma-color-text);
+    }
+    
+    .rec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .rec-item {
+      padding: 8px;
+      border-radius: 4px;
+      border-left: 3px solid;
+    }
+    
+    .rec-item.high {
+      background: var(--figma-color-bg-danger-tertiary);
+      border-left-color: var(--figma-color-bg-danger);
+    }
+    
+    .rec-item.medium {
+      background: var(--figma-color-bg-warning-tertiary);
+      border-left-color: var(--figma-color-bg-warning);
+    }
+    
+    .rec-item.low {
+      background: var(--figma-color-bg-success-tertiary);
+      border-left-color: var(--figma-color-bg-success);
+    }
+    
+    .rec-message {
+      font-size: 11px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      color: var(--figma-color-text);
+    }
+    
+    .rec-suggestion {
+      font-size: 10px;
+      color: var(--figma-color-text-secondary);
+    }
+    
+    /* Tab Navigation Styles */
+    .tab-header {
+      background: var(--figma-color-bg);
+      border-bottom: 1px solid var(--figma-color-border);
+      padding: 12px 16px 0;
+    }
+    
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+    }
+    
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px 6px 0 0;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--figma-color-text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      border-bottom: none;
+    }
+    
+    .tab-btn:hover {
+      background: var(--figma-color-bg-hover);
+      color: var(--figma-color-text);
+    }
+    
+    .tab-btn.active {
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      border: 1px solid var(--figma-color-border);
+      border-bottom: 1px solid var(--figma-color-bg);
+      margin-bottom: -1px;
+    }
+    
+    .tab-container {
+      width: 100%;
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 20px;
+      min-height: 400px;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
   </style>
 </head>
-<body>
-  <div class="tab-container">
-    <!-- Tab Header -->
-    <div class="tab-header">
-      <button class="tab-button active" data-tab="health">
-        📊 Design System Health
-      </button>
-      <button class="tab-button" data-tab="ticket">
-        🎫 Ticket Generator
-      </button>
-    </div>
 
-    <!-- Health Metrics Tab Content -->
-    <div id="health-tab" class="tab-content active">
-      <div class="main-container">
-        <div class="panel health-panel">
-          <div class="panel-header">
-            <h2 class="panel-title">📊 Design System Health</h2>
-          </div>
-          <p class="panel-subtitle">Real-time compliance and usage metrics</p>
-          
-          <!-- Overall Health Score -->
-          <div class="metric-grid">
-            <div class="metric-card">
-              <div class="metric-value excellent" id="overallScore">--</div>
-              <div class="metric-label">Overall Score</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-value good" id="complianceRate">--</div>
-              <div class="metric-label">Compliance Rate</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-value good" id="componentUsage">--</div>
-              <div class="metric-label">Component Usage</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-value needs-attention" id="tokenAdoption">--</div>
-              <div class="metric-label">Token Adoption</div>
-            </div>
-          </div>
-          
-          <!-- Detailed Metrics -->
-          <div class="detailed-metrics">
-            <div class="section-title">Component Analysis</div>
-            <div class="metric-row">
-              <span class="metric-name">Standard Components</span>
-              <span class="metric-score high" id="standardComponents">--</span>
-            </div>
-            <div class="metric-row">
-              <span class="metric-name">Custom Components</span>
-              <span class="metric-score medium" id="customComponents">--</span>
-            </div>
-            <div class="metric-row">
-              <span class="metric-name">Most Used Component</span>
-              <span class="metric-score high" id="topComponent">--</span>
-            </div>
-          </div>
-          
-          <div class="detailed-metrics">
-            <div class="section-title">Token Adoption</div>
-            <div class="metric-row">
-              <span class="metric-name">Color Tokens</span>
-              <span class="metric-score high" id="colorTokens">--</span>
-            </div>
-            <div class="metric-row">
-              <span class="metric-name">Typography Tokens</span>
-              <span class="metric-score medium" id="typographyTokens">--</span>
-            </div>
-            <div class="metric-row">
-              <span class="metric-name">Spacing Tokens</span>
-              <span class="metric-score low" id="spacingTokens">--</span>
-            </div>
-          </div>
-          
-          <!-- Health Recommendations -->
-          <div class="detailed-metrics">
-            <div class="section-title">Recommendations</div>
-            <div id="healthRecommendations">
-              <div class="metric-row">
-                <span class="metric-name">Loading health data...</span>
-              </div>
-            </div>
+<body>
+  <!-- Tab Navigation -->
+  <div class="tab-header">
+    <div class="tab-nav">
+      <button class="tab-btn" data-tab="health">📊 Design Health</button>
+      <button class="tab-btn active" data-tab="generator">🎫 Ticket Generator</button>
+    </div>
+  </div>
+
+  <!-- Tab Content Container -->
+  <div class="tab-container">
+    <!-- Health Metrics Tab -->
+    <div class="tab-content" id="health-tab">
+      <div class="panel health-panel">
+        <div class="panel-header">
+        <h2 class="panel-title">📊 Design System Health</h2>
+      </div>
+      <p class="panel-subtitle">Real-time compliance and usage metrics</p>
+      
+      <!-- Overall Health Score -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-value excellent" id="overallScore">--</div>
+          <div class="metric-label">Overall Score</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value good" id="complianceRate">--</div>
+          <div class="metric-label">Compliance Rate</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value good" id="componentUsage">--</div>
+          <div class="metric-label">Component Usage</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value needs-attention" id="tokenAdoption">--</div>
+          <div class="metric-label">Token Adoption</div>
+        </div>
+      </div>
+      
+      <!-- Detailed Metrics -->
+      <div class="detailed-metrics">
+        <div class="section-title">Component Analysis</div>
+        <div class="metric-row">
+          <span class="metric-name">Standard Components</span>
+          <span class="metric-score high" id="standardComponents">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Custom Components</span>
+          <span class="metric-score medium" id="customComponents">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Most Used Component</span>
+          <span class="metric-score high" id="topComponent">--</span>
+        </div>
+      </div>
+      
+      <div class="detailed-metrics">
+        <div class="section-title">Token Adoption</div>
+        <div class="metric-row">
+          <span class="metric-name">Color Tokens</span>
+          <span class="metric-score high" id="colorTokens">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Typography Tokens</span>
+          <span class="metric-score medium" id="typographyTokens">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Spacing Tokens</span>
+          <span class="metric-score low" id="spacingTokens">--</span>
+        </div>
+      </div>
+      
+      <!-- Health Recommendations -->
+      <div class="detailed-metrics">
+        <div class="section-title">Recommendations</div>
+        <div id="healthRecommendations">
+          <div class="metric-row">
+            <span class="metric-name">Loading health data...</span>
           </div>
         </div>
       </div>
+      </div>
     </div>
+    <!-- End Health Tab -->
 
-    <!-- Ticket Generator Tab Content -->
-    <div id="ticket-tab" class="tab-content">
-      <div class="main-container">
-        <div class="panel ticket-panel">
-          <div class="panel-header">
-            <h2 class="panel-title">🎫 AI Ticket Generator</h2>
-          </div>
-          <p class="panel-subtitle">Generate Jira tickets from selected Figma frames</p>
+    <!-- Ticket Generator Tab -->
+    <div class="tab-content active" id="generator-tab">
+      <div class="panel ticket-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">🎫 AI Ticket Generator</h2>
+      </div>
+      <p class="panel-subtitle">Generate Jira tickets from selected Figma frames</p>
 
       <div class="config-section">
-        <div class="config-title">AI Configuration</div>
+        <div class="config-title">Generation Mode</div>
+        
+        <div class="mode-selection">
+          <div class="radio-group">
+            <input type="radio" id="modeMCP" name="generationMode" value="mcp" checked>
+            <label for="modeMCP">
+              <span class="radio-label">🚀 MCP Server (Enhanced)</span>
+              <span class="radio-description">Local Model Context Protocol server with strategic design analysis</span>
+            </label>
+          </div>
+          
+          <div class="radio-group">
+            <input type="radio" id="modeOpenAI" name="generationMode" value="openai">
+            <label for="modeOpenAI">
+              <span class="radio-label">🤖 OpenAI API</span>
+              <span class="radio-description">Cloud-based AI generation (requires API key)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- OpenAI Configuration (hidden by default) -->
+      <div class="config-section" id="openaiConfig" style="display: none;">
+        <div class="config-title">OpenAI Configuration</div>
         
         <div class="form-group">
           <label for="apiKey">OpenAI API Key</label>
@@ -1076,78 +835,32 @@ input[type="password"] {
         </div>
       </div>
 
+      <!-- MCP Configuration (visible by default) -->
+      <div class="config-section" id="mcpConfig">
+        <div class="config-title">MCP Configuration</div>
+        <div class="mcp-status">
+          <span class="status-indicator" id="mcpStatus">🔄 Checking...</span>
+          <span class="status-text" id="mcpStatusText">Connecting to MCP server...</span>
+        </div>
+      </div>
+
       <div class="config-section">
         <div class="config-title">Ticket Template</div>
         
         <div class="form-group template-select">
           <label for="template">Template Type</label>
           <select id="template">
-            <option value="story">User Story</option>
-            <option value="task">Technical Task</option>
             <option value="component">UI Component</option>
             <option value="feature">Feature Implementation</option>
             <option value="bug">Bug Fix</option>
-            <option value="epic">Epic</option>
-            <option value="improvement">Improvement</option>
-            <option value="research">Design Research</option>
+            <option value="page">Page/Screen</option>
             <option value="custom">Custom</option>
           </select>
         </div>
         
         <div class="form-group">
-          <label for="priority">Priority Level</label>
-          <select id="priority">
-            <option value="highest">🔴 Highest</option>
-            <option value="high">🟠 High</option>
-            <option value="medium" selected>🟡 Medium</option>
-            <option value="low">🟢 Low</option>
-            <option value="lowest">🔵 Lowest</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="storyPoints">Story Points (Optional)</label>
-          <select id="storyPoints">
-            <option value="">Not Set</option>
-            <option value="1">1 - Trivial</option>
-            <option value="2">2 - Minor</option>
-            <option value="3">3 - Simple</option>
-            <option value="5">5 - Medium</option>
-            <option value="8">8 - Complex</option>
-            <option value="13">13 - Large</option>
-            <option value="21">21 - Huge</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="outputFormat">Output Format</label>
-          <select id="outputFormat">
-            <option value="jira-wiki">Jira Wiki Markup (Recommended)</option>
-            <option value="plain-text">Plain Text (Universal)</option>
-            <option value="markdown">Markdown (GitHub/Modern Tools)</option>
-            <option value="confluence">Confluence Format</option>
-          </select>
-          <div class="format-help" id="formatHelp">
-            Jira Wiki Markup: Uses *bold*, bullet points, and formatting that works in most Jira instances
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="labels">Labels (comma-separated)</label>
-          <input type="text" id="labels" placeholder="frontend, design-system, accessibility" />
-        </div>
-        
-        <div class="form-group">
           <label for="customPrompt">Additional Instructions (Optional)</label>
-          <textarea id="customPrompt" rows="3" placeholder="e.g., Include accessibility requirements, use specific design tokens, follow WCAG guidelines..."></textarea>
-        </div>
-        
-        <!-- Template Preview -->
-        <div class="template-preview" id="templatePreview">
-          <div class="preview-title">Template Preview:</div>
-          <div class="preview-content" id="previewContent">
-            Select a template to see the structure
-          </div>
+          <textarea id="customPrompt" rows="3" placeholder="e.g., Include accessibility requirements, use specific design tokens..."></textarea>
         </div>
       </div>
 
@@ -1214,1658 +927,1064 @@ input[type="password"] {
         </div>
       </div>
     </div>
+    <!-- End Generator Tab -->
   </div>
+  <!-- End Tab Container -->
 
-  <!-- Inline all JavaScript for Figma compatibility -->
   <script>
-    console.log('🔧 Starting inline JavaScript...');
+    // UI Elements
+    const generateBtn = document.getElementById('generate');
+    const output = document.getElementById('output');
+    const copyBtn = document.getElementById('copy');
+    const apiKeyInput = document.getElementById('apiKey');
+    const modelSelect = document.getElementById('model');
+    const templateSelect = document.getElementById('template');
+    const customPromptInput = document.getElementById('customPrompt');
+    const statusDiv = document.getElementById('status');
+    const frameInfoDiv = document.getElementById('frameInfo');
     
-    // ==========================================
-    // TIMEOUT UTILITIES
-    // ==========================================
-    
-    class TimeoutError extends Error {
-      constructor(message) {
-        super(message);
-        this.name = 'TimeoutError';
-      }
-    }
-    
-    class ValidationError extends Error {
-      constructor(message) {
-        super(message);
-        this.name = 'ValidationError';
-      }
-    }
-    
-    class APIError extends Error {
-      constructor(message, status, endpoint) {
-        super(message);
-        this.name = 'APIError';
-        this.status = status;
-        this.endpoint = endpoint;
-      }
-    }
-    
-    class NetworkError extends Error {
-      constructor(message) {
-        super(message);
-        this.name = 'NetworkError';
-      }
-    }
-    
-    // ==========================================
-    // COMPREHENSIVE ERROR HANDLING
-    // ==========================================
-    
-    const ERROR_MESSAGES = {
-      // API Key related
-      MISSING_API_KEY: 'Please enter your OpenAI API key in the settings.',
-      INVALID_API_KEY: 'Invalid API key. Please check your OpenAI API key and try again.',
-      API_KEY_QUOTA: 'API key quota exceeded. Please check your OpenAI billing and usage limits.',
+    // Mode Selection Elements
+    const modeMCP = document.getElementById('modeMCP');
+    const modeOpenAI = document.getElementById('modeOpenAI');
+    const openaiConfig = document.getElementById('openaiConfig');
+    const mcpConfig = document.getElementById('mcpConfig');
+    const mcpStatus = document.getElementById('mcpStatus');
+    const mcpStatusText = document.getElementById('mcpStatusText');
+
+    // Tab Management
+    function initializeTabs() {
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
       
-      // Network related
-      NETWORK_TIMEOUT: 'Request timed out. The API may be experiencing high load. Please try again in a few moments.',
-      NETWORK_ERROR: 'Network error. Please check your internet connection and try again.',
-      CONNECTION_FAILED: 'Failed to connect to OpenAI API. Please check your internet connection.',
-      
-      // Figma related
-      NO_SELECTION: 'Please select at least one frame, component, or instance to generate a ticket.',
-      INVALID_SELECTION: 'Selected elements are not suitable for ticket generation. Please select frames, components, or instances.',
-      FIGMA_ACCESS_ERROR: 'Unable to access Figma elements. Please try refreshing the plugin.',
-      FRAME_READ_ERROR: 'Error reading frame data. The selection may contain unsupported elements.',
-      
-      // API Response related
-      MODEL_NOT_FOUND: 'The selected AI model is not available. Please try a different model.',
-      CONTENT_FILTER: 'Content was filtered by OpenAI. Please review your selection and try again.',
-      RATE_LIMIT: 'API rate limit exceeded. Please wait a moment before trying again.',
-      SERVER_ERROR: 'OpenAI server error. Please try again in a few minutes.',
-      
-      // Validation related
-      EMPTY_RESPONSE: 'Received empty response from AI. Please try again with a different selection.',
-      INVALID_TEMPLATE: 'Invalid ticket template selected. Please choose a valid template.',
-      PARSING_ERROR: 'Error processing AI response. The generated content may be incomplete.',
-      
-      // General
-      UNKNOWN_ERROR: 'An unexpected error occurred. Please try again or contact support.',
-      CLIPBOARD_ERROR: 'Could not copy to clipboard. Please manually select and copy the text.',
-      
-      // Retry suggestions
-      RETRY_SUGGESTION: 'If the problem persists, try:\n• Selecting fewer elements\n• Using a simpler template\n• Checking your internet connection'
-    };
-    
-    function createComprehensiveErrorMessage(error, context = '') {
-      let primaryMessage = '';
-      let secondaryMessage = '';
-      let suggestions = [];
-      
-      // Determine primary error type and message
-      if (error instanceof TimeoutError) {
-        primaryMessage = ERROR_MESSAGES.NETWORK_TIMEOUT;
-        suggestions.push('Try selecting fewer elements', 'Check your internet connection');
-      } else if (error instanceof NetworkError || error.name === 'NetworkError') {
-        primaryMessage = ERROR_MESSAGES.NETWORK_ERROR;
-        suggestions.push('Check your internet connection', 'Try again in a few moments');
-      } else if (error instanceof ValidationError) {
-        primaryMessage = error.message;
-        suggestions.push('Review your selection', 'Check your inputs');
-      } else if (error instanceof APIError) {
-        switch (error.status) {
-          case 401:
-            primaryMessage = ERROR_MESSAGES.INVALID_API_KEY;
-            suggestions.push('Verify your API key in settings');
-            break;
-          case 429:
-            primaryMessage = ERROR_MESSAGES.RATE_LIMIT;
-            suggestions.push('Wait 1-2 minutes before trying again');
-            break;
-          case 404:
-            primaryMessage = ERROR_MESSAGES.MODEL_NOT_FOUND;
-            suggestions.push('Try a different AI model');
-            break;
-          case 500:
-          case 502:
-          case 503:
-            primaryMessage = ERROR_MESSAGES.SERVER_ERROR;
-            suggestions.push('Try again in a few minutes');
-            break;
-          default:
-            primaryMessage = `API Error (${error.status}): ${error.message}`;
-        }
-      } else {
-        // Parse specific error messages
-        const errorMsg = error.message || error.toString();
-        
-        if (errorMsg.includes('API key') || errorMsg.includes('Unauthorized')) {
-          primaryMessage = ERROR_MESSAGES.INVALID_API_KEY;
-          suggestions.push('Check your API key in settings');
-        } else if (errorMsg.includes('quota') || errorMsg.includes('billing')) {
-          primaryMessage = ERROR_MESSAGES.API_KEY_QUOTA;
-          suggestions.push('Check your OpenAI billing dashboard');
-        } else if (errorMsg.includes('rate limit') || errorMsg.includes('Too Many Requests')) {
-          primaryMessage = ERROR_MESSAGES.RATE_LIMIT;
-          suggestions.push('Wait before trying again');
-        } else if (errorMsg.includes('model') && errorMsg.includes('not found')) {
-          primaryMessage = ERROR_MESSAGES.MODEL_NOT_FOUND;
-          suggestions.push('Select a different AI model');
-        } else if (errorMsg.includes('content') && errorMsg.includes('filter')) {
-          primaryMessage = ERROR_MESSAGES.CONTENT_FILTER;
-          suggestions.push('Review your selection');
-        } else if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('connection')) {
-          primaryMessage = ERROR_MESSAGES.CONNECTION_FAILED;
-          suggestions.push('Check your internet connection');
-        } else if (errorMsg.includes('timeout')) {
-          primaryMessage = ERROR_MESSAGES.NETWORK_TIMEOUT;
-          suggestions.push('Try again with fewer elements');
-        } else if (errorMsg.includes('empty') || errorMsg.includes('no content')) {
-          primaryMessage = ERROR_MESSAGES.EMPTY_RESPONSE;
-          suggestions.push('Try a different selection or template');
-        } else {
-          primaryMessage = errorMsg || ERROR_MESSAGES.UNKNOWN_ERROR;
-        }
-      }
-      
-      // Add context if provided
-      if (context) {
-        secondaryMessage = `Context: ${context}`;
-      }
-      
-      // Build comprehensive message
-      let fullMessage = primaryMessage;
-      
-      if (secondaryMessage) {
-        fullMessage += `\n\n${secondaryMessage}`;
-      }
-      
-      if (suggestions.length > 0) {
-        fullMessage += `\n\n💡 Suggestions:\n• ${suggestions.join('\n• ')}`;
-      }
-      
-      return fullMessage;
-    }
-    
-    function handleError(error, context = '', showRetryOption = false) {
-      const comprehensiveMessage = createComprehensiveErrorMessage(error, context);
-      
-      console.error(`Error in ${context}:`, error);
-      
-      // Show the error with suggestions
-      showTicketStatus(comprehensiveMessage, 'error');
-      
-      // For certain errors, show retry option
-      if (showRetryOption && (error instanceof TimeoutError || error instanceof NetworkError)) {
-        setTimeout(() => {
-          const retryButton = document.createElement('button');
-          retryButton.textContent = 'Retry';
-          retryButton.className = 'retry-button';
-          retryButton.onclick = () => {
-            document.querySelector('.retry-button')?.remove();
-            generateEnhancedAITicket();
-          };
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetTab = btn.dataset.tab;
           
-          const statusElement = document.getElementById('ticket-status');
-          if (statusElement) {
-            statusElement.appendChild(retryButton);
+          // Remove active class from all tabs and buttons
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          
+          // Add active class to clicked button and corresponding content
+          btn.classList.add('active');
+          const targetContent = document.getElementById(`${targetTab}-tab`);
+          if (targetContent) {
+            targetContent.classList.add('active');
           }
-        }, 100);
-      }
-    }
-    
-    function withTimeout(promise, ms) {
-      return new Promise((resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-          reject(new TimeoutError(`Operation timed out after ${ms}ms`));
-        }, ms);
-        
-        promise
-          .then((result) => {
-            clearTimeout(timeoutId);
-            resolve(result);
-          })
-          .catch((error) => {
-            clearTimeout(timeoutId);
-            reject(error);
-          });
+        });
       });
     }
-    
-    async function withRetry(operation, maxRetries = 3, timeoutMs = 30000) {
-      let lastError;
-      
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          return await withTimeout(operation(), timeoutMs);
-        } catch (error) {
-          lastError = error;
-          console.warn(`Attempt ${attempt}/${maxRetries} failed:`, error);
-          
-          if (attempt === maxRetries) {
-            break;
-          }
-          
-          // Exponential backoff
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
-      }
-      
-      throw lastError;
-    }
-    
-    // ==========================================
-    // ENHANCED PROGRESS INDICATOR SYSTEM
-    // ==========================================
-    
-    class ProgressTracker {
-      constructor() {
-        this.currentStep = 0;
-        this.steps = [];
-        this.startTime = null;
-        this.progressElement = null;
-        this.detailsVisible = false;
-      }
-      
-      initializeProgress(steps, showDetails = false) {
-        this.steps = steps;
-        this.currentStep = 0;
-        this.startTime = Date.now();
-        this.detailsVisible = showDetails;
-        this.createProgressElement();
-      }
-      
-      createProgressElement() {
-        // Remove existing progress if any
-        const existing = document.getElementById('enhancedProgress');
-        if (existing) existing.remove();
-        
-        // Create progress container
-        this.progressElement = document.createElement('div');
-        this.progressElement.id = 'enhancedProgress';
-        this.progressElement.className = 'progress-container';
-        
-        // Progress bar
-        const progressBar = document.createElement('div');
-        progressBar.className = 'progress-bar';
-        const progressFill = document.createElement('div');
-        progressFill.className = 'progress-fill';
-        progressFill.id = 'progressFill';
-        progressBar.appendChild(progressFill);
-        
-        // Progress steps
-        const stepsContainer = document.createElement('div');
-        stepsContainer.className = 'progress-steps';
-        stepsContainer.id = 'progressSteps';
-        
-        this.steps.forEach((step, index) => {
-          const stepElement = document.createElement('div');
-          stepElement.className = 'progress-step';
-          stepElement.id = `step-${index}`;
-          
-          const indicator = document.createElement('div');
-          indicator.className = 'step-indicator';
-          
-          const label = document.createElement('span');
-          label.textContent = step.label;
-          
-          stepElement.appendChild(indicator);
-          stepElement.appendChild(label);
-          stepsContainer.appendChild(stepElement);
-        });
-        
-        // Time indicator
-        const timeIndicator = document.createElement('div');
-        timeIndicator.className = 'time-indicator';
-        timeIndicator.id = 'timeIndicator';
-        timeIndicator.textContent = 'Starting...';
-        
-        // Details section
-        const details = document.createElement('div');
-        details.className = 'progress-details';
-        details.id = 'progressDetails';
-        if (this.detailsVisible) {
-          details.classList.add('visible');
-        }
-        
-        this.progressElement.appendChild(progressBar);
-        this.progressElement.appendChild(stepsContainer);
-        this.progressElement.appendChild(timeIndicator);
-        this.progressElement.appendChild(details);
-        
-        // Insert into status area
-        const statusEl = document.getElementById('ticketStatus');
-        if (statusEl && statusEl.parentNode) {
-          statusEl.parentNode.insertBefore(this.progressElement, statusEl.nextSibling);
-        }
-        
-        this.updateDisplay();
-      }
-      
-      updateProgress(stepIndex, status = 'active', details = '') {
-        this.currentStep = stepIndex;
-        
-        // Update step status
-        this.steps[stepIndex].status = status;
-        if (details) {
-          this.steps[stepIndex].details = details;
-        }
-        
-        this.updateDisplay();
-      }
-      
-      updateDisplay() {
-        if (!this.progressElement) return;
-        
-        // Update progress bar
-        const progress = (this.currentStep / Math.max(this.steps.length - 1, 1)) * 100;
-        const progressFill = document.getElementById('progressFill');
-        if (progressFill) {
-          progressFill.style.width = `${progress}%`;
-        }
-        
-        // Update step indicators
-        this.steps.forEach((step, index) => {
-          const stepEl = document.getElementById(`step-${index}`);
-          const indicator = stepEl?.querySelector('.step-indicator');
-          
-          if (stepEl && indicator) {
-            stepEl.className = 'progress-step';
-            indicator.className = 'step-indicator';
-            
-            if (step.status === 'completed') {
-              stepEl.classList.add('completed');
-              indicator.classList.add('completed');
-              indicator.innerHTML = '✓';
-            } else if (step.status === 'active') {
-              stepEl.classList.add('active');
-              indicator.classList.add('active');
-              indicator.innerHTML = '<div class="loading-spinner"></div>';
-            } else if (step.status === 'error') {
-              stepEl.classList.add('error');
-              indicator.classList.add('error');
-              indicator.innerHTML = '✗';
-            } else {
-              indicator.innerHTML = '';
-            }
-          }
-        });
-        
-        // Update time indicator
-        const timeEl = document.getElementById('timeIndicator');
-        if (timeEl && this.startTime) {
-          const elapsed = Math.round((Date.now() - this.startTime) / 1000);
-          timeEl.textContent = `${elapsed}s elapsed`;
-        }
-        
-        // Update details
-        const detailsEl = document.getElementById('progressDetails');
-        if (detailsEl && this.detailsVisible) {
-          const currentStepDetails = this.steps[this.currentStep]?.details || '';
-          const completedSteps = this.steps.filter(s => s.status === 'completed').length;
-          const totalSteps = this.steps.length;
-          
-          detailsEl.innerHTML = `
-            <div><strong>Progress:</strong> ${completedSteps}/${totalSteps} steps completed</div>
-            ${currentStepDetails ? `<div><strong>Current:</strong> ${currentStepDetails}</div>` : ''}
-          `;
-        }
-      }
-      
-      completeStep(stepIndex, details = '') {
-        this.updateProgress(stepIndex, 'completed', details);
-      }
-      
-      errorStep(stepIndex, details = '') {
-        this.updateProgress(stepIndex, 'error', details);
-      }
-      
-      finish(success = true) {
-        if (success) {
-          // Mark all remaining steps as completed
-          for (let i = this.currentStep; i < this.steps.length; i++) {
-            this.steps[i].status = 'completed';
-          }
-          this.currentStep = this.steps.length - 1;
-        }
-        
-        this.updateDisplay();
-        
-        // Keep progress visible - don't auto-remove
-        // Add a subtle visual indicator that the process is complete
-        if (this.progressElement) {
-          this.progressElement.classList.add(success ? 'progress-complete' : 'progress-error');
-          
-          // Optional: Add a small "completed" or "error" indicator
-          const completionIndicator = document.createElement('div');
-          completionIndicator.className = 'completion-indicator';
-          completionIndicator.innerHTML = success ? 
-            '✅ <span>Process completed successfully</span>' : 
-            '❌ <span>Process completed with errors</span>';
-          
-          // Add a small dismiss button
-          const dismissButton = document.createElement('button');
-          dismissButton.innerHTML = '×';
-          dismissButton.className = 'dismiss-button';
-          dismissButton.style.cssText = 'margin-left: auto; background: none; border: none; color: currentColor; cursor: pointer; font-size: 14px; padding: 2px 4px;';
-          dismissButton.title = 'Clear progress indicator';
-          dismissButton.onclick = () => this.clear();
-          
-          completionIndicator.appendChild(dismissButton);
-          
-          // Only add if not already present
-          if (!this.progressElement.querySelector('.completion-indicator')) {
-            this.progressElement.appendChild(completionIndicator);
-          }
-        }
-      }
-      
-      setDetails(visible) {
-        this.detailsVisible = visible;
-        const detailsEl = document.getElementById('progressDetails');
-        if (detailsEl) {
-          if (visible) {
-            detailsEl.classList.add('visible');
-          } else {
-            detailsEl.classList.remove('visible');
-          }
-        }
-      }
-      
-      clear() {
-        if (this.progressElement) {
-          this.progressElement.remove();
-          this.progressElement = null;
-        }
-        // Reset tracker state
-        this.currentStep = 0;
-        this.steps = [];
-        this.startTime = null;
-      }
-    }
-    
-    // Global progress tracker instance
-    let progressTracker = new ProgressTracker();
-    
-    // ==========================================
-    // MAIN APPLICATION
-    // ==========================================
-    
-    // Main initialization function
-    function initializeApp() {
-      console.log('🚀 Figma AI Ticket Generator UI starting...');
-      
-      // Initialize health metrics directly here
-      console.log('🔄 Starting health metrics...');
-      
-      // Auto-trigger compliance analysis on load
-      setTimeout(() => {
-        console.log('🔄 Triggering compliance calculation...');
-        // Send compliance calculation request to plugin
-        if (window.parent && window.parent.postMessage) {
-          window.parent.postMessage({ pluginMessage: { type: 'calculate-compliance' } }, '*');
-        }
-      }, 2000);
-      
-      console.log('✅ UI initialized successfully');
-    }
 
-    // Handle messages from Figma plugin
-    function handlePluginMessage(event) {
-      try {
-        const msg = event.data.pluginMessage;
-        if (!msg) return;
-        
-        console.log('📨 Received message:', msg.type);
-        
-        switch (msg.type) {
-          case 'compliance-results':
-            console.log('📊 Compliance results received:', msg.compliance);
-            if (msg.compliance) {
-              displayHealthMetrics(msg.compliance);
-            } else {
-              handleError(new ValidationError('Invalid compliance data received'), 'Health metrics', false);
-            }
-            break;
-            
-          case 'compliance-error':
-            console.log('❌ Compliance error:', msg.message);
-            handleError(new Error(msg.message || 'Unknown compliance error'), 'Health metrics calculation', false);
-            break;
-            
-          case 'frame-progress':
-            console.log('📈 Frame processing progress:', msg.data);
-            if (msg.data && typeof msg.data.current === 'number' && typeof msg.data.total === 'number') {
-              const { current, total, nodeName, nodeType } = msg.data;
-              const percentage = Math.round((current / total) * 100);
-              
-              progressTracker.updateProgress(1, 'active', 
-                `Processing ${nodeType.toLowerCase()} "${nodeName}" (${current}/${total})`
-              );
-              
-              // Update the progress bar fill if it exists
-              const progressFill = document.getElementById('progressFill');
-              if (progressFill) {
-                const baseProgress = (1 / 2) * 100; // Step 1 out of 2 for initial reading
-                const stepProgress = (current / total) * (100 / 3); // 1/3 of total progress for this step
-                progressFill.style.width = `${baseProgress + stepProgress}%`;
-              }
-            }
-            break;
-            
-          case 'log-entry':
-            // Handle log entries from plugin backend
-            if (msg.data.level === 'ERROR' || msg.data.level === 'CRITICAL') {
-              const errorMsg = `[${msg.data.context}] ${msg.data.message}`;
-              handleError(new Error(errorMsg), msg.data.context, false);
-            }
-            console.log(`📝 [${msg.data.level}] [${msg.data.context}] ${msg.data.message}`);
-            break;
-            
-          case 'frame-data':
-            console.log('📋 Frame data received');
-            if (msg.data && Array.isArray(msg.data)) {
-              frameDataList = msg.data;
-              
-              // Update progress for frame reading completion
-              progressTracker.completeStep(0, 'Selection validated');
-              progressTracker.completeStep(1, `${msg.data.length} frame(s) processed`);
-              progressTracker.updateProgress(2, 'completed', 'Ready for AI generation');
-              
-              // Show processing summary with limits information
-              let statusMessage = `✅ Processed ${msg.data.length} frame(s)`;
-              let statusType = 'success';
-              
-              if (msg.processingSummary) {
-                const summary = msg.processingSummary;
-                statusMessage = summary.message;
-                
-                if (summary.skipped > 0) {
-                  statusType = 'warning';
-                  statusMessage += `\n\n⚠️ Some frames were simplified due to complexity:\n• ${summary.skipped} frame(s) had processing limits applied\n• This helps prevent memory issues and ensures good performance`;
-                }
-              }
-              
-              // Check for limit information in frame data
-              const framesWithLimits = msg.data.filter(frame => 
-                frame.designSystemContext?.limitsApplied && 
-                Object.values(frame.designSystemContext.limitsApplied).some(applied => applied)
-              );
-              
-              if (framesWithLimits.length > 0) {
-                statusMessage += `\n\n📊 Processing optimization applied to ${framesWithLimits.length} complex frame(s)`;
-              }
-              
-              showTicketStatus(statusMessage, statusType);
-              
-              // Auto-proceed to AI generation after a brief delay
-              setTimeout(() => {
-                progressTracker.finish(true);
-                generateEnhancedAITicket();
-              }, 800);
-              
-            } else {
-              progressTracker.errorStep(1, 'Invalid frame data received');
-              progressTracker.finish(false);
-              handleError(new ValidationError(ERROR_MESSAGES.FRAME_READ_ERROR), 'Frame data processing', false);
-              setTicketGenerating(false);
-            }
-            break;
-            
-          case 'error':
-            console.log('❌ Plugin error:', msg.message);
-            handleError(new Error(msg.message || 'Unknown plugin error'), 'Plugin operation', false);
-            setTicketGenerating(false);
-            break;
-            
-          default:
-            console.log('⚠️ Unknown message type:', msg.type);
-            break;
-        }
-      } catch (error) {
-        console.error('Error handling plugin message:', error);
-        handleError(error, 'Plugin message handling', false);
-      }
-    }
-
-    // Display health metrics in the UI
-    function displayHealthMetrics(compliance) {
-      console.log('🎯 Displaying health metrics:', compliance);
-      
-      // Update overall score
-      const overallScoreEl = document.getElementById('overallScore');
-      if (overallScoreEl) {
-        overallScoreEl.textContent = compliance.overall + '%';
-        console.log('✅ Updated overall score to:', compliance.overall + '%');
-      } else {
-        console.log('❌ overallScore element not found');
-      }
-      
-      // Update individual category scores in the overview cards
-      const complianceRateEl = document.getElementById('complianceRate');
-      if (complianceRateEl) {
-        complianceRateEl.textContent = compliance.overall + '%';
-        console.log('✅ Updated compliance rate to:', compliance.overall + '%');
-      }
-      
-      const componentUsageEl = document.getElementById('componentUsage');
-      if (componentUsageEl) {
-        componentUsageEl.textContent = compliance.breakdown.components.score + '%';
-        console.log('✅ Updated component usage to:', compliance.breakdown.components.score + '%');
-      }
-      
-      const tokenAdoptionEl = document.getElementById('tokenAdoption');
-      if (tokenAdoptionEl) {
-        const tokenScore = Math.round((compliance.breakdown.colors.score + compliance.breakdown.typography.score) / 2);
-        tokenAdoptionEl.textContent = tokenScore + '%';
-        console.log('✅ Updated token adoption to:', tokenScore + '%');
-      }
-      
-      // Update detailed component analysis
-      const standardComponentsEl = document.getElementById('standardComponents');
-      if (standardComponentsEl && compliance.breakdown.components) {
-        standardComponentsEl.textContent = compliance.breakdown.components.details?.standardComponents || '85%';
-        console.log('✅ Updated standard components');
-      }
-      
-      const customComponentsEl = document.getElementById('customComponents');
-      if (customComponentsEl && compliance.breakdown.components) {
-        customComponentsEl.textContent = compliance.breakdown.components.details?.customComponents || '15%';
-        console.log('✅ Updated custom components');
-      }
-      
-      const topComponentEl = document.getElementById('topComponent');
-      if (topComponentEl && compliance.breakdown.components) {
-        topComponentEl.textContent = compliance.breakdown.components.details?.topComponent || 'Button';
-        console.log('✅ Updated top component');
-      }
-      
-      // Update detailed token adoption
-      const colorTokensEl = document.getElementById('colorTokens');
-      if (colorTokensEl && compliance.breakdown.colors) {
-        colorTokensEl.textContent = compliance.breakdown.colors.score + '%';
-        console.log('✅ Updated color tokens');
-      }
-      
-      const typographyTokensEl = document.getElementById('typographyTokens');
-      if (typographyTokensEl && compliance.breakdown.typography) {
-        typographyTokensEl.textContent = compliance.breakdown.typography.score + '%';
-        console.log('✅ Updated typography tokens');
-      }
-      
-      const spacingTokensEl = document.getElementById('spacingTokens');
-      if (spacingTokensEl && compliance.breakdown.spacing) {
-        spacingTokensEl.textContent = compliance.breakdown.spacing.score + '%';
-        console.log('✅ Updated spacing tokens');
-      }
-      
-      // Update recommendations
-      const recommendationsEl = document.getElementById('healthRecommendations');
-      if (recommendationsEl && compliance.recommendations) {
-        recommendationsEl.innerHTML = '';
-        compliance.recommendations.forEach(rec => {
-          const recEl = document.createElement('div');
-          recEl.className = 'metric-row';
-          recEl.innerHTML = `
-            <span class="metric-name">${rec.category}: ${rec.description}</span>
-            <span class="metric-score ${rec.priority}">${rec.priority}</span>
-          `;
-          recommendationsEl.appendChild(recEl);
-        });
-        console.log('✅ Updated recommendations, count:', compliance.recommendations.length);
-      } else {
-        console.log('❌ healthRecommendations element not found');
-      }
-      
-      // Hide loading message
-      const loadingEl = document.querySelector('.loading-message');
-      if (loadingEl) {
-        loadingEl.style.display = 'none';
-        console.log('✅ Hidden loading message');
-      } else {
-        console.log('ℹ️ loading-message element not found (might be already hidden)');
-      }
-    }
-
-    // Set up message listener
-    function setupMessageListener() {
-      window.onmessage = handlePluginMessage;
-      console.log('✅ Message listener set up');
-    }
-
-    // Initialize when DOM is ready
-    function initializeWhenReady() {
-      console.log('🔄 initializeWhenReady called, document.readyState:', document.readyState);
-      
-      if (document.readyState === 'loading') {
-        console.log('📅 DOM still loading, adding event listener...');
-        document.addEventListener('DOMContentLoaded', () => {
-          console.log('📅 DOMContentLoaded fired!');
-          initializeApp();
-          setupMessageListener();
-        });
-      } else {
-        console.log('📅 DOM already ready, initializing immediately...');
-        initializeApp();
-        setupMessageListener();
-      }
-    }
-
-    // Start the application
-    console.log('🚀 About to call initializeWhenReady...');
-    initializeWhenReady();
-    console.log('✅ initializeWhenReady called');
-  </script>
-  
-  <!-- Enhanced Ticket Generation Script -->
-  <script>
-    // Enhanced ticket generation functionality
+    // State
     let frameDataList = [];
     let isGenerating = false;
+    let currentFileKey = '';
+    let currentFileName = '';
     
-    // Format definitions for different Jira instances
-    const OUTPUT_FORMATS = {
-      'jira-wiki': {
-        name: 'Jira Wiki Markup',
-        description: 'Uses *bold*, bullet points, and formatting that works in most Jira instances',
-        bold: (text) => `*${text}*`,
-        heading: (text) => `h3. ${text}`,
-        bullet: '* ',
-        numberedList: (num) => `# `,
-        codeBlock: (text) => `{code}\n${text}\n{code}`,
-        separator: '\n----\n'
-      },
-      'plain-text': {
-        name: 'Plain Text',
-        description: 'Simple text format that works everywhere, uses CAPS for emphasis',
-        bold: (text) => text.toUpperCase(),
-        heading: (text) => `${text.toUpperCase()}\n${'='.repeat(text.length)}`,
-        bullet: '- ',
-        numberedList: (num) => `${num}. `,
-        codeBlock: (text) => `\n${text}\n`,
-        separator: '\n' + '='.repeat(50) + '\n'
-      },
-      'markdown': {
-        name: 'Markdown',
-        description: 'Standard Markdown format for GitHub, modern tools, and some Jira Cloud instances',
-        bold: (text) => `**${text}**`,
-        heading: (text) => `### ${text}`,
-        bullet: '- ',
-        numberedList: (num) => `${num}. `,
-        codeBlock: (text) => `\`\`\`\n${text}\n\`\`\``,
-        separator: '\n---\n'
-      },
-      'confluence': {
-        name: 'Confluence',
-        description: 'Confluence wiki markup for Atlassian Confluence pages',
-        bold: (text) => `*${text}*`,
-        heading: (text) => `h3. ${text}`,
-        bullet: '* ',
-        numberedList: (num) => `# `,
-        codeBlock: (text) => `{code:theme=RDark}\n${text}\n{code}`,
-        separator: '\n----\n'
-      }
-    };
-    
-    // Ticket templates with format-agnostic structure
-    const TICKET_TEMPLATES = {
-      story: {
-        name: 'User Story',
-        getStructure: (format) => {
-          const f = OUTPUT_FORMATS[format];
-          return `${f.heading('USER STORY')}
-
-${f.bold('Story:')} As a [user type], I want [functionality] so that [benefit]
-
-${f.bold('Figma Reference:')}
-[Figma design link and frame details for easy access]
-
-${f.bold('Acceptance Criteria:')}
-${f.bullet}[Specific, testable criteria]
-${f.bullet}[Another criteria]
-${f.bullet}[Third criteria]
-
-${f.bold('Definition of Done:')}
-${f.bullet}[ ] Design specs implemented accurately
-${f.bullet}[ ] Responsive behavior tested
-${f.bullet}[ ] Accessibility requirements met
-${f.bullet}[ ] Code review completed`;
-        },
-        prompt: 'Create a user story ticket for implementing functionality based on the Figma design. Focus on user value and clear acceptance criteria.'
-      },
-      task: {
-        name: 'Technical Task', 
-        getStructure: (format) => {
-          const f = OUTPUT_FORMATS[format];
-          return `${f.heading('TECHNICAL TASK')}
-
-${f.bold('Task:')} [Clear, actionable task title]
-
-${f.bold('Description:')}
-[Detailed technical description with context]
-
-${f.bold('Technical Requirements:')}
-${f.bullet}[Specific technical requirement]
-${f.bullet}[Another requirement]
-${f.bullet}[Third requirement]
-
-${f.bold('Dependencies:')}
-${f.bullet}[List any dependencies]
-
-${f.bold('Notes:')}
-[Any additional technical considerations]`;
-        },
-        prompt: 'Create a technical task ticket for implementation work based on the Figma design. Focus on technical requirements and implementation details.'
-      },
-      component: {
-        name: 'UI Component',
-        getStructure: (format) => {
-          const f = OUTPUT_FORMATS[format];
-          return `${f.heading('UI COMPONENT')}
-
-${f.bold('Component:')} [Component Name]
-
-${f.bold('Figma Reference:')}
-[Figma design link and frame details]
-
-${f.bold('Purpose:')}
-[Description of component purpose and usage]
-
-${f.bold('Props/API:')}
-${f.bullet}[List expected props/parameters]
-${f.bullet}[Another prop]
-
-${f.bold('Variants/States:')}
-${f.bullet}[List component variants]
-${f.bullet}[Different states]
-
-${f.bold('Design Tokens:')}
-${f.bullet}Colors: [List required color tokens]
-${f.bullet}Typography: [List font/text styles]
-${f.bullet}Spacing: [List spacing values]
-
-${f.bold('Accessibility:')}
-${f.bullet}[ARIA requirements]
-${f.bullet}[Keyboard navigation]
-${f.bullet}[Screen reader support]`;
-        },
-        prompt: 'Create a UI component implementation ticket based on the Figma design. Include detailed API specifications, variants, and accessibility requirements.'
-      },
-      feature: {
-        name: 'Feature Implementation',
-        getStructure: (format) => {
-          const f = OUTPUT_FORMATS[format];
-          return `${f.heading('FEATURE IMPLEMENTATION')}
-
-${f.bold('Feature:')} [Feature Name]
-
-${f.bold('Figma Reference:')}
-[Figma design link and frame details]
-
-${f.bold('User Value:')}
-[Explain the value this feature provides to users]
-
-${f.bold('Functional Requirements:')}
-${f.bullet}[Specific functional requirement]
-${f.bullet}[Another requirement]
-
-${f.bold('User Experience:')}
-${f.bullet}[UX considerations]
-${f.bullet}[Interaction patterns]
-
-${f.bold('Business Logic:')}
-${f.bullet}[Business rules]
-${f.bullet}[Edge cases]
-
-${f.bold('Integration Points:')}
-${f.bullet}[API endpoints]
-${f.bullet}[Data requirements]`;
-        },
-        prompt: 'Create a feature implementation ticket based on the Figma design. Focus on user value, functional requirements, and business logic.'
-      },
-      bug: {
-        name: 'Bug Fix',
-        getStructure: (format) => {
-          const f = OUTPUT_FORMATS[format];
-          return `${f.heading('BUG FIX')}
-
-${f.bold('Bug Summary:')} [Brief description of the bug]
-
-${f.bold('Current Behavior:')}
-[What's happening now]
-
-${f.bold('Expected Behavior:')}
-[What should happen instead]
-
-${f.bold('Steps to Reproduce:')}
-${f.numberedList(1)}[First step]
-${f.numberedList(2)}[Second step]
-${f.numberedList(3)}[Third step]
-
-${f.bold('Impact:')}
-[Who is affected and how]
-
-${f.bold('Root Cause Analysis:')}
-[Analysis of why this is happening]
-
-${f.bold('Solution:')}
-[Proposed fix approach]`;
-        },
-        prompt: 'Create a bug fix ticket based on the Figma design that shows the correct behavior. Focus on clear reproduction steps and expected outcomes.'
-      },
-      epic: {
-        name: 'Epic',
-        getStructure: (format) => {
-          const f = OUTPUT_FORMATS[format];
-          return `${f.heading('EPIC')}
-
-${f.bold('Epic:')} [Epic Name]
-
-${f.bold('Vision:')}
-[High-level vision for this epic]
-
-${f.bold('User Problems:')}
-${f.bullet}[Problem this epic solves]
-${f.bullet}[Another problem]
-
-${f.bold('Success Metrics:')}
-${f.bullet}[How we'll measure success]
-${f.bullet}[Another metric]
-
-${f.bold('User Stories:')}
-${f.bullet}[High-level user story]
-${f.bullet}[Another story]
-${f.bullet}[Third story]
-
-${f.bold('Dependencies:')}
-[List any dependencies on other teams/systems]
-
-${f.bold('Timeline:')}
-[Estimated timeline and milestones]`;
-        },
-        prompt: 'Create an epic ticket based on the Figma design. Focus on high-level vision, user problems, and success metrics.'
-      },
-      improvement: {
-        name: 'Improvement',
-        getStructure: (format) => {
-          const f = OUTPUT_FORMATS[format];
-          return `${f.heading('IMPROVEMENT')}
-
-${f.bold('Improvement:')} [What we're improving]
-
-${f.bold('Current State:')}
-[How things work today]
-
-${f.bold('Proposed State:')}
-[How things will work after improvement]
-
-${f.bold('Benefits:')}
-${f.bullet}[Benefit to users]
-${f.bullet}[Benefit to business]
-${f.bullet}[Technical benefit]
-
-${f.bold('Implementation Plan:')}
-${f.numberedList(1)}[First step]
-${f.numberedList(2)}[Second step]
-${f.numberedList(3)}[Third step]
-
-${f.bold('Success Criteria:')}
-${f.bullet}[How we'll know it's successful]
-${f.bullet}[Measurable outcome]`;
-        },
-        prompt: 'Create an improvement ticket based on the Figma design. Focus on current vs proposed state and clear benefits.'
-      },
-      research: {
-        name: 'Design Research',
-        getStructure: (format) => {
-          const f = OUTPUT_FORMATS[format];
-          return `${f.heading('DESIGN RESEARCH')}
-
-${f.bold('Research Question:')} [What we want to learn]
-
-${f.bold('Hypothesis:')}
-[What we think we'll discover]
-
-${f.bold('Research Methods:')}
-${f.bullet}[Method 1 - e.g., user interviews]
-${f.bullet}[Method 2 - e.g., usability testing]
-
-${f.bold('Participants:')}
-[Who we'll research with]
-
-${f.bold('Success Metrics:')}
-${f.bullet}[What constitutes successful research]
-${f.bullet}[Deliverable expectations]
-
-${f.bold('Timeline:')}
-[Research timeline and milestones]
-
-${f.bold('Deliverables:')}
-${f.bullet}[Research report]
-${f.bullet}[Design recommendations]
-${f.bullet}[Other deliverables]`;
-        },
-        prompt: 'Create a design research ticket based on the Figma design. Focus on research questions, methods, and expected deliverables.'
-      },
-      custom: {
-        name: 'Custom',
-        getStructure: (format) => {
-          const f = OUTPUT_FORMATS[format];
-          return `${f.heading('CUSTOM TICKET')}
-
-${f.bold('Title:')} [Custom ticket title]
-
-${f.bold('Description:')}
-[Detailed description]
-
-${f.bold('Requirements:')}
-${f.bullet}[Requirement 1]
-${f.bullet}[Requirement 2]
-
-${f.bold('Acceptance Criteria:')}
-${f.bullet}[Criteria 1]
-${f.bullet}[Criteria 2]
-
-${f.bold('Notes:')}
-[Additional notes and context]`;
-        },
-        prompt: 'Create a custom ticket based on the Figma design and additional instructions provided.'
-      }
-    };
-    
-    // Initialize enhanced ticket generation
-    function initializeEnhancedTicketGeneration() {
-      const generateBtn = document.getElementById('generate');
-      const templateSelect = document.getElementById('template');
-      const outputFormatSelect = document.getElementById('outputFormat');
-      const prioritySelect = document.getElementById('priority');
-      const storyPointsSelect = document.getElementById('storyPoints');
-      const labelsInput = document.getElementById('labels');
-      const customPromptInput = document.getElementById('customPrompt');
-      const previewContent = document.getElementById('previewContent');
-      const outputTextarea = document.getElementById('output');
-      
-      if (!generateBtn || !templateSelect) {
-        console.log('❌ Enhanced ticket generation elements not found');
-        return;
-      }
-      
-      // Update template preview when template or format changes
-      templateSelect.addEventListener('change', updateTemplatePreview);
-      if (outputFormatSelect) {
-        outputFormatSelect.addEventListener('change', updateTemplatePreview);
-        outputFormatSelect.addEventListener('change', updateFormatHelp);
-        // Initialize format help
-        updateFormatHelp();
-      }
-      
-      // Initialize with current template
-      updateTemplatePreview();
-      
-      // Enhanced generate button handler
-      generateBtn.addEventListener('click', generateEnhancedTicket);
-      
-      // Initialize copy button
-      initializeCopyButton();
-      
-      console.log('✅ Enhanced ticket generation initialized');
-    }
-    
-    function updateFormatHelp() {
-      const outputFormatSelect = document.getElementById('outputFormat');
-      const formatHelp = document.getElementById('formatHelp');
-      
-      if (!outputFormatSelect || !formatHelp) return;
-      
-      const selectedFormat = outputFormatSelect.value;
-      const format = OUTPUT_FORMATS[selectedFormat];
-      
-      if (format) {
-        formatHelp.textContent = format.description;
+    // MCP Server Communication
+    async function callMCPServer(method, params) {
+      try {
+        console.log('🔍 Calling MCP server:', method, params);
+        
+        const response = await fetch('http://localhost:3000', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: method,
+            params: params
+          }),
+        });
+        
+        console.log('📡 MCP response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`MCP Server error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 MCP response data:', data);
+        return data.result || data;
+      } catch (error) {
+        console.warn('MCP Server not available:', error);
+        return null;
       }
     }
     
-    function updateTemplatePreview() {
-      const templateSelect = document.getElementById('template');
-      const outputFormatSelect = document.getElementById('outputFormat');
-      const previewContent = document.getElementById('previewContent');
+    // Mode Switching Functions
+    function initializeModeSelection() {
+      // Set up radio button event listeners
+      modeMCP.addEventListener('change', handleModeChange);
+      modeOpenAI.addEventListener('change', handleModeChange);
       
-      if (!templateSelect || !previewContent) return;
+      // Initialize with MCP mode
+      handleModeChange();
+      checkMCPServerStatus();
+    }
+    
+    function handleModeChange() {
+      const selectedMode = document.querySelector('input[name="generationMode"]:checked').value;
       
-      const selectedTemplate = templateSelect.value;
-      const selectedFormat = outputFormatSelect ? outputFormatSelect.value : 'jira-wiki';
-      const template = TICKET_TEMPLATES[selectedTemplate];
-      
-      if (template) {
-        previewContent.textContent = template.getStructure(selectedFormat);
-        previewContent.classList.add('loaded');
+      if (selectedMode === 'mcp') {
+        openaiConfig.style.display = 'none';
+        mcpConfig.style.display = 'block';
+        generateBtn.textContent = '🚀 Generate Ticket with MCP';
       } else {
-        previewContent.textContent = 'Select a template to see the structure';
-        previewContent.classList.remove('loaded');
+        openaiConfig.style.display = 'block';
+        mcpConfig.style.display = 'none';
+        generateBtn.textContent = '🤖 Generate Ticket with OpenAI';
       }
     }
     
-    function generateEnhancedTicket() {
+    async function checkMCPServerStatus() {
+      try {
+        mcpStatus.textContent = '🔄';
+        mcpStatusText.textContent = 'Checking MCP server...';
+        
+        const response = await fetch('http://localhost:3000', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method: 'ping' })
+        });
+        
+        if (response.ok) {
+          mcpStatus.textContent = '✅';
+          mcpStatusText.textContent = 'MCP server connected (localhost:3000)';
+        } else {
+          throw new Error('Server responded with error');
+        }
+      } catch (error) {
+        mcpStatus.textContent = '❌';
+        mcpStatusText.textContent = 'MCP server unavailable';
+        console.warn('MCP server check failed:', error);
+      }
+    }
+
+    // Load saved settings
+    loadSettings();
+
+    // Initialize tabs and mode selection
+    initializeTabs();
+    initializeModeSelection();
+
+    // Event listeners
+    generateBtn.onclick = generateTicket;
+    copyBtn.onclick = copyToClipboard;
+    apiKeyInput.onchange = saveSettings;
+    modelSelect.onchange = saveSettings;
+    templateSelect.onchange = saveSettings;
+
+    // Auto-trigger compliance analysis on user interaction
+    document.addEventListener('click', () => {
+      setTimeout(() => {
+        parent.postMessage({ 
+          pluginMessage: { type: 'calculate-compliance' } 
+        }, '*');
+      }, 500);
+    });
+
+    // Global variables for file context
+    let globalFileKey = '';
+    let globalFileName = '';
+
+    // Message handling from Figma plugin
+    onmessage = async (event) => {
+      const msg = event.data.pluginMessage;
+      
+      if (msg.type === 'file-context') {
+        currentFileKey = msg.fileKey || '';
+        currentFileName = msg.fileName || '';
+        console.log('📁 File context received:', { fileKey: currentFileKey, fileName: currentFileName });
+      }
+      
+      if (msg.type === 'frame-data') {
+        frameDataList = msg.data;
+        displayFrameInfo(frameDataList);
+        displayComplianceInfo(frameDataList);
+        await generateAITicket();
+      }
+
+      if (msg.type === 'error') {
+        showStatus(msg.message, 'error');
+        setGenerating(false);
+      }
+
+      if (msg.type === 'design-system-detected') {
+        displayDesignSystemInfo(msg.designSystem);
+        // Auto-calculate compliance when design system is detected
+        triggerComplianceCalculation();
+      }
+
+      if (msg.type === 'no-design-system') {
+        hideDesignSystemSection();
+        updateHealthMetrics(null);
+      }
+
+      if (msg.type === 'compliance-results') {
+        displayComplianceResults(msg.compliance, msg.selectionCount);
+      }
+
+      if (msg.type === 'compliance-error') {
+        showComplianceError(msg.message);
+      }
+    };
+
+    function generateTicket() {
       if (isGenerating) return;
       
-      const apiKey = document.getElementById('apiKey')?.value?.trim();
-      if (!apiKey) {
-        showTicketStatus('Please enter your OpenAI API key', 'error');
-        return;
-      }
-      
-      setTicketGenerating(true);
-      
-      // Initialize progress for frame reading phase
-      const initialSteps = [
-        { label: 'Validating Selection', status: 'active' },
-        { label: 'Reading Frames', status: 'pending' },
-        { label: 'Ready for AI', status: 'pending' }
-      ];
-      
-      progressTracker.initializeProgress(initialSteps, false);
-      showTicketStatus('🔍 Reading selected frames...', 'loading');
+      setGenerating(true);
+      showStatus('Reading selected frames...', 'loading');
       
       // Request frame data from Figma
       parent.postMessage({ 
         pluginMessage: { type: 'generate-ticket' } 
       }, '*');
     }
-    
-    async function generateEnhancedAITicket() {
-      // Validate inputs first
-      try {
-        validateInputs();
-      } catch (error) {
-        handleError(error, 'Input validation', false);
-        setTicketGenerating(false);
-        return;
-      }
-      
+
+    async function generateAITicket() {
       if (!frameDataList.length) {
-        handleError(new ValidationError(ERROR_MESSAGES.NO_SELECTION), 'Frame data validation', false);
-        setTicketGenerating(false);
+        showStatus('No frame data received', 'error');
+        setGenerating(false);
         return;
-      }
-      
-      // Initialize enhanced progress tracking
-      const progressSteps = [
-        { label: 'Validation', status: 'completed' },
-        { label: 'Processing Frames', status: 'completed' },
-        { label: 'Building Prompt', status: 'pending' },
-        { label: 'AI Generation', status: 'pending' },
-        { label: 'Formatting', status: 'pending' }
-      ];
-      
-      progressTracker.initializeProgress(progressSteps, true);
-      showTicketStatus('🚀 Generating enhanced ticket with AI...', 'loading');
-      
-      try {
-        // Step 1: Build prompt
-        progressTracker.updateProgress(2, 'active', 'Creating optimized prompt from frame data');
-        const prompt = createEnhancedPrompt(frameDataList);
-        const apiKey = document.getElementById('apiKey').value.trim();
-        const model = document.getElementById('model').value;
-        
-        await new Promise(resolve => setTimeout(resolve, 300)); // Brief pause for UX
-        progressTracker.completeStep(2, `Generated ${Math.round(prompt.length/1000)}k character prompt`);
-        
-        // Step 2: AI Generation
-        progressTracker.updateProgress(3, 'active', 'Connecting to OpenAI API...');
-        
-        // Use timeout and retry for OpenAI API call
-        const response = await withRetry(
-          async () => {
-            progressTracker.updateProgress(3, 'active', `Generating with ${model}... (up to 30s)`);
-            
-            const fetchResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-              },
-              body: JSON.stringify({
-                model: model,
-                messages: [
-                  { 
-                    role: 'system', 
-                    content: 'You are an expert Jira ticket creator specializing in UI/UX implementation. Generate detailed, structured tickets with clear acceptance criteria, technical requirements, and design specifications. Always include specific Figma references and maintain consistency with the requested template format.' 
-                  },
-                  { role: 'user', content: prompt }
-                ],
-                temperature: 0.3, // Lower temperature for more consistent structure
-                max_tokens: 1500 // Increased for more detailed tickets
-              }),
-            });
-            
-            // Handle HTTP errors properly
-            if (!fetchResponse.ok) {
-              let errorMessage = `HTTP ${fetchResponse.status}`;
-              try {
-                const errorData = await fetchResponse.json();
-                errorMessage = errorData.error?.message || errorMessage;
-              } catch (parseError) {
-                // If we can't parse the error response, use the status
-              }
-              throw new APIError(errorMessage, fetchResponse.status, 'OpenAI API');
-            }
-            
-            return fetchResponse;
-          },
-          2, // Max 2 retries
-          30000 // 30 second timeout for OpenAI API
-        );
-        
-        const data = await response.json();
-        
-        // Validate response data
-        if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
-          throw new ValidationError(ERROR_MESSAGES.EMPTY_RESPONSE);
-        }
-        
-        const ticketContent = data.choices[0].message.content;
-        progressTracker.completeStep(3, `Generated ${Math.round(ticketContent.length/1000)}k character response`);
-        
-        // Step 3: Format and finalize
-        progressTracker.updateProgress(4, 'active', 'Applying Jira formatting and metadata');
-        
-        const enhancedTicket = addJiraMetadata(ticketContent);
-        
-        await new Promise(resolve => setTimeout(resolve, 200)); // Brief pause for UX
-        progressTracker.completeStep(4, 'Applied formatting and Figma links');
-        
-        document.getElementById('output').value = enhancedTicket;
-        document.getElementById('copy').disabled = false;
-        
-        // Complete progress and show success
-        progressTracker.finish(true);
-        showTicketStatus('✅ Enhanced ticket generated successfully!', 'success');
-        
-      } catch (error) {
-        // Mark current step as error and finish
-        if (progressTracker.currentStep < progressSteps.length) {
-          progressTracker.errorStep(progressTracker.currentStep, error.message);
-        }
-        progressTracker.finish(false);
-        
-        handleError(error, 'AI ticket generation', true);
-      } finally {
-        setTicketGenerating(false);
-      }
-    }
-    
-    function validateInputs() {
-      const apiKey = document.getElementById('apiKey').value.trim();
-      const model = document.getElementById('model').value;
-      const template = document.getElementById('template').value;
-      
-      if (!apiKey) {
-        throw new ValidationError(ERROR_MESSAGES.MISSING_API_KEY);
-      }
-      
-      if (apiKey.length < 20 || !apiKey.startsWith('sk-')) {
-        throw new ValidationError(ERROR_MESSAGES.INVALID_API_KEY);
-      }
-      
-      if (!model) {
-        throw new ValidationError('Please select an AI model.');
-      }
-      
-      if (!template || !TICKET_TEMPLATES[template]) {
-        throw new ValidationError(ERROR_MESSAGES.INVALID_TEMPLATE);
       }
 
+      const selectedMode = document.querySelector('input[name="generationMode"]:checked').value;
+      console.log('🚀 Starting ticket generation in mode:', selectedMode);
+
+      if (selectedMode === 'mcp') {
+        await generateWithMCP();
+      } else {
+        await generateWithOpenAI();
+      }
     }
     
-    function createEnhancedPrompt(frameDataList) {
-      const templateSelect = document.getElementById('template');
-      const outputFormatSelect = document.getElementById('outputFormat');
-      const prioritySelect = document.getElementById('priority');
-      const storyPointsSelect = document.getElementById('storyPoints');
-      const labelsInput = document.getElementById('labels');
-      const customPromptInput = document.getElementById('customPrompt');
-      
-      const selectedTemplate = templateSelect.value;
-      const selectedFormat = outputFormatSelect ? outputFormatSelect.value : 'jira-wiki';
-      const template = TICKET_TEMPLATES[selectedTemplate];
-      const format = OUTPUT_FORMATS[selectedFormat];
-      const priority = prioritySelect.value;
-      const storyPoints = storyPointsSelect.value;
-      const labels = labelsInput.value;
+    async function generateWithMCP() {
+      try {
+        showStatus('🔍 Analyzing project with MCP...', 'loading');
+        
+        // Enhanced payload with Figma context
+        const mcpTickets = await callMCPServer('generate_tickets', {
+          frameData: frameDataList,
+          template: templateSelect.value,
+          projectName: currentFileName || 'Figma Design',
+          figmaContext: {
+            fileKey: currentFileKey,
+            fileName: currentFileName,
+            figmaUrl: currentFileKey ? `https://www.figma.com/file/${currentFileKey}` : null,
+            frameUrls: frameDataList.map(frame => 
+              currentFileKey ? `https://www.figma.com/file/${currentFileKey}?node-id=${encodeURIComponent(frame.id)}` : null
+            ).filter(Boolean)
+          },
+          instructions: customPromptInput.value || 'Generate comprehensive development tickets with design system compliance.'
+        });
+        
+        showStatus('🎫 Processing MCP results...', 'loading');
+        console.log('📦 MCP response received:', mcpTickets);
+        
+        if (mcpTickets && mcpTickets.content && mcpTickets.content.length > 0) {
+          const ticketText = mcpTickets.content[0].text;
+          
+          output.value = ticketText;
+          copyBtn.disabled = false;
+          showStatus('✅ Enhanced tickets generated with MCP!', 'success');
+          return;
+        }
+        
+        throw new Error('MCP server returned no content');
+        
+      } catch (error) {
+        console.error('❌ MCP generation failed:', error);
+        
+        // Fallback for MCP mode
+        const fallbackTicket = generateFallbackTicket();
+        output.value = fallbackTicket;
+        copyBtn.disabled = false;
+        showStatus('⚠️ Fallback ticket generated (MCP server unavailable)', 'error');
+      } finally {
+        setGenerating(false);
+      }
+    }
+    
+    async function generateWithOpenAI() {
+      try {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+          showStatus('Please enter your OpenAI API key', 'error');
+          setGenerating(false);
+          return;
+        }
+        
+        showStatus('🤖 Generating ticket with OpenAI...', 'loading');
+        
+        const prompt = createPrompt(frameDataList);
+        const model = modelSelect.value;
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              { 
+                role: 'system', 
+                content: 'You are a UX/UI ticket assistant. Generate clean, structured Jira tickets from Figma design context. Focus on implementation details, acceptance criteria, and technical requirements.' 
+              },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 1000
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error?.message || `API request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const ticket = data.choices[0].message.content.trim();
+        
+        output.value = ticket;
+        copyBtn.disabled = false;
+        showStatus('✅ Ticket generated successfully with OpenAI!', 'success');
+        
+      } catch (error) {
+        console.error('❌ OpenAI generation failed:', error);
+        showStatus(`Error: ${error.message}`, 'error');
+      } finally {
+        setGenerating(false);
+      }
+    }
+    
+    function generateFallbackTicket() {
+      return `# Generated Ticket (Fallback)
+
+## ${frameDataList[0]?.name || 'Component'} Implementation
+
+### Description
+Implement the ${frameDataList[0]?.name || 'selected component'} based on Figma design specifications.
+
+### Acceptance Criteria
+- [ ] Component matches design specifications
+- [ ] Component is responsive across all devices  
+- [ ] Component passes accessibility testing
+- [ ] Unit tests provide adequate coverage
+
+### Technical Notes
+- Based on ${frameDataList.length} selected frame(s)
+- Generated with local fallback (MCP server unavailable)
+- Node count: ${frameDataList[0]?.nodeCount || 'Unknown'}
+- Dimensions: ${frameDataList[0]?.dimensions?.width || 0}x${frameDataList[0]?.dimensions?.height || 0}px
+
+### Priority
+Medium
+
+### Story Points
+${Math.max(3, Math.min(8, Math.ceil((frameDataList[0]?.nodeCount || 0) / 5)))}
+
+---
+*Generated at ${new Date().toISOString()}*`;
+    }
+    
+    // Original generateAITicket function content for reference - now split into mode-specific functions
+    async function originalGenerateAITicket() {
+
+      try {
+        showStatus('🔍 Analyzing project with MCP...', 'loading');
+        
+        // Use MCP to generate tickets directly with frame data (no file key needed)
+        const mcpTickets = await callMCPServer('generate_tickets', {
+          frameData: frameDataList,
+          template: templateSelect.value,
+          projectName: currentFileName || 'Figma Design'
+        });
+        
+        showStatus('🎫 Processing MCP results...', 'loading');
+        console.log('📦 MCP response received:', mcpTickets);
+        
+        // If MCP server is available, use the enhanced tickets
+        if (mcpTickets && mcpTickets.content && mcpTickets.content.length > 0) {
+          // MCP returns content array, extract the text
+          const ticketText = mcpTickets.content[0].text;
+          
+          output.value = ticketText;
+          copyBtn.disabled = false;
+          showStatus('✅ Enhanced tickets generated with MCP!', 'success');
+          setGenerating(false);
+          return;
+        }
+        
+        // If MCP failed, generate a simple fallback ticket (NO API KEY REQUIRED)
+        console.log('🔄 MCP failed, generating fallback ticket without API');
+        
+        const fallbackTicket = `# Generated Ticket (Fallback)
+
+## ${frameDataList[0]?.name || 'Component'} Implementation
+
+### Description
+Implement the ${frameDataList[0]?.name || 'selected component'} based on Figma design specifications.
+
+### Acceptance Criteria
+- [ ] Component matches design specifications
+- [ ] Component is responsive across all devices
+- [ ] Component passes accessibility testing
+- [ ] Unit tests provide adequate coverage
+
+### Technical Notes
+- Based on ${frameDataList.length} selected frame(s)
+- Generated with local fallback (MCP server unavailable)
+- Node count: ${frameDataList[0]?.nodeCount || 'Unknown'}
+- Dimensions: ${frameDataList[0]?.dimensions?.width || 0}x${frameDataList[0]?.dimensions?.height || 0}px
+
+### Priority
+Medium
+
+### Story Points
+${Math.max(3, Math.min(8, (frameDataList[0]?.nodeCount || 0) / 5))}
+
+---
+*Generated at ${new Date().toISOString()}*`;
+        
+        output.value = fallbackTicket;
+        copyBtn.disabled = false;
+        showStatus('⚠️ Fallback ticket generated (MCP server unavailable)', 'error');
+        
+      } catch (error) {
+        console.error('❌ Error in ticket generation:', error);
+        
+        // Final fallback - always works
+        const simpleTicket = `# Simple Ticket
+
+## Component Implementation
+
+### Description
+Implement the selected component based on Figma design.
+
+### Acceptance Criteria
+- [ ] Match design specifications
+- [ ] Ensure responsiveness
+- [ ] Pass accessibility tests
+
+---
+*Generated at ${new Date().toISOString()}*`;
+        
+        output.value = simpleTicket;
+        copyBtn.disabled = false;
+        showStatus('⚠️ Simple ticket generated (errors occurred)', 'error');
+      } finally {
+        setGenerating(false);
+      }
+    }
+
+    function createPrompt(frameDataList) {
+      const template = templateSelect.value;
       const customInstructions = customPromptInput.value.trim();
       
-      let prompt = `${template.prompt}\n\n`;
+      let basePrompt = '';
       
-      // Add format-specific instructions
-      prompt += `CRITICAL: Use ${format.name} formatting. Here are the formatting rules:\n`;
-      prompt += `- Bold text: Use "${format.bold('example')}" (not **example**)\n`;
-      prompt += `- Headings: Use "${format.heading('Example')}" \n`;
-      prompt += `- Bullet points: Use "${format.bullet}" at the start of each line\n`;
-      prompt += `- Numbered lists: Use "${format.numberedList(1)}" for numbered items\n\n`;
-      
-      // Add template structure instructions
-      prompt += `Please use this EXACT structure and formatting for the ticket:\n\n${template.getStructure(selectedFormat)}\n\n`;
-      
-      // Add Figma frame data
-      prompt += `**Figma Design Context:**\n`;
-      
-      // Generate Figma file link from frame data
-      let figmaFileUrl = '';
-      if (frameDataList.length > 0) {
-        const frame = frameDataList[0];
-        const hasValidFileKey = frame.fileKey && 
-                               frame.fileKey !== 'FIGMA_FILE_KEY_UNAVAILABLE' && 
-                               frame.fileKey !== 'file-key-unavailable' &&
-                               frame.fileKey !== '0:0';
-        
-        if (hasValidFileKey) {
-          const fileName = frame.fileName || 'Design File';
-          figmaFileUrl = `https://www.figma.com/design/${frame.fileKey}`;
-          if (frame.id) {
-            figmaFileUrl += `?node-id=${encodeURIComponent(frame.id.replace(':', '-'))}`;
-          }
-          prompt += `\n**Figma File:** [${fileName}](${figmaFileUrl})\n`;
-        } else {
-          const fileName = frame.fileName || 'Design File';
-          const nodeId = frame.id ? frame.id.replace(':', '-') : '';
-          prompt += `\n**Figma File:** ${fileName}\n`;
-          if (nodeId) {
-            prompt += `**Figma Link:** \`https://www.figma.com/design/[YOUR_FILE_KEY]?node-id=${encodeURIComponent(nodeId)}\`\n`;
-            prompt += `**Instructions:** Replace \`[YOUR_FILE_KEY]\` with your actual Figma file key from the URL.\n`;
-            prompt += `**How to find file key:** Copy your Figma file URL - it looks like \`figma.com/design/ABC123XYZ/...\` where \`ABC123XYZ\` is your file key.\n`;
-          } else {
-            prompt += `**Instructions:** Please manually share the Figma file link for reference.\n`;
-          }
-        }
+      switch (template) {
+        case 'component':
+          basePrompt = 'Generate a Jira ticket for implementing a UI component based on the following Figma design:';
+          break;
+        case 'feature':
+          basePrompt = 'Generate a Jira ticket for implementing a new feature based on the following Figma design:';
+          break;
+        case 'bug':
+          basePrompt = 'Generate a Jira ticket for fixing a UI/UX issue based on the following Figma design:';
+          break;
+        case 'page':
+          basePrompt = 'Generate a Jira ticket for implementing a page/screen based on the following Figma design:';
+          break;
+        default:
+          basePrompt = 'Generate a Jira ticket based on the following Figma design:';
       }
-      
+
+      let prompt = basePrompt + '\\n\\n';
+
       frameDataList.forEach((frame, index) => {
-        prompt += `\nFrame ${index + 1}: "${frame.name}"\n`;
-        prompt += `- Page: ${frame.pageName}\n`;
-        prompt += `- Type: ${frame.type}\n`;
-        prompt += `- Dimensions: ${frame.dimensions.width}x${frame.dimensions.height}px\n`;
-        prompt += `- Elements: ${frame.nodeCount} child elements\n`;
-        
-        // Add individual frame link
-        const hasValidFileKey = frame.fileKey && 
-                               frame.fileKey !== 'FIGMA_FILE_KEY_UNAVAILABLE' && 
-                               frame.fileKey !== 'file-key-unavailable' &&
-                               frame.fileKey !== '0:0';
-        
-        if (hasValidFileKey && frame.id) {
-          const frameUrl = `https://www.figma.com/design/${frame.fileKey}?node-id=${encodeURIComponent(frame.id.replace(':', '-'))}`;
-          prompt += `- Direct Link: [${frame.name}](${frameUrl})\n`;
-        } else if (frame.id) {
-          const nodeId = frame.id.replace(':', '-');
-          prompt += `- Direct Link: \`https://www.figma.com/design/[YOUR_FILE_KEY]?node-id=${encodeURIComponent(nodeId)}\`\n`;
-          prompt += `  (Replace \`[YOUR_FILE_KEY]\` with your Figma file key)\n`;
-        } else {
-          prompt += `- Direct Link: Please share frame link manually\n`;
-        }
+        prompt += `**Frame ${index + 1}: ${frame.name}**\\n`;
+        prompt += `- Page: ${frame.pageName}\\n`;
+        prompt += `- Type: ${frame.type}\\n`;
+        prompt += `- Dimensions: ${frame.dimensions.width}x${frame.dimensions.height}px\\n`;
+        prompt += `- Child elements: ${frame.nodeCount}\\n`;
         
         if (frame.textContent.length > 0) {
-          prompt += `- Text Content: ${frame.textContent.map(t => `"${t.content}"`).join(', ')}\n`;
+          prompt += `- Text content: ${frame.textContent.map(t => `"${t.content}"`).join(', ')}\\n`;
         }
         
         if (frame.components.length > 0) {
-          prompt += `- Components: ${frame.components.map(c => c.masterComponent).join(', ')}\n`;
+          prompt += `- Components used: ${frame.components.map(c => c.masterComponent).join(', ')}\\n`;
         }
         
         if (frame.colors.length > 0) {
-          prompt += `- Colors Used: ${frame.colors.join(', ')}\n`;
+          prompt += `- Colors: ${frame.colors.join(', ')}\\n`;
         }
         
         if (frame.hasPrototype) {
-          prompt += `- Has Interactive Prototype\n`;
+          prompt += `- Has interactive prototype\\n`;
         }
-        
+
         // Add design system context if available
         if (frame.designSystemContext) {
           const context = frame.designSystemContext;
           
           if (context.designSystem) {
-            prompt += `\n**Design System Context:**\n`;
-            prompt += `- Design System: ${context.designSystem.name}\n`;
-            prompt += `- Confidence: ${Math.round(context.designSystem.detectionConfidence * 100)}%\n`;
+            prompt += `\\n**Design System Information:**\\n`;
+            prompt += `- Design System: ${context.designSystem.name}\\n`;
+            prompt += `- Detection Confidence: ${Math.round(context.designSystem.detectionConfidence * 100)}%\\n`;
           }
-          
+
           if (context.complianceReport) {
-            prompt += `- Overall Compliance: ${context.complianceReport.overall}%\n`;
-            prompt += `- Colors: ${context.complianceReport.breakdown.colors.score}%\n`;
-            prompt += `- Typography: ${context.complianceReport.breakdown.typography.score}%\n`;
-            prompt += `- Components: ${context.complianceReport.breakdown.components.score}%\n`;
-            
-            if (context.complianceReport.recommendations && context.complianceReport.recommendations.length > 0) {
-              prompt += `\n**Design System Recommendations:**\n`;
-              context.complianceReport.recommendations.slice(0, 3).forEach(rec => {
-                prompt += `- [${rec.priority.toUpperCase()}] ${rec.category}: ${rec.description}\n`;
-              });
-            }
+            const report = context.complianceReport;
+            prompt += `\\n**Design System Compliance:**\\n`;
+            prompt += `- Overall Score: ${report.overallScore}%\\n`;
+            prompt += `- Color Compliance: ${report.colorCompliance.score}% (${report.colorCompliance.tokenizedColors}/${report.colorCompliance.totalColors} using tokens)\\n`;
+            prompt += `- Typography Compliance: ${report.typographyCompliance.score}% (${report.typographyCompliance.tokenizedText}/${report.typographyCompliance.totalTextElements} using styles)\\n`;
+            prompt += `- Component Compliance: ${report.componentCompliance.score}% (${report.componentCompliance.standardComponents}/${report.componentCompliance.totalComponents} standard components)\\n`;
+          }
+
+          if (context.usedTokens && context.usedTokens.length > 0) {
+            prompt += `\\n**Design Tokens Used:**\\n`;
+            context.usedTokens.forEach(token => {
+              prompt += `- ${token.name} (${token.type})\\n`;
+            });
+          }
+
+          if (context.violations && context.violations.length > 0) {
+            prompt += `\\n**Design System Violations:**\\n`;
+            context.violations.forEach(violation => {
+              prompt += `- ${violation.description}\\n`;
+              prompt += `  Suggested Fix: ${violation.suggestedFix}\\n`;
+            });
+          }
+
+          if (context.recommendations && context.recommendations.length > 0) {
+            prompt += `\\n**Design System Recommendations:**\\n`;
+            context.recommendations.slice(0, 3).forEach(rec => { // Limit to top 3
+              prompt += `- [${rec.severity.toUpperCase()}] ${rec.message}\\n`;
+              prompt += `  Suggestion: ${rec.suggestion}\\n`;
+            });
           }
         }
+        
+        // Create proper Figma deep link
+        const fileKey = frame.fileKey || globalFileKey || '';
+        const nodeId = frame.id.replace(':', '-'); // Convert colon to hyphen format
+        const fileName = globalFileName ? `/${encodeURIComponent(globalFileName)}` : '';
+        const figmaLink = `https://www.figma.com/design/${fileKey}${fileName}?node-id=${nodeId}&t=${Date.now()}`;
+        prompt += `\\n- Figma link: ${figmaLink}\\n`;
+        prompt += `- Frame ID: ${frame.id} (for developer reference)\\n\\n`;
       });
-      
-      // Add ticket metadata context
-      prompt += `\n**Ticket Configuration:**\n`;
-      prompt += `- Output Format: ${format.name}\n`;
-      prompt += `- Priority: ${priority}\n`;
-      if (storyPoints) prompt += `- Story Points: ${storyPoints}\n`;
-      if (labels) prompt += `- Labels: ${labels}\n`;
-      
-      // Add custom instructions
+
       if (customInstructions) {
-        prompt += `\n**Additional Instructions:**\n${customInstructions}\n`;
+        prompt += `**Additional Requirements:**\\n${customInstructions}\\n\\n`;
       }
+
+      prompt += `Please format the response as:\\n\\n`;
+      prompt += `**Title:** [Concise ticket title]\\n\\n`;
+      prompt += `**Description:**\\n[Detailed description with context and requirements]\\n\\n`;
+      prompt += `**Figma Reference:**\\n[Include the Figma link and frame details for easy access]\\n\\n`;
+      prompt += `**Acceptance Criteria:**\\n1. [Specific, testable criteria]\\n2. [Another criteria]\\n3. [etc.]\\n\\n`;
+      prompt += `**Technical Notes:**\\n[Any implementation details, dependencies, or considerations]\\n\\n`;
+      prompt += `**Design Specs:**\\n[Key measurements, colors, fonts, and visual requirements from the Figma frame]\\n\\n`;
       
-      // Add specific formatting instructions
-      prompt += `\n**IMPORTANT FORMATTING INSTRUCTIONS:**\n`;
-      prompt += `- Use ONLY the ${format.name} formatting specified above\n`;
-      prompt += `- Use the exact structure provided - do not deviate from it\n`;
-      prompt += `- ALWAYS include the Figma file link provided above in a prominent "Figma Reference" or "Design Link" section\n`;
-      prompt += `- Include specific measurements, colors, and typography details from the Figma frames\n`;
-      prompt += `- Reference design system components and tokens when applicable\n`;
-      prompt += `- Make acceptance criteria specific and testable\n`;
-      prompt += `- Include accessibility considerations (WCAG 2.1 AA compliance)\n`;
-      prompt += `- Add relevant technical considerations for implementation\n`;
-      prompt += `- Keep the content professional and actionable\n`;
-      prompt += `- Do NOT use Markdown formatting (like **bold** or ## headers) unless the format is specifically Markdown\n`;
-      prompt += `- The Figma link is CRITICAL - ensure it's included in every ticket for design reference\n`;
-      
+      // Add design system specific instructions if we have design system data
+      const hasDesignSystemData = frameDataList.some(frame => frame.designSystemContext);
+      if (hasDesignSystemData) {
+        prompt += `**Design System Compliance:**\\n[Address any violations mentioned above and ensure implementation follows the design system standards. Reference specific tokens and components where applicable.]\\n\\n`;
+        prompt += `**Design System Notes:**\\n[Include specific design token names, component variants, and compliance recommendations to maintain consistency with the established design system.]`;
+      }
+
       return prompt;
     }
-    
-    function addJiraMetadata(ticketContent) {
-      const prioritySelect = document.getElementById('priority');
-      const storyPointsSelect = document.getElementById('storyPoints');
-      const labelsInput = document.getElementById('labels');
-      const templateSelect = document.getElementById('template');
-      
-      const priority = prioritySelect.value;
-      const storyPoints = storyPointsSelect.value;
-      const labels = labelsInput.value;
-      const issueType = TICKET_TEMPLATES[templateSelect.value].name;
-      
-      let metadata = `**JIRA TICKET METADATA**\n`;
-      metadata += `Issue Type: ${issueType}\n`;
-      metadata += `Priority: ${priority.charAt(0).toUpperCase() + priority.slice(1)}\n`;
-      if (storyPoints) metadata += `Story Points: ${storyPoints}\n`;
-      if (labels) metadata += `Labels: ${labels}\n`;
-      metadata += `\n${'='.repeat(50)}\n\n`;
-      
-      return metadata + ticketContent;
+
+    function displayFrameInfo(frameDataList) {
+      if (!frameDataList.length) {
+        frameInfoDiv.classList.add('hidden');
+        return;
+      }
+
+      let html = '';
+      frameDataList.forEach((frame, index) => {
+        html += `
+          <div class="frame-info">
+            <div class="frame-name">${frame.name}</div>
+            <div class="frame-details">
+              ${frame.type} • ${frame.dimensions.width}x${frame.dimensions.height}px • ${frame.nodeCount} elements
+            </div>
+          </div>
+        `;
+      });
+
+      frameInfoDiv.innerHTML = html;
+      frameInfoDiv.classList.remove('hidden');
     }
-    
-    function showTicketStatus(message, type) {
-      // Create or update status element
-      let statusEl = document.getElementById('ticketStatus');
-      if (!statusEl) {
-        statusEl = document.createElement('div');
-        statusEl.id = 'ticketStatus';
-        statusEl.className = 'status-message';
-        const outputSection = document.querySelector('.output-section');
-        if (outputSection) {
-          outputSection.insertBefore(statusEl, outputSection.firstChild);
+
+    function displayDesignSystemInfo(designSystem) {
+      const section = document.getElementById('designSystemSection');
+      const dsName = document.getElementById('dsName');
+      const dsConfidence = document.getElementById('dsConfidence');
+      const dsColors = document.getElementById('dsColors');
+      const dsTypography = document.getElementById('dsTypography');
+      const dsComponents = document.getElementById('dsComponents');
+
+      dsName.textContent = designSystem.name;
+      dsConfidence.textContent = `${Math.round(designSystem.detectionConfidence * 100)}%`;
+      dsColors.textContent = `${designSystem.colors.length} colors`;
+      dsTypography.textContent = `${designSystem.typography.length} text styles`;
+      dsComponents.textContent = `${designSystem.components.components.length} components`;
+
+      section.classList.remove('hidden');
+    }
+
+    async function displayComplianceInfo(frameDataList) {
+      const complianceInfo = document.getElementById('complianceInfo');
+      const complianceScore = document.getElementById('complianceScore');
+      const colorScore = document.getElementById('colorScore');
+      const typographyScore = document.getElementById('typographyScore');
+      const componentScore = document.getElementById('componentScore');
+      const recommendations = document.getElementById('recommendations');
+      const recList = document.getElementById('recList');
+
+      // Try MCP compliance check first
+      if (currentFileKey && frameDataList.length > 0) {
+        try {
+          const figmaUrl = `https://figma.com/file/${currentFileKey}/${encodeURIComponent(currentFileName || 'Design')}`;
+          const mcpCompliance = await callMCPServer('check_compliance', {
+            figmaUrl: figmaUrl,
+            frameData: frameDataList
+          });
+          
+          if (mcpCompliance && mcpCompliance.overallScore !== undefined) {
+            // Update UI with MCP compliance results
+            complianceScore.textContent = Math.round(mcpCompliance.overallScore) + '%';
+            complianceScore.className = 'compliance-score ' + getScoreClass(mcpCompliance.overallScore);
+            
+            if (mcpCompliance.colorCompliance) {
+              colorScore.textContent = Math.round(mcpCompliance.colorCompliance.score) + '%';
+            }
+            if (mcpCompliance.typographyCompliance) {
+              typographyScore.textContent = Math.round(mcpCompliance.typographyCompliance.score) + '%';
+            }
+            if (mcpCompliance.componentCompliance) {
+              componentScore.textContent = Math.round(mcpCompliance.componentCompliance.score) + '%';
+            }
+            
+            // Show recommendations if available
+            if (mcpCompliance.recommendations && mcpCompliance.recommendations.length > 0) {
+              recList.innerHTML = mcpCompliance.recommendations
+                .map(rec => `<li>${rec}</li>`)
+                .join('');
+              recommendations.classList.remove('hidden');
+            }
+            
+            complianceInfo.classList.remove('hidden');
+            
+            // Update health metrics with MCP data
+            updateHealthMetricsFromMCP(mcpCompliance);
+            return;
+          }
+        } catch (error) {
+          console.warn('MCP compliance check failed, falling back to local analysis:', error);
         }
       }
-      
-      statusEl.textContent = message;
-      statusEl.className = `status-message ${type}`;
-      
-      // Auto-hide success/error messages after 5 seconds
-      if (type === 'success' || type === 'error') {
-        setTimeout(() => {
-          statusEl.style.display = 'none';
-        }, 5000);
+
+      // Fallback to original local compliance analysis
+      // Find frames with design system context
+      const framesWithContext = frameDataList.filter(frame => 
+        frame.designSystemContext && frame.designSystemContext.complianceReport
+      );
+
+      if (framesWithContext.length === 0) {
+        complianceInfo.classList.add('hidden');
+        return;
+      }
+
+      // Calculate average scores
+      let totalOverall = 0;
+      let totalColor = 0;
+      let totalTypography = 0;
+      let totalComponent = 0;
+      let allRecommendations = [];
+
+      framesWithContext.forEach(frame => {
+        const report = frame.designSystemContext.complianceReport;
+        totalOverall += report.overallScore;
+        totalColor += report.colorCompliance.score;
+        totalTypography += report.typographyCompliance.score;
+        totalComponent += report.componentCompliance.score;
+        allRecommendations = allRecommendations.concat(report.recommendations);
+      });
+
+      const count = framesWithContext.length;
+      const avgOverall = Math.round(totalOverall / count);
+      const avgColor = Math.round(totalColor / count);
+      const avgTypography = Math.round(totalTypography / count);
+      const avgComponent = Math.round(totalComponent / count);
+
+      complianceScore.textContent = `${avgOverall}%`;
+      colorScore.textContent = `${avgColor}%`;
+      typographyScore.textContent = `${avgTypography}%`;
+      componentScore.textContent = `${avgComponent}%`;
+
+      // Color code the scores
+      complianceScore.style.background = getScoreColor(avgOverall);
+      colorScore.style.background = getScoreColor(avgColor);
+      typographyScore.style.background = getScoreColor(avgTypography);
+      componentScore.style.background = getScoreColor(avgComponent);
+
+      // Display recommendations
+      if (allRecommendations.length > 0) {
+        let recHtml = '';
+        allRecommendations.slice(0, 3).forEach(rec => { // Show max 3 recommendations
+          recHtml += `
+            <div class="rec-item ${rec.severity}">
+              <div class="rec-message">${rec.message}</div>
+              <div class="rec-suggestion">${rec.suggestion}</div>
+            </div>
+          `;
+        });
+        recList.innerHTML = recHtml;
+        recommendations.classList.remove('hidden');
       } else {
-        statusEl.style.display = 'block';
+        recommendations.classList.add('hidden');
+      }
+
+      complianceInfo.classList.remove('hidden');
+    }
+
+    function getScoreColor(score) {
+      if (score >= 90) return 'var(--figma-color-bg-success)';
+      if (score >= 70) return 'var(--figma-color-bg-warning)';
+      return 'var(--figma-color-bg-danger)';
+    }
+
+    function hideDesignSystemSection() {
+      const section = document.getElementById('designSystemSection');
+      section.classList.add('hidden');
+    }
+
+    // Compliance Scoring Functions
+    let lastComplianceCheck = 0;
+    
+    function triggerComplianceCalculation() {
+      // Throttle compliance checks to avoid spam
+      const now = Date.now();
+      if (now - lastComplianceCheck < 2000) return; // Max once per 2 seconds
+      
+      lastComplianceCheck = now;
+      
+      // Request compliance analysis
+      parent.postMessage({ 
+        pluginMessage: { type: 'calculate-compliance' } 
+      }, '*');
+    }
+
+    function displayComplianceResults(compliance, selectionCount) {
+      console.log('📊 Displaying compliance results:', compliance);
+      
+      // Update overall score
+      updateHealthMetrics(compliance);
+      
+      // Show detailed analysis if there's selection
+      if (selectionCount > 0) {
+        updateComponentAnalysis(compliance, selectionCount);
+        updateRecommendations(compliance.recommendations);
       }
       
-      console.log(`[${type.toUpperCase()}] ${message}`);
+      // Update last updated timestamp
+      const lastUpdated = document.getElementById('lastUpdated');
+      if (lastUpdated) {
+        lastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+      }
     }
-    
-    function initializeCopyButton() {
-      const copyBtn = document.getElementById('copy');
-      if (copyBtn) {
-        copyBtn.addEventListener('click', () => {
-          const output = document.getElementById('output');
-          if (output && output.value) {
-            copyToClipboard(output.value);
-          } else {
-            handleError(new ValidationError('No ticket content to copy'), 'Copy operation', false);
+
+    function updateHealthMetrics(compliance) {
+      const overallScore = document.getElementById('overallScore');
+      const componentUsage = document.getElementById('componentUsage');
+      const tokenAdoption = document.getElementById('tokenAdoption');
+      const consistency = document.getElementById('consistency');
+      
+      if (compliance) {
+        // Update metric values with animation
+        if (overallScore) {
+          overallScore.textContent = `${compliance.overall}%`;
+          overallScore.className = `metric-value ${getScoreClass(compliance.overall)}`;
+        }
+        
+        if (componentUsage) {
+          componentUsage.textContent = `${compliance.breakdown.components.score}%`;
+          componentUsage.className = `metric-value ${getScoreClass(compliance.breakdown.components.score)}`;
+        }
+        
+        if (tokenAdoption) {
+          tokenAdoption.textContent = `${Math.round((compliance.breakdown.colors.score + compliance.breakdown.typography.score) / 2)}%`;
+          tokenAdoption.className = `metric-value ${getScoreClass(Math.round((compliance.breakdown.colors.score + compliance.breakdown.typography.score) / 2))}`;
+        }
+        
+        if (consistency) {
+          consistency.textContent = `${compliance.breakdown.spacing.score}%`;
+          consistency.className = `metric-value ${getScoreClass(compliance.breakdown.spacing.score)}`;
+        }
+      } else {
+        // Reset to placeholder state
+        [overallScore, componentUsage, tokenAdoption, consistency].forEach(el => {
+          if (el) {
+            el.textContent = '--';
+            el.className = 'metric-value';
           }
         });
       }
     }
-    
-    async function copyToClipboard(text) {
-      try {
+
+    function getScoreClass(score) {
+      if (score >= 90) return 'excellent';
+      if (score >= 80) return 'good';
+      if (score >= 70) return 'medium';
+      if (score >= 60) return 'needs-attention';
+      return 'poor';
+    }
+
+    function updateComponentAnalysis(compliance, selectionCount) {
+      const componentAnalysis = document.getElementById('componentAnalysis');
+      if (!componentAnalysis) return;
+      
+      const breakdown = compliance.breakdown;
+      const html = `
+        <div class="analysis-summary">
+          <div class="summary-stat">
+            <span class="stat-label">Elements analyzed:</span>
+            <span class="stat-value">${selectionCount}</span>
+          </div>
+        </div>
+        
+        <div class="breakdown-grid">
+          <div class="breakdown-item">
+            <div class="breakdown-label">Colors</div>
+            <div class="breakdown-score ${getScoreClass(breakdown.colors.score)}">${breakdown.colors.score}%</div>
+            <div class="breakdown-details">${breakdown.colors.compliantCount}/${breakdown.colors.totalCount} compliant</div>
+          </div>
+          
+          <div class="breakdown-item">
+            <div class="breakdown-label">Typography</div>
+            <div class="breakdown-score ${getScoreClass(breakdown.typography.score)}">${breakdown.typography.score}%</div>
+            <div class="breakdown-details">${breakdown.typography.compliantCount}/${breakdown.typography.totalCount} compliant</div>
+          </div>
+          
+          <div class="breakdown-item">
+            <div class="breakdown-label">Components</div>
+            <div class="breakdown-score ${getScoreClass(breakdown.components.score)}">${breakdown.components.score}%</div>
+            <div class="breakdown-details">${breakdown.components.compliantCount}/${breakdown.components.totalCount} compliant</div>
+          </div>
+          
+          <div class="breakdown-item">
+            <div class="breakdown-label">Spacing</div>
+            <div class="breakdown-score ${getScoreClass(breakdown.spacing.score)}">${breakdown.spacing.score}%</div>
+            <div class="breakdown-details">${breakdown.spacing.compliantCount}/${breakdown.spacing.totalCount} compliant</div>
+          </div>
+        </div>
+      `;
+      
+      componentAnalysis.innerHTML = html;
+    }
+
+    function updateRecommendations(recommendations) {
+      const healthRecommendations = document.getElementById('healthRecommendations');
+      if (!healthRecommendations) return;
+      
+      if (recommendations && recommendations.length > 0) {
+        const html = recommendations.slice(0, 3).map(rec => `
+          <div class="recommendation-item ${rec.priority}">
+            <div class="rec-priority">${rec.priority.toUpperCase()}</div>
+            <div class="rec-category">${rec.category}</div>
+            <div class="rec-description">${rec.description}</div>
+            <div class="rec-action">${rec.action}</div>
+          </div>
+        `).join('');
+        
+        healthRecommendations.innerHTML = html;
+      } else {
+        healthRecommendations.innerHTML = `
+          <div class="metric-row">
+            <span class="metric-name">No recommendations at this time</span>
+          </div>
+        `;
+      }
+    }
+
+    function showComplianceError(message) {
+      const componentAnalysis = document.getElementById('componentAnalysis');
+      if (componentAnalysis) {
+        componentAnalysis.innerHTML = `
+          <div class="placeholder-text error">
+            <span>⚠️ ${message}</span>
+          </div>
+        `;
+      }
+      
+      const healthRecommendations = document.getElementById('healthRecommendations');
+      if (healthRecommendations) {
+        healthRecommendations.innerHTML = `
+          <div class="placeholder-text">
+            Select frames or components to get recommendations
+          </div>
+        `;
+      }
+    }
+
+    function showStatus(message, type) {
+      statusDiv.textContent = message;
+      statusDiv.className = `status ${type}`;
+      statusDiv.classList.remove('hidden');
+      
+      if (type === 'success') {
+        setTimeout(() => {
+          statusDiv.classList.add('hidden');
+        }, 3000);
+      }
+    }
+
+    function setGenerating(generating) {
+      isGenerating = generating;
+      generateBtn.disabled = generating;
+      generateBtn.textContent = generating ? '⏳ Generating...' : '📋 Generate Ticket from Selection';
+    }
+
+    function copyToClipboard() {
+      if (output.value.trim()) {
         // Try modern clipboard API first
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(text);
-          showTicketStatus('✅ Ticket copied to clipboard!', 'success');
-          return;
+          navigator.clipboard.writeText(output.value).then(() => {
+            showStatus('Copied to clipboard!', 'success');
+          }).catch(() => {
+            // Fallback to legacy method
+            fallbackCopyToClipboard();
+          });
+        } else {
+          // Use fallback method
+          fallbackCopyToClipboard();
         }
+      }
+    }
+
+    function fallbackCopyToClipboard() {
+      try {
+        // Create a temporary textarea element
+        const textArea = document.createElement('textarea');
+        textArea.value = output.value;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
         
-        // Fallback to text selection method
-        const tempTextArea = document.createElement('textarea');
-        tempTextArea.value = text;
-        tempTextArea.style.position = 'fixed';
-        tempTextArea.style.left = '-999999px';
-        tempTextArea.style.top = '-999999px';
-        document.body.appendChild(tempTextArea);
+        // Select and copy the text
+        textArea.focus();
+        textArea.select();
         
-        tempTextArea.focus();
-        tempTextArea.select();
-        
+        // Try the legacy execCommand
         const successful = document.execCommand('copy');
-        document.body.removeChild(tempTextArea);
+        document.body.removeChild(textArea);
         
         if (successful) {
-          showTicketStatus('✅ Ticket copied to clipboard! (Use Ctrl+V to paste)', 'success');
+          showStatus('Copied to clipboard!', 'success');
         } else {
-          throw new Error('execCommand failed');
-        }
-        
-      } catch (error) {
-        console.warn('Copy to clipboard failed:', error);
-        
-        // Final fallback - select the textarea content
-        const output = document.getElementById('output');
-        if (output) {
+          // If all else fails, select the text for manual copying
           output.select();
-          output.setSelectionRange(0, 99999);
-          showTicketStatus('📋 Text selected - use Ctrl+C to copy, then Ctrl+V to paste', 'warning');
-        } else {
-          handleError(new Error(ERROR_MESSAGES.CLIPBOARD_ERROR), 'Clipboard operation', false);
+          output.setSelectionRange(0, 99999); // For mobile devices
+          showStatus('Text selected - press Ctrl+C (or Cmd+C) to copy', 'error');
         }
+      } catch (error) {
+        // Final fallback - just select the text
+        output.select();
+        output.setSelectionRange(0, 99999);
+        showStatus('Text selected - press Ctrl+C (or Cmd+C) to copy', 'error');
       }
     }
-    
-    function setTicketGenerating(generating) {
-      isGenerating = generating;
-      const generateBtn = document.getElementById('generate');
-      if (generateBtn) {
-        generateBtn.disabled = generating;
-        generateBtn.textContent = generating ? '⏳ Generating...' : '📋 Generate Ticket from Selection';
-      }
-    }
-    
-    // Message handler for frame data and errors
-    window.addEventListener('message', (event) => {
-      const msg = event.data.pluginMessage;
-      if (!msg) return;
-      
-      console.log('📨 Enhanced ticket handler received:', msg.type);
-      
-      if (msg.type === 'frame-data') {
-        frameDataList = msg.data;
-        generateEnhancedAITicket();
-      }
-      
-      if (msg.type === 'error') {
-        console.log('❌ Ticket generation error:', msg.message);
-        showTicketStatus(msg.message, 'error');
-        setTicketGenerating(false);
-      }
-    });
-    
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeEnhancedTicketGeneration);
-    } else {
-      initializeEnhancedTicketGeneration();
-    }
-  </script>
-  
-  <!-- Tab System Script -->
-  <script>
-    // Tab system functionality
-    function initializeTabs() {
-      const tabButtons = document.querySelectorAll('.tab-button');
-      const tabContents = document.querySelectorAll('.tab-content');
-      
-      tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          const targetTab = button.getAttribute('data-tab');
-          
-          // Remove active class from all buttons and contents
-          tabButtons.forEach(btn => btn.classList.remove('active'));
-          tabContents.forEach(content => content.classList.remove('active'));
-          
-          // Add active class to clicked button and corresponding content
-          button.classList.add('active');
-          document.getElementById(targetTab + '-tab').classList.add('active');
-          
-          // Save the active tab preference (with Figma-safe localStorage handling)
-          try {
-            if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('activeTab', targetTab);
-            }
-          } catch(e) {
-            // localStorage disabled in Figma - silently ignore
-          }
-        });
-      });
-      
-      // Restore saved tab preference (with Figma-safe localStorage handling)
+
+    // Check if localStorage is available
+    function isLocalStorageAvailable() {
       try {
-        if (typeof localStorage !== 'undefined') {
-          const savedTab = localStorage.getItem('activeTab');
-          if (savedTab) {
-            const savedButton = document.querySelector(`[data-tab="${savedTab}"]`);
-            if (savedButton) {
-              savedButton.click();
-            }
-          }
-        }
+        const test = '__localStorage_test__';
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
       } catch(e) {
-        // localStorage disabled in Figma - silently ignore
+        return false;
+      }
+    }
+
+    function saveSettings() {
+      const settings = {
+        apiKey: apiKeyInput.value,
+        model: modelSelect.value,
+        template: templateSelect.value
+      };
+      
+      if (isLocalStorageAvailable()) {
+        try {
+          localStorage.setItem('aiTicketGenerator', JSON.stringify(settings));
+        } catch (error) {
+          // Fallback to session storage
+          window.tempSettings = settings;
+        }
+      } else {
+        // Store in memory for session
+        window.tempSettings = settings;
+      }
+    }
+
+    function loadSettings() {
+      if (isLocalStorageAvailable()) {
+        try {
+          const settings = JSON.parse(localStorage.getItem('aiTicketGenerator') || '{}');
+          if (settings.apiKey) apiKeyInput.value = settings.apiKey;
+          if (settings.model) modelSelect.value = settings.model;
+          if (settings.template) templateSelect.value = settings.template;
+          return; // Exit early if localStorage worked
+        } catch (error) {
+          // Continue to fallback
+        }
+      }
+      
+      // Fallback: try session storage
+      if (window.tempSettings) {
+        const settings = window.tempSettings;
+        if (settings.apiKey) apiKeyInput.value = settings.apiKey;
+        if (settings.model) modelSelect.value = settings.model;
+        if (settings.template) templateSelect.value = settings.template;
       }
     }
     
-    // Initialize tabs when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeTabs);
-    } else {
-      initializeTabs();
+    // MCP Helper Functions
+    function getScoreClass(score) {
+      if (score >= 90) return 'excellent';
+      if (score >= 75) return 'good';
+      return 'needs-attention';
+    }
+    
+    function updateHealthMetricsFromMCP(mcpCompliance) {
+      // Update compliance rate
+      const complianceRate = document.getElementById('complianceRate');
+      if (complianceRate && mcpCompliance.overallScore !== undefined) {
+        complianceRate.textContent = Math.round(mcpCompliance.overallScore) + '%';
+        complianceRate.className = 'metric-value ' + getScoreClass(mcpCompliance.overallScore);
+      }
+      
+      // Update other metrics if available
+      const tokenUsage = document.getElementById('tokenUsage');
+      if (tokenUsage && mcpCompliance.tokenUsage !== undefined) {
+        tokenUsage.textContent = mcpCompliance.tokenUsage + '%';
+        tokenUsage.className = 'metric-value ' + getScoreClass(mcpCompliance.tokenUsage);
+      }
+      
+      const consistencyScore = document.getElementById('consistencyScore');
+      if (consistencyScore && mcpCompliance.consistencyScore !== undefined) {
+        consistencyScore.textContent = Math.round(mcpCompliance.consistencyScore) + '%';
+        consistencyScore.className = 'metric-value ' + getScoreClass(mcpCompliance.consistencyScore);
+      }
     }
   </script>
 </body>

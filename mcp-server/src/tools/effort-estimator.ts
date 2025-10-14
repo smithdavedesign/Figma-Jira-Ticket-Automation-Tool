@@ -7,7 +7,7 @@
 export class EffortEstimator {
   async estimate(args: any): Promise<{ content: Array<{ type: string; text: string }> }> {
     try {
-      const { figmaUrl, estimationType = 'all', teamProfile = {}, includeBreakdown = true } = args;
+      const { figmaUrl, teamProfile = {}, includeBreakdown = true } = args;
       
       const fileKey = this.extractFileKey(figmaUrl);
       if (!fileKey) {

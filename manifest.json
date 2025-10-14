@@ -1,5 +1,5 @@
 {
-  "name": "AI Ticket Generator",
+  "name": "AI Ticket Generator (MCP)",
   "id": "figma-ai-ticket-generator-2024",
   "api": "1.0.0",
   "main": "code.js",
@@ -7,7 +7,8 @@
   "editorType": ["figma", "figjam"],
   "documentAccess": "dynamic-page",
   "networkAccess": {
-    "allowedDomains": ["https://api.openai.com"]
+    "allowedDomains": ["https://api.openai.com"],
+    "devAllowedDomains": ["http://localhost:3000"]
   },
   "permissions": ["currentuser"]
 }

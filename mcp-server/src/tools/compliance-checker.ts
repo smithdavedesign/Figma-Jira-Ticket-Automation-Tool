@@ -7,7 +7,7 @@
 export class ComplianceChecker {
   async check(args: any): Promise<{ content: Array<{ type: string; text: string }> }> {
     try {
-      const { figmaUrl, categories = ['all'], reportFormat = 'actionable' } = args;
+      const { figmaUrl, categories = ['all'] } = args;
       
       const fileKey = this.extractFileKey(figmaUrl);
       if (!fileKey) {

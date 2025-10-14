@@ -51,7 +51,7 @@ export interface ProjectAnalysisResult {
 export class ProjectAnalyzer {
   async analyze(args: any): Promise<{ content: Array<{ type: string; text: string }> }> {
     try {
-      const { figmaUrl, scope = 'file', includeCompliance = true, includeRelationships = true } = args;
+      const { figmaUrl, scope = 'file' } = args;
       
       // Extract file key from URL
       const fileKey = this.extractFileKey(figmaUrl);
@@ -212,6 +212,6 @@ ${analysis.insights.opportunities.map(o => `- ${o}`).join('\n')}
 
   private extractFileKey(url: string): string | null {
     const match = url.match(/file\/([a-zA-Z0-9]+)/);
-    return match ? match[1] : null;
+    return match ? match[1] || null : null;
   }
 }

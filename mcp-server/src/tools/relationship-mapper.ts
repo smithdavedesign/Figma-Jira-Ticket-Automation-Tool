@@ -7,7 +7,7 @@
 export class RelationshipMapper {
   async map(args: any): Promise<{ content: Array<{ type: string; text: string }> }> {
     try {
-      const { figmaUrl, analysisDepth = 'deep', includeUsageStats = true, outputFormat = 'graph' } = args;
+      const { figmaUrl, analysisDepth = 'deep', includeUsageStats = true } = args;
       
       const fileKey = this.extractFileKey(figmaUrl);
       if (!fileKey) {

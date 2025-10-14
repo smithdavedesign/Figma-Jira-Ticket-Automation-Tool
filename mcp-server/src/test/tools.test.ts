@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { ProjectAnalyzer } from '../src/tools/project-analyzer.js';
-import { TicketGenerator } from '../src/tools/ticket-generator.js';
-import { ComplianceChecker } from '../src/tools/compliance-checker.js';
+import { ProjectAnalyzer } from '../tools/project-analyzer.js';
+import { TicketGenerator } from '../tools/ticket-generator.js';
+import { ComplianceChecker } from '../tools/compliance-checker.js';
 
 describe('MCP Server Tools', () => {
   const testFigmaUrl = 'https://www.figma.com/file/test123/Sample-Project';

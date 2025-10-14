@@ -367,6 +367,70 @@
       background: var(--figma-color-bg-hover);
     }
     
+    /* Radio Button Styles */
+    .mode-selection {
+      margin-bottom: 16px;
+    }
+    
+    .radio-group {
+      margin-bottom: 12px;
+    }
+    
+    .radio-group input[type="radio"] {
+      display: none;
+    }
+    
+    .radio-group label {
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--figma-color-bg);
+    }
+    
+    .radio-group input[type="radio"]:checked + label {
+      border-color: var(--figma-color-border-brand);
+      background: var(--figma-color-bg-brand-secondary);
+    }
+    
+    .radio-group label:hover {
+      border-color: var(--figma-color-border-brand);
+    }
+    
+    .radio-label {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--figma-color-text);
+      margin-bottom: 4px;
+    }
+    
+    .radio-description {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      line-height: 1.4;
+    }
+    
+    .mcp-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--figma-color-bg-secondary);
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    
+    .status-indicator {
+      font-size: 14px;
+    }
+    
+    .status-text {
+      color: var(--figma-color-text-secondary);
+    }
+    
     .output-section {
       margin-top: 16px;
     }
@@ -664,7 +728,30 @@
       <p class="panel-subtitle">Generate Jira tickets from selected Figma frames</p>
 
       <div class="config-section">
-        <div class="config-title">AI Configuration</div>
+        <div class="config-title">Generation Mode</div>
+        
+        <div class="mode-selection">
+          <div class="radio-group">
+            <input type="radio" id="modeMCP" name="generationMode" value="mcp" checked>
+            <label for="modeMCP">
+              <span class="radio-label">🚀 MCP Server (Enhanced)</span>
+              <span class="radio-description">Local Model Context Protocol server with strategic design analysis</span>
+            </label>
+          </div>
+          
+          <div class="radio-group">
+            <input type="radio" id="modeOpenAI" name="generationMode" value="openai">
+            <label for="modeOpenAI">
+              <span class="radio-label">🤖 OpenAI API</span>
+              <span class="radio-description">Cloud-based AI generation (requires API key)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- OpenAI Configuration (hidden by default) -->
+      <div class="config-section" id="openaiConfig" style="display: none;">
+        <div class="config-title">OpenAI Configuration</div>
         
         <div class="form-group">
           <label for="apiKey">OpenAI API Key</label>
@@ -678,6 +765,15 @@
             <option value="gpt-4o">GPT-4o</option>
             <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
           </select>
+        </div>
+      </div>
+
+      <!-- MCP Configuration (visible by default) -->
+      <div class="config-section" id="mcpConfig">
+        <div class="config-title">MCP Configuration</div>
+        <div class="mcp-status">
+          <span class="status-indicator" id="mcpStatus">🔄 Checking...</span>
+          <span class="status-text" id="mcpStatusText">Connecting to MCP server...</span>
         </div>
       </div>
 
@@ -775,13 +871,106 @@
     const customPromptInput = document.getElementById('customPrompt');
     const statusDiv = document.getElementById('status');
     const frameInfoDiv = document.getElementById('frameInfo');
+    
+    // Mode Selection Elements
+    const modeMCP = document.getElementById('modeMCP');
+    const modeOpenAI = document.getElementById('modeOpenAI');
+    const openaiConfig = document.getElementById('openaiConfig');
+    const mcpConfig = document.getElementById('mcpConfig');
+    const mcpStatus = document.getElementById('mcpStatus');
+    const mcpStatusText = document.getElementById('mcpStatusText');
 
     // State
     let frameDataList = [];
     let isGenerating = false;
+    let currentFileKey = '';
+    let currentFileName = '';
+    
+    // MCP Server Communication
+    async function callMCPServer(method, params) {
+      try {
+        console.log('🔍 Calling MCP server:', method, params);
+        
+        const response = await fetch('http://localhost:3000', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: method,
+            params: params
+          }),
+        });
+        
+        console.log('📡 MCP response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`MCP Server error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 MCP response data:', data);
+        return data.result || data;
+      } catch (error) {
+        console.warn('MCP Server not available:', error);
+        return null;
+      }
+    }
+    
+    // Mode Switching Functions
+    function initializeModeSelection() {
+      // Set up radio button event listeners
+      modeMCP.addEventListener('change', handleModeChange);
+      modeOpenAI.addEventListener('change', handleModeChange);
+      
+      // Initialize with MCP mode
+      handleModeChange();
+      checkMCPServerStatus();
+    }
+    
+    function handleModeChange() {
+      const selectedMode = document.querySelector('input[name="generationMode"]:checked').value;
+      
+      if (selectedMode === 'mcp') {
+        openaiConfig.style.display = 'none';
+        mcpConfig.style.display = 'block';
+        generateBtn.textContent = '🚀 Generate Ticket with MCP';
+      } else {
+        openaiConfig.style.display = 'block';
+        mcpConfig.style.display = 'none';
+        generateBtn.textContent = '🤖 Generate Ticket with OpenAI';
+      }
+    }
+    
+    async function checkMCPServerStatus() {
+      try {
+        mcpStatus.textContent = '🔄';
+        mcpStatusText.textContent = 'Checking MCP server...';
+        
+        const response = await fetch('http://localhost:3000', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method: 'ping' })
+        });
+        
+        if (response.ok) {
+          mcpStatus.textContent = '✅';
+          mcpStatusText.textContent = 'MCP server connected (localhost:3000)';
+        } else {
+          throw new Error('Server responded with error');
+        }
+      } catch (error) {
+        mcpStatus.textContent = '❌';
+        mcpStatusText.textContent = 'MCP server unavailable';
+        console.warn('MCP server check failed:', error);
+      }
+    }
 
     // Load saved settings
     loadSettings();
+
+    // Initialize mode selection
+    initializeModeSelection();
 
     // Event listeners
     generateBtn.onclick = generateTicket;
@@ -808,9 +997,9 @@
       const msg = event.data.pluginMessage;
       
       if (msg.type === 'file-context') {
-        globalFileKey = msg.fileKey || '';
-        globalFileName = msg.fileName || '';
-        console.log('📁 File context received:', { fileKey: globalFileKey, fileName: globalFileName });
+        currentFileKey = msg.fileKey || '';
+        currentFileName = msg.fileName || '';
+        console.log('📁 File context received:', { fileKey: currentFileKey, fileName: currentFileName });
       }
       
       if (msg.type === 'frame-data') {
@@ -848,12 +1037,6 @@
     function generateTicket() {
       if (isGenerating) return;
       
-      const apiKey = apiKeyInput.value.trim();
-      if (!apiKey) {
-        showStatus('Please enter your OpenAI API key', 'error');
-        return;
-      }
-
       setGenerating(true);
       showStatus('Reading selected frames...', 'loading');
       
@@ -870,11 +1053,65 @@
         return;
       }
 
+      const selectedMode = document.querySelector('input[name="generationMode"]:checked').value;
+      console.log('🚀 Starting ticket generation in mode:', selectedMode);
+
+      if (selectedMode === 'mcp') {
+        await generateWithMCP();
+      } else {
+        await generateWithOpenAI();
+      }
+    }
+    
+    async function generateWithMCP() {
       try {
-        showStatus('Generating ticket with AI...', 'loading');
+        showStatus('🔍 Analyzing project with MCP...', 'loading');
+        
+        const mcpTickets = await callMCPServer('generate_tickets', {
+          frameData: frameDataList,
+          template: templateSelect.value,
+          projectName: currentFileName || 'Figma Design'
+        });
+        
+        showStatus('🎫 Processing MCP results...', 'loading');
+        console.log('📦 MCP response received:', mcpTickets);
+        
+        if (mcpTickets && mcpTickets.content && mcpTickets.content.length > 0) {
+          const ticketText = mcpTickets.content[0].text;
+          
+          output.value = ticketText;
+          copyBtn.disabled = false;
+          showStatus('✅ Enhanced tickets generated with MCP!', 'success');
+          return;
+        }
+        
+        throw new Error('MCP server returned no content');
+        
+      } catch (error) {
+        console.error('❌ MCP generation failed:', error);
+        
+        // Fallback for MCP mode
+        const fallbackTicket = generateFallbackTicket();
+        output.value = fallbackTicket;
+        copyBtn.disabled = false;
+        showStatus('⚠️ Fallback ticket generated (MCP server unavailable)', 'error');
+      } finally {
+        setGenerating(false);
+      }
+    }
+    
+    async function generateWithOpenAI() {
+      try {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+          showStatus('Please enter your OpenAI API key', 'error');
+          setGenerating(false);
+          return;
+        }
+        
+        showStatus('🤖 Generating ticket with OpenAI...', 'loading');
         
         const prompt = createPrompt(frameDataList);
-        const apiKey = apiKeyInput.value.trim();
         const model = modelSelect.value;
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -907,11 +1144,131 @@
         
         output.value = ticket;
         copyBtn.disabled = false;
-        showStatus('Ticket generated successfully!', 'success');
+        showStatus('✅ Ticket generated successfully with OpenAI!', 'success');
         
       } catch (error) {
-        console.error('Error generating ticket:', error);
+        console.error('❌ OpenAI generation failed:', error);
         showStatus(`Error: ${error.message}`, 'error');
+      } finally {
+        setGenerating(false);
+      }
+    }
+    
+    function generateFallbackTicket() {
+      return `# Generated Ticket (Fallback)
+
+## ${frameDataList[0]?.name || 'Component'} Implementation
+
+### Description
+Implement the ${frameDataList[0]?.name || 'selected component'} based on Figma design specifications.
+
+### Acceptance Criteria
+- [ ] Component matches design specifications
+- [ ] Component is responsive across all devices  
+- [ ] Component passes accessibility testing
+- [ ] Unit tests provide adequate coverage
+
+### Technical Notes
+- Based on ${frameDataList.length} selected frame(s)
+- Generated with local fallback (MCP server unavailable)
+- Node count: ${frameDataList[0]?.nodeCount || 'Unknown'}
+- Dimensions: ${frameDataList[0]?.dimensions?.width || 0}x${frameDataList[0]?.dimensions?.height || 0}px
+
+### Priority
+Medium
+
+### Story Points
+${Math.max(3, Math.min(8, Math.ceil((frameDataList[0]?.nodeCount || 0) / 5)))}
+
+---
+*Generated at ${new Date().toISOString()}*`;
+    }
+    
+    // Original generateAITicket function content for reference - now split into mode-specific functions
+    async function originalGenerateAITicket() {
+
+      try {
+        showStatus('🔍 Analyzing project with MCP...', 'loading');
+        
+        // Use MCP to generate tickets directly with frame data (no file key needed)
+        const mcpTickets = await callMCPServer('generate_tickets', {
+          frameData: frameDataList,
+          template: templateSelect.value,
+          projectName: currentFileName || 'Figma Design'
+        });
+        
+        showStatus('🎫 Processing MCP results...', 'loading');
+        console.log('📦 MCP response received:', mcpTickets);
+        
+        // If MCP server is available, use the enhanced tickets
+        if (mcpTickets && mcpTickets.content && mcpTickets.content.length > 0) {
+          // MCP returns content array, extract the text
+          const ticketText = mcpTickets.content[0].text;
+          
+          output.value = ticketText;
+          copyBtn.disabled = false;
+          showStatus('✅ Enhanced tickets generated with MCP!', 'success');
+          setGenerating(false);
+          return;
+        }
+        
+        // If MCP failed, generate a simple fallback ticket (NO API KEY REQUIRED)
+        console.log('🔄 MCP failed, generating fallback ticket without API');
+        
+        const fallbackTicket = `# Generated Ticket (Fallback)
+
+## ${frameDataList[0]?.name || 'Component'} Implementation
+
+### Description
+Implement the ${frameDataList[0]?.name || 'selected component'} based on Figma design specifications.
+
+### Acceptance Criteria
+- [ ] Component matches design specifications
+- [ ] Component is responsive across all devices
+- [ ] Component passes accessibility testing
+- [ ] Unit tests provide adequate coverage
+
+### Technical Notes
+- Based on ${frameDataList.length} selected frame(s)
+- Generated with local fallback (MCP server unavailable)
+- Node count: ${frameDataList[0]?.nodeCount || 'Unknown'}
+- Dimensions: ${frameDataList[0]?.dimensions?.width || 0}x${frameDataList[0]?.dimensions?.height || 0}px
+
+### Priority
+Medium
+
+### Story Points
+${Math.max(3, Math.min(8, (frameDataList[0]?.nodeCount || 0) / 5))}
+
+---
+*Generated at ${new Date().toISOString()}*`;
+        
+        output.value = fallbackTicket;
+        copyBtn.disabled = false;
+        showStatus('⚠️ Fallback ticket generated (MCP server unavailable)', 'error');
+        
+      } catch (error) {
+        console.error('❌ Error in ticket generation:', error);
+        
+        // Final fallback - always works
+        const simpleTicket = `# Simple Ticket
+
+## Component Implementation
+
+### Description
+Implement the selected component based on Figma design.
+
+### Acceptance Criteria
+- [ ] Match design specifications
+- [ ] Ensure responsiveness
+- [ ] Pass accessibility tests
+
+---
+*Generated at ${new Date().toISOString()}*`;
+        
+        output.value = simpleTicket;
+        copyBtn.disabled = false;
+        showStatus('⚠️ Simple ticket generated (errors occurred)', 'error');
       } finally {
         setGenerating(false);
       }
@@ -1078,7 +1435,7 @@
       section.classList.remove('hidden');
     }
 
-    function displayComplianceInfo(frameDataList) {
+    async function displayComplianceInfo(frameDataList) {
       const complianceInfo = document.getElementById('complianceInfo');
       const complianceScore = document.getElementById('complianceScore');
       const colorScore = document.getElementById('colorScore');
@@ -1087,6 +1444,50 @@
       const recommendations = document.getElementById('recommendations');
       const recList = document.getElementById('recList');
 
+      // Try MCP compliance check first
+      if (currentFileKey && frameDataList.length > 0) {
+        try {
+          const figmaUrl = `https://figma.com/file/${currentFileKey}/${encodeURIComponent(currentFileName || 'Design')}`;
+          const mcpCompliance = await callMCPServer('check_compliance', {
+            figmaUrl: figmaUrl,
+            frameData: frameDataList
+          });
+          
+          if (mcpCompliance && mcpCompliance.overallScore !== undefined) {
+            // Update UI with MCP compliance results
+            complianceScore.textContent = Math.round(mcpCompliance.overallScore) + '%';
+            complianceScore.className = 'compliance-score ' + getScoreClass(mcpCompliance.overallScore);
+            
+            if (mcpCompliance.colorCompliance) {
+              colorScore.textContent = Math.round(mcpCompliance.colorCompliance.score) + '%';
+            }
+            if (mcpCompliance.typographyCompliance) {
+              typographyScore.textContent = Math.round(mcpCompliance.typographyCompliance.score) + '%';
+            }
+            if (mcpCompliance.componentCompliance) {
+              componentScore.textContent = Math.round(mcpCompliance.componentCompliance.score) + '%';
+            }
+            
+            // Show recommendations if available
+            if (mcpCompliance.recommendations && mcpCompliance.recommendations.length > 0) {
+              recList.innerHTML = mcpCompliance.recommendations
+                .map(rec => `<li>${rec}</li>`)
+                .join('');
+              recommendations.classList.remove('hidden');
+            }
+            
+            complianceInfo.classList.remove('hidden');
+            
+            // Update health metrics with MCP data
+            updateHealthMetricsFromMCP(mcpCompliance);
+            return;
+          }
+        } catch (error) {
+          console.warn('MCP compliance check failed, falling back to local analysis:', error);
+        }
+      }
+
+      // Fallback to original local compliance analysis
       // Find frames with design system context
       const framesWithContext = frameDataList.filter(frame => 
         frame.designSystemContext && frame.designSystemContext.complianceReport
@@ -1449,6 +1850,35 @@
         if (settings.apiKey) apiKeyInput.value = settings.apiKey;
         if (settings.model) modelSelect.value = settings.model;
         if (settings.template) templateSelect.value = settings.template;
+      }
+    }
+    
+    // MCP Helper Functions
+    function getScoreClass(score) {
+      if (score >= 90) return 'excellent';
+      if (score >= 75) return 'good';
+      return 'needs-attention';
+    }
+    
+    function updateHealthMetricsFromMCP(mcpCompliance) {
+      // Update compliance rate
+      const complianceRate = document.getElementById('complianceRate');
+      if (complianceRate && mcpCompliance.overallScore !== undefined) {
+        complianceRate.textContent = Math.round(mcpCompliance.overallScore) + '%';
+        complianceRate.className = 'metric-value ' + getScoreClass(mcpCompliance.overallScore);
+      }
+      
+      // Update other metrics if available
+      const tokenUsage = document.getElementById('tokenUsage');
+      if (tokenUsage && mcpCompliance.tokenUsage !== undefined) {
+        tokenUsage.textContent = mcpCompliance.tokenUsage + '%';
+        tokenUsage.className = 'metric-value ' + getScoreClass(mcpCompliance.tokenUsage);
+      }
+      
+      const consistencyScore = document.getElementById('consistencyScore');
+      if (consistencyScore && mcpCompliance.consistencyScore !== undefined) {
+        consistencyScore.textContent = Math.round(mcpCompliance.consistencyScore) + '%';
+        consistencyScore.className = 'metric-value ' + getScoreClass(mcpCompliance.consistencyScore);
       }
     }
   </script>
