@@ -9,7 +9,10 @@
     "watch": "tsc --watch",
     "dev": "npm run watch",
     "clean": "rm -rf dist",
-    "lint": "echo 'Linting not yet configured'"
+    "lint": "echo 'Linting not yet configured'",
+    "test": "node tests/core-tests.js",
+    "test:watch": "echo 'Watch mode: nodemon tests/core-tests.js (install nodemon if needed)'",
+    "validate": "npm run test && npm run build && echo '✅ All validation passed'"
   },
   "keywords": [
     "figma",
