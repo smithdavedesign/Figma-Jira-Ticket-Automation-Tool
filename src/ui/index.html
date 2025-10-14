@@ -425,6 +425,89 @@ input[type="password"] {
   margin-bottom: 8px;
 }
 
+/* Template Preview */
+.template-preview {
+  background: var(--figma-color-bg-secondary);
+  border: 1px solid var(--figma-color-border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.preview-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--figma-color-text);
+  margin-bottom: 8px;
+}
+
+.preview-content {
+  font-size: 10px;
+  color: var(--figma-color-text-secondary);
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.preview-content.loaded {
+  color: var(--figma-color-text);
+}
+
+/* Priority and story points styling */
+#priority option {
+  padding: 4px;
+}
+
+#storyPoints {
+  color: var(--figma-color-text);
+}
+
+#labels {
+  font-family: monospace;
+  font-size: 11px;
+}
+
+/* Format help text */
+.format-help {
+  font-size: 10px;
+  color: var(--figma-color-text-secondary);
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: var(--figma-color-bg-secondary);
+  border-radius: 4px;
+  border-left: 3px solid var(--figma-color-border);
+}
+
+/* Status messages */
+.status-message {
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  display: none;
+}
+
+.status-message.loading {
+  background: var(--figma-color-bg-secondary);
+  color: var(--figma-color-text);
+  border: 1px solid var(--figma-color-border);
+  display: block;
+}
+
+.status-message.success {
+  background: #e7f5e7;
+  color: #2d5a2d;
+  border: 1px solid #5cb85c;
+  display: block;
+}
+
+.status-message.error {
+  background: #f8e7e7;
+  color: #722d2d;
+  border: 1px solid #d9534f;
+  display: block;
+}
+
 /* Frame info display */
 .frame-info {
   background: var(--figma-color-bg-secondary);
@@ -814,17 +897,72 @@ input[type="password"] {
         <div class="form-group template-select">
           <label for="template">Template Type</label>
           <select id="template">
+            <option value="story">User Story</option>
+            <option value="task">Technical Task</option>
             <option value="component">UI Component</option>
             <option value="feature">Feature Implementation</option>
             <option value="bug">Bug Fix</option>
-            <option value="page">Page/Screen</option>
+            <option value="epic">Epic</option>
+            <option value="improvement">Improvement</option>
+            <option value="research">Design Research</option>
             <option value="custom">Custom</option>
           </select>
         </div>
         
         <div class="form-group">
+          <label for="priority">Priority Level</label>
+          <select id="priority">
+            <option value="highest">🔴 Highest</option>
+            <option value="high">🟠 High</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+            <option value="lowest">🔵 Lowest</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="storyPoints">Story Points (Optional)</label>
+          <select id="storyPoints">
+            <option value="">Not Set</option>
+            <option value="1">1 - Trivial</option>
+            <option value="2">2 - Minor</option>
+            <option value="3">3 - Simple</option>
+            <option value="5">5 - Medium</option>
+            <option value="8">8 - Complex</option>
+            <option value="13">13 - Large</option>
+            <option value="21">21 - Huge</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="outputFormat">Output Format</label>
+          <select id="outputFormat">
+            <option value="jira-wiki">Jira Wiki Markup (Recommended)</option>
+            <option value="plain-text">Plain Text (Universal)</option>
+            <option value="markdown">Markdown (GitHub/Modern Tools)</option>
+            <option value="confluence">Confluence Format</option>
+          </select>
+          <div class="format-help" id="formatHelp">
+            Jira Wiki Markup: Uses *bold*, bullet points, and formatting that works in most Jira instances
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="labels">Labels (comma-separated)</label>
+          <input type="text" id="labels" placeholder="frontend, design-system, accessibility" />
+        </div>
+        
+        <div class="form-group">
           <label for="customPrompt">Additional Instructions (Optional)</label>
-          <textarea id="customPrompt" rows="3" placeholder="e.g., Include accessibility requirements, use specific design tokens..."></textarea>
+          <textarea id="customPrompt" rows="3" placeholder="e.g., Include accessibility requirements, use specific design tokens, follow WCAG guidelines..."></textarea>
+        </div>
+        
+        <!-- Template Preview -->
+        <div class="template-preview" id="templatePreview">
+          <div class="preview-title">Template Preview:</div>
+          <div class="preview-content" id="previewContent">
+            Select a template to see the structure
+          </div>
         </div>
       </div>
 
@@ -1065,6 +1203,727 @@ input[type="password"] {
     console.log('🚀 About to call initializeWhenReady...');
     initializeWhenReady();
     console.log('✅ initializeWhenReady called');
+  </script>
+  
+  <!-- Enhanced Ticket Generation Script -->
+  <script>
+    // Enhanced ticket generation functionality
+    let frameDataList = [];
+    let isGenerating = false;
+    
+    // Format definitions for different Jira instances
+    const OUTPUT_FORMATS = {
+      'jira-wiki': {
+        name: 'Jira Wiki Markup',
+        description: 'Uses *bold*, bullet points, and formatting that works in most Jira instances',
+        bold: (text) => `*${text}*`,
+        heading: (text) => `h3. ${text}`,
+        bullet: '* ',
+        numberedList: (num) => `# `,
+        codeBlock: (text) => `{code}\n${text}\n{code}`,
+        separator: '\n----\n'
+      },
+      'plain-text': {
+        name: 'Plain Text',
+        description: 'Simple text format that works everywhere, uses CAPS for emphasis',
+        bold: (text) => text.toUpperCase(),
+        heading: (text) => `${text.toUpperCase()}\n${'='.repeat(text.length)}`,
+        bullet: '- ',
+        numberedList: (num) => `${num}. `,
+        codeBlock: (text) => `\n${text}\n`,
+        separator: '\n' + '='.repeat(50) + '\n'
+      },
+      'markdown': {
+        name: 'Markdown',
+        description: 'Standard Markdown format for GitHub, modern tools, and some Jira Cloud instances',
+        bold: (text) => `**${text}**`,
+        heading: (text) => `### ${text}`,
+        bullet: '- ',
+        numberedList: (num) => `${num}. `,
+        codeBlock: (text) => `\`\`\`\n${text}\n\`\`\``,
+        separator: '\n---\n'
+      },
+      'confluence': {
+        name: 'Confluence',
+        description: 'Confluence wiki markup for Atlassian Confluence pages',
+        bold: (text) => `*${text}*`,
+        heading: (text) => `h3. ${text}`,
+        bullet: '* ',
+        numberedList: (num) => `# `,
+        codeBlock: (text) => `{code:theme=RDark}\n${text}\n{code}`,
+        separator: '\n----\n'
+      }
+    };
+    
+    // Ticket templates with format-agnostic structure
+    const TICKET_TEMPLATES = {
+      story: {
+        name: 'User Story',
+        getStructure: (format) => {
+          const f = OUTPUT_FORMATS[format];
+          return `${f.heading('USER STORY')}
+
+${f.bold('Story:')} As a [user type], I want [functionality] so that [benefit]
+
+${f.bold('Figma Reference:')}
+[Figma design link and frame details for easy access]
+
+${f.bold('Acceptance Criteria:')}
+${f.bullet}[Specific, testable criteria]
+${f.bullet}[Another criteria]
+${f.bullet}[Third criteria]
+
+${f.bold('Definition of Done:')}
+${f.bullet}[ ] Design specs implemented accurately
+${f.bullet}[ ] Responsive behavior tested
+${f.bullet}[ ] Accessibility requirements met
+${f.bullet}[ ] Code review completed`;
+        },
+        prompt: 'Create a user story ticket for implementing functionality based on the Figma design. Focus on user value and clear acceptance criteria.'
+      },
+      task: {
+        name: 'Technical Task', 
+        getStructure: (format) => {
+          const f = OUTPUT_FORMATS[format];
+          return `${f.heading('TECHNICAL TASK')}
+
+${f.bold('Task:')} [Clear, actionable task title]
+
+${f.bold('Description:')}
+[Detailed technical description with context]
+
+${f.bold('Technical Requirements:')}
+${f.bullet}[Specific technical requirement]
+${f.bullet}[Another requirement]
+${f.bullet}[Third requirement]
+
+${f.bold('Dependencies:')}
+${f.bullet}[List any dependencies]
+
+${f.bold('Notes:')}
+[Any additional technical considerations]`;
+        },
+        prompt: 'Create a technical task ticket for implementation work based on the Figma design. Focus on technical requirements and implementation details.'
+      },
+      component: {
+        name: 'UI Component',
+        getStructure: (format) => {
+          const f = OUTPUT_FORMATS[format];
+          return `${f.heading('UI COMPONENT')}
+
+${f.bold('Component:')} [Component Name]
+
+${f.bold('Figma Reference:')}
+[Figma design link and frame details]
+
+${f.bold('Purpose:')}
+[Description of component purpose and usage]
+
+${f.bold('Props/API:')}
+${f.bullet}[List expected props/parameters]
+${f.bullet}[Another prop]
+
+${f.bold('Variants/States:')}
+${f.bullet}[List component variants]
+${f.bullet}[Different states]
+
+${f.bold('Design Tokens:')}
+${f.bullet}Colors: [List required color tokens]
+${f.bullet}Typography: [List font/text styles]
+${f.bullet}Spacing: [List spacing values]
+
+${f.bold('Accessibility:')}
+${f.bullet}[ARIA requirements]
+${f.bullet}[Keyboard navigation]
+${f.bullet}[Screen reader support]`;
+        },
+        prompt: 'Create a UI component implementation ticket based on the Figma design. Include detailed API specifications, variants, and accessibility requirements.'
+      },
+      feature: {
+        name: 'Feature Implementation',
+        getStructure: (format) => {
+          const f = OUTPUT_FORMATS[format];
+          return `${f.heading('FEATURE IMPLEMENTATION')}
+
+${f.bold('Feature:')} [Feature Name]
+
+${f.bold('Figma Reference:')}
+[Figma design link and frame details]
+
+${f.bold('User Value:')}
+[Explain the value this feature provides to users]
+
+${f.bold('Functional Requirements:')}
+${f.bullet}[Specific functional requirement]
+${f.bullet}[Another requirement]
+
+${f.bold('User Experience:')}
+${f.bullet}[UX considerations]
+${f.bullet}[Interaction patterns]
+
+${f.bold('Business Logic:')}
+${f.bullet}[Business rules]
+${f.bullet}[Edge cases]
+
+${f.bold('Integration Points:')}
+${f.bullet}[API endpoints]
+${f.bullet}[Data requirements]`;
+        },
+        prompt: 'Create a feature implementation ticket based on the Figma design. Focus on user value, functional requirements, and business logic.'
+      },
+      bug: {
+        name: 'Bug Fix',
+        getStructure: (format) => {
+          const f = OUTPUT_FORMATS[format];
+          return `${f.heading('BUG FIX')}
+
+${f.bold('Bug Summary:')} [Brief description of the bug]
+
+${f.bold('Current Behavior:')}
+[What's happening now]
+
+${f.bold('Expected Behavior:')}
+[What should happen instead]
+
+${f.bold('Steps to Reproduce:')}
+${f.numberedList(1)}[First step]
+${f.numberedList(2)}[Second step]
+${f.numberedList(3)}[Third step]
+
+${f.bold('Impact:')}
+[Who is affected and how]
+
+${f.bold('Root Cause Analysis:')}
+[Analysis of why this is happening]
+
+${f.bold('Solution:')}
+[Proposed fix approach]`;
+        },
+        prompt: 'Create a bug fix ticket based on the Figma design that shows the correct behavior. Focus on clear reproduction steps and expected outcomes.'
+      },
+      epic: {
+        name: 'Epic',
+        getStructure: (format) => {
+          const f = OUTPUT_FORMATS[format];
+          return `${f.heading('EPIC')}
+
+${f.bold('Epic:')} [Epic Name]
+
+${f.bold('Vision:')}
+[High-level vision for this epic]
+
+${f.bold('User Problems:')}
+${f.bullet}[Problem this epic solves]
+${f.bullet}[Another problem]
+
+${f.bold('Success Metrics:')}
+${f.bullet}[How we'll measure success]
+${f.bullet}[Another metric]
+
+${f.bold('User Stories:')}
+${f.bullet}[High-level user story]
+${f.bullet}[Another story]
+${f.bullet}[Third story]
+
+${f.bold('Dependencies:')}
+[List any dependencies on other teams/systems]
+
+${f.bold('Timeline:')}
+[Estimated timeline and milestones]`;
+        },
+        prompt: 'Create an epic ticket based on the Figma design. Focus on high-level vision, user problems, and success metrics.'
+      },
+      improvement: {
+        name: 'Improvement',
+        getStructure: (format) => {
+          const f = OUTPUT_FORMATS[format];
+          return `${f.heading('IMPROVEMENT')}
+
+${f.bold('Improvement:')} [What we're improving]
+
+${f.bold('Current State:')}
+[How things work today]
+
+${f.bold('Proposed State:')}
+[How things will work after improvement]
+
+${f.bold('Benefits:')}
+${f.bullet}[Benefit to users]
+${f.bullet}[Benefit to business]
+${f.bullet}[Technical benefit]
+
+${f.bold('Implementation Plan:')}
+${f.numberedList(1)}[First step]
+${f.numberedList(2)}[Second step]
+${f.numberedList(3)}[Third step]
+
+${f.bold('Success Criteria:')}
+${f.bullet}[How we'll know it's successful]
+${f.bullet}[Measurable outcome]`;
+        },
+        prompt: 'Create an improvement ticket based on the Figma design. Focus on current vs proposed state and clear benefits.'
+      },
+      research: {
+        name: 'Design Research',
+        getStructure: (format) => {
+          const f = OUTPUT_FORMATS[format];
+          return `${f.heading('DESIGN RESEARCH')}
+
+${f.bold('Research Question:')} [What we want to learn]
+
+${f.bold('Hypothesis:')}
+[What we think we'll discover]
+
+${f.bold('Research Methods:')}
+${f.bullet}[Method 1 - e.g., user interviews]
+${f.bullet}[Method 2 - e.g., usability testing]
+
+${f.bold('Participants:')}
+[Who we'll research with]
+
+${f.bold('Success Metrics:')}
+${f.bullet}[What constitutes successful research]
+${f.bullet}[Deliverable expectations]
+
+${f.bold('Timeline:')}
+[Research timeline and milestones]
+
+${f.bold('Deliverables:')}
+${f.bullet}[Research report]
+${f.bullet}[Design recommendations]
+${f.bullet}[Other deliverables]`;
+        },
+        prompt: 'Create a design research ticket based on the Figma design. Focus on research questions, methods, and expected deliverables.'
+      },
+      custom: {
+        name: 'Custom',
+        getStructure: (format) => {
+          const f = OUTPUT_FORMATS[format];
+          return `${f.heading('CUSTOM TICKET')}
+
+${f.bold('Title:')} [Custom ticket title]
+
+${f.bold('Description:')}
+[Detailed description]
+
+${f.bold('Requirements:')}
+${f.bullet}[Requirement 1]
+${f.bullet}[Requirement 2]
+
+${f.bold('Acceptance Criteria:')}
+${f.bullet}[Criteria 1]
+${f.bullet}[Criteria 2]
+
+${f.bold('Notes:')}
+[Additional notes and context]`;
+        },
+        prompt: 'Create a custom ticket based on the Figma design and additional instructions provided.'
+      }
+    };
+    
+    // Initialize enhanced ticket generation
+    function initializeEnhancedTicketGeneration() {
+      const generateBtn = document.getElementById('generate');
+      const templateSelect = document.getElementById('template');
+      const outputFormatSelect = document.getElementById('outputFormat');
+      const prioritySelect = document.getElementById('priority');
+      const storyPointsSelect = document.getElementById('storyPoints');
+      const labelsInput = document.getElementById('labels');
+      const customPromptInput = document.getElementById('customPrompt');
+      const previewContent = document.getElementById('previewContent');
+      const outputTextarea = document.getElementById('output');
+      
+      if (!generateBtn || !templateSelect) {
+        console.log('❌ Enhanced ticket generation elements not found');
+        return;
+      }
+      
+      // Update template preview when template or format changes
+      templateSelect.addEventListener('change', updateTemplatePreview);
+      if (outputFormatSelect) {
+        outputFormatSelect.addEventListener('change', updateTemplatePreview);
+        outputFormatSelect.addEventListener('change', updateFormatHelp);
+        // Initialize format help
+        updateFormatHelp();
+      }
+      
+      // Initialize with current template
+      updateTemplatePreview();
+      
+      // Enhanced generate button handler
+      generateBtn.addEventListener('click', generateEnhancedTicket);
+      
+      // Initialize copy button
+      initializeCopyButton();
+      
+      console.log('✅ Enhanced ticket generation initialized');
+    }
+    
+    function updateFormatHelp() {
+      const outputFormatSelect = document.getElementById('outputFormat');
+      const formatHelp = document.getElementById('formatHelp');
+      
+      if (!outputFormatSelect || !formatHelp) return;
+      
+      const selectedFormat = outputFormatSelect.value;
+      const format = OUTPUT_FORMATS[selectedFormat];
+      
+      if (format) {
+        formatHelp.textContent = format.description;
+      }
+    }
+    
+    function updateTemplatePreview() {
+      const templateSelect = document.getElementById('template');
+      const outputFormatSelect = document.getElementById('outputFormat');
+      const previewContent = document.getElementById('previewContent');
+      
+      if (!templateSelect || !previewContent) return;
+      
+      const selectedTemplate = templateSelect.value;
+      const selectedFormat = outputFormatSelect ? outputFormatSelect.value : 'jira-wiki';
+      const template = TICKET_TEMPLATES[selectedTemplate];
+      
+      if (template) {
+        previewContent.textContent = template.getStructure(selectedFormat);
+        previewContent.classList.add('loaded');
+      } else {
+        previewContent.textContent = 'Select a template to see the structure';
+        previewContent.classList.remove('loaded');
+      }
+    }
+    
+    function generateEnhancedTicket() {
+      if (isGenerating) return;
+      
+      const apiKey = document.getElementById('apiKey')?.value?.trim();
+      if (!apiKey) {
+        showTicketStatus('Please enter your OpenAI API key', 'error');
+        return;
+      }
+      
+      setTicketGenerating(true);
+      showTicketStatus('Reading selected frames...', 'loading');
+      
+      // Request frame data from Figma
+      parent.postMessage({ 
+        pluginMessage: { type: 'generate-ticket' } 
+      }, '*');
+    }
+    
+    async function generateEnhancedAITicket() {
+      if (!frameDataList.length) {
+        showTicketStatus('No frame data received', 'error');
+        setTicketGenerating(false);
+        return;
+      }
+      
+      try {
+        showTicketStatus('Generating enhanced ticket with AI...', 'loading');
+        
+        const prompt = createEnhancedPrompt(frameDataList);
+        const apiKey = document.getElementById('apiKey').value.trim();
+        const model = document.getElementById('model').value;
+        
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              { 
+                role: 'system', 
+                content: 'You are an expert Jira ticket creator specializing in UI/UX implementation. Generate detailed, structured tickets with clear acceptance criteria, technical requirements, and design specifications. Always include specific Figma references and maintain consistency with the requested template format.' 
+              },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.3, // Lower temperature for more consistent structure
+            max_tokens: 1500 // Increased for more detailed tickets
+          }),
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error?.message || `API request failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const ticket = data.choices[0].message.content.trim();
+        
+        // Add Jira metadata
+        const enhancedTicket = addJiraMetadata(ticket);
+        
+        document.getElementById('output').value = enhancedTicket;
+        document.getElementById('copy').disabled = false;
+        showTicketStatus('Enhanced ticket generated successfully!', 'success');
+        
+      } catch (error) {
+        console.error('Error generating enhanced ticket:', error);
+        showTicketStatus(`Error: ${error.message}`, 'error');
+      } finally {
+        setTicketGenerating(false);
+      }
+    }
+    
+    function createEnhancedPrompt(frameDataList) {
+      const templateSelect = document.getElementById('template');
+      const outputFormatSelect = document.getElementById('outputFormat');
+      const prioritySelect = document.getElementById('priority');
+      const storyPointsSelect = document.getElementById('storyPoints');
+      const labelsInput = document.getElementById('labels');
+      const customPromptInput = document.getElementById('customPrompt');
+      
+      const selectedTemplate = templateSelect.value;
+      const selectedFormat = outputFormatSelect ? outputFormatSelect.value : 'jira-wiki';
+      const template = TICKET_TEMPLATES[selectedTemplate];
+      const format = OUTPUT_FORMATS[selectedFormat];
+      const priority = prioritySelect.value;
+      const storyPoints = storyPointsSelect.value;
+      const labels = labelsInput.value;
+      const customInstructions = customPromptInput.value.trim();
+      
+      let prompt = `${template.prompt}\n\n`;
+      
+      // Add format-specific instructions
+      prompt += `CRITICAL: Use ${format.name} formatting. Here are the formatting rules:\n`;
+      prompt += `- Bold text: Use "${format.bold('example')}" (not **example**)\n`;
+      prompt += `- Headings: Use "${format.heading('Example')}" \n`;
+      prompt += `- Bullet points: Use "${format.bullet}" at the start of each line\n`;
+      prompt += `- Numbered lists: Use "${format.numberedList(1)}" for numbered items\n\n`;
+      
+      // Add template structure instructions
+      prompt += `Please use this EXACT structure and formatting for the ticket:\n\n${template.getStructure(selectedFormat)}\n\n`;
+      
+      // Add Figma frame data
+      prompt += `**Figma Design Context:**\n`;
+      
+      // Generate Figma file link from frame data
+      let figmaFileUrl = '';
+      if (frameDataList.length > 0 && frameDataList[0].fileKey) {
+        figmaFileUrl = `https://www.figma.com/design/${frameDataList[0].fileKey}`;
+        if (frameDataList[0].id) {
+          figmaFileUrl += `?node-id=${encodeURIComponent(frameDataList[0].id.replace(':', '-'))}`;
+        }
+        prompt += `\n**Figma File Link:** ${figmaFileUrl}\n`;
+      }
+      
+      frameDataList.forEach((frame, index) => {
+        prompt += `\nFrame ${index + 1}: "${frame.name}"\n`;
+        prompt += `- Page: ${frame.pageName}\n`;
+        prompt += `- Type: ${frame.type}\n`;
+        prompt += `- Dimensions: ${frame.dimensions.width}x${frame.dimensions.height}px\n`;
+        prompt += `- Elements: ${frame.nodeCount} child elements\n`;
+        
+        // Add individual frame link
+        if (frame.fileKey && frame.id) {
+          const frameUrl = `https://www.figma.com/design/${frame.fileKey}?node-id=${encodeURIComponent(frame.id.replace(':', '-'))}`;
+          prompt += `- Direct Link: ${frameUrl}\n`;
+        }
+        
+        if (frame.textContent.length > 0) {
+          prompt += `- Text Content: ${frame.textContent.map(t => `"${t.content}"`).join(', ')}\n`;
+        }
+        
+        if (frame.components.length > 0) {
+          prompt += `- Components: ${frame.components.map(c => c.masterComponent).join(', ')}\n`;
+        }
+        
+        if (frame.colors.length > 0) {
+          prompt += `- Colors Used: ${frame.colors.join(', ')}\n`;
+        }
+        
+        if (frame.hasPrototype) {
+          prompt += `- Has Interactive Prototype\n`;
+        }
+        
+        // Add design system context if available
+        if (frame.designSystemContext) {
+          const context = frame.designSystemContext;
+          
+          if (context.designSystem) {
+            prompt += `\n**Design System Context:**\n`;
+            prompt += `- Design System: ${context.designSystem.name}\n`;
+            prompt += `- Confidence: ${Math.round(context.designSystem.detectionConfidence * 100)}%\n`;
+          }
+          
+          if (context.complianceReport) {
+            prompt += `- Overall Compliance: ${context.complianceReport.overall}%\n`;
+            prompt += `- Colors: ${context.complianceReport.breakdown.colors.score}%\n`;
+            prompt += `- Typography: ${context.complianceReport.breakdown.typography.score}%\n`;
+            prompt += `- Components: ${context.complianceReport.breakdown.components.score}%\n`;
+            
+            if (context.complianceReport.recommendations && context.complianceReport.recommendations.length > 0) {
+              prompt += `\n**Design System Recommendations:**\n`;
+              context.complianceReport.recommendations.slice(0, 3).forEach(rec => {
+                prompt += `- [${rec.priority.toUpperCase()}] ${rec.category}: ${rec.description}\n`;
+              });
+            }
+          }
+        }
+      });
+      
+      // Add ticket metadata context
+      prompt += `\n**Ticket Configuration:**\n`;
+      prompt += `- Output Format: ${format.name}\n`;
+      prompt += `- Priority: ${priority}\n`;
+      if (storyPoints) prompt += `- Story Points: ${storyPoints}\n`;
+      if (labels) prompt += `- Labels: ${labels}\n`;
+      
+      // Add custom instructions
+      if (customInstructions) {
+        prompt += `\n**Additional Instructions:**\n${customInstructions}\n`;
+      }
+      
+      // Add specific formatting instructions
+      prompt += `\n**IMPORTANT FORMATTING INSTRUCTIONS:**\n`;
+      prompt += `- Use ONLY the ${format.name} formatting specified above\n`;
+      prompt += `- Use the exact structure provided - do not deviate from it\n`;
+      prompt += `- ALWAYS include the Figma file link provided above in a prominent "Figma Reference" or "Design Link" section\n`;
+      prompt += `- Include specific measurements, colors, and typography details from the Figma frames\n`;
+      prompt += `- Reference design system components and tokens when applicable\n`;
+      prompt += `- Make acceptance criteria specific and testable\n`;
+      prompt += `- Include accessibility considerations (WCAG 2.1 AA compliance)\n`;
+      prompt += `- Add relevant technical considerations for implementation\n`;
+      prompt += `- Keep the content professional and actionable\n`;
+      prompt += `- Do NOT use Markdown formatting (like **bold** or ## headers) unless the format is specifically Markdown\n`;
+      prompt += `- The Figma link is CRITICAL - ensure it's included in every ticket for design reference\n`;
+      
+      return prompt;
+    }
+    
+    function addJiraMetadata(ticketContent) {
+      const prioritySelect = document.getElementById('priority');
+      const storyPointsSelect = document.getElementById('storyPoints');
+      const labelsInput = document.getElementById('labels');
+      const templateSelect = document.getElementById('template');
+      
+      const priority = prioritySelect.value;
+      const storyPoints = storyPointsSelect.value;
+      const labels = labelsInput.value;
+      const issueType = TICKET_TEMPLATES[templateSelect.value].name;
+      
+      let metadata = `**JIRA TICKET METADATA**\n`;
+      metadata += `Issue Type: ${issueType}\n`;
+      metadata += `Priority: ${priority.charAt(0).toUpperCase() + priority.slice(1)}\n`;
+      if (storyPoints) metadata += `Story Points: ${storyPoints}\n`;
+      if (labels) metadata += `Labels: ${labels}\n`;
+      metadata += `\n${'='.repeat(50)}\n\n`;
+      
+      return metadata + ticketContent;
+    }
+    
+    function showTicketStatus(message, type) {
+      // Create or update status element
+      let statusEl = document.getElementById('ticketStatus');
+      if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.id = 'ticketStatus';
+        statusEl.className = 'status-message';
+        const outputSection = document.querySelector('.output-section');
+        if (outputSection) {
+          outputSection.insertBefore(statusEl, outputSection.firstChild);
+        }
+      }
+      
+      statusEl.textContent = message;
+      statusEl.className = `status-message ${type}`;
+      
+      // Auto-hide success/error messages after 5 seconds
+      if (type === 'success' || type === 'error') {
+        setTimeout(() => {
+          statusEl.style.display = 'none';
+        }, 5000);
+      } else {
+        statusEl.style.display = 'block';
+      }
+      
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+    
+    function initializeCopyButton() {
+      const copyBtn = document.getElementById('copy');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          const output = document.getElementById('output');
+          if (output && output.value) {
+            try {
+              // Try modern clipboard API first
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(output.value).then(() => {
+                  showTicketStatus('Ticket copied to clipboard!', 'success');
+                }).catch(() => {
+                  // Fallback to text selection method
+                  copyUsingSelection(output);
+                });
+              } else {
+                // Use fallback method
+                copyUsingSelection(output);
+              }
+            } catch (error) {
+              // Final fallback - just select the text
+              copyUsingSelection(output);
+            }
+          }
+        });
+      }
+    }
+    
+    function copyUsingSelection(textElement) {
+      try {
+        // Select all text in the textarea
+        textElement.select();
+        textElement.setSelectionRange(0, 99999); // For mobile devices
+        
+        // Try to copy using execCommand (older browsers/environments)
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showTicketStatus('Ticket copied to clipboard! (Please paste with Ctrl+V)', 'success');
+        } else {
+          showTicketStatus('Please manually select and copy the text (Ctrl+A, Ctrl+C)', 'error');
+        }
+      } catch (error) {
+        console.log('Copy fallback failed:', error);
+        showTicketStatus('Please manually select and copy the text (Ctrl+A, Ctrl+C)', 'error');
+      }
+    }
+    
+    function setTicketGenerating(generating) {
+      isGenerating = generating;
+      const generateBtn = document.getElementById('generate');
+      if (generateBtn) {
+        generateBtn.disabled = generating;
+        generateBtn.textContent = generating ? '⏳ Generating...' : '📋 Generate Ticket from Selection';
+      }
+    }
+    
+    // Message handler for frame data and errors
+    window.addEventListener('message', (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+      
+      console.log('📨 Enhanced ticket handler received:', msg.type);
+      
+      if (msg.type === 'frame-data') {
+        frameDataList = msg.data;
+        generateEnhancedAITicket();
+      }
+      
+      if (msg.type === 'error') {
+        console.log('❌ Ticket generation error:', msg.message);
+        showTicketStatus(msg.message, 'error');
+        setTicketGenerating(false);
+      }
+    });
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeEnhancedTicketGeneration);
+    } else {
+      initializeEnhancedTicketGeneration();
+    }
   </script>
   
   <!-- Tab System Script -->

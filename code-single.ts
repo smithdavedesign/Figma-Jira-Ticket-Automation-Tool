@@ -163,10 +163,11 @@ class DesignSystemManager {
     // Generate realistic but varied health scores
     const baseScore = 70 + Math.random() * 25; // 70-95 base score
     
-    const colorScore = Math.round(baseScore + (Math.random() - 0.5) * 20);
-    const typographyScore = Math.round(baseScore + (Math.random() - 0.5) * 15);
-    const componentScore = Math.round(baseScore + (Math.random() - 0.5) * 25);
-    const spacingScore = Math.round(baseScore + (Math.random() - 0.5) * 30);
+    // Ensure all scores are between 0 and 100
+    const colorScore = Math.max(0, Math.min(100, Math.round(baseScore + (Math.random() - 0.5) * 20)));
+    const typographyScore = Math.max(0, Math.min(100, Math.round(baseScore + (Math.random() - 0.5) * 15)));
+    const componentScore = Math.max(0, Math.min(100, Math.round(baseScore + (Math.random() - 0.5) * 25)));
+    const spacingScore = Math.max(0, Math.min(100, Math.round(baseScore + (Math.random() - 0.5) * 30)));
     
     return {
       overall: Math.round(baseScore),
@@ -174,21 +175,21 @@ class DesignSystemManager {
         score: colorScore,
         details: {
           tokenUsage: colorScore + '%',
-          customColors: Math.max(0, 100 - colorScore) + '%'
+          customColors: (100 - colorScore) + '%'
         }
       },
       typography: {
         score: typographyScore,
         details: {
           tokenUsage: typographyScore + '%',
-          customFonts: Math.max(0, 100 - typographyScore) + '%'
+          customFonts: (100 - typographyScore) + '%'
         }
       },
       components: {
         score: componentScore,
         details: {
-          standardComponents: Math.min(100, componentScore + 10) + '%',
-          customComponents: Math.max(0, 100 - componentScore - 10) + '%',
+          standardComponents: componentScore + '%',
+          customComponents: (100 - componentScore) + '%',
           topComponent: ['Button', 'Card', 'Input', 'Badge', 'Modal'][Math.floor(Math.random() * 5)]
         }
       },
@@ -196,7 +197,7 @@ class DesignSystemManager {
         score: spacingScore,
         details: {
           tokenUsage: spacingScore + '%',
-          customSpacing: Math.max(0, 100 - spacingScore) + '%'
+          customSpacing: (100 - spacingScore) + '%'
         }
       }
     };
@@ -291,12 +292,12 @@ class DesignSystemManager {
 // FRAME DATA EXTRACTION
 // ==========================================
 
-function extractFrameData(node: FrameNode | ComponentNode | InstanceNode): FrameData {
+async function extractFrameData(node: FrameNode | ComponentNode | InstanceNode): Promise<FrameData> {
   const textContent: Array<{ content: string; style: any }> = [];
   const components: Array<{ masterComponent: string }> = [];
   const colors: string[] = [];
 
-  function traverseNode(n: SceneNode): void {
+  async function traverseNode(n: SceneNode): Promise<void> {
     if (n.type === 'TEXT') {
       const textNode = n as TextNode;
       textContent.push({
@@ -307,9 +308,18 @@ function extractFrameData(node: FrameNode | ComponentNode | InstanceNode): Frame
 
     if (n.type === 'INSTANCE') {
       const instance = n as InstanceNode;
-      if (instance.mainComponent) {
+      try {
+        const mainComponent = await instance.getMainComponentAsync();
+        if (mainComponent) {
+          components.push({
+            masterComponent: mainComponent.name
+          });
+        }
+      } catch (error) {
+        console.warn('Could not get main component for instance:', instance.name, error);
+        // Still include the instance name as fallback
         components.push({
-          masterComponent: instance.mainComponent.name
+          masterComponent: `Instance: ${instance.name}`
         });
       }
     }
@@ -327,12 +337,16 @@ function extractFrameData(node: FrameNode | ComponentNode | InstanceNode): Frame
     }
 
     if ('children' in n) {
-      n.children.forEach(child => traverseNode(child));
+      for (const child of n.children) {
+        await traverseNode(child);
+      }
     }
   }
 
   if ('children' in node) {
-    node.children.forEach(child => traverseNode(child));
+    for (const child of node.children) {
+      await traverseNode(child);
+    }
   }
 
   return {
@@ -386,37 +400,62 @@ class MessageHandler {
   }
 
   private async handleGenerateTicket(): Promise<void> {
-    const selection = FigmaAPI.selection;
-    
-    if (selection.length === 0) {
-      FigmaAPI.postMessage({
-        type: 'error',
-        message: 'Please select at least one frame or component to generate a ticket.'
-      });
-      return;
-    }
-
-    const frameDataList: FrameData[] = [];
-
-    selection.forEach(node => {
-      if (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') {
-        const frameData = extractFrameData(node as FrameNode);
-        frameDataList.push(frameData);
+    try {
+      console.log('🎫 Starting ticket generation...');
+      const selection = FigmaAPI.selection;
+      console.log('📋 Selection count:', selection.length);
+      
+      if (selection.length === 0) {
+        FigmaAPI.postMessage({
+          type: 'error',
+          message: 'Please select at least one frame or component to generate a ticket.'
+        });
+        return;
       }
-    });
 
-    if (frameDataList.length === 0) {
+      const frameDataList: FrameData[] = [];
+
+      for (let index = 0; index < selection.length; index++) {
+        const node = selection[index];
+        console.log(`🔍 Processing node ${index + 1}:`, node.type, node.name);
+        if (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') {
+          try {
+            const frameData = await extractFrameData(node as FrameNode);
+            frameDataList.push(frameData);
+            console.log('✅ Successfully extracted frame data for:', node.name);
+          } catch (error) {
+            console.error('❌ Error extracting frame data for:', node.name, error);
+            FigmaAPI.postMessage({
+              type: 'error',
+              message: `Error processing ${node.name}: ${error instanceof Error ? error.message : 'Unknown error'}`
+            });
+            return;
+          }
+        } else {
+          console.log('⚠️ Skipping unsupported node type:', node.type);
+        }
+      }
+
+      if (frameDataList.length === 0) {
+        FigmaAPI.postMessage({
+          type: 'error',
+          message: 'Please select frames, components, or instances to generate tickets. Current selection contains unsupported node types.'
+        });
+        return;
+      }
+
+      console.log('✅ Successfully processed', frameDataList.length, 'frames');
+      FigmaAPI.postMessage({
+        type: 'frame-data',
+        data: frameDataList
+      });
+    } catch (error) {
+      console.error('❌ Error in handleGenerateTicket:', error);
       FigmaAPI.postMessage({
         type: 'error',
-        message: 'Please select frames, components, or instances to generate tickets.'
+        message: `Failed to generate ticket: ${error instanceof Error ? error.message : 'Unknown error'}`
       });
-      return;
     }
-
-    FigmaAPI.postMessage({
-      type: 'frame-data',
-      data: frameDataList
-    });
   }
 
   private async handleCalculateCompliance(): Promise<void> {
