@@ -736,6 +736,17 @@ class MessageHandler {
         const node = selection[index];
         console.log(`🔍 Processing node ${index + 1}/${selection.length}:`, node.type, node.name);
         
+        // Send progress update to UI
+        FigmaAPI.postMessage({
+          type: 'frame-progress',
+          data: {
+            current: index + 1,
+            total: selection.length,
+            nodeName: node.name,
+            nodeType: node.type
+          }
+        });
+        
         if (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') {
           try {
             console.log(`⏱️ Extracting frame data with limit protection...`);

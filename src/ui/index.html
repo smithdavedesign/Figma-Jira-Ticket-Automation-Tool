@@ -492,6 +492,125 @@ input[type="password"] {
   color: var(--figma-color-text);
   border: 1px solid var(--figma-color-border);
   display: block;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Enhanced Progress Indicators */
+.progress-container {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--figma-color-bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--figma-color-bg-brand);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--figma-color-text-secondary);
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.progress-step.active {
+  color: var(--figma-color-text-brand);
+  font-weight: 500;
+}
+
+.progress-step.completed {
+  color: var(--figma-color-text-success);
+}
+
+.progress-step.error {
+  color: var(--figma-color-text-danger);
+}
+
+.step-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+}
+
+.step-indicator.completed {
+  background: currentColor;
+  color: white;
+}
+
+.step-indicator.active {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Loading spinner for active operations */
+.loading-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--figma-color-border);
+  border-top: 2px solid var(--figma-color-bg-brand);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Time indicator */
+.time-indicator {
+  font-size: 10px;
+  color: var(--figma-color-text-tertiary);
+  margin-left: 8px;
+}
+
+/* Detailed progress info */
+.progress-details {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--figma-color-bg-tertiary);
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--figma-color-text-secondary);
+  display: none;
+}
+
+.progress-details.visible {
+  display: block;
 }
 
 .status-message.success {
@@ -1296,6 +1415,207 @@ input[type="password"] {
     }
     
     // ==========================================
+    // ENHANCED PROGRESS INDICATOR SYSTEM
+    // ==========================================
+    
+    class ProgressTracker {
+      constructor() {
+        this.currentStep = 0;
+        this.steps = [];
+        this.startTime = null;
+        this.progressElement = null;
+        this.detailsVisible = false;
+      }
+      
+      initializeProgress(steps, showDetails = false) {
+        this.steps = steps;
+        this.currentStep = 0;
+        this.startTime = Date.now();
+        this.detailsVisible = showDetails;
+        this.createProgressElement();
+      }
+      
+      createProgressElement() {
+        // Remove existing progress if any
+        const existing = document.getElementById('enhancedProgress');
+        if (existing) existing.remove();
+        
+        // Create progress container
+        this.progressElement = document.createElement('div');
+        this.progressElement.id = 'enhancedProgress';
+        this.progressElement.className = 'progress-container';
+        
+        // Progress bar
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-fill';
+        progressFill.id = 'progressFill';
+        progressBar.appendChild(progressFill);
+        
+        // Progress steps
+        const stepsContainer = document.createElement('div');
+        stepsContainer.className = 'progress-steps';
+        stepsContainer.id = 'progressSteps';
+        
+        this.steps.forEach((step, index) => {
+          const stepElement = document.createElement('div');
+          stepElement.className = 'progress-step';
+          stepElement.id = `step-${index}`;
+          
+          const indicator = document.createElement('div');
+          indicator.className = 'step-indicator';
+          
+          const label = document.createElement('span');
+          label.textContent = step.label;
+          
+          stepElement.appendChild(indicator);
+          stepElement.appendChild(label);
+          stepsContainer.appendChild(stepElement);
+        });
+        
+        // Time indicator
+        const timeIndicator = document.createElement('div');
+        timeIndicator.className = 'time-indicator';
+        timeIndicator.id = 'timeIndicator';
+        timeIndicator.textContent = 'Starting...';
+        
+        // Details section
+        const details = document.createElement('div');
+        details.className = 'progress-details';
+        details.id = 'progressDetails';
+        if (this.detailsVisible) {
+          details.classList.add('visible');
+        }
+        
+        this.progressElement.appendChild(progressBar);
+        this.progressElement.appendChild(stepsContainer);
+        this.progressElement.appendChild(timeIndicator);
+        this.progressElement.appendChild(details);
+        
+        // Insert into status area
+        const statusEl = document.getElementById('ticketStatus');
+        if (statusEl && statusEl.parentNode) {
+          statusEl.parentNode.insertBefore(this.progressElement, statusEl.nextSibling);
+        }
+        
+        this.updateDisplay();
+      }
+      
+      updateProgress(stepIndex, status = 'active', details = '') {
+        this.currentStep = stepIndex;
+        
+        // Update step status
+        this.steps[stepIndex].status = status;
+        if (details) {
+          this.steps[stepIndex].details = details;
+        }
+        
+        this.updateDisplay();
+      }
+      
+      updateDisplay() {
+        if (!this.progressElement) return;
+        
+        // Update progress bar
+        const progress = (this.currentStep / Math.max(this.steps.length - 1, 1)) * 100;
+        const progressFill = document.getElementById('progressFill');
+        if (progressFill) {
+          progressFill.style.width = `${progress}%`;
+        }
+        
+        // Update step indicators
+        this.steps.forEach((step, index) => {
+          const stepEl = document.getElementById(`step-${index}`);
+          const indicator = stepEl?.querySelector('.step-indicator');
+          
+          if (stepEl && indicator) {
+            stepEl.className = 'progress-step';
+            indicator.className = 'step-indicator';
+            
+            if (step.status === 'completed') {
+              stepEl.classList.add('completed');
+              indicator.classList.add('completed');
+              indicator.innerHTML = '✓';
+            } else if (step.status === 'active') {
+              stepEl.classList.add('active');
+              indicator.classList.add('active');
+              indicator.innerHTML = '<div class="loading-spinner"></div>';
+            } else if (step.status === 'error') {
+              stepEl.classList.add('error');
+              indicator.classList.add('error');
+              indicator.innerHTML = '✗';
+            } else {
+              indicator.innerHTML = '';
+            }
+          }
+        });
+        
+        // Update time indicator
+        const timeEl = document.getElementById('timeIndicator');
+        if (timeEl && this.startTime) {
+          const elapsed = Math.round((Date.now() - this.startTime) / 1000);
+          timeEl.textContent = `${elapsed}s elapsed`;
+        }
+        
+        // Update details
+        const detailsEl = document.getElementById('progressDetails');
+        if (detailsEl && this.detailsVisible) {
+          const currentStepDetails = this.steps[this.currentStep]?.details || '';
+          const completedSteps = this.steps.filter(s => s.status === 'completed').length;
+          const totalSteps = this.steps.length;
+          
+          detailsEl.innerHTML = `
+            <div><strong>Progress:</strong> ${completedSteps}/${totalSteps} steps completed</div>
+            ${currentStepDetails ? `<div><strong>Current:</strong> ${currentStepDetails}</div>` : ''}
+          `;
+        }
+      }
+      
+      completeStep(stepIndex, details = '') {
+        this.updateProgress(stepIndex, 'completed', details);
+      }
+      
+      errorStep(stepIndex, details = '') {
+        this.updateProgress(stepIndex, 'error', details);
+      }
+      
+      finish(success = true) {
+        if (success) {
+          // Mark all remaining steps as completed
+          for (let i = this.currentStep; i < this.steps.length; i++) {
+            this.steps[i].status = 'completed';
+          }
+          this.currentStep = this.steps.length - 1;
+        }
+        
+        this.updateDisplay();
+        
+        // Auto-remove after delay
+        setTimeout(() => {
+          if (this.progressElement) {
+            this.progressElement.remove();
+          }
+        }, success ? 3000 : 5000);
+      }
+      
+      setDetails(visible) {
+        this.detailsVisible = visible;
+        const detailsEl = document.getElementById('progressDetails');
+        if (detailsEl) {
+          if (visible) {
+            detailsEl.classList.add('visible');
+          } else {
+            detailsEl.classList.remove('visible');
+          }
+        }
+      }
+    }
+    
+    // Global progress tracker instance
+    let progressTracker = new ProgressTracker();
+    
+    // ==========================================
     // MAIN APPLICATION
     // ==========================================
     
@@ -1341,10 +1661,35 @@ input[type="password"] {
             handleError(new Error(msg.message || 'Unknown compliance error'), 'Health metrics calculation', false);
             break;
             
+          case 'frame-progress':
+            console.log('📈 Frame processing progress:', msg.data);
+            if (msg.data && typeof msg.data.current === 'number' && typeof msg.data.total === 'number') {
+              const { current, total, nodeName, nodeType } = msg.data;
+              const percentage = Math.round((current / total) * 100);
+              
+              progressTracker.updateProgress(1, 'active', 
+                `Processing ${nodeType.toLowerCase()} "${nodeName}" (${current}/${total})`
+              );
+              
+              // Update the progress bar fill if it exists
+              const progressFill = document.getElementById('progressFill');
+              if (progressFill) {
+                const baseProgress = (1 / 2) * 100; // Step 1 out of 2 for initial reading
+                const stepProgress = (current / total) * (100 / 3); // 1/3 of total progress for this step
+                progressFill.style.width = `${baseProgress + stepProgress}%`;
+              }
+            }
+            break;
+            
           case 'frame-data':
             console.log('📋 Frame data received');
             if (msg.data && Array.isArray(msg.data)) {
               frameDataList = msg.data;
+              
+              // Update progress for frame reading completion
+              progressTracker.completeStep(0, 'Selection validated');
+              progressTracker.completeStep(1, `${msg.data.length} frame(s) processed`);
+              progressTracker.updateProgress(2, 'completed', 'Ready for AI generation');
               
               // Show processing summary with limits information
               let statusMessage = `✅ Processed ${msg.data.length} frame(s)`;
@@ -1371,8 +1716,16 @@ input[type="password"] {
               }
               
               showTicketStatus(statusMessage, statusType);
-              setTicketGenerating(false);
+              
+              // Auto-proceed to AI generation after a brief delay
+              setTimeout(() => {
+                progressTracker.finish(true);
+                generateEnhancedAITicket();
+              }, 800);
+              
             } else {
+              progressTracker.errorStep(1, 'Invalid frame data received');
+              progressTracker.finish(false);
               handleError(new ValidationError(ERROR_MESSAGES.FRAME_READ_ERROR), 'Frame data processing', false);
               setTicketGenerating(false);
             }
@@ -1921,7 +2274,16 @@ ${f.bold('Notes:')}
       }
       
       setTicketGenerating(true);
-      showTicketStatus('Reading selected frames... (with timeout protection)', 'loading');
+      
+      // Initialize progress for frame reading phase
+      const initialSteps = [
+        { label: 'Validating Selection', status: 'active' },
+        { label: 'Reading Frames', status: 'pending' },
+        { label: 'Ready for AI', status: 'pending' }
+      ];
+      
+      progressTracker.initializeProgress(initialSteps, false);
+      showTicketStatus('🔍 Reading selected frames...', 'loading');
       
       // Request frame data from Figma
       parent.postMessage({ 
@@ -1945,16 +2307,36 @@ ${f.bold('Notes:')}
         return;
       }
       
+      // Initialize enhanced progress tracking
+      const progressSteps = [
+        { label: 'Validation', status: 'completed' },
+        { label: 'Processing Frames', status: 'completed' },
+        { label: 'Building Prompt', status: 'pending' },
+        { label: 'AI Generation', status: 'pending' },
+        { label: 'Formatting', status: 'pending' }
+      ];
+      
+      progressTracker.initializeProgress(progressSteps, true);
+      showTicketStatus('🚀 Generating enhanced ticket with AI...', 'loading');
+      
       try {
-        showTicketStatus('Generating enhanced ticket with AI... (up to 30s)', 'loading');
-        
+        // Step 1: Build prompt
+        progressTracker.updateProgress(2, 'active', 'Creating optimized prompt from frame data');
         const prompt = createEnhancedPrompt(frameDataList);
         const apiKey = document.getElementById('apiKey').value.trim();
         const model = document.getElementById('model').value;
         
+        await new Promise(resolve => setTimeout(resolve, 300)); // Brief pause for UX
+        progressTracker.completeStep(2, `Generated ${Math.round(prompt.length/1000)}k character prompt`);
+        
+        // Step 2: AI Generation
+        progressTracker.updateProgress(3, 'active', 'Connecting to OpenAI API...');
+        
         // Use timeout and retry for OpenAI API call
         const response = await withRetry(
           async () => {
+            progressTracker.updateProgress(3, 'active', `Generating with ${model}... (up to 30s)`);
+            
             const fetchResponse = await fetch('https://api.openai.com/v1/chat/completions', {
               method: 'POST',
               headers: {
@@ -2000,20 +2382,30 @@ ${f.bold('Notes:')}
           throw new ValidationError(ERROR_MESSAGES.EMPTY_RESPONSE);
         }
         
-        const ticket = data.choices[0].message.content.trim();
+        progressTracker.completeStep(3, `Generated ${Math.round(ticket.length/1000)}k character response`);
         
-        if (!ticket) {
-          throw new ValidationError(ERROR_MESSAGES.EMPTY_RESPONSE);
-        }
+        // Step 3: Format and finalize
+        progressTracker.updateProgress(4, 'active', 'Applying Jira formatting and metadata');
         
-        // Add Jira metadata
         const enhancedTicket = addJiraMetadata(ticket);
+        
+        await new Promise(resolve => setTimeout(resolve, 200)); // Brief pause for UX
+        progressTracker.completeStep(4, 'Applied formatting and Figma links');
         
         document.getElementById('output').value = enhancedTicket;
         document.getElementById('copy').disabled = false;
+        
+        // Complete progress and show success
+        progressTracker.finish(true);
         showTicketStatus('✅ Enhanced ticket generated successfully!', 'success');
         
       } catch (error) {
+        // Mark current step as error and finish
+        if (progressTracker.currentStep < progressSteps.length) {
+          progressTracker.errorStep(progressTracker.currentStep, error.message);
+        }
+        progressTracker.finish(false);
+        
         handleError(error, 'AI ticket generation', true);
       } finally {
         setTicketGenerating(false);
