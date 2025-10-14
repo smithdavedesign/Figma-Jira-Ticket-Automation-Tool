@@ -45,6 +45,62 @@ interface PluginMessage {
 }
 
 // ==========================================
+// TIMEOUT UTILITIES
+// ==========================================
+
+class TimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TimeoutError';
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new TimeoutError(`Operation timed out after ${ms}ms`));
+    }, ms);
+    
+    promise
+      .then((result) => {
+        clearTimeout(timeoutId);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}
+
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  timeoutMs: number = 5000
+): Promise<T> {
+  let lastError: Error;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await withTimeout(operation(), timeoutMs);
+    } catch (error) {
+      lastError = error as Error;
+      console.warn(`Attempt ${attempt}/${maxRetries} failed:`, error);
+      
+      if (attempt === maxRetries) {
+        break;
+      }
+      
+      // Exponential backoff
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError!;
+}
+
+// ==========================================
 // FIGMA API UTILITIES
 // ==========================================
 
@@ -309,18 +365,28 @@ async function extractFrameData(node: FrameNode | ComponentNode | InstanceNode):
     if (n.type === 'INSTANCE') {
       const instance = n as InstanceNode;
       try {
-        const mainComponent = await instance.getMainComponentAsync();
+        const mainComponent = await withTimeout(
+          instance.getMainComponentAsync(),
+          3000 // 3 second timeout for Figma API calls
+        );
         if (mainComponent) {
           components.push({
             masterComponent: mainComponent.name
           });
         }
       } catch (error) {
-        console.warn('Could not get main component for instance:', instance.name, error);
-        // Still include the instance name as fallback
-        components.push({
-          masterComponent: `Instance: ${instance.name}`
-        });
+        if (error instanceof TimeoutError) {
+          console.warn('Timeout getting main component for instance:', instance.name);
+          components.push({
+            masterComponent: `Instance: ${instance.name} (timeout)`
+          });
+        } else {
+          console.warn('Could not get main component for instance:', instance.name, error);
+          // Still include the instance name as fallback
+          components.push({
+            masterComponent: `Instance: ${instance.name}`
+          });
+        }
       }
     }
 
@@ -420,7 +486,12 @@ class MessageHandler {
         console.log(`🔍 Processing node ${index + 1}:`, node.type, node.name);
         if (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') {
           try {
-            const frameData = await extractFrameData(node as FrameNode);
+            console.log(`⏱️ Extracting frame data with timeout protection...`);
+            const frameData = await withRetry(
+              () => extractFrameData(node as FrameNode),
+              2, // Max 2 retries
+              10000 // 10 second timeout for complete frame extraction
+            );
             frameDataList.push(frameData);
             console.log('✅ Successfully extracted frame data for:', node.name);
           } catch (error) {
@@ -459,24 +530,47 @@ class MessageHandler {
   }
 
   private async handleCalculateCompliance(): Promise<void> {
-    const selection = FigmaAPI.selection;
-    
-    if (selection.length === 0) {
+    try {
+      const selection = FigmaAPI.selection;
+      
+      if (selection.length === 0) {
+        const compliance = await withTimeout(
+          this.designSystemManager.calculateCompliance([]),
+          5000 // 5 second timeout for empty compliance calculation
+        );
+        FigmaAPI.postMessage({
+          type: 'compliance-results',
+          compliance: compliance,
+          selectionCount: 0
+        });
+        return;
+      }
+
+      console.log('⏱️ Calculating compliance with timeout protection...');
+      const compliance = await withRetry(
+        () => this.designSystemManager.calculateCompliance(selection),
+        2, // Max 2 retries
+        8000 // 8 second timeout for compliance calculation
+      );
+      
       FigmaAPI.postMessage({
         type: 'compliance-results',
-        compliance: await this.designSystemManager.calculateCompliance([]),
-        selectionCount: 0
+        compliance,
+        selectionCount: selection.length
       });
-      return;
+    } catch (error) {
+      console.error('Error calculating compliance:', error);
+      let errorMessage = 'Failed to calculate compliance';
+      
+      if (error instanceof TimeoutError) {
+        errorMessage = 'Compliance calculation timed out. Try selecting fewer elements.';
+      }
+      
+      FigmaAPI.postMessage({
+        type: 'error',
+        message: errorMessage
+      });
     }
-
-    const compliance = await this.designSystemManager.calculateCompliance(selection);
-    
-    FigmaAPI.postMessage({
-      type: 'compliance-results',
-      compliance,
-      selectionCount: selection.length
-    });
   }
 }
 
@@ -508,8 +602,12 @@ async function initializePlugin(): Promise<void> {
     messageHandler.handleMessage(msg);
   };
 
-  // Initialize design system detection on plugin load
-  await designSystemManager.initialize();
+  // Initialize design system detection with timeout
+  console.log('⏱️ Initializing design system with timeout protection...');
+  await withTimeout(
+    designSystemManager.initialize(),
+    5000 // 5 second timeout for initialization
+  );
 
   console.log('✅ Plugin initialized successfully');
 }
@@ -517,4 +615,7 @@ async function initializePlugin(): Promise<void> {
 // Auto-initialize when this script loads
 initializePlugin().catch(error => {
   console.error('❌ Plugin initialization failed:', error);
+  if (error instanceof TimeoutError) {
+    console.error('Initialization timed out - plugin may still be functional');
+  }
 });
