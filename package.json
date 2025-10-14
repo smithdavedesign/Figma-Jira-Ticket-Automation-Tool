@@ -12,7 +12,12 @@
     "lint": "echo 'Linting not yet configured'",
     "test": "node tests/core-tests.js",
     "test:watch": "echo 'Watch mode: nodemon tests/core-tests.js (install nodemon if needed)'",
-    "validate": "npm run test && npm run build && echo '✅ All validation passed'"
+    "validate": "npm run test && npm run build && echo '✅ All validation passed'",
+    "mcp:setup": "cd mcp-server && ./setup.sh",
+    "mcp:install": "cd mcp-server && npm install",
+    "mcp:build": "cd mcp-server && npm run build",
+    "mcp:dev": "cd mcp-server && npm run dev",
+    "mcp:test": "cd mcp-server && npm test"
   },
   "keywords": [
     "figma",
