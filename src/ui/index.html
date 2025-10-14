@@ -508,6 +508,34 @@ input[type="password"] {
   display: block;
 }
 
+.status-message.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+  display: block;
+}
+
+/* Retry button for error scenarios */
+.retry-button {
+  background: var(--figma-color-bg-brand);
+  color: var(--figma-color-text-onbrand);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.retry-button:hover {
+  background: var(--figma-color-bg-brand-hover);
+}
+
+.retry-button:active {
+  background: var(--figma-color-bg-brand-pressed);
+}
+
 /* Frame info display */
 .frame-info {
   background: var(--figma-color-bg-secondary);
@@ -1046,6 +1074,186 @@ input[type="password"] {
       }
     }
     
+    class ValidationError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = 'ValidationError';
+      }
+    }
+    
+    class APIError extends Error {
+      constructor(message, status, endpoint) {
+        super(message);
+        this.name = 'APIError';
+        this.status = status;
+        this.endpoint = endpoint;
+      }
+    }
+    
+    class NetworkError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = 'NetworkError';
+      }
+    }
+    
+    // ==========================================
+    // COMPREHENSIVE ERROR HANDLING
+    // ==========================================
+    
+    const ERROR_MESSAGES = {
+      // API Key related
+      MISSING_API_KEY: 'Please enter your OpenAI API key in the settings.',
+      INVALID_API_KEY: 'Invalid API key. Please check your OpenAI API key and try again.',
+      API_KEY_QUOTA: 'API key quota exceeded. Please check your OpenAI billing and usage limits.',
+      
+      // Network related
+      NETWORK_TIMEOUT: 'Request timed out. The API may be experiencing high load. Please try again in a few moments.',
+      NETWORK_ERROR: 'Network error. Please check your internet connection and try again.',
+      CONNECTION_FAILED: 'Failed to connect to OpenAI API. Please check your internet connection.',
+      
+      // Figma related
+      NO_SELECTION: 'Please select at least one frame, component, or instance to generate a ticket.',
+      INVALID_SELECTION: 'Selected elements are not suitable for ticket generation. Please select frames, components, or instances.',
+      FIGMA_ACCESS_ERROR: 'Unable to access Figma elements. Please try refreshing the plugin.',
+      FRAME_READ_ERROR: 'Error reading frame data. The selection may contain unsupported elements.',
+      
+      // API Response related
+      MODEL_NOT_FOUND: 'The selected AI model is not available. Please try a different model.',
+      CONTENT_FILTER: 'Content was filtered by OpenAI. Please review your selection and try again.',
+      RATE_LIMIT: 'API rate limit exceeded. Please wait a moment before trying again.',
+      SERVER_ERROR: 'OpenAI server error. Please try again in a few minutes.',
+      
+      // Validation related
+      EMPTY_RESPONSE: 'Received empty response from AI. Please try again with a different selection.',
+      INVALID_TEMPLATE: 'Invalid ticket template selected. Please choose a valid template.',
+      PARSING_ERROR: 'Error processing AI response. The generated content may be incomplete.',
+      
+      // General
+      UNKNOWN_ERROR: 'An unexpected error occurred. Please try again or contact support.',
+      CLIPBOARD_ERROR: 'Could not copy to clipboard. Please manually select and copy the text.',
+      
+      // Retry suggestions
+      RETRY_SUGGESTION: 'If the problem persists, try:\n• Selecting fewer elements\n• Using a simpler template\n• Checking your internet connection'
+    };
+    
+    function createComprehensiveErrorMessage(error, context = '') {
+      let primaryMessage = '';
+      let secondaryMessage = '';
+      let suggestions = [];
+      
+      // Determine primary error type and message
+      if (error instanceof TimeoutError) {
+        primaryMessage = ERROR_MESSAGES.NETWORK_TIMEOUT;
+        suggestions.push('Try selecting fewer elements', 'Check your internet connection');
+      } else if (error instanceof NetworkError || error.name === 'NetworkError') {
+        primaryMessage = ERROR_MESSAGES.NETWORK_ERROR;
+        suggestions.push('Check your internet connection', 'Try again in a few moments');
+      } else if (error instanceof ValidationError) {
+        primaryMessage = error.message;
+        suggestions.push('Review your selection', 'Check your inputs');
+      } else if (error instanceof APIError) {
+        switch (error.status) {
+          case 401:
+            primaryMessage = ERROR_MESSAGES.INVALID_API_KEY;
+            suggestions.push('Verify your API key in settings');
+            break;
+          case 429:
+            primaryMessage = ERROR_MESSAGES.RATE_LIMIT;
+            suggestions.push('Wait 1-2 minutes before trying again');
+            break;
+          case 404:
+            primaryMessage = ERROR_MESSAGES.MODEL_NOT_FOUND;
+            suggestions.push('Try a different AI model');
+            break;
+          case 500:
+          case 502:
+          case 503:
+            primaryMessage = ERROR_MESSAGES.SERVER_ERROR;
+            suggestions.push('Try again in a few minutes');
+            break;
+          default:
+            primaryMessage = `API Error (${error.status}): ${error.message}`;
+        }
+      } else {
+        // Parse specific error messages
+        const errorMsg = error.message || error.toString();
+        
+        if (errorMsg.includes('API key') || errorMsg.includes('Unauthorized')) {
+          primaryMessage = ERROR_MESSAGES.INVALID_API_KEY;
+          suggestions.push('Check your API key in settings');
+        } else if (errorMsg.includes('quota') || errorMsg.includes('billing')) {
+          primaryMessage = ERROR_MESSAGES.API_KEY_QUOTA;
+          suggestions.push('Check your OpenAI billing dashboard');
+        } else if (errorMsg.includes('rate limit') || errorMsg.includes('Too Many Requests')) {
+          primaryMessage = ERROR_MESSAGES.RATE_LIMIT;
+          suggestions.push('Wait before trying again');
+        } else if (errorMsg.includes('model') && errorMsg.includes('not found')) {
+          primaryMessage = ERROR_MESSAGES.MODEL_NOT_FOUND;
+          suggestions.push('Select a different AI model');
+        } else if (errorMsg.includes('content') && errorMsg.includes('filter')) {
+          primaryMessage = ERROR_MESSAGES.CONTENT_FILTER;
+          suggestions.push('Review your selection');
+        } else if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('connection')) {
+          primaryMessage = ERROR_MESSAGES.CONNECTION_FAILED;
+          suggestions.push('Check your internet connection');
+        } else if (errorMsg.includes('timeout')) {
+          primaryMessage = ERROR_MESSAGES.NETWORK_TIMEOUT;
+          suggestions.push('Try again with fewer elements');
+        } else if (errorMsg.includes('empty') || errorMsg.includes('no content')) {
+          primaryMessage = ERROR_MESSAGES.EMPTY_RESPONSE;
+          suggestions.push('Try a different selection or template');
+        } else {
+          primaryMessage = errorMsg || ERROR_MESSAGES.UNKNOWN_ERROR;
+        }
+      }
+      
+      // Add context if provided
+      if (context) {
+        secondaryMessage = `Context: ${context}`;
+      }
+      
+      // Build comprehensive message
+      let fullMessage = primaryMessage;
+      
+      if (secondaryMessage) {
+        fullMessage += `\n\n${secondaryMessage}`;
+      }
+      
+      if (suggestions.length > 0) {
+        fullMessage += `\n\n💡 Suggestions:\n• ${suggestions.join('\n• ')}`;
+      }
+      
+      return fullMessage;
+    }
+    
+    function handleError(error, context = '', showRetryOption = false) {
+      const comprehensiveMessage = createComprehensiveErrorMessage(error, context);
+      
+      console.error(`Error in ${context}:`, error);
+      
+      // Show the error with suggestions
+      showTicketStatus(comprehensiveMessage, 'error');
+      
+      // For certain errors, show retry option
+      if (showRetryOption && (error instanceof TimeoutError || error instanceof NetworkError)) {
+        setTimeout(() => {
+          const retryButton = document.createElement('button');
+          retryButton.textContent = 'Retry';
+          retryButton.className = 'retry-button';
+          retryButton.onclick = () => {
+            document.querySelector('.retry-button')?.remove();
+            generateEnhancedAITicket();
+          };
+          
+          const statusElement = document.getElementById('ticket-status');
+          if (statusElement) {
+            statusElement.appendChild(retryButton);
+          }
+        }, 100);
+      }
+    }
+    
     function withTimeout(promise, ms) {
       return new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
@@ -1112,23 +1320,52 @@ input[type="password"] {
 
     // Handle messages from Figma plugin
     function handlePluginMessage(event) {
-      const msg = event.data.pluginMessage;
-      if (!msg) return;
-      
-      console.log('📨 Received message:', msg.type);
-      
-      switch (msg.type) {
-        case 'compliance-results':
-          console.log('📊 Compliance results received:', msg.compliance);
-          displayHealthMetrics(msg.compliance);
-          break;
-          
-        case 'compliance-error':
-          console.log('❌ Compliance error:', msg.message);
-          break;
-          
-        default:
-          console.log('⚠️ Unknown message type:', msg.type);
+      try {
+        const msg = event.data.pluginMessage;
+        if (!msg) return;
+        
+        console.log('📨 Received message:', msg.type);
+        
+        switch (msg.type) {
+          case 'compliance-results':
+            console.log('📊 Compliance results received:', msg.compliance);
+            if (msg.compliance) {
+              displayHealthMetrics(msg.compliance);
+            } else {
+              handleError(new ValidationError('Invalid compliance data received'), 'Health metrics', false);
+            }
+            break;
+            
+          case 'compliance-error':
+            console.log('❌ Compliance error:', msg.message);
+            handleError(new Error(msg.message || 'Unknown compliance error'), 'Health metrics calculation', false);
+            break;
+            
+          case 'frame-data':
+            console.log('📋 Frame data received');
+            if (msg.data && Array.isArray(msg.data)) {
+              frameDataList = msg.data;
+              showTicketStatus(`✅ Processed ${msg.data.length} frame(s)`, 'success');
+              setTicketGenerating(false);
+            } else {
+              handleError(new ValidationError(ERROR_MESSAGES.FRAME_READ_ERROR), 'Frame data processing', false);
+              setTicketGenerating(false);
+            }
+            break;
+            
+          case 'error':
+            console.log('❌ Plugin error:', msg.message);
+            handleError(new Error(msg.message || 'Unknown plugin error'), 'Plugin operation', false);
+            setTicketGenerating(false);
+            break;
+            
+          default:
+            console.log('⚠️ Unknown message type:', msg.type);
+            break;
+        }
+      } catch (error) {
+        console.error('Error handling plugin message:', error);
+        handleError(error, 'Plugin message handling', false);
       }
     }
 
@@ -1668,74 +1905,117 @@ ${f.bold('Notes:')}
     }
     
     async function generateEnhancedAITicket() {
+      // Validate inputs first
+      try {
+        validateInputs();
+      } catch (error) {
+        handleError(error, 'Input validation', false);
+        setTicketGenerating(false);
+        return;
+      }
+      
       if (!frameDataList.length) {
-        showTicketStatus('No frame data received', 'error');
+        handleError(new ValidationError(ERROR_MESSAGES.NO_SELECTION), 'Frame data validation', false);
         setTicketGenerating(false);
         return;
       }
       
       try {
-        showTicketStatus('Generating enhanced ticket with AI...', 'loading');
+        showTicketStatus('Generating enhanced ticket with AI... (up to 30s)', 'loading');
         
         const prompt = createEnhancedPrompt(frameDataList);
         const apiKey = document.getElementById('apiKey').value.trim();
         const model = document.getElementById('model').value;
         
         // Use timeout and retry for OpenAI API call
-        showTicketStatus('Generating enhanced ticket with AI... (up to 30s)', 'loading');
         const response = await withRetry(
-          () => fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-              model: model,
-              messages: [
-                { 
-                  role: 'system', 
-                  content: 'You are an expert Jira ticket creator specializing in UI/UX implementation. Generate detailed, structured tickets with clear acceptance criteria, technical requirements, and design specifications. Always include specific Figma references and maintain consistency with the requested template format.' 
-                },
-                { role: 'user', content: prompt }
-              ],
-              temperature: 0.3, // Lower temperature for more consistent structure
-              max_tokens: 1500 // Increased for more detailed tickets
-            }),
-          }),
+          async () => {
+            const fetchResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model: model,
+                messages: [
+                  { 
+                    role: 'system', 
+                    content: 'You are an expert Jira ticket creator specializing in UI/UX implementation. Generate detailed, structured tickets with clear acceptance criteria, technical requirements, and design specifications. Always include specific Figma references and maintain consistency with the requested template format.' 
+                  },
+                  { role: 'user', content: prompt }
+                ],
+                temperature: 0.3, // Lower temperature for more consistent structure
+                max_tokens: 1500 // Increased for more detailed tickets
+              }),
+            });
+            
+            // Handle HTTP errors properly
+            if (!fetchResponse.ok) {
+              let errorMessage = `HTTP ${fetchResponse.status}`;
+              try {
+                const errorData = await fetchResponse.json();
+                errorMessage = errorData.error?.message || errorMessage;
+              } catch (parseError) {
+                // If we can't parse the error response, use the status
+              }
+              throw new APIError(errorMessage, fetchResponse.status, 'OpenAI API');
+            }
+            
+            return fetchResponse;
+          },
           2, // Max 2 retries
           30000 // 30 second timeout for OpenAI API
         );
         
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error?.message || `API request failed: ${response.status}`);
+        const data = await response.json();
+        
+        // Validate response data
+        if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+          throw new ValidationError(ERROR_MESSAGES.EMPTY_RESPONSE);
         }
         
-        const data = await response.json();
         const ticket = data.choices[0].message.content.trim();
+        
+        if (!ticket) {
+          throw new ValidationError(ERROR_MESSAGES.EMPTY_RESPONSE);
+        }
         
         // Add Jira metadata
         const enhancedTicket = addJiraMetadata(ticket);
         
         document.getElementById('output').value = enhancedTicket;
         document.getElementById('copy').disabled = false;
-        showTicketStatus('Enhanced ticket generated successfully!', 'success');
+        showTicketStatus('✅ Enhanced ticket generated successfully!', 'success');
         
       } catch (error) {
-        console.error('Error generating enhanced ticket:', error);
-        
-        let errorMessage = error.message;
-        if (error instanceof TimeoutError) {
-          errorMessage = 'Request timed out. The API may be experiencing high load. Please try again.';
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = 'Network error. Please check your internet connection and try again.';
-        }
-        
-        showTicketStatus(`Error: ${errorMessage}`, 'error');
+        handleError(error, 'AI ticket generation', true);
       } finally {
         setTicketGenerating(false);
       }
+    }
+    
+    function validateInputs() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const model = document.getElementById('model').value;
+      const template = document.getElementById('template').value;
+      
+      if (!apiKey) {
+        throw new ValidationError(ERROR_MESSAGES.MISSING_API_KEY);
+      }
+      
+      if (apiKey.length < 20 || !apiKey.startsWith('sk-')) {
+        throw new ValidationError(ERROR_MESSAGES.INVALID_API_KEY);
+      }
+      
+      if (!model) {
+        throw new ValidationError('Please select an AI model.');
+      }
+      
+      if (!template || !TICKET_TEMPLATES[template]) {
+        throw new ValidationError(ERROR_MESSAGES.INVALID_TEMPLATE);
+      }
+
     }
     
     function createEnhancedPrompt(frameDataList) {
@@ -1919,44 +2199,55 @@ ${f.bold('Notes:')}
         copyBtn.addEventListener('click', () => {
           const output = document.getElementById('output');
           if (output && output.value) {
-            try {
-              // Try modern clipboard API first
-              if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(output.value).then(() => {
-                  showTicketStatus('Ticket copied to clipboard!', 'success');
-                }).catch(() => {
-                  // Fallback to text selection method
-                  copyUsingSelection(output);
-                });
-              } else {
-                // Use fallback method
-                copyUsingSelection(output);
-              }
-            } catch (error) {
-              // Final fallback - just select the text
-              copyUsingSelection(output);
-            }
+            copyToClipboard(output.value);
+          } else {
+            handleError(new ValidationError('No ticket content to copy'), 'Copy operation', false);
           }
         });
       }
     }
     
-    function copyUsingSelection(textElement) {
+    async function copyToClipboard(text) {
       try {
-        // Select all text in the textarea
-        textElement.select();
-        textElement.setSelectionRange(0, 99999); // For mobile devices
-        
-        // Try to copy using execCommand (older browsers/environments)
-        const successful = document.execCommand('copy');
-        if (successful) {
-          showTicketStatus('Ticket copied to clipboard! (Please paste with Ctrl+V)', 'success');
-        } else {
-          showTicketStatus('Please manually select and copy the text (Ctrl+A, Ctrl+C)', 'error');
+        // Try modern clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          showTicketStatus('✅ Ticket copied to clipboard!', 'success');
+          return;
         }
+        
+        // Fallback to text selection method
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = text;
+        tempTextArea.style.position = 'fixed';
+        tempTextArea.style.left = '-999999px';
+        tempTextArea.style.top = '-999999px';
+        document.body.appendChild(tempTextArea);
+        
+        tempTextArea.focus();
+        tempTextArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+        
+        if (successful) {
+          showTicketStatus('✅ Ticket copied to clipboard! (Use Ctrl+V to paste)', 'success');
+        } else {
+          throw new Error('execCommand failed');
+        }
+        
       } catch (error) {
-        console.log('Copy fallback failed:', error);
-        showTicketStatus('Please manually select and copy the text (Ctrl+A, Ctrl+C)', 'error');
+        console.warn('Copy to clipboard failed:', error);
+        
+        // Final fallback - select the textarea content
+        const output = document.getElementById('output');
+        if (output) {
+          output.select();
+          output.setSelectionRange(0, 99999);
+          showTicketStatus('📋 Text selected - use Ctrl+C to copy, then Ctrl+V to paste', 'warning');
+        } else {
+          handleError(new Error(ERROR_MESSAGES.CLIPBOARD_ERROR), 'Clipboard operation', false);
+        }
       }
     }
     

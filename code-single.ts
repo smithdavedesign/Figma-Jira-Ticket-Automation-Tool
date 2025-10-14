@@ -522,9 +522,26 @@ class MessageHandler {
       });
     } catch (error) {
       console.error('❌ Error in handleGenerateTicket:', error);
+      
+      let errorMessage = 'Failed to generate ticket';
+      let errorType = 'error';
+      
+      if (error instanceof TimeoutError) {
+        errorMessage = 'Frame processing timed out. Try selecting fewer elements or simpler frames.';
+        errorType = 'timeout-error';
+      } else if (error instanceof Error) {
+        if (error.message.includes('access') || error.message.includes('permission')) {
+          errorMessage = 'Unable to access selected elements. Please refresh the plugin and try again.';
+        } else if (error.message.includes('memory') || error.message.includes('resource')) {
+          errorMessage = 'Selection too complex. Please select fewer elements and try again.';
+        } else {
+          errorMessage = `Frame processing failed: ${error.message}`;
+        }
+      }
+      
       FigmaAPI.postMessage({
-        type: 'error',
-        message: `Failed to generate ticket: ${error instanceof Error ? error.message : 'Unknown error'}`
+        type: errorType,
+        message: errorMessage
       });
     }
   }
@@ -560,14 +577,31 @@ class MessageHandler {
       });
     } catch (error) {
       console.error('Error calculating compliance:', error);
-      let errorMessage = 'Failed to calculate compliance';
+      let errorMessage = 'Failed to calculate design system compliance';
+      let suggestions = [];
       
       if (error instanceof TimeoutError) {
-        errorMessage = 'Compliance calculation timed out. Try selecting fewer elements.';
+        errorMessage = 'Compliance calculation timed out. The selection may be too complex.';
+        suggestions.push('Try selecting fewer elements', 'Select simpler frames or components');
+      } else if (error instanceof Error) {
+        if (error.message.includes('access') || error.message.includes('permission')) {
+          errorMessage = 'Unable to access selected elements for compliance analysis.';
+          suggestions.push('Refresh the plugin', 'Try selecting different elements');
+        } else if (error.message.includes('memory') || error.message.includes('resource')) {
+          errorMessage = 'Selection too complex for compliance analysis.';
+          suggestions.push('Select fewer elements', 'Break selection into smaller groups');
+        } else {
+          errorMessage = `Compliance analysis failed: ${error.message}`;
+        }
+      }
+      
+      // Add suggestions to the error message
+      if (suggestions.length > 0) {
+        errorMessage += `\n\n💡 Try:\n• ${suggestions.join('\n• ')}`;
       }
       
       FigmaAPI.postMessage({
-        type: 'error',
+        type: 'compliance-error',
         message: errorMessage
       });
     }
