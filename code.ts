@@ -26,8 +26,8 @@ let detectedDesignSystem: any | null = null;
 
 // Main plugin code that runs in Figma's sandbox environment
 figma.showUI(__html__, { 
-  width: 900, // Increased width for less cramped dashboard
-  height: 750, // Increased height for design system info
+  width: 600, // Optimized width for tab view without scrolling
+  height: 700, // Comfortable height for content
   themeColors: true 
 });
 

@@ -16,13 +16,11 @@
 .main-container {
   display: flex;
   gap: 24px;
-  min-height: calc(100vh - 40px);
-  min-width: 800px; /* Increased minimum width for less cramped layout */
+  min-height: calc(100vh - 100px); /* Adjusted for tab header */
 }
 
 .panel {
   flex: 1;
-  min-width: 380px; /* Increased minimum width for each panel */
 }
 
 .panel-header {
@@ -59,6 +57,13 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 }
 
 .metric-card {
@@ -268,12 +273,11 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin: 0;
-  padding: 24px;
+  padding: 20px;
   background-color: var(--figma-color-bg);
   color: var(--figma-color-text);
   font-size: 12px;
   line-height: 1.4;
-  min-width: 850px; /* Ensure minimum plugin width */
 }
 
 .header {
@@ -603,87 +607,188 @@ input[type="password"] {
   font-size: 10px;
   color: var(--figma-color-text-secondary);
 }
+
+/* Tab System Styles */
+.tab-container {
+  width: 100%;
+}
+
+.tab-header {
+  display: flex;
+  border-bottom: 1px solid var(--figma-color-border);
+  margin-bottom: 20px;
+  background: var(--figma-color-bg-secondary);
+  border-radius: 6px 6px 0 0;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: var(--figma-color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.tab-button:first-child {
+  border-radius: 6px 0 0 0;
+}
+
+.tab-button:last-child {
+  border-radius: 0 6px 0 0;
+}
+
+.tab-button:hover {
+  background: var(--figma-color-bg-hover);
+  color: var(--figma-color-text);
+}
+
+.tab-button.active {
+  background: var(--figma-color-bg);
+  color: var(--figma-color-text);
+  border-bottom-color: var(--figma-color-border-brand);
+  font-weight: 600;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Adjust main container for single tab view */
+.tab-content .panel {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.tab-content .main-container {
+  display: block; /* Stack vertically in tab view */
+  gap: 0;
+}
+
+/* Remove side-by-side layout styles when in tab view */
+.health-panel {
+  border-right: none;
+  padding-right: 0;
+}
+
+.ticket-panel {
+  padding-left: 0;
+}
   </style>
 </head>
 <body>
-  <div class="main-container">
-    <!-- Health Metrics Panel (Left Side) -->
-    <div class="panel health-panel">
-      <div class="panel-header">
-        <h2 class="panel-title">📊 Design System Health</h2>
-      </div>
-      <p class="panel-subtitle">Real-time compliance and usage metrics</p>
-      
-      <!-- Overall Health Score -->
-      <div class="metric-grid">
-        <div class="metric-card">
-          <div class="metric-value excellent" id="overallScore">--</div>
-          <div class="metric-label">Overall Score</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value good" id="complianceRate">--</div>
-          <div class="metric-label">Compliance Rate</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value good" id="componentUsage">--</div>
-          <div class="metric-label">Component Usage</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value needs-attention" id="tokenAdoption">--</div>
-          <div class="metric-label">Token Adoption</div>
-        </div>
-      </div>
-      
-      <!-- Detailed Metrics -->
-      <div class="detailed-metrics">
-        <div class="section-title">Component Analysis</div>
-        <div class="metric-row">
-          <span class="metric-name">Standard Components</span>
-          <span class="metric-score high" id="standardComponents">--</span>
-        </div>
-        <div class="metric-row">
-          <span class="metric-name">Custom Components</span>
-          <span class="metric-score medium" id="customComponents">--</span>
-        </div>
-        <div class="metric-row">
-          <span class="metric-name">Most Used Component</span>
-          <span class="metric-score high" id="topComponent">--</span>
-        </div>
-      </div>
-      
-      <div class="detailed-metrics">
-        <div class="section-title">Token Adoption</div>
-        <div class="metric-row">
-          <span class="metric-name">Color Tokens</span>
-          <span class="metric-score high" id="colorTokens">--</span>
-        </div>
-        <div class="metric-row">
-          <span class="metric-name">Typography Tokens</span>
-          <span class="metric-score medium" id="typographyTokens">--</span>
-        </div>
-        <div class="metric-row">
-          <span class="metric-name">Spacing Tokens</span>
-          <span class="metric-score low" id="spacingTokens">--</span>
-        </div>
-      </div>
-      
-      <!-- Health Recommendations -->
-      <div class="detailed-metrics">
-        <div class="section-title">Recommendations</div>
-        <div id="healthRecommendations">
-          <div class="metric-row">
-            <span class="metric-name">Loading health data...</span>
+  <div class="tab-container">
+    <!-- Tab Header -->
+    <div class="tab-header">
+      <button class="tab-button active" data-tab="health">
+        📊 Design System Health
+      </button>
+      <button class="tab-button" data-tab="ticket">
+        🎫 Ticket Generator
+      </button>
+    </div>
+
+    <!-- Health Metrics Tab Content -->
+    <div id="health-tab" class="tab-content active">
+      <div class="main-container">
+        <div class="panel health-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">📊 Design System Health</h2>
+          </div>
+          <p class="panel-subtitle">Real-time compliance and usage metrics</p>
+          
+          <!-- Overall Health Score -->
+          <div class="metric-grid">
+            <div class="metric-card">
+              <div class="metric-value excellent" id="overallScore">--</div>
+              <div class="metric-label">Overall Score</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value good" id="complianceRate">--</div>
+              <div class="metric-label">Compliance Rate</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value good" id="componentUsage">--</div>
+              <div class="metric-label">Component Usage</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value needs-attention" id="tokenAdoption">--</div>
+              <div class="metric-label">Token Adoption</div>
+            </div>
+          </div>
+          
+          <!-- Detailed Metrics -->
+          <div class="detailed-metrics">
+            <div class="section-title">Component Analysis</div>
+            <div class="metric-row">
+              <span class="metric-name">Standard Components</span>
+              <span class="metric-score high" id="standardComponents">--</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Custom Components</span>
+              <span class="metric-score medium" id="customComponents">--</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Most Used Component</span>
+              <span class="metric-score high" id="topComponent">--</span>
+            </div>
+          </div>
+          
+          <div class="detailed-metrics">
+            <div class="section-title">Token Adoption</div>
+            <div class="metric-row">
+              <span class="metric-name">Color Tokens</span>
+              <span class="metric-score high" id="colorTokens">--</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Typography Tokens</span>
+              <span class="metric-score medium" id="typographyTokens">--</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">Spacing Tokens</span>
+              <span class="metric-score low" id="spacingTokens">--</span>
+            </div>
+          </div>
+          
+          <!-- Health Recommendations -->
+          <div class="detailed-metrics">
+            <div class="section-title">Recommendations</div>
+            <div id="healthRecommendations">
+              <div class="metric-row">
+                <span class="metric-name">Loading health data...</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    
-    <!-- Ticket Generation Panel (Right Side) -->
-    <div class="panel ticket-panel">
-      <div class="panel-header">
-        <h2 class="panel-title">🎫 AI Ticket Generator</h2>
-      </div>
-      <p class="panel-subtitle">Generate Jira tickets from selected Figma frames</p>
+
+    <!-- Ticket Generator Tab Content -->
+    <div id="ticket-tab" class="tab-content">
+      <div class="main-container">
+        <div class="panel ticket-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">🎫 AI Ticket Generator</h2>
+          </div>
+          <p class="panel-subtitle">Generate Jira tickets from selected Figma frames</p>
 
       <div class="config-section">
         <div class="config-title">AI Configuration</div>
@@ -783,6 +888,8 @@ input[type="password"] {
           📋 Copy to Clipboard
         </button>
       </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -791,5 +898,51 @@ input[type="password"] {
   <script src="js/health-metrics.js"></script>
   <script src="js/ticket-generator.js"></script>
   <script src="js/main.js"></script>
+  
+  <!-- Tab System Script -->
+  <script>
+    // Tab system functionality
+    function initializeTabs() {
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const targetTab = button.getAttribute('data-tab');
+          
+          // Remove active class from all buttons and contents
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+          
+          // Add active class to clicked button and corresponding content
+          button.classList.add('active');
+          document.getElementById(targetTab + '-tab').classList.add('active');
+          
+          // Save the active tab preference
+          if (window.localStorage) {
+            localStorage.setItem('activeTab', targetTab);
+          }
+        });
+      });
+      
+      // Restore saved tab preference
+      if (window.localStorage) {
+        const savedTab = localStorage.getItem('activeTab');
+        if (savedTab) {
+          const savedButton = document.querySelector(`[data-tab="${savedTab}"]`);
+          if (savedButton) {
+            savedButton.click();
+          }
+        }
+      }
+    }
+    
+    // Initialize tabs when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeTabs);
+    } else {
+      initializeTabs();
+    }
+  </script>
 </body>
 </html>
