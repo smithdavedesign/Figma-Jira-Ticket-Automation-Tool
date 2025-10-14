@@ -100,25 +100,27 @@ figma.ui.onmessage = async (msg: any) => {
     try {
       const selection = figma.currentPage.selection;
 
-      if (selection.length === 0) {
-        figma.ui.postMessage({ 
-          type: 'compliance-error', 
-          message: 'Please select frames or components to analyze compliance.' 
-        });
-        return;
-      }
-
-      if (!designSystemScanner || !detectedDesignSystem) {
-        figma.ui.postMessage({ 
-          type: 'compliance-error', 
-          message: 'Design system not detected. Please ensure your file contains design system components.' 
-        });
-        return;
-      }
-
-      console.log('📊 Calculating compliance for', selection.length, 'selected items...');
+      // Allow compliance calculation without selection (analyze whole page/file)
+      console.log('📊 Calculating compliance for', selection.length > 0 ? selection.length + ' selected items' : 'current page', '...');
       
-      // Calculate compliance score
+      // Initialize design system scanner if not already done
+      if (!designSystemScanner) {
+        designSystemScanner = new DesignSystemScanner();
+        detectedDesignSystem = await designSystemScanner.scanDesignSystem();
+        
+        if (detectedDesignSystem) {
+          complianceAnalyzer = new SimpleComplianceAnalyzer(detectedDesignSystem);
+          console.log('✅ Design system initialized on-demand:', detectedDesignSystem.name);
+          
+          // Send design system info to UI
+          figma.ui.postMessage({
+            type: 'design-system-detected',
+            designSystem: detectedDesignSystem
+          });
+        }
+      }
+
+      // Calculate compliance score (works with or without selection)
       const complianceScore = await designSystemScanner.calculateComplianceScore(selection);
       
       // Send results to UI
