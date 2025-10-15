@@ -807,8 +807,10 @@ class FigmaAITestServer {
     
     // Initialize AI service with configuration from environment
     const aiConfig: AIAnalysisConfig = {
+      geminiApiKey: process.env.GEMINI_API_KEY || undefined,
       openaiApiKey: process.env.OPENAI_API_KEY || undefined,
       anthropicApiKey: process.env.ANTHROPIC_API_KEY || undefined,
+      enableGemini: process.env.ENABLE_GEMINI !== 'false', // Default enabled
       enableVision: process.env.ENABLE_AI_VISION !== 'false',
       enableClaude: process.env.ENABLE_CLAUDE !== 'false', 
       maxTokens: parseInt(process.env.AI_MAX_TOKENS || '4000'),
