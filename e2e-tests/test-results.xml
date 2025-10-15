@@ -1,0 +1,6 @@
+<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="1.7287890000000001">
+<testsuite name="core-functionality.spec.js" timestamp="2025-10-15T07:01:40.059Z" hostname="chromium" tests="1" failures="0" skipped="0" time="1.228" errors="0">
+<testcase name="Enhanced Figma Plugin - Core Functionality @smoke @critical › should show validation error for empty tech stack input" classname="core-functionality.spec.js" time="1.228">
+</testcase>
+</testsuite>
+</testsuites>

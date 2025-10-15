@@ -872,9 +872,15 @@ class FigmaAITestServer {
           return await this.aiEnhancedGenerator.testAIServices();
 
         default:
+          // Don't catch unknown method errors - let them bubble up for proper HTTP error handling
           throw new Error(`Unknown method: ${method}`);
       }
     } catch (error) {
+      // Only catch and format non-unknown-method errors
+      if (error instanceof Error && error.message.startsWith('Unknown method:')) {
+        throw error; // Re-throw for proper HTTP error handling
+      }
+      
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
       return {
@@ -1085,7 +1091,16 @@ ${workflowResult.tacticalCode?.content?.[0]?.text || 'Generated from Figma MCP s
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             res.writeHead(400);
-            res.end(JSON.stringify({ error: errorMessage }));
+            // Format error response to match expected test structure
+            res.end(JSON.stringify({
+              content: [
+                {
+                  type: 'text',
+                  text: errorMessage
+                }
+              ],
+              isError: true
+            }));
           }
         });
         return;
