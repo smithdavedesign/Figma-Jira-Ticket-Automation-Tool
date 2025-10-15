@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Figma → Jira Ticket Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .suggestion-pill {
+            transition: all 0.2s;
+        }
+        .suggestion-pill:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .confidence-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .tech-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .tab-button {
+            color: #6B7280;
+            background: transparent;
+        }
+        .tab-button.active {
+            color: #3B82F6;
+            background: #EFF6FF;
+            border: 1px solid #DBEAFE;
+        }
+        .tab-button:hover:not(.active) {
+            color: #374151;
+            background: #F9FAFB;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">🎨 Smart Figma → Jira Generator</h1>
+                <p class="text-gray-600 text-lg">Describe your tech stack naturally, get tailored boilerplate code</p>
+                
+                <!-- Tab Navigation -->
+                <div class="mt-6 flex justify-center">
+                    <div class="bg-white rounded-xl shadow-sm p-2 flex space-x-2">
+                        <button id="mainTab" class="tab-button active px-4 py-2 rounded-lg text-sm font-medium transition-all">
+                            🎫 Ticket Generator
+                        </button>
+                        <button id="metricsTab" class="tab-button px-4 py-2 rounded-lg text-sm font-medium transition-all">
+                            📊 Design Health
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Tab Content -->
+            <div id="mainContent" class="tab-content active">
+                <!-- Tech Stack Input -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                        🛠️ Describe Your Tech Stack
+                        <span class="ml-auto text-sm font-normal text-gray-500">AI-Powered Parsing</span>
+                    </h2>
+                    
+                    <!-- Natural Language Input -->
+                    <div class="mb-6">
+                        <label for="techStackDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tell us about your project in plain English:
+                        </label>
+                        <textarea id="techStackDescription" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Examples:
+• React with TypeScript, Tailwind CSS, and Jest testing
+• Vue 3 project using Pinia for state, SCSS styling, deployed on Netlify
+• Next.js app with Chakra UI components and Playwright e2e tests
+• Angular application with Material Design and NgRx state management
+• Full-stack: React frontend + Node.js Express backend with MongoDB"></textarea>
+                    </div>
+
+                    <!-- Quick Suggestions -->
+                    <div class="mb-6">
+                        <p class="text-sm font-medium text-gray-700 mb-3">Or try these popular combinations:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="suggestion-pill bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="React with TypeScript, Tailwind CSS, and Jest testing">
+                                🚀 Modern React Stack
+                            </button>
+                            <button class="suggestion-pill bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="Vue 3 with Composition API, SCSS, Pinia, and Vitest">
+                                ⚡ Vue 3 Composition
+                            </button>
+                            <button class="suggestion-pill bg-purple-100 hover:bg-purple-200 text-purple-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="Next.js with TypeScript, Chakra UI, and Playwright tests">
+                                🔥 Next.js Pro
+                            </button>
+                            <button class="suggestion-pill bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="Angular with Material Design, NgRx, and Karma tests">
+                                🅰️ Angular Enterprise
+                            </button>
+                            <button class="suggestion-pill bg-orange-100 hover:bg-orange-200 text-orange-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="React Native mobile app with Expo and TypeScript">
+                                📱 React Native
+                            </button>
+                            <button class="suggestion-pill bg-cyan-100 hover:bg-cyan-200 text-cyan-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="Flutter app with Material Design and Dart">
+                                🎯 Flutter
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Parse Button -->
+                    <button id="parseTechStack" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-6 rounded-xl font-medium transition-all transform hover:scale-105">
+                        🧠 Parse Tech Stack with AI
+                    </button>
+
+                    <!-- Parsed Results -->
+                    <div id="parsedResults" class="mt-6 hidden">
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                ✨ Parsed Configuration
+                                <span class="ml-auto">
+                                    <span class="text-sm text-gray-600">Confidence: </span>
+                                    <span id="confidencePercent" class="font-bold text-green-600">0%</span>
+                                </span>
+                            </h3>
+                            
+                            <!-- Confidence Bar -->
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+                                <div id="confidenceBar" class="confidence-bar bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+
+                            <!-- Parsed Tech Stack Display -->
+                            <div id="techStackPreview" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+
+                            <!-- Suggestions -->
+                            <div id="suggestions" class="mt-4 hidden">
+                                <h4 class="font-medium text-gray-700 mb-2">💡 Suggestions:</h4>
+                                <div id="suggestionsList" class="space-y-2">
+                                    <!-- Will be populated by JavaScript -->
+                                </div>
+                            </div>
+
+                            <!-- Edit Button -->
+                            <button id="editTechStack" class="mt-4 bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg font-medium transition-colors">
+                                ✏️ Edit Configuration
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Figma Design Input -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                        🎨 Figma Design Details
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="figmaUrl" class="block text-sm font-medium text-gray-700 mb-2">Figma Frame URL</label>
+                            <input type="url" id="figmaUrl" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="https://www.figma.com/design/...">
+                        </div>
+
+                        <div>
+                            <label for="projectContext" class="block text-sm font-medium text-gray-700 mb-2">Project Context</label>
+                            <textarea id="projectContext" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Describe the component purpose, user flow, and any specific requirements..."></textarea>
+                        </div>
+
+                        <!-- Generation Options -->
+                        <div class="bg-gray-50 rounded-xl p-6">
+                            <h3 class="font-semibold text-gray-800 mb-4">🎛️ Generation Options</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="includeTests" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                    <span class="text-sm text-gray-700">Generate Tests</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="includeStorybook" class="rounded text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">Storybook Stories</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="includeA11y" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                    <span class="text-sm text-gray-700">Accessibility</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="includeResponsive" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                    <span class="text-sm text-gray-700">Responsive</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button id="generateTicket" class="w-full mt-8 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-4 px-6 rounded-xl font-semibold text-lg transition-all transform hover:scale-105 shadow-lg" disabled>
+                        🎫 Generate Smart Ticket + Code
+                    </button>
+                </div>
+
+                <!-- Generated Output -->
+                <div id="output" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">📋 Generated Ticket &amp; Code</h2>
+                    <div id="outputContent" class="space-y-6"></div>
+                </div>
+            </div>
+
+            <!-- Design Health Metrics Tab -->
+            <div id="metricsContent" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                        📊 Design System Health Metrics
+                        <span class="ml-auto text-sm font-normal text-gray-500">Advanced Analytics</span>
+                    </h2>
+                    
+                    <!-- Figma File Input for Health Check -->
+                    <div class="mb-6">
+                        <label for="healthFigmaUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                            Figma File URL for Health Analysis
+                        </label>
+                        <input type="url" id="healthFigmaUrl" 
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                               placeholder="https://www.figma.com/design/your-design-system-file">
+                    </div>
+
+                    <button id="analyzeHealth" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-6 rounded-xl font-medium transition-all transform hover:scale-105">
+                        📈 Analyze Design System Health
+                    </button>
+
+                    <!-- Health Results -->
+                    <div id="healthResults" class="mt-8 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            <!-- Consistency Score -->
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="font-semibold text-gray-800">🎯 Consistency</h3>
+                                    <span id="consistencyScore" class="text-2xl font-bold text-green-600">--</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="consistencyBar" class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-2">Color & typography consistency across components</p>
+                            </div>
+
+                            <!-- Coverage Score -->
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="font-semibold text-gray-800">📚 Coverage</h3>
+                                    <span id="coverageScore" class="text-2xl font-bold text-blue-600">--</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="coverageBar" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-2">Component library completeness</p>
+                            </div>
+
+                            <!-- Maintainability Score -->
+                            <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="font-semibold text-gray-800">🔧 Maintainability</h3>
+                                    <span id="maintainabilityScore" class="text-2xl font-bold text-purple-600">--</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="maintainabilityBar" class="bg-purple-500 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-2">Code generation friendliness</p>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Analysis -->
+                        <div class="bg-gray-50 rounded-xl p-6">
+                            <h3 class="font-semibold text-gray-800 mb-4">🔍 Detailed Analysis</h3>
+                            <div id="detailedAnalysis" class="space-y-4">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="bg-yellow-50 rounded-xl p-6 mt-6 border border-yellow-200">
+                            <h3 class="font-semibold text-gray-800 mb-4">💡 Recommendations</h3>
+                            <div id="recommendations" class="space-y-2">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+                <!-- Tech Stack Input -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    🛠️ Describe Your Tech Stack
+                    <span class="ml-auto text-sm font-normal text-gray-500">AI-Powered Parsing</span>
+                </h2>
+                
+                <!-- Natural Language Input -->
+                <div class="mb-6">
+                    <label for="techStackDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tell us about your project in plain English:
+                    </label>
+                    <textarea 
+                        id="techStackDescription" 
+                        rows="4"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="Examples:
+• React with TypeScript, Tailwind CSS, and Jest testing
+• Vue 3 project using Pinia for state, SCSS styling, deployed on Netlify
+• Next.js app with Chakra UI components and Playwright e2e tests
+• Angular application with Material Design and NgRx state management
+• Full-stack: React frontend + Node.js Express backend with MongoDB"></textarea>
+                </div>
+
+                <!-- Quick Suggestions -->
+                <div class="mb-6">
+                    <p class="text-sm font-medium text-gray-700 mb-3">Or try these popular combinations:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="suggestion-pill bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="React with TypeScript, Tailwind CSS, and Jest testing">
+                            🚀 Modern React Stack
+                        </button>
+                        <button class="suggestion-pill bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="Vue 3 with Composition API, SCSS, Pinia, and Vitest">
+                            ⚡ Vue 3 Composition
+                        </button>
+                        <button class="suggestion-pill bg-purple-100 hover:bg-purple-200 text-purple-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="Next.js with TypeScript, Chakra UI, and Playwright tests">
+                            🔥 Next.js Pro
+                        </button>
+                        <button class="suggestion-pill bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="Angular with Material Design, NgRx, and Karma tests">
+                            🅰️ Angular Enterprise
+                        </button>
+                        <button class="suggestion-pill bg-orange-100 hover:bg-orange-200 text-orange-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="React Native mobile app with Expo and TypeScript">
+                            📱 React Native
+                        </button>
+                        <button class="suggestion-pill bg-cyan-100 hover:bg-cyan-200 text-cyan-800 px-4 py-2 rounded-full text-sm font-medium" data-stack="Flutter app with Material Design and Dart">
+                            🎯 Flutter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Parse Button -->
+                <button id="parseTechStack" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-6 rounded-xl font-medium transition-all transform hover:scale-105">
+                    🧠 Parse Tech Stack with AI
+                </button>
+
+                <!-- Parsed Results -->
+                <div id="parsedResults" class="mt-6 hidden">
+                    <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            ✨ Parsed Configuration
+                            <span class="ml-auto">
+                                <span class="text-sm text-gray-600">Confidence: </span>
+                                <span id="confidencePercent" class="font-bold text-green-600">0%</span>
+                            </span>
+                        </h3>
+                        
+                        <!-- Confidence Bar -->
+                        <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+                            <div id="confidenceBar" class="confidence-bar bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full" style="width: 0%"></div>
+                        </div>
+
+                        <!-- Parsed Tech Stack Display -->
+                        <div id="techStackPreview" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+
+                        <!-- Suggestions -->
+                        <div id="suggestions" class="mt-4 hidden">
+                            <h4 class="font-medium text-gray-700 mb-2">💡 Suggestions:</h4>
+                            <div id="suggestionsList" class="space-y-2">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Edit Button -->
+                        <button id="editTechStack" class="mt-4 bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg font-medium transition-colors">
+                            ✏️ Edit Configuration
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Figma Design Input -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                    🎨 Figma Design Details
+                </h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label for="figmaUrl" class="block text-sm font-medium text-gray-700 mb-2">Figma Frame URL</label>
+                        <input type="url" id="figmaUrl" 
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                               placeholder="https://www.figma.com/design/...">
+                    </div>
+
+                    <div>
+                        <label for="projectContext" class="block text-sm font-medium text-gray-700 mb-2">Project Context</label>
+                        <textarea id="projectContext" rows="3"
+                                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                  placeholder="Describe the component purpose, user flow, and any specific requirements..."></textarea>
+                    </div>
+
+                    <!-- Generation Options -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <h3 class="font-semibold text-gray-800 mb-4">🎛️ Generation Options</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeTests" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                <span class="text-sm text-gray-700">Generate Tests</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeStorybook" class="rounded text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Storybook Stories</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeA11y" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                <span class="text-sm text-gray-700">Accessibility</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeResponsive" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                <span class="text-sm text-gray-700">Responsive</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+
+        </div>
+    </div>
+
+    <script>
+        let parsedTechStack = null;
+
+        // Tech stack parsing functionality
+        const techStackExamples = [
+            "React with TypeScript, Tailwind CSS, and Jest testing",
+            "Vue 3 with Composition API, SCSS, Pinia, and Vitest",
+            "Next.js with TypeScript, Chakra UI, and Playwright tests",
+            "Angular with Material Design, NgRx, and Karma tests",
+            "React Native mobile app with Expo and TypeScript",
+            "Flutter app with Material Design and Dart"
+        ];
+
+        // Quick suggestion click handlers
+        document.querySelectorAll('.suggestion-pill').forEach(pill => {
+            pill.addEventListener('click', function() {
+                const stack = this.getAttribute('data-stack');
+                document.getElementById('techStackDescription').value = stack;
+                parseTechStackDescription();
+            });
+        });
+
+        // Parse tech stack button
+        document.getElementById('parseTechStack').addEventListener('click', parseTechStackDescription);
+
+        // Auto-parse when typing stops
+        let parseTimeout;
+        document.getElementById('techStackDescription').addEventListener('input', function() {
+            clearTimeout(parseTimeout);
+            parseTimeout = setTimeout(() => {
+                const text = this.value.trim();
+                if (text.length > 10) {
+                    parseTechStackDescription();
+                }
+            }, 1000);
+        });
+
+        async function parseTechStackDescription() {
+            const description = document.getElementById('techStackDescription').value.trim();
+            
+            if (!description) {
+                alert('Please describe your tech stack first');
+                return;
+            }
+
+            const button = document.getElementById('parseTechStack');
+            const originalText = button.textContent;
+            button.textContent = '🧠 Parsing...';
+            button.disabled = true;
+
+            try {
+                // Mock parsing for now - in real implementation, this would call our parser
+                const mockParsed = mockParseTechStack(description);
+                displayParsedTechStack(mockParsed);
+                
+                // Enable generate button
+                document.getElementById('generateTicket').disabled = false;
+                
+            } catch (error) {
+                console.error('Parsing error:', error);
+                alert('Error parsing tech stack description');
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        function mockParseTechStack(description) {
+            // This would be replaced with actual API call to our parser
+            const lower = description.toLowerCase();
+            
+            const result = {
+                frontend: {
+                    framework: 'react',
+                    styling: 'tailwind',
+                    stateManagement: 'none'
+                },
+                backend: null,
+                mobile: null,
+                deployment: null,
+                componentLibrary: null,
+                confidence: 85,
+                suggestions: []
+            };
+
+            // Simple pattern matching for demo
+            if (lower.includes('vue')) result.frontend.framework = 'vue';
+            if (lower.includes('angular')) result.frontend.framework = 'angular';
+            if (lower.includes('next')) result.frontend.framework = 'nextjs';
+            
+            if (lower.includes('styled-components')) result.frontend.styling = 'styled-components';
+            if (lower.includes('scss') || lower.includes('sass')) result.frontend.styling = 'scss';
+            if (lower.includes('css modules')) result.frontend.styling = 'css-modules';
+            
+            if (lower.includes('redux')) result.frontend.stateManagement = 'redux';
+            if (lower.includes('zustand')) result.frontend.stateManagement = 'zustand';
+            if (lower.includes('pinia')) result.frontend.stateManagement = 'pinia';
+            
+            if (lower.includes('typescript')) {
+                result.backend = { language: 'typescript', framework: 'express' };
+                result.confidence += 10;
+            }
+            
+            if (lower.includes('chakra')) result.componentLibrary = 'chakra-ui';
+            if (lower.includes('material')) result.componentLibrary = 'mui';
+            
+            if (lower.includes('react native')) {
+                result.mobile = { platform: 'react-native' };
+                result.confidence += 5;
+            }
+
+            return result;
+        }
+
+        function displayParsedTechStack(parsed) {
+            parsedTechStack = parsed;
+            
+            const resultsDiv = document.getElementById('parsedResults');
+            const previewDiv = document.getElementById('techStackPreview');
+            const confidencePercent = document.getElementById('confidencePercent');
+            const confidenceBar = document.getElementById('confidenceBar');
+            
+            // Update confidence
+            confidencePercent.textContent = `${parsed.confidence}%`;
+            confidenceBar.style.width = `${parsed.confidence}%`;
+            
+            // Create tech stack preview cards
+            previewDiv.innerHTML = '';
+            
+            // Frontend card
+            previewDiv.appendChild(createTechCard('Frontend', {
+                'Framework': parsed.frontend.framework,
+                'Styling': parsed.frontend.styling,
+                'State': parsed.frontend.stateManagement || 'None'
+            }, '⚛️'));
+
+            // Backend card (if detected)
+            if (parsed.backend) {
+                previewDiv.appendChild(createTechCard('Backend', {
+                    'Language': parsed.backend.language,
+                    'Framework': parsed.backend.framework || 'None'
+                }, '🖥️'));
+            }
+
+            // Mobile card (if detected)
+            if (parsed.mobile) {
+                previewDiv.appendChild(createTechCard('Mobile', {
+                    'Platform': parsed.mobile.platform
+                }, '📱'));
+            }
+
+            // Show suggestions if any
+            if (parsed.suggestions && parsed.suggestions.length > 0) {
+                const suggestionsDiv = document.getElementById('suggestions');
+                const suggestionsList = document.getElementById('suggestionsList');
+                
+                suggestionsList.innerHTML = '';
+                parsed.suggestions.forEach(suggestion => {
+                    const div = document.createElement('div');
+                    div.className = 'text-sm text-gray-600 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200';
+                    div.textContent = suggestion;
+                    suggestionsList.appendChild(div);
+                });
+                
+                suggestionsDiv.classList.remove('hidden');
+            }
+
+            resultsDiv.classList.remove('hidden');
+        }
+
+        function createTechCard(title, items, emoji) {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-lg p-4 border border-gray-200 shadow-sm';
+            
+            let itemsHtml = '';
+            for (const [key, value] of Object.entries(items)) {
+                itemsHtml += `
+                    <div class="flex justify-between items-center py-1">
+                        <span class="text-sm text-gray-600">${key}:</span>
+                        <span class="text-sm font-medium text-gray-900 capitalize">${value}</span>
+                    </div>
+                `;
+            }
+            
+            card.innerHTML = `
+                <div class="flex items-center mb-3">
+                    <span class="text-2xl mr-2">${emoji}</span>
+                    <h4 class="font-semibold text-gray-800">${title}</h4>
+                </div>
+                ${itemsHtml}
+            `;
+            
+            return card;
+        }
+
+        // Generate ticket functionality
+        document.getElementById('generateTicket').addEventListener('click', async function() {
+            const figmaUrl = document.getElementById('figmaUrl').value;
+            const projectContext = document.getElementById('projectContext').value;
+
+            if (!figmaUrl || !parsedTechStack) {
+                alert('Please provide Figma URL and parse your tech stack first');
+                return;
+            }
+
+            const button = this;
+            const originalText = button.textContent;
+            button.textContent = '🔄 Generating...';
+            button.disabled = true;
+
+            try {
+                const payload = {
+                    method: 'generate_enhanced_ticket',
+                    params: {
+                        figmaUrl,
+                        projectContext,
+                        techStack: parsedTechStack,
+                        options: {
+                            includeTests: document.getElementById('includeTests').checked,
+                            includeStorybook: document.getElementById('includeStorybook').checked,
+                            includeAccessibility: document.getElementById('includeA11y').checked,
+                            includeResponsive: document.getElementById('includeResponsive').checked
+                        }
+                    }
+                };
+
+                console.log('Generating with payload:', payload);
+                
+                // Mock response for demo
+                const mockResult = {
+                    ticket: `# 🎨 ${parsedTechStack.frontend.framework.charAt(0).toUpperCase() + parsedTechStack.frontend.framework.slice(1)} Component Implementation
+
+## Tech Stack
+- **Frontend**: ${parsedTechStack.frontend.framework}
+- **Styling**: ${parsedTechStack.frontend.styling}
+- **State**: ${parsedTechStack.frontend.stateManagement}
+
+## Component Code
+\`\`\`jsx
+import React from 'react';
+
+export const GeneratedComponent = () => {
+  return (
+    <div className="p-4 bg-white rounded-lg shadow">
+      <h2 className="text-xl font-bold">Generated Component</h2>
+      <p>Tailored for your ${parsedTechStack.frontend.framework} stack</p>
+    </div>
+  );
+};
+\`\`\`
+
+## Acceptance Criteria
+- [ ] Component matches Figma design
+- [ ] Responsive design implemented
+- [ ] Tests pass
+- [ ] Accessibility compliant`,
+                    boilerplateCode: {
+                        component: `import React from 'react';\n\nexport const GeneratedComponent = () => {\n  return (\n    <div className="p-4">\n      <h2>Component for ${parsedTechStack.frontend.framework}</h2>\n    </div>\n  );\n};`,
+                        styles: `/* ${parsedTechStack.frontend.styling} styles */\n.component {\n  padding: 1rem;\n}`,
+                        tests: document.getElementById('includeTests').checked ? `describe('GeneratedComponent', () => {\n  test('renders correctly', () => {\n    // Test implementation\n  });\n});` : null
+                    }
+                };
+
+                displayEnhancedOutput(mockResult);
+                
+            } catch (error) {
+                console.error('Generation error:', error);
+                alert('Error generating ticket');
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        });
+
+        function displayEnhancedOutput(result) {
+            const output = document.getElementById('output');
+            const content = document.getElementById('outputContent');
+            
+            let outputHTML = `
+                <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                    <h3 class="font-bold text-xl mb-4 flex items-center">
+                        🎫 Jira Ticket
+                        <button onclick="copyToClipboard('ticket')" class="ml-auto bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded-lg text-sm">
+                            📋 Copy
+                        </button>
+                    </h3>
+                    <div id="ticketContent" class="bg-white p-4 rounded-lg border">
+                        <pre class="whitespace-pre-wrap text-sm font-mono">${result.ticket}</pre>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-900 text-green-400 rounded-xl p-6 mb-6">
+                    <h3 class="font-bold text-xl mb-4 flex items-center text-white">
+                        ⚛️ Component Code
+                        <button onclick="copyToClipboard('component')" class="ml-auto bg-green-700 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm">
+                            📋 Copy
+                        </button>
+                    </h3>
+                    <div id="componentContent">
+                        <pre><code>${result.boilerplateCode.component}</code></pre>
+                    </div>
+                </div>
+            `;
+
+            if (result.boilerplateCode.styles) {
+                outputHTML += `
+                    <div class="bg-gray-900 text-blue-400 rounded-xl p-6 mb-6">
+                        <h3 class="font-bold text-xl mb-4 flex items-center text-white">
+                            🎨 Styles
+                            <button onclick="copyToClipboard('styles')" class="ml-auto bg-blue-700 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">
+                                📋 Copy
+                            </button>
+                        </h3>
+                        <div id="stylesContent">
+                            <pre><code>${result.boilerplateCode.styles}</code></pre>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (result.boilerplateCode.tests) {
+                outputHTML += `
+                    <div class="bg-gray-900 text-yellow-400 rounded-xl p-6 mb-6">
+                        <h3 class="font-bold text-xl mb-4 flex items-center text-white">
+                            🧪 Tests
+                            <button onclick="copyToClipboard('tests')" class="ml-auto bg-yellow-700 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-sm">
+                                📋 Copy
+                            </button>
+                        </h3>
+                        <div id="testsContent">
+                            <pre><code>${result.boilerplateCode.tests}</code></pre>
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = outputHTML;
+            output.classList.remove('hidden');
+            output.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyToClipboard(type) {
+            const elementMap = {
+                'ticket': 'ticketContent',
+                'component': 'componentContent', 
+                'styles': 'stylesContent',
+                'tests': 'testsContent'
+            };
+            
+            const element = document.getElementById(elementMap[type]);
+            if (element) {
+                navigator.clipboard.writeText(element.textContent);
+                
+                // Show feedback
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            }
+        }
+
+        // Edit tech stack functionality
+        document.getElementById('editTechStack').addEventListener('click', function() {
+            document.getElementById('parsedResults').classList.add('hidden');
+            document.getElementById('techStackDescription').focus();
+        });
+
+        // Tab functionality
+        document.getElementById('mainTab').addEventListener('click', function() {
+            switchTab('main');
+        });
+
+        document.getElementById('metricsTab').addEventListener('click', function() {
+            switchTab('metrics');
+        });
+
+        function switchTab(tabName) {
+            // Remove active from all tabs and content
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active to selected tab
+            if (tabName === 'main') {
+                document.getElementById('mainTab').classList.add('active');
+                document.getElementById('mainContent').classList.add('active');
+            } else {
+                document.getElementById('metricsTab').classList.add('active');
+                document.getElementById('metricsContent').classList.add('active');
+            }
+        }
+
+        // Design Health Analysis functionality
+        document.getElementById('analyzeHealth').addEventListener('click', async function() {
+            const figmaUrl = document.getElementById('healthFigmaUrl').value.trim();
+            
+            if (!figmaUrl) {
+                alert('Please provide a Figma file URL for health analysis');
+                return;
+            }
+
+            const button = this;
+            const originalText = button.textContent;
+            button.textContent = '📈 Analyzing...';
+            button.disabled = true;
+
+            try {
+                // Mock health analysis - in real implementation, this would call the MCP server
+                const healthMetrics = await mockHealthAnalysis(figmaUrl);
+                displayHealthMetrics(healthMetrics);
+                
+            } catch (error) {
+                console.error('Health analysis error:', error);
+                alert('Error analyzing design system health');
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        });
+
+        async function mockHealthAnalysis(figmaUrl) {
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Mock comprehensive health metrics
+            return {
+                consistency: {
+                    score: 85,
+                    details: {
+                        colors: { unique: 12, recommended: 8, score: 78 },
+                        typography: { styles: 6, consistent: 5, score: 92 },
+                        spacing: { values: 15, systematic: 12, score: 88 }
+                    }
+                },
+                coverage: {
+                    score: 72,
+                    details: {
+                        components: { total: 24, documented: 18, score: 75 },
+                        variants: { covered: 156, missing: 32, score: 83 },
+                        states: { implemented: 89, required: 120, score: 74 }
+                    }
+                },
+                maintainability: {
+                    score: 91,
+                    details: {
+                        naming: { consistent: 95, score: 95 },
+                        structure: { organized: 88, score: 88 },
+                        automation: { friendly: 92, score: 92 }
+                    }
+                },
+                recommendations: [
+                    {
+                        type: 'warning',
+                        title: 'Color Palette Optimization',
+                        description: 'Consider consolidating 12 unique colors to 8 recommended tokens for better consistency'
+                    },
+                    {
+                        type: 'info', 
+                        title: 'Component Coverage',
+                        description: 'Add 6 more documented components to reach 100% coverage for common UI patterns'
+                    },
+                    {
+                        type: 'success',
+                        title: 'Excellent Naming Convention',
+                        description: 'Your component naming is highly consistent and automation-friendly'
+                    }
+                ],
+                insights: [
+                    'Design system shows strong maintainability with 91% score',
+                    'Typography consistency is excellent at 92%',
+                    'Color usage could be optimized for better systematic approach',
+                    'Component coverage at 72% indicates good foundation with room for expansion'
+                ]
+            };
+        }
+
+        function displayHealthMetrics(metrics) {
+            // Update score displays
+            document.getElementById('consistencyScore').textContent = metrics.consistency.score + '%';
+            document.getElementById('coverageScore').textContent = metrics.coverage.score + '%';
+            document.getElementById('maintainabilityScore').textContent = metrics.maintainability.score + '%';
+            
+            // Animate progress bars
+            setTimeout(() => {
+                document.getElementById('consistencyBar').style.width = metrics.consistency.score + '%';
+                document.getElementById('coverageBar').style.width = metrics.coverage.score + '%';
+                document.getElementById('maintainabilityBar').style.width = metrics.maintainability.score + '%';
+            }, 100);
+
+            // Populate detailed analysis
+            const detailedAnalysis = document.getElementById('detailedAnalysis');
+            detailedAnalysis.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg p-4 border">
+                        <h4 class="font-medium text-gray-800 mb-2">🎨 Colors</h4>
+                        <p class="text-sm text-gray-600">${metrics.consistency.details.colors.unique} unique colors (${metrics.consistency.details.colors.score}% systematic)</p>
+                        <p class="text-xs text-gray-500 mt-1">Recommended: ${metrics.consistency.details.colors.recommended} token colors</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 border">
+                        <h4 class="font-medium text-gray-800 mb-2">📝 Typography</h4>
+                        <p class="text-sm text-gray-600">${metrics.consistency.details.typography.styles} text styles (${metrics.consistency.details.typography.score}% consistent)</p>
+                        <p class="text-xs text-gray-500 mt-1">${metrics.consistency.details.typography.consistent}/${metrics.consistency.details.typography.styles} follow system</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 border">
+                        <h4 class="font-medium text-gray-800 mb-2">📏 Spacing</h4>
+                        <p class="text-sm text-gray-600">${metrics.consistency.details.spacing.values} spacing values (${metrics.consistency.details.spacing.score}% systematic)</p>
+                        <p class="text-xs text-gray-500 mt-1">${metrics.consistency.details.spacing.systematic}/${metrics.consistency.details.spacing.values} follow 8px grid</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h4 class="font-medium text-gray-800 mb-2">📊 Key Insights</h4>
+                    ${metrics.insights.map(insight => 
+                        `<p class="text-sm text-gray-600 mb-1">• ${insight}</p>`
+                    ).join('')}
+                </div>
+            `;
+
+            // Populate recommendations
+            const recommendations = document.getElementById('recommendations');
+            recommendations.innerHTML = metrics.recommendations.map(rec => {
+                const iconMap = { warning: '⚠️', info: 'ℹ️', success: '✅' };
+                const colorMap = { 
+                    warning: 'border-yellow-300 bg-yellow-50', 
+                    info: 'border-blue-300 bg-blue-50', 
+                    success: 'border-green-300 bg-green-50' 
+                };
+                return `
+                    <div class="flex items-start space-x-3 p-3 rounded-lg border ${colorMap[rec.type]}">
+                        <span class="text-lg">${iconMap[rec.type]}</span>
+                        <div>
+                            <h5 class="font-medium text-gray-800">${rec.title}</h5>
+                            <p class="text-sm text-gray-600 mt-1">${rec.description}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Show results
+            document.getElementById('healthResults').classList.remove('hidden');
+            document.getElementById('healthResults').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

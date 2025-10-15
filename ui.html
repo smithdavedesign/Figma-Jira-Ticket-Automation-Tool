@@ -4,6 +4,40 @@
   <meta charset="utf-8">
   <title>AI Ticket Generator</title>
   <style>
+    /* Figma CSS Variables Fallbacks for Standalone Testing */
+    :root {
+      --figma-color-bg: #ffffff;
+      --figma-color-bg-secondary: #f8f9fa;
+      --figma-color-bg-tertiary: #f1f3f4;
+      --figma-color-bg-brand: #0066cc;
+      --figma-color-bg-brand-secondary: #e3f2fd;
+      --figma-color-bg-brand-tertiary: #bbdefb;
+      --figma-color-bg-success: #4caf50;
+      --figma-color-bg-success-tertiary: #e8f5e8;
+      --figma-color-bg-warning: #ff9800;
+      --figma-color-bg-warning-tertiary: #fff3e0;
+      --figma-color-bg-danger: #f44336;
+      --figma-color-bg-danger-tertiary: #ffebee;
+      --figma-color-bg-disabled: #e0e0e0;
+      --figma-color-bg-hover: #f5f5f5;
+      --figma-color-bg-brand-hover: #0056b3;
+      --figma-color-text: #212121;
+      --figma-color-text-secondary: #757575;
+      --figma-color-text-tertiary: #9e9e9e;
+      --figma-color-text-disabled: #bdbdbd;
+      --figma-color-text-success: #388e3c;
+      --figma-color-text-warning: #f57c00;
+      --figma-color-text-danger: #d32f2f;
+      --figma-color-text-onbrand: #ffffff;
+      --figma-color-border: #e0e0e0;
+      --figma-color-border-subtle: #f0f0f0;
+      --figma-color-border-selected: #0066cc;
+      --figma-color-border-brand: #0066cc;
+      --figma-color-border-success: #4caf50;
+      --figma-color-border-warning: #ff9800;
+      --figma-color-border-danger: #f44336;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -262,6 +296,74 @@
     
     .placeholder-text.error {
       color: var(--figma-color-text-danger);
+    }
+
+    /* Enhanced Tech Stack Styles */
+    .suggestion-pill {
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      color: var(--figma-color-text);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .suggestion-pill:hover {
+      background: var(--figma-color-bg-brand-secondary);
+      border-color: var(--figma-color-border-brand);
+      transform: translateY(-1px);
+    }
+
+    /* Progress Indicator Styles */
+    .progress-container {
+      margin: 16px 0;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--figma-color-bg-secondary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--figma-color-bg-brand) 0%, var(--figma-color-bg-success) 100%);
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+    
+    .progress-text {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    /* Document Type Radio Styles */
+    input[type="radio"] {
+      accent-color: var(--figma-color-bg-brand);
+      width: 12px;
+      height: 12px;
+    }
+    
+    input[type="checkbox"] {
+      accent-color: var(--figma-color-bg-brand);
+      width: 12px;
+      height: 12px;
+    }
+    
+    /* Enhanced Labels */
+    label:has(input[type="radio"]):hover {
+      background: var(--figma-color-bg-hover);
+    }
+    
+    label:has(input[type="radio"]:checked) {
+      background: var(--figma-color-bg-brand-secondary);
+      border-color: var(--figma-color-border-brand);
     }
     
     body {
@@ -727,6 +829,74 @@
       </div>
       <p class="panel-subtitle">Generate Jira tickets from selected Figma frames</p>
 
+      <!-- Tech Stack Detection Section -->
+      <div class="config-section">
+        <div class="config-title">🛠️ Tech Stack Context</div>
+        <p class="text-sm text-gray-600 mb-4">Describe your project's technology stack for better ticket generation:</p>
+        
+        <div class="form-group">
+          <label for="techStackDescription">Describe your tech stack in plain English:</label>
+          <textarea 
+            id="techStackDescription" 
+            rows="3" 
+            placeholder="e.g., React app with TypeScript, Material-UI for styling, Jest for testing..."
+            class="text-sm"
+          ></textarea>
+        </div>
+        
+        <!-- Quick Suggestions -->
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 mb-2">Popular combinations:</p>
+          <div class="flex flex-wrap gap-2" style="gap: 6px;">
+            <button class="suggestion-pill" data-stack="React with TypeScript, Tailwind CSS, and Jest testing">React + TypeScript</button>
+            <button class="suggestion-pill" data-stack="Vue 3 with Composition API, SCSS, and Vitest">Vue 3 + Vitest</button>
+            <button class="suggestion-pill" data-stack="Next.js with TypeScript, Chakra UI">Next.js + Chakra</button>
+            <button class="suggestion-pill" data-stack="Angular with Material Design, NgRx">Angular + Material</button>
+            <button class="suggestion-pill" data-stack="React Native mobile app with Expo">React Native</button>
+          </div>
+        </div>
+        
+        <!-- Parse Button -->
+        <button id="parseTechStack" class="button button-secondary" style="margin-bottom: 12px;">
+          🤖 Parse Tech Stack
+        </button>
+        
+        <!-- Parsed Results Display -->
+        <div id="parsedResults" class="hidden" style="background: var(--figma-color-bg-success-tertiary); border: 1px solid var(--figma-color-border-success); border-radius: 6px; padding: 12px; margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-weight: 600; font-size: 11px;">✨ Parsed Configuration</span>
+            <span style="font-size: 10px; color: var(--figma-color-text-secondary);">
+              Confidence: <span id="confidencePercent" style="font-weight: 600; color: var(--figma-color-text-success);">0%</span>
+            </span>
+          </div>
+          
+          <!-- Confidence Bar -->
+          <div style="width: 100%; background: var(--figma-color-bg-secondary); border-radius: 4px; height: 4px; margin-bottom: 12px;">
+            <div id="confidenceBar" style="background: linear-gradient(to right, #ef4444 0%, #eab308 50%, #22c55e 100%); height: 4px; border-radius: 4px; width: 0%; transition: width 0.5s ease-in-out;"></div>
+          </div>
+          
+          <!-- Tech Stack Details -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 10px;">
+            <div>
+              <span style="color: var(--figma-color-text-secondary);">Framework:</span>
+              <div id="frontendFramework" style="font-weight: 600; color: var(--figma-color-text);"></div>
+            </div>
+            <div>
+              <span style="color: var(--figma-color-text-secondary);">Language:</span>
+              <div id="language" style="font-weight: 600; color: var(--figma-color-text);"></div>
+            </div>
+            <div>
+              <span style="color: var(--figma-color-text-secondary);">Styling:</span>
+              <div id="styling" style="font-weight: 600; color: var(--figma-color-text);"></div>
+            </div>
+            <div>
+              <span style="color: var(--figma-color-text-secondary);">Testing:</span>
+              <div id="testing" style="font-weight: 600; color: var(--figma-color-text);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="config-section">
         <div class="config-title">Generation Mode</div>
         
@@ -777,6 +947,28 @@
         </div>
       </div>
 
+      <!-- Document Type Selection -->
+      <div class="config-section">
+        <div class="config-title">📄 Output Document Type</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+          <label style="display: flex; flex-direction: column; padding: 8px; border: 1px solid var(--figma-color-border); border-radius: 6px; cursor: pointer; text-align: center; font-size: 10px;">
+            <input type="radio" name="documentType" value="jira" checked style="margin-bottom: 4px;">
+            <span style="font-weight: 600; margin-bottom: 2px;">🎫 Jira Ticket</span>
+            <span style="color: var(--figma-color-text-secondary);">Full format with story points</span>
+          </label>
+          <label style="display: flex; flex-direction: column; padding: 8px; border: 1px solid var(--figma-color-border); border-radius: 6px; cursor: pointer; text-align: center; font-size: 10px;">
+            <input type="radio" name="documentType" value="confluence" style="margin-bottom: 4px;">
+            <span style="font-weight: 600; margin-bottom: 2px;">📖 Confluence</span>
+            <span style="color: var(--figma-color-text-secondary);">Detailed specification</span>
+          </label>
+          <label style="display: flex; flex-direction: column; padding: 8px; border: 1px solid var(--figma-color-border); border-radius: 6px; cursor: pointer; text-align: center; font-size: 10px;">
+            <input type="radio" name="documentType" value="agent" style="margin-bottom: 4px;">
+            <span style="font-weight: 600; margin-bottom: 2px;">🤖 Agent Task</span>
+            <span style="color: var(--figma-color-text-secondary);">Structured for AI agents</span>
+          </label>
+        </div>
+      </div>
+
       <div class="config-section">
         <div class="config-title">Ticket Template</div>
         
@@ -791,7 +983,27 @@
           </select>
         </div>
         
-        <div class="form-group">
+        <!-- Enhanced Options -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; font-size: 11px;">
+          <label style="display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="includeBoilerplate" style="margin: 0;">
+            <span>Include boilerplate code</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="includeDesignTokens" style="margin: 0;">
+            <span>Include design tokens</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="includeA11y" checked style="margin: 0;">
+            <span>Accessibility requirements</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="includeTests" checked style="margin: 0;">
+            <span>Testing requirements</span>
+          </label>
+        </div>
+        
+        <div class="form-group" style="margin-top: 12px;">
           <label for="customPrompt">Additional Instructions (Optional)</label>
           <textarea id="customPrompt" rows="3" placeholder="e.g., Include accessibility requirements, use specific design tokens..."></textarea>
         </div>
@@ -885,6 +1097,7 @@
     let isGenerating = false;
     let currentFileKey = '';
     let currentFileName = '';
+    let parsedTechStack = null;
     
     // MCP Server Communication
     async function callMCPServer(method, params) {
@@ -971,6 +1184,9 @@
 
     // Initialize mode selection
     initializeModeSelection();
+
+    // Initialize tech stack functionality
+    initializeTechStackParsing();
 
     // Event listeners
     generateBtn.onclick = generateTicket;
@@ -1067,21 +1283,59 @@
       try {
         showStatus('🔍 Analyzing project with MCP...', 'loading');
         
-        const mcpTickets = await callMCPServer('generate_tickets', {
+        // Get enhanced parameters
+        const documentType = document.querySelector('input[name="documentType"]:checked')?.value || 'jira';
+        const includeBoilerplate = document.getElementById('includeBoilerplate')?.checked || false;
+        const includeDesignTokens = document.getElementById('includeDesignTokens')?.checked || false;
+        const includeA11y = document.getElementById('includeA11y')?.checked || false;
+        const includeTests = document.getElementById('includeTests')?.checked || false;
+        
+        // Prepare enhanced MCP request with tech stack context
+        const mcpRequest = {
           frameData: frameDataList,
           template: templateSelect.value,
-          projectName: currentFileName || 'Figma Design'
-        });
+          projectName: currentFileName || 'Figma Design',
+          documentType: documentType,
+          techStackContext: parsedTechStack ? {
+            framework: parsedTechStack.framework,
+            language: parsedTechStack.language,
+            styling: parsedTechStack.styling,
+            testing: parsedTechStack.testing,
+            confidence: parsedTechStack.confidence,
+            description: parsedTechStack.description
+          } : null,
+          options: {
+            includeBoilerplate,
+            includeDesignTokens,
+            includeA11y,
+            includeTests,
+            customInstructions: customPromptInput.value
+          }
+        };
+        
+        console.log('🚀 Enhanced MCP request:', mcpRequest);
+        
+        const mcpTickets = await callMCPServer('generate_tickets', mcpRequest);
         
         showStatus('🎫 Processing MCP results...', 'loading');
         console.log('📦 MCP response received:', mcpTickets);
         
         if (mcpTickets && mcpTickets.content && mcpTickets.content.length > 0) {
-          const ticketText = mcpTickets.content[0].text;
+          let ticketText = mcpTickets.content[0].text;
+          
+          // Format based on document type
+          if (documentType === 'confluence') {
+            ticketText = formatAsConfluencePage(ticketText, parsedTechStack);
+          } else if (documentType === 'agent') {
+            ticketText = formatAsAgentTask(ticketText, parsedTechStack, mcpRequest.options);
+          } else {
+            // Enhanced Jira format
+            ticketText = enhanceJiraTicket(ticketText, parsedTechStack, mcpRequest.options);
+          }
           
           output.value = ticketText;
           copyBtn.disabled = false;
-          showStatus('✅ Enhanced tickets generated with MCP!', 'success');
+          showStatus(`✅ Enhanced ${documentType.toUpperCase()} document generated with MCP!`, 'success');
           return;
         }
         
@@ -1090,11 +1344,11 @@
       } catch (error) {
         console.error('❌ MCP generation failed:', error);
         
-        // Fallback for MCP mode
-        const fallbackTicket = generateFallbackTicket();
+        // Enhanced fallback with tech stack context
+        const fallbackTicket = generateEnhancedFallback();
         output.value = fallbackTicket;
         copyBtn.disabled = false;
-        showStatus('⚠️ Fallback ticket generated (MCP server unavailable)', 'error');
+        showStatus('⚠️ Enhanced fallback generated (MCP server unavailable)', 'error');
       } finally {
         setGenerating(false);
       }
@@ -1154,34 +1408,194 @@
       }
     }
     
-    function generateFallbackTicket() {
-      return `# Generated Ticket (Fallback)
+    // Enhanced Document Formatting Functions
+    function formatAsConfluencePage(ticketText, techStack) {
+      const frameName = frameDataList[0]?.name || 'Component';
+      
+      return `# ${frameName} Implementation Specification
 
-## ${frameDataList[0]?.name || 'Component'} Implementation
+## Overview
+This document outlines the implementation specification for components derived from Figma designs using ${techStack?.framework || 'the specified framework'}.
 
-### Description
-Implement the ${frameDataList[0]?.name || 'selected component'} based on Figma design specifications.
+## Technical Stack
+${techStack ? `
+- **Framework**: ${techStack.framework}
+- **Language**: ${techStack.language}
+- **Styling**: ${techStack.styling}
+- **Testing**: ${techStack.testing}
+- **Detection Confidence**: ${techStack.confidence}%
+` : ''}
 
-### Acceptance Criteria
-- [ ] Component matches design specifications
-- [ ] Component is responsive across all devices  
-- [ ] Component passes accessibility testing
-- [ ] Unit tests provide adequate coverage
+## Figma Design Analysis
+${ticketText}
 
-### Technical Notes
-- Based on ${frameDataList.length} selected frame(s)
-- Generated with local fallback (MCP server unavailable)
-- Node count: ${frameDataList[0]?.nodeCount || 'Unknown'}
-- Dimensions: ${frameDataList[0]?.dimensions?.width || 0}x${frameDataList[0]?.dimensions?.height || 0}px
+## Implementation Guidelines
 
-### Priority
-Medium
+### Component Structure
+- Follow ${techStack?.framework || 'framework'} best practices and conventions
+- Implement responsive design for all screen sizes
+- Use ${techStack?.styling || 'specified styling solution'} for consistent theming
 
-### Story Points
-${Math.max(3, Math.min(8, Math.ceil((frameDataList[0]?.nodeCount || 0) / 5)))}
+### Code Quality Standards
+- Maintain ${techStack?.testing || 'testing'} coverage above 80%
+- Follow accessibility guidelines (WCAG 2.1 AA)
+- Implement proper error handling and loading states
+
+### Design System Integration
+- Use design tokens where applicable
+- Follow established component patterns
+- Ensure consistency with existing codebase
 
 ---
-*Generated at ${new Date().toISOString()}*`;
+*Generated by Enhanced Figma → Confluence Integration Tool*
+*Confidence Level: ${techStack?.confidence || 'N/A'}% | Generated: ${new Date().toISOString()}*`;
+    }
+
+    function formatAsAgentTask(ticketText, techStack, options) {
+      const agentTask = {
+        taskType: "component_implementation",
+        priority: "high",
+        techStack: techStack ? {
+          framework: techStack.framework,
+          language: techStack.language,
+          styling: techStack.styling,
+          testing: techStack.testing,
+          confidence: techStack.confidence
+        } : null,
+        figmaAnalysis: ticketText,
+        requirements: {
+          boilerplate: options.includeBoilerplate || false,
+          designTokens: options.includeDesignTokens || false,
+          accessibility: options.includeA11y || false,
+          testing: options.includeTests || false
+        },
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          mcpIntegration: true,
+          frameCount: frameDataList.length,
+          componentName: frameDataList[0]?.name || 'Unknown'
+        }
+      };
+      
+      return `## Agent-Digestible Task Structure
+
+\`\`\`json
+${JSON.stringify(agentTask, null, 2)}
+\`\`\`
+
+## Human-Readable Summary
+**Task**: Implement ${techStack?.framework || 'component'} based on Figma design analysis
+**Complexity**: ${techStack?.confidence || 'Unknown'}% confidence in tech stack detection
+**Integration**: Enhanced with Figma MCP server analysis
+
+## Implementation Context
+${ticketText}
+
+## Structured Instructions
+1. **Setup**: Initialize ${techStack?.framework || 'project'} with ${techStack?.language || 'specified language'}
+2. **Styling**: Configure ${techStack?.styling || 'styling solution'}
+3. **Testing**: Setup ${techStack?.testing || 'testing framework'}
+4. **Implementation**: Create components matching Figma specifications
+5. **Validation**: Ensure all requirements are met
+
+---
+*Structured for AI agent consumption and workflow automation*`;
+    }
+
+    function enhanceJiraTicket(ticketText, techStack, options) {
+      const frameName = frameDataList[0]?.name || 'Component';
+      let storyPoints = Math.max(3, Math.min(8, Math.ceil((frameDataList[0]?.nodeCount || 0) / 5)));
+      
+      // Adjust story points based on tech stack complexity
+      if (techStack) {
+        if (techStack.framework === 'Angular') storyPoints += 2;
+        if (techStack.framework === 'React Native' || techStack.framework === 'Flutter') storyPoints += 3;
+        if (options.includeBoilerplate) storyPoints += 1;
+        if (options.includeA11y) storyPoints += 1;
+      }
+      
+      storyPoints = Math.min(storyPoints, 21); // Cap at 21
+      
+      return `# ${frameName} Implementation
+
+## 🚀 Tech Stack Context
+${techStack ? `**Framework:** ${techStack.framework}
+**Language:** ${techStack.language}
+**Styling:** ${techStack.styling}
+**Testing:** ${techStack.testing}
+**Detection Confidence:** ${techStack.confidence}%` : 'No tech stack specified'}
+
+## 📋 Original Analysis
+${ticketText}
+
+## ✅ Enhanced Acceptance Criteria
+${options.includeBoilerplate ? '- [ ] Generate and review boilerplate code structure\n' : ''}${options.includeDesignTokens ? '- [ ] Implement design tokens and theming system\n' : ''}${options.includeA11y ? '- [ ] Ensure WCAG 2.1 AA accessibility compliance\n' : ''}${options.includeTests ? '- [ ] Achieve >80% test coverage with unit and integration tests\n' : ''}- [ ] Implement responsive design for all breakpoints
+- [ ] Follow ${techStack?.framework || 'framework'} best practices and conventions
+- [ ] Ensure cross-browser compatibility
+- [ ] Performance optimization (Core Web Vitals)
+
+## 🏷️ Labels
+${techStack?.framework?.toLowerCase() || 'component'}, ${techStack?.language?.toLowerCase() || 'development'}, figma-integrated, mcp-enhanced
+
+## 📊 Estimation
+**Story Points:** ${storyPoints}
+**Priority:** High
+**Complexity:** ${getComplexityFromConfidence(techStack?.confidence)}
+
+---
+*Auto-generated with ${techStack?.confidence || 0}% tech stack confidence*
+*Generated: ${new Date().toISOString()}*`;
+    }
+
+    function generateEnhancedFallback() {
+      const documentType = document.querySelector('input[name="documentType"]:checked')?.value || 'jira';
+      const frameName = frameDataList[0]?.name || 'Component';
+      
+      if (documentType === 'confluence') {
+        return formatAsConfluencePage(`Basic implementation requirements for ${frameName}`, parsedTechStack);
+      }
+      
+      if (documentType === 'agent') {
+        return formatAsAgentTask(`Implement ${frameName} component`, parsedTechStack, {
+          includeBoilerplate: false,
+          includeDesignTokens: false,
+          includeA11y: true,
+          includeTests: true
+        });
+      }
+      
+      // Enhanced Jira fallback
+      return enhanceJiraTicket(`## ${frameName} Implementation
+
+Implement the ${frameName} component based on Figma design specifications.
+
+### Technical Requirements
+- Match design specifications exactly
+- Implement responsive behavior
+- Follow accessibility guidelines
+- Include comprehensive testing
+
+### Implementation Notes
+- Based on ${frameDataList.length} selected frame(s)
+- Node count: ${frameDataList[0]?.nodeCount || 'Unknown'}
+- Dimensions: ${frameDataList[0]?.dimensions?.width || 0}x${frameDataList[0]?.dimensions?.height || 0}px`, parsedTechStack, {
+        includeBoilerplate: document.getElementById('includeBoilerplate')?.checked || false,
+        includeDesignTokens: document.getElementById('includeDesignTokens')?.checked || false,
+        includeA11y: document.getElementById('includeA11y')?.checked || false,
+        includeTests: document.getElementById('includeTests')?.checked || false
+      });
+    }
+
+    function getComplexityFromConfidence(confidence) {
+      if (!confidence) return 'Medium';
+      if (confidence >= 90) return 'Low';
+      if (confidence >= 75) return 'Medium';
+      return 'High - Review Required';
+    }
+
+    function generateFallbackTicket() {
+      // Legacy fallback - now redirects to enhanced version
+      return generateEnhancedFallback();
     }
     
     // Original generateAITicket function content for reference - now split into mode-specific functions
@@ -1299,6 +1713,21 @@ Implement the selected component based on Figma design.
 
       let prompt = basePrompt + '\\n\\n';
 
+      // Add tech stack context if available
+      if (parsedTechStack) {
+        prompt += `**Tech Stack Context (${parsedTechStack.confidence}% confidence):**\\n`;
+        prompt += `- Framework: ${parsedTechStack.framework}\\n`;
+        prompt += `- Language: ${parsedTechStack.language}\\n`;
+        prompt += `- Styling: ${parsedTechStack.styling}\\n`;
+        prompt += `- Testing: ${parsedTechStack.testing}\\n\\n`;
+      }
+
+      // Add document type context
+      const documentType = document.querySelector('input[name="documentType"]:checked')?.value || 'jira';
+      if (documentType !== 'jira') {
+        prompt += `**Output Format:** Generate as ${documentType === 'confluence' ? 'Confluence page format' : 'Agent-digestible structured format'}\\n\\n`;
+      }
+
       frameDataList.forEach((frame, index) => {
         prompt += `**Frame ${index + 1}: ${frame.name}**\\n`;
         prompt += `- Page: ${frame.pageName}\\n`;
@@ -1373,6 +1802,21 @@ Implement the selected component based on Figma design.
         prompt += `\\n- Figma link: ${figmaLink}\\n`;
         prompt += `- Frame ID: ${frame.id} (for developer reference)\\n\\n`;
       });
+
+      // Add enhanced options
+      const includeBoilerplate = document.getElementById('includeBoilerplate')?.checked;
+      const includeDesignTokens = document.getElementById('includeDesignTokens')?.checked;
+      const includeA11y = document.getElementById('includeA11y')?.checked;
+      const includeTests = document.getElementById('includeTests')?.checked;
+      
+      if (includeBoilerplate || includeDesignTokens || includeA11y || includeTests) {
+        prompt += `**Enhanced Requirements:**\\n`;
+        if (includeBoilerplate) prompt += `- Include boilerplate code structure\\n`;
+        if (includeDesignTokens) prompt += `- Include design tokens and theming system\\n`;
+        if (includeA11y) prompt += `- Ensure WCAG 2.1 AA accessibility compliance\\n`;
+        if (includeTests) prompt += `- Include comprehensive testing strategy\\n`;
+        prompt += `\\n`;
+      }
 
       if (customInstructions) {
         prompt += `**Additional Requirements:**\\n${customInstructions}\\n\\n`;
@@ -1850,6 +2294,172 @@ Implement the selected component based on Figma design.
         if (settings.apiKey) apiKeyInput.value = settings.apiKey;
         if (settings.model) modelSelect.value = settings.model;
         if (settings.template) templateSelect.value = settings.template;
+      }
+    }
+
+    // Tech Stack Parsing Functions
+    function initializeTechStackParsing() {
+      // Quick suggestion click handlers
+      document.querySelectorAll('.suggestion-pill').forEach(pill => {
+        pill.addEventListener('click', function() {
+          const stack = this.getAttribute('data-stack');
+          document.getElementById('techStackDescription').value = stack;
+          parseTechStackDescription();
+        });
+      });
+
+      // Parse tech stack button
+      document.getElementById('parseTechStack').addEventListener('click', parseTechStackDescription);
+
+      // Auto-parse when typing stops
+      let parseTimeout;
+      document.getElementById('techStackDescription').addEventListener('input', function() {
+        clearTimeout(parseTimeout);
+        parseTimeout = setTimeout(() => {
+          const text = this.value.trim();
+          if (text.length > 10) {
+            parseTechStackDescription();
+          }
+        }, 2000);
+      });
+    }
+
+    function parseTechStackDescription() {
+      const description = document.getElementById('techStackDescription').value.trim();
+      if (!description) return;
+
+      // Show progress
+      showProgress('🤖 Parsing tech stack...', 20);
+
+      // Simulate parsing with realistic results
+      setTimeout(() => {
+        const mockParsing = simulateNaturalLanguageParsing(description);
+        displayParsedResults(mockParsing);
+        parsedTechStack = mockParsing;
+        
+        showProgress('✅ Tech stack parsed successfully!', 100);
+        setTimeout(() => hideProgress(), 1000);
+      }, 1500);
+    }
+
+    function simulateNaturalLanguageParsing(description) {
+      const lowerDesc = description.toLowerCase();
+      
+      // Enhanced Framework Detection with scoring
+      const frameworks = [
+        { name: 'React Native', keywords: ['react native', 'expo', 'rn'], score: 0 },
+        { name: 'Next.js', keywords: ['next.js', 'nextjs', 'next'], score: 0 },
+        { name: 'Nuxt.js', keywords: ['nuxt.js', 'nuxtjs', 'nuxt'], score: 0 },
+        { name: 'Vue.js', keywords: ['vue', 'vuejs', 'vue 3', 'composition api'], score: 0 },
+        { name: 'Angular', keywords: ['angular', 'ng', 'ngrx'], score: 0 },
+        { name: 'Svelte', keywords: ['svelte', 'sveltekit'], score: 0 },
+        { name: 'Flutter', keywords: ['flutter', 'dart flutter'], score: 0 },
+        { name: 'React', keywords: ['react', 'jsx', 'create-react-app'], score: 0 }
+      ];
+
+      const languages = [
+        { name: 'TypeScript', keywords: ['typescript', 'ts', '.tsx', '.ts'], score: 0 },
+        { name: 'Dart', keywords: ['dart', 'flutter dart'], score: 0 },
+        { name: 'JavaScript', keywords: ['javascript', 'js', '.jsx', '.js'], score: 0 }
+      ];
+
+      const stylings = [
+        { name: 'Tailwind CSS', keywords: ['tailwind', 'tailwindcss', 'utility-first'], score: 0 },
+        { name: 'Material-UI', keywords: ['material-ui', 'mui', 'material design', '@mui'], score: 0 },
+        { name: 'Chakra UI', keywords: ['chakra ui', 'chakra', '@chakra-ui'], score: 0 },
+        { name: 'Styled Components', keywords: ['styled-components', 'styled components'], score: 0 },
+        { name: 'SCSS/Sass', keywords: ['scss', 'sass', '.scss', '.sass'], score: 0 },
+        { name: 'CSS Modules', keywords: ['css modules', '.module.css'], score: 0 },
+        { name: 'CSS', keywords: ['css', 'vanilla css'], score: 0 }
+      ];
+
+      const testings = [
+        { name: 'Playwright', keywords: ['playwright', 'e2e testing'], score: 0 },
+        { name: 'Jest', keywords: ['jest', 'jest testing'], score: 0 },
+        { name: 'Vitest', keywords: ['vitest', 'vite testing'], score: 0 },
+        { name: 'Testing Library', keywords: ['testing library', '@testing-library'], score: 0 },
+        { name: 'Cypress', keywords: ['cypress', 'cypress.io'], score: 0 }
+      ];
+
+      // Score each category
+      function scoreCategory(items) {
+        items.forEach(item => {
+          item.keywords.forEach(keyword => {
+            if (lowerDesc.includes(keyword)) {
+              item.score += keyword.length;
+            }
+          });
+        });
+        return items.sort((a, b) => b.score - a.score)[0] || items[items.length - 1];
+      }
+
+      const framework = scoreCategory([...frameworks]).name;
+      const language = scoreCategory([...languages]).name;
+      const styling = scoreCategory([...stylings]).name;
+      const testing = scoreCategory([...testings]).name;
+
+      // Calculate confidence
+      const totalMatches = frameworks.concat(languages, stylings, testings)
+        .filter(item => item.score > 0).length;
+      
+      let confidence = Math.min(75 + (totalMatches * 3), 98);
+      
+      // Bonus for good combinations
+      if (framework === 'Flutter' && language === 'Dart') confidence += 5;
+      if (framework === 'Next.js' && language === 'TypeScript') confidence += 3;
+      
+      confidence = Math.max(65, Math.min(98, confidence));
+      
+      return {
+        framework,
+        language,
+        styling,
+        testing,
+        confidence: Math.round(confidence),
+        description
+      };
+    }
+
+    function displayParsedResults(parsing) {
+      document.getElementById('frontendFramework').textContent = parsing.framework;
+      document.getElementById('language').textContent = parsing.language;
+      document.getElementById('styling').textContent = parsing.styling;
+      document.getElementById('testing').textContent = parsing.testing;
+      
+      const confidencePercent = document.getElementById('confidencePercent');
+      const confidenceBar = document.getElementById('confidenceBar');
+      
+      confidencePercent.textContent = parsing.confidence + '%';
+      confidenceBar.style.width = parsing.confidence + '%';
+      
+      document.getElementById('parsedResults').classList.remove('hidden');
+    }
+
+    function showProgress(message, percent) {
+      // Create progress container if it doesn't exist
+      let progressContainer = document.getElementById('progressContainer');
+      if (!progressContainer) {
+        progressContainer = document.createElement('div');
+        progressContainer.id = 'progressContainer';
+        progressContainer.className = 'progress-container';
+        progressContainer.innerHTML = `
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-text" id="progressText"></div>
+        `;
+        document.getElementById('parseTechStack').parentNode.appendChild(progressContainer);
+      }
+      
+      document.getElementById('progressText').textContent = message;
+      document.getElementById('progressFill').style.width = percent + '%';
+      progressContainer.style.display = 'block';
+    }
+
+    function hideProgress() {
+      const progressContainer = document.getElementById('progressContainer');
+      if (progressContainer) {
+        progressContainer.style.display = 'none';
       }
     }
     

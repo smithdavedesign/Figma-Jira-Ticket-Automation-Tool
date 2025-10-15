@@ -3,7 +3,7 @@
  * 
  * This module provides integration with Figma's official MCP server,
  * enabling our strategic server to orchestrate workflow automation
- * that combines our project-level intelligence with Figma's tactical tools.
+ * that combines our project-elligence with Figma's tactical tools.
  */
 
 import axios, { AxiosError } from 'axios';

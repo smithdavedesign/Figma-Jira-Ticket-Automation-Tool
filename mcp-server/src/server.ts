@@ -10,6 +10,8 @@
 
 import { createServer } from 'http';
 import { FigmaWorkflowOrchestrator } from './figma/figma-mcp-client.js';
+import { BoilerplateCodeGenerator } from './figma/boilerplate-generator.js';
+import type { TechStackConfig, CodeGenerationOptions } from './figma/boilerplate-generator.js';
 
 /**
  * Tool implementations for demonstration
@@ -611,6 +613,9 @@ class FigmaAITestServer {
         case 'check_compliance':
           return await this.complianceChecker.check(body);
 
+        case 'generate_enhanced_ticket':
+          return await this.generateEnhancedTicketWithBoilerplate(body);
+
         default:
           throw new Error(`Unknown method: ${method}`);
       }
@@ -627,6 +632,161 @@ class FigmaAITestServer {
         isError: true,
       };
     }
+  }
+
+  /**
+   * Enhanced ticket generation with boilerplate code
+   */
+  async generateEnhancedTicketWithBoilerplate(params: {
+    figmaUrl: string;
+    projectContext?: string;
+    techStack: TechStackConfig;
+    options: CodeGenerationOptions;
+  }): Promise<{
+    content: Array<{ type: string; text: string }>;
+    ticket: string;
+    boilerplateCode: {
+      component: string;
+      styles: string;
+      tests?: string;
+      story?: string;
+      types?: string;
+    };
+  }> {
+    try {
+      console.log('🚀 Starting enhanced ticket generation with boilerplate code...');
+
+      // Initialize Figma MCP orchestrator
+      const orchestrator = new FigmaWorkflowOrchestrator();
+
+      // Execute complete workflow (strategic analysis + tactical code generation)
+      const workflowResult = await orchestrator.executeCompleteWorkflow({
+        figmaUrl: params.figmaUrl,
+        projectContext: params.projectContext,
+        requirements: {
+          includeBoilerplate: true,
+          techStack: params.techStack,
+          ...params.options
+        }
+      });
+
+      // Generate boilerplate code using tech stack configuration
+      const boilerplateGenerator = new BoilerplateCodeGenerator(
+        params.techStack,
+        params.options
+      );
+
+      const boilerplateCode = await boilerplateGenerator.generateBoilerplateCode(
+        params.figmaUrl,
+        orchestrator // Pass the orchestrator which has access to Figma MCP
+      );
+
+      // Generate enhanced ticket description with embedded code
+      const ticket = this.createEnhancedTicketDescription(
+        workflowResult,
+        params.techStack,
+        boilerplateCode
+      );
+
+      console.log('✅ Enhanced ticket with boilerplate generated successfully!');
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Enhanced ticket with boilerplate code generated successfully'
+          }
+        ],
+        ticket,
+        boilerplateCode
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('❌ Enhanced ticket generation failed:', errorMessage);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error generating enhanced ticket: ${errorMessage}`
+          }
+        ],
+        ticket: `Error: ${errorMessage}`,
+        boilerplateCode: {
+          component: `// Error generating code: ${errorMessage}`,
+          styles: `/* Error generating styles: ${errorMessage} */`
+        }
+      };
+    }
+  }
+
+  /**
+   * Create enhanced ticket description with embedded boilerplate code
+   */
+  private createEnhancedTicketDescription(
+    workflowResult: any,
+    techStack: TechStackConfig,
+    boilerplateCode: any
+  ): string {
+    const framework = techStack.frontend.framework;
+    const styling = techStack.frontend.styling;
+    
+    return `# 🎨 Component Implementation Ticket
+
+## Overview
+Implement the design component from Figma with ${framework} and ${styling}.
+
+## Strategic Analysis
+- **Project Scope**: ${workflowResult.strategicAnalysis.projectScope}
+- **Complexity**: ${workflowResult.strategicAnalysis.complexity}
+- **Estimated Effort**: ${workflowResult.strategicAnalysis.estimatedEffort}
+- **Design System Compliance**: ${workflowResult.strategicAnalysis.designSystemCompliance}%
+
+## Tech Stack
+- **Frontend**: ${framework.charAt(0).toUpperCase() + framework.slice(1)}
+- **Styling**: ${styling.charAt(0).toUpperCase() + styling.slice(1)}
+- **State Management**: ${techStack.frontend.stateManagement || 'None'}
+- **Testing**: ${techStack.frontend.testing || 'None'}
+
+## Boilerplate Code
+
+### Component Implementation
+\`\`\`${framework === 'react' ? 'jsx' : framework}
+${boilerplateCode.component}
+\`\`\`
+
+### Styles
+\`\`\`${styling === 'scss' ? 'scss' : 'css'}
+${boilerplateCode.styles}
+\`\`\`
+
+${boilerplateCode.tests ? `
+### Tests
+\`\`\`javascript
+${boilerplateCode.tests}
+\`\`\`
+` : ''}
+
+${boilerplateCode.story ? `
+### Storybook Story
+\`\`\`javascript
+${boilerplateCode.story}
+\`\`\`
+` : ''}
+
+## Acceptance Criteria
+- [ ] Component matches Figma design exactly
+- [ ] Component is responsive and accessible
+- [ ] Code follows project conventions
+- [ ] Tests pass and provide adequate coverage
+- [ ] Component is documented${boilerplateCode.story ? ' and has Storybook stories' : ''}
+
+## Technical Notes
+${workflowResult.tacticalCode?.content?.[0]?.text || 'Generated from Figma MCP server integration'}
+
+---
+*Generated by Enhanced Figma-Jira Automation Tool with ${framework}/${styling} tech stack*`;
   }
 
   start(): void {
@@ -648,7 +808,7 @@ class FigmaAITestServer {
           name: 'Figma AI Ticket Generator',
           version: '1.0.0',
           status: 'running',
-          tools: ['analyze_project', 'generate_tickets', 'check_compliance'],
+          tools: ['analyze_project', 'generate_tickets', 'check_compliance', 'generate_enhanced_ticket'],
           description: 'Strategic design-to-code automation server'
         }));
         return;
@@ -683,7 +843,7 @@ class FigmaAITestServer {
     server.listen(this.port, () => {
       console.log('� Figma AI Ticket Generator Test Server started');
       console.log(`📋 Server running at http://localhost:${this.port}`);
-      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance');
+      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket');
       console.log('');
       console.log('Example usage:');
       console.log(`curl -X POST http://localhost:${this.port} \\`);

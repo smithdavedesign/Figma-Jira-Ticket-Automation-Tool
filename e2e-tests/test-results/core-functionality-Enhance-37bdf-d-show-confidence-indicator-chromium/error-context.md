@@ -1,0 +1,66 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - button "📊 Design Health" [ref=e4] [cursor=pointer]
+    - button "📄 Figma to Document" [ref=e5] [cursor=pointer]
+  - generic [ref=e8]:
+    - heading "📄 Figma to Document Generator" [level=2] [ref=e10]
+    - paragraph [ref=e11]: Transform Figma designs into professional documents with smart tech stack detection
+    - generic [ref=e12]:
+      - generic [ref=e13]: Generation Mode
+      - generic [ref=e14]:
+        - generic [ref=e16] [cursor=pointer]:
+          - generic [ref=e17]: 🚀 MCP Server (Enhanced)
+          - generic [ref=e18]: Local Model Context Protocol server with strategic design analysis
+        - generic [ref=e20] [cursor=pointer]:
+          - generic [ref=e21]: 🤖 OpenAI API
+          - generic [ref=e22]: Cloud-based AI generation (requires API key)
+    - generic [ref=e23]:
+      - generic [ref=e24]: MCP Configuration
+      - generic [ref=e25]:
+        - generic [ref=e26]: ✅
+        - generic [ref=e27]: MCP server connected (localhost:3000)
+    - generic [ref=e28]:
+      - generic [ref=e29]: Tech Stack Context
+      - generic [ref=e30]:
+        - generic [ref=e31]: Tech Stack Description
+        - textbox "Tech stack description" [active] [ref=e32]:
+          - /placeholder: Describe your tech stack (e.g., "React with TypeScript and Material-UI", "Vue.js with Tailwind CSS", "Flutter with Dart")
+          - text: React with TypeScript, styled-components, and Jest testing
+        - generic [ref=e33]: Helps generate more accurate, technology-specific implementation details
+      - generic "Tech stack suggestions"
+    - generic [ref=e34]:
+      - generic [ref=e35]: Document Type
+      - generic [ref=e36]:
+        - generic [ref=e37]: Output Format
+        - combobox "Document type selection" [ref=e38]:
+          - option "Jira Ticket" [selected]
+          - option "Confluence Page"
+          - option "Wiki Documentation"
+          - option "Agent Task"
+          - option "GitHub Issue"
+          - option "Technical Specification"
+        - generic [ref=e39]: Choose the type of document to generate from your Figma design
+    - generic [ref=e40]:
+      - generic [ref=e41]: Template Configuration
+      - generic [ref=e42]:
+        - generic [ref=e43]: Template Type
+        - combobox "Template Type" [ref=e44]:
+          - option "UI Component" [selected]
+          - option "Feature Implementation"
+          - option "Bug Fix"
+          - option "Page/Screen"
+          - option "Custom"
+      - generic [ref=e45]:
+        - generic [ref=e46]: Additional Instructions (Optional)
+        - textbox "Additional Instructions (Optional)" [ref=e47]:
+          - /placeholder: e.g., Include accessibility requirements, use specific design tokens...
+    - button "🚀 Generate Ticket with MCP" [ref=e48] [cursor=pointer]
+    - generic [ref=e49]:
+      - generic [ref=e50]: Generated Document
+      - textbox "Generated Document" [ref=e51]:
+        - /placeholder: Select frames in Figma and click 'Generate Document' to create your document draft...
+      - button "📋 Copy to Clipboard" [disabled] [ref=e52]
+```
