@@ -13,12 +13,14 @@ An intelligent enterprise tool that transforms Figma designs into comprehensive 
 
 ## ✨ Core Features
 
-- 🎨 **Figma Integration**: Direct connection to Figma projects and files
+- 🎨 **Figma Context Integration**: Real-time analysis of selected frames and components
 - 🤖 **AI-Enhanced Analysis**: FREE Google Gemini 2.5 Flash smart parsing
-- 📋 **Professional Tickets**: Generate JIRA-ready tickets with acceptance criteria
-- 🎯 **Context-Aware**: Understands design systems and component relationships
+- 📋 **Context-Aware Tickets**: Generate specific tickets based on selected design elements
+- 🎯 **Design System Intelligence**: Understands component complexity and relationships
 - 🔄 **Multi-Format Output**: Support for JIRA, GitHub Issues, and custom formats
 - 🛡️ **Enterprise-Grade**: Fallback system ensures 100% reliability
+- ⚡ **Popular Tech Stacks**: 10 pre-configured combinations with color-coded confidence
+- 🔍 **Parse Tech Button**: Intelligent tech stack detection and validation
 
 ## 🆓 FREE Google Gemini AI Integration
 
