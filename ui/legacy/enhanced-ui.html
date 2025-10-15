@@ -91,7 +91,7 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
-    #generateBtn {
+    #generate {
       background: #3b82f6;
       color: white;
       border: none;
@@ -104,11 +104,11 @@
       width: 100%;
     }
 
-    #generateBtn:hover {
+    #generate:hover {
       background: #2563eb;
     }
 
-    #generateBtn:disabled {
+    #generate:disabled {
       background: #9ca3af;
       cursor: not-allowed;
     }
@@ -394,14 +394,14 @@
         data-tab="generator" 
         role="tab" 
         aria-selected="true" 
-        aria-controls="generator-panel"
-        id="generator-tab"
+        aria-controls="generator-tab"
+        id="generator-tab-button"
       >
         🎫 Ticket Generator
       </button>
     </nav>
     
-    <div class="content" id="generator-panel" role="tabpanel" aria-labelledby="generator-tab">
+    <div class="content" id="generator-tab" role="tabpanel" aria-labelledby="generator-tab">
       <div class="panel-header">
         <h2 class="panel-title">Figma to Document Generator</h2>
         <p class="panel-subtitle">Transform Figma designs into professional documents</p>
@@ -436,16 +436,13 @@
         
         <button 
           type="button" 
-          id="generateBtn" 
-          data-generate-id="generate"
+          id="generate"
+          data-generate-btn="generateBtn"
           role="button"
           aria-describedby="generate-help"
         >
           Generate Enhanced Document
         </button>
-        
-        <!-- Compatibility element for tests that look for #generate -->
-        <div id="generate" style="display: none;" aria-hidden="true"></div>
         
         <div id="generate-help" class="sr-only">
           Generates a professional document based on your tech stack description and selected format
@@ -481,7 +478,7 @@
     // DOM elements
     const techStackInput = document.getElementById('techStackInput');
     const documentType = document.getElementById('documentType');
-    const generateBtn = document.getElementById('generateBtn');
+    const generateBtn = document.getElementById('generate');
     const results = document.getElementById('results');
     const generatedContent = document.getElementById('generatedContent');
     const copyBtn = document.getElementById('copyBtn');
@@ -647,12 +644,14 @@
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+              jsonrpc: '2.0',
               method: 'generate_enhanced_ticket',
               params: {
                 description: `Generate ${documentType.value} document for: ${techStackDesc}`,
                 documentType: documentType.value,
                 techStackContext: currentTechStack
-              }
+              },
+              id: 1
             }),
             timeout: 10000
           });
@@ -662,11 +661,16 @@
             if (mcpData.content && mcpData.content[0] && mcpData.content[0].text) {
               content = mcpData.content[0].text;
               usedMCP = true;
+              
+              // Check if this is fallback content
+              if (mcpData.isFallback) {
+                showFallback(mcpData.fallbackReason || 'Enhanced analysis temporarily unavailable');
+              }
             }
           }
         } catch (mcpError) {
           console.log('MCP server unavailable:', mcpError.message);
-          showFallback('⚠️ Enhanced analysis temporarily unavailable. Using basic generation...');
+          showFallback('Enhanced analysis temporarily unavailable');
         }
 
         // Fallback to basic generation

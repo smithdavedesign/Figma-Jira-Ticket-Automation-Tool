@@ -9,7 +9,7 @@
     "watch": "tsc --watch",
     "dev": "npm run watch",
     "clean": "rm -rf dist",
-    "lint": "echo 'Linting not yet configured'",
+    "lint": "eslint 'src/**/*.ts' 'code*.ts' 'design-system-scanner.ts' --fix",
     "test": "node tests/core-tests.js",
     "test:watch": "echo 'Watch mode: nodemon tests/core-tests.js (install nodemon if needed)'",
     "validate": "npm run test && npm run build && echo '✅ All validation passed'",
@@ -31,7 +31,11 @@
   "author": "David",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.37.0",
     "@figma/plugin-typings": "^1.118.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
+    "eslint": "^9.37.0",
     "typescript": "^5.0.0"
   },
   "figma": {
