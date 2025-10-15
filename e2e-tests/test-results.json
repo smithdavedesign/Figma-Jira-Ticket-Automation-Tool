@@ -148,7 +148,7 @@
           "column": 6,
           "specs": [
             {
-              "title": "should show validation error for empty tech stack input",
+              "title": "should handle MCP server unavailable gracefully",
               "ok": true,
               "tags": [
                 "smoke",
@@ -166,12 +166,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1228,
+                      "duration": 1957,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-15T07:01:40.335Z",
+                      "startTime": "2025-10-15T15:21:22.244Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -179,9 +179,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "82707a9d8222aa8b10db-4ae17292beb5ed1ab073",
+              "id": "82707a9d8222aa8b10db-72fb5eab745be1af7e4b",
               "file": "core-functionality.spec.js",
-              "line": 43,
+              "line": 120,
               "column": 3
             }
           ]
@@ -191,8 +191,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-10-15T07:01:39.967Z",
-    "duration": 1728.7890000000002,
+    "startTime": "2025-10-15T15:21:21.521Z",
+    "duration": 4587.196,
     "expected": 1,
     "skipped": 0,
     "unexpected": 0,

@@ -644,12 +644,14 @@
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+              jsonrpc: '2.0',
               method: 'generate_enhanced_ticket',
               params: {
                 description: `Generate ${documentType.value} document for: ${techStackDesc}`,
                 documentType: documentType.value,
                 techStackContext: currentTechStack
-              }
+              },
+              id: 1
             }),
             timeout: 10000
           });
@@ -659,11 +661,16 @@
             if (mcpData.content && mcpData.content[0] && mcpData.content[0].text) {
               content = mcpData.content[0].text;
               usedMCP = true;
+              
+              // Check if this is fallback content
+              if (mcpData.isFallback) {
+                showFallback(mcpData.fallbackReason || 'Enhanced analysis temporarily unavailable');
+              }
             }
           }
         } catch (mcpError) {
           console.log('MCP server unavailable:', mcpError.message);
-          showFallback('⚠️ Enhanced analysis temporarily unavailable. Using basic generation...');
+          showFallback('Enhanced analysis temporarily unavailable');
         }
 
         // Fallback to basic generation
