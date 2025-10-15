@@ -11,7 +11,9 @@
 import { createServer } from 'http';
 import { FigmaWorkflowOrchestrator } from './figma/figma-mcp-client.js';
 import { BoilerplateCodeGenerator } from './figma/boilerplate-generator.js';
+import { AdvancedAIService } from './ai/advanced-ai-service.js';
 import type { TechStackConfig, CodeGenerationOptions } from './figma/boilerplate-generator.js';
+import type { AIAnalysisConfig, DesignAnalysisResult } from './ai/advanced-ai-service.js';
 
 /**
  * Tool implementations for demonstration
@@ -530,6 +532,209 @@ class TicketGenerator {
   }
 }
 
+/**
+ * AI-Powered Ticket Generator with GPT-4 Vision and Claude Integration
+ * 
+ * Provides advanced design analysis and intelligent document generation
+ * using state-of-the-art AI models for multi-modal design understanding.
+ */
+class AIEnhancedTicketGenerator {
+  private aiService: AdvancedAIService;
+  private fallbackGenerator: TicketGenerator;
+
+  constructor(aiConfig: AIAnalysisConfig) {
+    this.aiService = new AdvancedAIService(aiConfig);
+    this.fallbackGenerator = new TicketGenerator();
+  }
+
+  /**
+   * Generate intelligent ticket with AI-powered design analysis
+   */
+  async generateWithAI(args: any): Promise<ToolResult> {
+    const {
+      figmaUrl,
+      documentType = 'jira',
+      techStack,
+      projectName,
+      imageData, // Base64 encoded screenshot
+      additionalRequirements = '',
+      useAI = true
+    } = args;
+
+    console.log('🤖 Starting AI-enhanced ticket generation...');
+    console.log('📋 Document type:', documentType);
+    console.log('🔮 AI enabled:', useAI);
+
+    // Test AI services if requested
+    if (useAI) {
+      const aiStatus = await this.aiService.testConfiguration();
+      console.log('🧠 AI Services Status:', aiStatus);
+      
+      if (!aiStatus.vision && !aiStatus.claude && !aiStatus.gpt4) {
+        console.warn('⚠️ No AI services available, falling back to standard generation');
+        return this.fallbackGenerator.generate(args);
+      }
+    }
+
+    try {
+      let analysisResult: DesignAnalysisResult | null = null;
+
+      // Step 1: AI-powered design analysis (if image provided)
+      if (useAI && imageData) {
+        console.log('🔍 Analyzing design with GPT-4 Vision...');
+        const imageBuffer = Buffer.from(imageData, 'base64');
+        
+        analysisResult = await this.aiService.analyzeDesignScreenshot(
+          imageBuffer,
+          documentType,
+          { techStack, projectName }
+        );
+        
+        console.log(`✅ Design analysis complete - confidence: ${analysisResult.confidence}%`);
+        console.log(`📊 Found ${analysisResult.components.length} components`);
+        console.log(`🎨 Design system consistency: ${analysisResult.designSystem.consistency}%`);
+      }
+
+      // Step 2: Intelligent document generation
+      let documentContent: string;
+      
+      if (useAI && analysisResult) {
+        console.log('📝 Generating intelligent document content...');
+        documentContent = await this.aiService.generateDocumentContent(
+          analysisResult,
+          documentType,
+          { techStack, projectName, additionalRequirements }
+        );
+      } else {
+        // Fallback to standard generation
+        console.log('📄 Using standard document generation...');
+        const fallbackResult = await this.fallbackGenerator.generate(args);
+        documentContent = fallbackResult.content[0]?.text || 'Error: Could not generate fallback content';
+      }
+
+      // Step 3: Create enhanced result with AI insights
+      const enhancedResult = this.createEnhancedResult(
+        documentContent,
+        analysisResult,
+        { figmaUrl, documentType, techStack, projectName }
+      );
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: enhancedResult
+          }
+        ]
+      };
+
+    } catch (error) {
+      console.error('❌ AI-enhanced generation failed:', error);
+      console.log('🔄 Falling back to standard generation...');
+      
+      // Fallback to standard generation
+      return this.fallbackGenerator.generate(args);
+    }
+  }
+
+  /**
+   * Create enhanced result combining AI analysis with document content
+   */
+  private createEnhancedResult(
+    documentContent: string,
+    analysisResult: DesignAnalysisResult | null,
+    context: any
+  ): string {
+    let result = `# 🤖 AI-Enhanced ${context.documentType.toUpperCase()} Document\n\n`;
+    
+    // Add AI analysis summary if available
+    if (analysisResult) {
+      result += `## 🧠 AI Design Analysis Summary\n\n`;
+      result += `- **Confidence Score**: ${analysisResult.confidence}%\n`;
+      result += `- **Components Identified**: ${analysisResult.components.length}\n`;
+      result += `- **Design System Consistency**: ${analysisResult.designSystem.consistency}%\n`;
+      result += `- **Accessibility Score**: ${analysisResult.accessibility.overallScore}%\n\n`;
+      
+      if (analysisResult.components.length > 0) {
+        result += `### 🔧 Key Components\n`;
+        analysisResult.components.slice(0, 5).forEach(component => {
+          result += `- **${component.name}** (${component.type}): ${component.usage} usage\n`;
+        });
+        result += `\n`;
+      }
+      
+      if (analysisResult.recommendations.length > 0) {
+        result += `### 💡 AI Recommendations\n`;
+        analysisResult.recommendations.slice(0, 3).forEach(rec => {
+          result += `- ${rec}\n`;
+        });
+        result += `\n`;
+      }
+    }
+    
+    // Add Figma context
+    if (context.figmaUrl) {
+      result += `## 🎨 Figma Reference\n`;
+      result += `- **Design Source**: [View in Figma](${context.figmaUrl})\n`;
+      if (context.projectName) {
+        result += `- **Project**: ${context.projectName}\n`;
+      }
+      if (context.techStack) {
+        result += `- **Tech Stack**: ${context.techStack}\n`;
+      }
+      result += `\n`;
+    }
+    
+    // Add the main document content
+    result += `## 📋 Implementation Details\n\n`;
+    result += documentContent;
+    
+    // Add AI enhancement footer
+    result += `\n\n---\n`;
+    result += `*🤖 This document was enhanced with AI-powered design analysis`;
+    if (analysisResult) {
+      result += ` (${analysisResult.confidence}% confidence)`;
+    }
+    result += `*\n`;
+    result += `*Generated on ${new Date().toISOString()}*`;
+    
+    return result;
+  }
+
+  /**
+   * Test AI service availability
+   */
+  async testAIServices(): Promise<ToolResult> {
+    const status = await this.aiService.testConfiguration();
+    
+    const result = `# 🧠 AI Services Status Report
+
+## Service Availability
+- **GPT-4 Vision**: ${status.vision ? '✅ Available' : '❌ Unavailable'}
+- **Claude**: ${status.claude ? '✅ Available' : '❌ Unavailable'}  
+- **GPT-4 (Fallback)**: ${status.gpt4 ? '✅ Available' : '❌ Unavailable'}
+
+## Capabilities
+${status.vision ? '- 🖼️ Design screenshot analysis with GPT-4 Vision\n' : ''}${status.claude ? '- 📝 Advanced document generation with Claude\n' : ''}${status.gpt4 ? '- 🔄 GPT-4 fallback for document generation\n' : ''}
+${!status.vision && !status.claude && !status.gpt4 ? '- 📄 Standard generation (no AI services available)\n' : ''}
+## Configuration Requirements
+- Set OPENAI_API_KEY for GPT-4 Vision and fallback generation
+- Set ANTHROPIC_API_KEY for Claude document generation
+- Enable services in AI configuration
+
+*Tested at ${new Date().toISOString()}*`;
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: result
+        }
+      ]
+    };
+  }
+}
+
 class ComplianceChecker {
   async check(args: any): Promise<ToolResult> {
     const { figmaUrl, categories = ['all'] } = args;
@@ -592,12 +797,25 @@ class FigmaAITestServer {
   private projectAnalyzer: ProjectAnalyzer;
   private ticketGenerator: TicketGenerator;
   private complianceChecker: ComplianceChecker;
+  private aiEnhancedGenerator: AIEnhancedTicketGenerator;
   private port: number;
 
   constructor(port: number = 3000) {
     this.projectAnalyzer = new ProjectAnalyzer();
     this.ticketGenerator = new TicketGenerator();
     this.complianceChecker = new ComplianceChecker();
+    
+    // Initialize AI service with configuration from environment
+    const aiConfig: AIAnalysisConfig = {
+      openaiApiKey: process.env.OPENAI_API_KEY || undefined,
+      anthropicApiKey: process.env.ANTHROPIC_API_KEY || undefined,
+      enableVision: process.env.ENABLE_AI_VISION !== 'false',
+      enableClaude: process.env.ENABLE_CLAUDE !== 'false', 
+      maxTokens: parseInt(process.env.AI_MAX_TOKENS || '4000'),
+      temperature: parseFloat(process.env.AI_TEMPERATURE || '0.7')
+    };
+    
+    this.aiEnhancedGenerator = new AIEnhancedTicketGenerator(aiConfig);
     this.port = port;
   }
 
@@ -615,6 +833,12 @@ class FigmaAITestServer {
 
         case 'generate_enhanced_ticket':
           return await this.generateEnhancedTicketWithBoilerplate(body);
+
+        case 'generate_ai_ticket':
+          return await this.aiEnhancedGenerator.generateWithAI(body);
+
+        case 'test_ai_services':
+          return await this.aiEnhancedGenerator.testAIServices();
 
         default:
           throw new Error(`Unknown method: ${method}`);
