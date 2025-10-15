@@ -872,6 +872,9 @@ class FigmaAITestServer {
         case 'test_ai_services':
           return await this.aiEnhancedGenerator.testAIServices();
 
+        case 'generate_visual_enhanced_ticket':
+          return await this.generateVisualEnhancedTicket(body);
+
         default:
           // Don't catch unknown method errors - let them bubble up for proper HTTP error handling
           throw new Error(`Unknown method: ${method}`);
@@ -1870,6 +1873,319 @@ ${error instanceof Error ? error.message : JSON.stringify(error)}
 2. Check if frame size is optimal
 3. Retry with smaller selection
 4. Contact development team if issue persists`;
+  }
+
+  /**
+   * Generate visual-enhanced ticket using screenshot + hierarchical data
+   */
+  async generateVisualEnhancedTicket(params: {
+    figmaContext?: {
+      selection?: any[];
+      fileKey?: string;
+      fileName?: string;
+      pageName?: string;
+    };
+    visualContext?: {
+      screenshot?: {
+        base64: string;
+        format: string;
+        resolution: { width: number; height: number };
+        size: number;
+      };
+      visualDesignContext?: any;
+    };
+    hierarchicalData?: any;
+    options?: {
+      documentType?: string;
+      techStack?: string;
+      instructions?: string;
+    };
+  }): Promise<any> {
+    console.log('🎨 Starting visual-enhanced ticket generation...');
+    
+    try {
+      // Extract context from parameters
+      const figmaContext = params.figmaContext || {};
+      const visualContext = params.visualContext || {};
+      const hierarchicalData = params.hierarchicalData || {};
+      const options = params.options || {};
+
+      // Create enhanced context structure
+      const enhancedContext = {
+        screenshot: visualContext.screenshot || null,
+        visualDesignContext: visualContext.visualDesignContext || {
+          colorPalette: [],
+          typography: { fonts: [], sizes: [], weights: [], hierarchy: [] },
+          spacing: { measurements: [], patterns: [], grid: null },
+          layout: { structure: null, alignment: null, distribution: null },
+          designPatterns: [],
+          visualHierarchy: []
+        },
+        hierarchicalData: hierarchicalData,
+        figmaContext: {
+          fileKey: figmaContext.fileKey || 'unknown',
+          fileName: figmaContext.fileName || 'Untitled',
+          pageName: figmaContext.pageName || 'Page 1',
+          selection: figmaContext.selection?.[0] || { name: 'Unknown Selection' }
+        }
+      };
+
+      // Generate enhanced ticket
+      const ticket = await this.generateVisualContextTicket(enhancedContext, options);
+      
+      console.log('✅ Visual-enhanced ticket generated successfully');
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: ticket
+          }
+        ],
+        ticket: ticket,
+        enhancedContext: {
+          hasScreenshot: !!enhancedContext.screenshot,
+          visualDataPoints: this.countVisualDataPoints(enhancedContext),
+          confidence: this.calculateVisualConfidence(enhancedContext)
+        }
+      };
+
+    } catch (error) {
+      console.error('❌ Visual-enhanced ticket generation failed:', error);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `# ❌ Visual-Enhanced Generation Error
+
+## Issue
+Visual-enhanced ticket generation failed due to processing error.
+
+## Error Details
+\`\`\`
+${error instanceof Error ? error.message : JSON.stringify(error)}
+\`\`\`
+
+## Available Context
+- Screenshot: ${params.visualContext?.screenshot ? '✅ Available' : '❌ Not provided'}
+- Visual Design Context: ${params.visualContext?.visualDesignContext ? '✅ Available' : '❌ Not provided'}
+- Hierarchical Data: ${params.hierarchicalData ? '✅ Available' : '❌ Not provided'}
+
+## Fallback Recommendation
+Use the standard \`generate_enhanced_ticket\` method for reliable ticket generation without visual analysis.`
+          }
+        ],
+        isError: true,
+        fallbackSuggested: true
+      };
+    }
+  }
+
+  /**
+   * Generate ticket using visual context
+   */
+  private async generateVisualContextTicket(context: any, options: any): Promise<string> {
+    const { techStack = 'React TypeScript', instructions = '' } = options;
+    
+    // Build ticket with simple string concatenation to avoid template literal issues
+    let ticket = '# 🎨 Visual-Enhanced ';
+    ticket += (context.figmaContext.selection.name || 'Component');
+    ticket += ' Implementation\n\n';
+    
+    ticket += '## 📋 Enhanced Context Analysis\n\n';
+    
+    // Visual Analysis Section
+    ticket += '### 🖼️ Visual Analysis\n';
+    if (context.screenshot) {
+      ticket += '**Screenshot Available**: ';
+      ticket += context.screenshot.resolution.width + '×' + context.screenshot.resolution.height + 'px ';
+      ticket += context.screenshot.format + ' (' + Math.round(context.screenshot.size / 1024) + 'KB)\n';
+      ticket += '- High-resolution visual reference for pixel-perfect implementation\n';
+      ticket += '- Visual context available for AI analysis and verification\n\n';
+    } else {
+      ticket += '**No Screenshot**: Working with structured data only\n';
+      ticket += '- Implementation based on hierarchical component data\n';
+      ticket += '- Visual verification will be needed during development\n\n';
+    }
+    
+    // Design Context
+    ticket += '### 🎯 Design Context\n';
+    ticket += '- **File**: ' + context.figmaContext.fileName + '\n';
+    ticket += '- **Page**: ' + context.figmaContext.pageName + '\n';
+    ticket += '- **Component**: ' + context.figmaContext.selection.name + '\n\n';
+    
+    // Color System Analysis
+    ticket += '### 🎨 Color System Analysis\n';
+    if (context.visualDesignContext.colorPalette.length > 0) {
+      const colors = context.visualDesignContext.colorPalette.slice(0, 5);
+      colors.forEach((color: any) => {
+        ticket += '- **' + color.hex + '** - ' + color.usage.join(', ') + ' (' + color.count + ' instances)\n';
+      });
+    } else {
+      ticket += '- No color data extracted - manual design token mapping required\n';
+    }
+    ticket += '\n';
+    
+    // Typography Analysis
+    ticket += '### 📝 Typography Analysis\n';
+    if (context.visualDesignContext.typography.fonts.length > 0) {
+      ticket += '- **Fonts**: ' + context.visualDesignContext.typography.fonts.join(', ') + '\n';
+      ticket += '- **Sizes**: ' + context.visualDesignContext.typography.sizes.join('px, ') + 'px\n';
+      ticket += '- **Hierarchy**: ' + context.visualDesignContext.typography.hierarchy.join(' → ') + '\n';
+    } else {
+      ticket += '- No typography data extracted - manual font specification required\n';
+    }
+    ticket += '\n';
+    
+    // Layout & Spacing
+    ticket += '### 📐 Layout & Spacing\n';
+    if (context.visualDesignContext.spacing.patterns.length > 0) {
+      ticket += '- **Grid System**: ' + context.visualDesignContext.spacing.patterns.join(', ') + '\n';
+      ticket += '- **Layout**: ' + (context.visualDesignContext.layout.structure || 'Custom layout') + '\n';
+      ticket += '- **Spacing**: ' + context.visualDesignContext.spacing.measurements.join('px, ') + 'px\n';
+    } else {
+      ticket += '- No spacing patterns detected - manual spacing implementation required\n';
+    }
+    ticket += '\n';
+    
+    // Implementation Requirements
+    ticket += '## 💻 Implementation Requirements\n\n';
+    
+    // Technical Specifications
+    ticket += '### Technical Specifications\n';
+    ticket += '- **Framework**: ' + techStack + '\n';
+    const hasGridSystem = context.visualDesignContext.spacing.patterns.includes('8px-grid');
+    ticket += '- **Styling Approach**: ' + (hasGridSystem ? 'Design system with 8px grid' : 'Custom CSS with extracted measurements') + '\n';
+    const hasColors = context.visualDesignContext.colorPalette.length > 0;
+    ticket += '- **Color Management**: ' + (hasColors ? 'Use extracted color palette' : 'Define color tokens from visual reference') + '\n\n';
+    
+    // Component Architecture
+    ticket += '### Component Architecture\n';
+    if (context.hierarchicalData.components?.length > 0) {
+      context.hierarchicalData.components.forEach((comp: any) => {
+        ticket += '- **' + comp.name + '**: ' + (comp.masterComponent || 'Custom implementation') + '\n';
+      });
+    } else {
+      ticket += '- Component structure to be determined from visual analysis\n';
+    }
+    ticket += '\n';
+    
+    // Visual Fidelity Requirements
+    ticket += '### Visual Fidelity Requirements\n';
+    if (context.screenshot) {
+      ticket += '- Implementation must match the provided screenshot exactly\n';
+      ticket += '- All visual elements, spacing, and proportions must be pixel-perfect\n';
+      ticket += '- Use screenshot as primary reference for visual validation\n\n';
+    } else {
+      ticket += '- Implementation must follow structured component data\n';
+      ticket += '- Visual elements should be inferred from hierarchical data\n';
+      ticket += '- Manual visual review required during development\n\n';
+    }
+    
+    // Acceptance Criteria
+    ticket += '## ✅ Acceptance Criteria\n\n';
+    
+    ticket += '### Visual Requirements\n';
+    ticket += '- [ ] Component matches design specifications exactly\n';
+    ticket += '- [ ] All extracted colors are implemented correctly (' + context.visualDesignContext.colorPalette.length + ' colors)\n';
+    ticket += '- [ ] Typography follows detected hierarchy (' + context.visualDesignContext.typography.hierarchy.length + ' levels)\n';
+    const spacingText = context.visualDesignContext.spacing.patterns.join(', ') || 'custom spacing';
+    ticket += '- [ ] Spacing conforms to detected patterns (' + spacingText + ')\n\n';
+    
+    ticket += '### Technical Requirements\n';
+    ticket += '- [ ] Built using ' + techStack + ' with proper component structure\n';
+    ticket += '- [ ] Responsive design implemented for mobile, tablet, desktop\n';
+    ticket += '- [ ] Accessibility standards met (WCAG 2.1 AA)\n';
+    ticket += '- [ ] Design system tokens used where applicable\n';
+    ticket += '- [ ] Performance optimized (lazy loading, efficient rendering)\n\n';
+    
+    ticket += '### Quality Assurance\n';
+    ticket += '- [ ] Code follows team conventions and best practices\n';
+    ticket += '- [ ] Component is reusable and well-documented\n';
+    ticket += '- [ ] Unit tests written and passing\n';
+    ticket += '- [ ] Cross-browser compatibility verified\n';
+    if (context.screenshot) {
+      ticket += '- [ ] Visual regression testing against screenshot\n\n';
+    } else {
+      ticket += '- [ ] Manual visual review completed\n\n';
+    }
+    
+    // Implementation Notes
+    ticket += '## 🔧 Implementation Notes\n\n';
+    
+    ticket += '### Development Approach\n';
+    ticket += '1. **Setup**: Create component structure using ' + techStack + '\n';
+    if (context.visualDesignContext.colorPalette.length > 0) {
+      ticket += '2. **Styling**: Implement extracted color system first\n';
+    } else {
+      ticket += '2. **Styling**: Define color tokens from visual reference\n';
+    }
+    if (context.visualDesignContext.layout.structure) {
+      ticket += '3. **Layout**: Use ' + context.visualDesignContext.layout.structure + ' layout\n';
+    } else {
+      ticket += '3. **Layout**: Analyze visual structure for layout approach\n';
+    }
+    ticket += '4. **Refinement**: Match visual details and ensure responsive behavior\n';
+    ticket += '5. **Testing**: Verify functionality and visual accuracy\n\n';
+    
+    // Design System Integration
+    ticket += '### Design System Integration\n';
+    if (context.visualDesignContext.colorPalette.length > 0) {
+      ticket += '- Use extracted colors as design tokens\n';
+      ticket += '- Implement detected spacing patterns (' + context.visualDesignContext.spacing.patterns.join(', ') + ')\n';
+      ticket += '- Follow typography hierarchy: ' + context.visualDesignContext.typography.hierarchy.join(' → ') + '\n\n';
+    } else {
+      ticket += '- Create design tokens based on visual analysis\n';
+      ticket += '- Establish consistent spacing and typography system\n';
+      ticket += '- Document patterns for future component development\n\n';
+    }
+    
+    // Additional Instructions
+    ticket += '### Additional Instructions\n';
+    ticket += (instructions || 'Follow standard development practices and team conventions') + '\n\n';
+    
+    // Footer
+    ticket += '---\n\n';
+    ticket += '**Generated with Visual-Enhanced Analysis**\n';
+    if (context.screenshot) {
+      ticket += '📸 Screenshot: ' + context.screenshot.resolution.width + '×' + context.screenshot.resolution.height + 'px\n';
+    } else {
+      ticket += '📊 Data-driven analysis\n';
+    }
+    ticket += '🎨 Color Palette: ' + context.visualDesignContext.colorPalette.length + ' colors | ';
+    ticket += '📝 Typography: ' + context.visualDesignContext.typography.fonts.length + ' fonts | ';
+    ticket += '📐 Spacing: ' + context.visualDesignContext.spacing.patterns.length + ' patterns\n';
+
+    return ticket;
+  }
+
+  /**
+   * Count visual data points for confidence calculation
+   */
+  private countVisualDataPoints(context: any): number {
+    let count = 0;
+    if (context.screenshot) count += 3; // High value for screenshot
+    if (context.visualDesignContext.colorPalette.length > 0) count++;
+    if (context.visualDesignContext.typography.fonts.length > 0) count++;
+    if (context.visualDesignContext.spacing.patterns.length > 0) count++;
+    if (context.hierarchicalData.components?.length > 0) count++;
+    return count;
+  }
+
+  /**
+   * Calculate confidence based on available visual context
+   */
+  private calculateVisualConfidence(context: any): number {
+    let confidence = 60; // Base confidence
+    
+    if (context.screenshot) confidence += 25; // Screenshot is very valuable
+    if (context.visualDesignContext.colorPalette.length > 0) confidence += 5;
+    if (context.visualDesignContext.typography.fonts.length > 0) confidence += 5;
+    if (context.visualDesignContext.spacing.patterns.length > 0) confidence += 5;
+    if (context.hierarchicalData.components?.length > 0) confidence += 5;
+    
+    return Math.min(confidence, 95);
   }
 
   start(): void {

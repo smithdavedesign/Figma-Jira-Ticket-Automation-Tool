@@ -362,7 +362,288 @@ async function extractFrameData(node: any): Promise<any> {
     }
   }
 
+  // 📸 Enhanced Visual Context: Capture screenshot for LLM analysis
+  try {
+    console.log('📸 Capturing screenshot for enhanced LLM context...');
+    
+    // Export the node as PNG for visual analysis
+    const screenshot = await node.exportAsync({
+      format: 'PNG',
+      constraint: { type: 'SCALE', value: 2 }, // 2x for high quality
+    });
+    
+    // Convert to base64 for LLM transmission
+    const base64Screenshot = figma.base64Encode(screenshot);
+    
+    // Add visual context to enhanced frame data
+    enhancedFrameData.visualContext = {
+      screenshot: {
+        format: 'PNG',
+        scale: 2,
+        base64: base64Screenshot,
+        size: screenshot.byteLength,
+        capturedAt: new Date().toISOString(),
+        resolution: {
+          width: Math.round(node.width * 2),
+          height: Math.round(node.height * 2)
+        }
+      },
+      visualAnalysis: {
+        hasScreenshot: true,
+        quality: 'high',
+        suitable_for_llm: true,
+        compression_ratio: Math.round((screenshot.byteLength / (node.width * node.height * 4)) * 100) / 100
+      }
+    };
+    
+    console.log(`✅ Screenshot captured: ${screenshot.byteLength} bytes, ${enhancedFrameData.visualContext.screenshot.resolution.width}x${enhancedFrameData.visualContext.screenshot.resolution.height}px`);
+    
+    // Add visual design context extraction
+    enhancedFrameData.enhancedVisualContext = await extractVisualDesignContext(node);
+    
+  } catch (error) {
+    console.warn('⚠️ Could not capture screenshot for LLM context:', error);
+    
+    // Fallback: Mark as no visual context available
+    enhancedFrameData.visualContext = {
+      screenshot: null,
+      visualAnalysis: {
+        hasScreenshot: false,
+        quality: 'none',
+        suitable_for_llm: false,
+        error: error instanceof Error ? error.message : 'Screenshot capture failed'
+      }
+    };
+  }
+
   return enhancedFrameData;
+}
+
+// 🎨 Extract enhanced visual design context for LLM understanding
+async function extractVisualDesignContext(node: any): Promise<any> {
+  const visualContext: any = {
+    colorPalette: [],
+    typography: {
+      fonts: [],
+      sizes: [],
+      weights: [],
+      hierarchy: []
+    },
+    spacing: {
+      measurements: [],
+      patterns: [],
+      grid: null
+    },
+    layout: {
+      structure: null,
+      alignment: null,
+      distribution: null
+    },
+    interactions: [],
+    designPatterns: [],
+    visualHierarchy: []
+  };
+
+  try {
+    // Enhanced color extraction with RGB and semantic context
+    if (node.findAll) {
+      const colorNodes = node.findAll((n: any) => 'fills' in n && n.fills && Array.isArray(n.fills));
+      const colorMap = new Map<string, { hex: string; rgb: any; usage: string[]; count: number }>();
+      
+      colorNodes.forEach((colorNode: any) => {
+        colorNode.fills.forEach((fill: any) => {
+          if (fill.type === 'SOLID' && fill.color && fill.visible !== false) {
+            const { r, g, b } = fill.color;
+            const rgb = { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+            const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+            
+            // Determine semantic usage based on node context
+            const usage = determineColorUsage(colorNode, fill);
+            
+            if (colorMap.has(hex)) {
+              const existing = colorMap.get(hex)!;
+              existing.count++;
+              if (!existing.usage.includes(usage)) {
+                existing.usage.push(usage);
+              }
+            } else {
+              colorMap.set(hex, { hex, rgb, usage: [usage], count: 1 });
+            }
+          }
+        });
+      });
+      
+      visualContext.colorPalette = Array.from(colorMap.values()).sort((a, b) => b.count - a.count);
+    }
+
+    // Enhanced typography analysis
+    if (node.findAll) {
+      const textNodes = node.findAll((n: any) => n.type === 'TEXT');
+      const fontFamilies = new Set<string>();
+      const fontSizes = new Set<number>();
+      const fontWeights = new Set<string>();
+      
+      textNodes.forEach((textNode: any) => {
+        if (textNode.fontName) {
+          fontFamilies.add(textNode.fontName.family || 'Unknown');
+          fontWeights.add(textNode.fontName.style || 'Regular');
+        }
+        if (typeof textNode.fontSize === 'number') {
+          fontSizes.add(textNode.fontSize);
+        }
+      });
+      
+      visualContext.typography = {
+        fonts: Array.from(fontFamilies),
+        sizes: Array.from(fontSizes).sort((a, b) => b - a),
+        weights: Array.from(fontWeights),
+        hierarchy: categorizeTypographyHierarchy(Array.from(fontSizes))
+      };
+    }
+
+    // Spacing and layout analysis
+    visualContext.spacing = extractSpacingPatterns(node);
+    visualContext.layout = analyzeLayoutStructure(node);
+    
+    // Design pattern recognition
+    visualContext.designPatterns = identifyDesignPatterns(node);
+    
+    // Visual hierarchy analysis
+    visualContext.visualHierarchy = analyzeVisualHierarchy(node);
+    
+    // Interaction states (if available)
+    if (node.reactions && Array.isArray(node.reactions)) {
+      visualContext.interactions = node.reactions.map((reaction: any) => ({
+        trigger: reaction.trigger?.type || 'unknown',
+        action: reaction.actions?.[0]?.type || 'unknown',
+        target: reaction.actions?.[0]?.destinationId || null
+      }));
+    }
+
+    return visualContext;
+    
+  } catch (error) {
+    console.warn('Could not extract visual design context:', error);
+    return {
+      ...visualContext,
+      extractionError: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
+// Helper function to determine color usage context
+function determineColorUsage(node: any, fill: any): string {
+  const nodeName = node.name.toLowerCase();
+  const nodeType = node.type;
+  
+  if (nodeType === 'TEXT') return 'text';
+  if (nodeName.includes('button') || nodeName.includes('btn')) return 'button';
+  if (nodeName.includes('background') || nodeName.includes('bg')) return 'background';
+  if (nodeName.includes('border') || nodeName.includes('stroke')) return 'border';
+  if (nodeName.includes('icon')) return 'icon';
+  if (nodeType === 'FRAME' || nodeType === 'GROUP') return 'container';
+  
+  return 'element';
+}
+
+// Helper function to categorize typography hierarchy
+function categorizeTypographyHierarchy(sizes: number[]): string[] {
+  const sortedSizes = sizes.sort((a, b) => b - a);
+  const hierarchy: string[] = [];
+  
+  sortedSizes.forEach((size, index) => {
+    if (size >= 32) hierarchy.push(`h1 (${size}px)`);
+    else if (size >= 24) hierarchy.push(`h2 (${size}px)`);
+    else if (size >= 20) hierarchy.push(`h3 (${size}px)`);
+    else if (size >= 16) hierarchy.push(`body (${size}px)`);
+    else if (size >= 14) hierarchy.push(`small (${size}px)`);
+    else hierarchy.push(`caption (${size}px)`);
+  });
+  
+  return hierarchy;
+}
+
+// Helper function to extract spacing patterns
+function extractSpacingPatterns(node: any): any {
+  const spacing = {
+    measurements: [] as number[],
+    patterns: [] as string[],
+    grid: null as any
+  };
+  
+  try {
+    // Extract padding values
+    const paddingValues = [
+      node.paddingLeft, node.paddingRight, 
+      node.paddingTop, node.paddingBottom
+    ].filter(p => typeof p === 'number' && p > 0);
+    
+    spacing.measurements.push(...paddingValues);
+    
+    // Extract item spacing
+    if (typeof node.itemSpacing === 'number' && node.itemSpacing > 0) {
+      spacing.measurements.push(node.itemSpacing);
+    }
+    
+    // Identify common spacing patterns
+    const uniqueSpacing = [...new Set(spacing.measurements)].sort((a, b) => a - b);
+    if (uniqueSpacing.length > 0) {
+      // Check for 8px grid
+      const dividesBy8 = uniqueSpacing.every(s => s % 8 === 0);
+      if (dividesBy8) spacing.patterns.push('8px-grid');
+      
+      // Check for 4px grid
+      const dividesBy4 = uniqueSpacing.every(s => s % 4 === 0);
+      if (dividesBy4) spacing.patterns.push('4px-grid');
+    }
+    
+    return spacing;
+  } catch (error) {
+    return spacing;
+  }
+}
+
+// Helper function to analyze layout structure
+function analyzeLayoutStructure(node: any): any {
+  const layout = {
+    structure: null as string | null,
+    alignment: null as string | null,
+    distribution: null as string | null
+  };
+  
+  try {
+    if (node.layoutMode) {
+      layout.structure = node.layoutMode.toLowerCase();
+      layout.alignment = node.primaryAxisAlignItems || 'start';
+      layout.distribution = node.counterAxisAlignItems || 'start';
+    }
+    
+    return layout;
+  } catch (error) {
+    return layout;
+  }
+}
+
+// Helper function to analyze visual hierarchy
+function analyzeVisualHierarchy(node: any): string[] {
+  const hierarchy: string[] = [];
+  
+  try {
+    if (node.children && Array.isArray(node.children)) {
+      // Analyze children by size, position, and styling
+      const sortedBySize = node.children
+        .filter((child: any) => child.width && child.height)
+        .sort((a: any, b: any) => (b.width * b.height) - (a.width * a.height));
+      
+      sortedBySize.slice(0, 3).forEach((child: any, index: number) => {
+        hierarchy.push(`${index + 1}. ${child.name} (${Math.round(child.width)}×${Math.round(child.height)}px)`);
+      });
+    }
+    
+    return hierarchy;
+  } catch (error) {
+    return hierarchy;
+  }
 }
 
 // Extract color information from nodes
