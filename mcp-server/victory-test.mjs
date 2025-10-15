@@ -5,8 +5,12 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
+import dotenv from 'dotenv';
 
-const GEMINI_API_KEY = "AIzaSyCWGu1CMfzSVlg_04QbWUH6TNSxS_t39Ck";
+// Load environment variables
+dotenv.config({ path: '../.env' });
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 const finalVictoryTest = async () => {
   console.log('🎉 FINAL VICTORY TEST - AI-Enhanced Ticket Generation\n');

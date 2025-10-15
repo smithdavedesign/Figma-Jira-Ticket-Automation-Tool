@@ -67,14 +67,37 @@ docs/
 3. **Verify git status**: Ensure no important changes will be lost
 4. **Ask permission** for any structural reorganization
 
-## 🔒 **Security Guidelines**
+## 🔒 **Security Guidelines - CRITICAL ENFORCEMENT**
 
-- **Never commit real API keys** to any tracked files
-- **Use `.env.example`** for templates only  
-- **Keep actual keys** in `.env` (gitignored)
+**🚨 SECURITY BREACH ALERT**: API key exposure detected on GitHub (Oct 15, 2025)
+- Exposed file: `victory-test.mjs` contained hardcoded API key
+- Google notification received for publicly accessible key
+- **IMMEDIATE ACTION**: All hardcoded keys removed, using environment variables only
+
+### **MANDATORY Security Protocols:**
+- **NEVER commit real API keys** to any tracked files - **ZERO TOLERANCE**
+- **Use `.env.example`** for templates only with placeholder values
+- **Keep actual keys** in `.env` (gitignored) 
 - **Reference .env in documentation** instead of showing actual keys
 - **Protect sensitive configuration** files
 - **Sanitize all examples** to use placeholder values
+- **Pre-commit security scan**: ALWAYS check for exposed secrets before committing
+
+### **🔍 Security Validation Checklist:**
+Before ANY commit, verify:
+- [ ] No API keys in source code (grep for "AIza", "sk-", "pk-")
+- [ ] All keys use environment variables (process.env.VARIABLE_NAME)
+- [ ] .env.example contains only placeholder values
+- [ ] No sensitive data in test files or examples
+- [ ] Git history clean of exposed credentials
+
+### **🚨 Emergency Response Protocol:**
+If keys are exposed:
+1. **Immediately revoke exposed keys** in provider console
+2. **Generate new keys** and update .env locally only
+3. **Remove hardcoded keys** from all files
+4. **Update git history** if necessary (git filter-branch)
+5. **Update AGENT_CONTEXT.md** with incident details
 
 ## 🤖 **AGENT CONTEXT MANAGEMENT PROTOCOLS**
 
@@ -134,10 +157,12 @@ Before any major action, verify:
 - [ ] Current project status accurately reflected
 - [ ] All working integrations properly documented
 - [ ] Test results and success rates are current
-- [ ] No API keys or sensitive data in documentation
+- [ ] **CRITICAL**: No API keys or sensitive data anywhere in codebase
+- [ ] **SECURITY SCAN**: Check for exposed secrets (AIza*, sk-*, pk-*)
 - [ ] Recent changes and achievements recorded
 - [ ] Security guidelines followed throughout
 - [ ] Documentation structure preserved
+- [ ] .env.example contains only placeholders
 
 ## 📊 **Current Project Status**
 
