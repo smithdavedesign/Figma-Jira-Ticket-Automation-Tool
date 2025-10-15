@@ -3,10 +3,11 @@
 /**
  * Advanced AI Integration Service
  * 
- * Provides GPT-4 Vision and Claude integration for intelligent design analysis,
+ * Provides Google Gemini, GPT-4 Vision and Claude integration for intelligent design analysis,
  * screenshot interpretation, and context-aware document generation.
  * 
  * Features:
+ * - Google Gemini 2.5 Flash (FREE) for text generation and analysis
  * - GPT-4 Vision for design screenshot analysis
  * - Claude for text processing and document generation
  * - Intelligent prompt templates per document type
@@ -14,6 +15,7 @@
  */
 
 import axios from 'axios';
+import { GoogleGenAI } from '@google/genai';
 
 export interface AIAnalysisConfig {
   openaiApiKey?: string | undefined;
@@ -86,27 +88,15 @@ export class AdvancedAIService {
   }
 
   /**
-   * Analyze design screenshot using best available vision AI
-   * Priority: Gemini Vision (FREE) -> GPT-4 Vision
+   * Analyze design screenshot using GPT-4 Vision
    */
   async analyzeDesignScreenshot(
     imageBuffer: Buffer, 
     documentType: string = 'jira',
     context?: { techStack?: string; projectName?: string }
   ): Promise<DesignAnalysisResult> {
-    // Try Gemini Vision first (FREE TIER)
-    if (this.config.enableGemini && this.config.geminiApiKey) {
-      try {
-        console.log('🔍 Using Gemini Vision (FREE) for design analysis...');
-        return await this.analyzeWithGeminiVision(imageBuffer, documentType, context);
-      } catch (error) {
-        console.warn('Gemini Vision failed, trying GPT-4 Vision:', error instanceof Error ? error.message : 'Unknown');
-      }
-    }
-
-    // Fallback to GPT-4 Vision
     if (!this.config.enableVision || !this.config.openaiApiKey) {
-      throw new Error('No vision AI services configured - set GEMINI_API_KEY (free) or OPENAI_API_KEY');
+      throw new Error('GPT-4 Vision not configured or disabled');
     }
 
     const base64Image = imageBuffer.toString('base64');
@@ -140,8 +130,8 @@ export class AdvancedAIService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.config.openaiApiKey}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-goog-api-key': this.config.geminiApiKey
           }
         }
       );
@@ -156,8 +146,7 @@ export class AdvancedAIService {
   }
 
   /**
-   * Generate intelligent document content using best available AI service
-   * Priority: Gemini (FREE) -> Claude -> GPT-4 -> Fallback
+   * Generate intelligent document content using Claude
    */
   async generateDocumentContent(
     analysisResult: DesignAnalysisResult,
@@ -168,32 +157,55 @@ export class AdvancedAIService {
       additionalRequirements?: string 
     }
   ): Promise<string> {
-    // Try Gemini first (FREE TIER)
+    // 🆓 Priority 1: Try Gemini first (FREE service)
     if (this.config.enableGemini && this.config.geminiApiKey) {
       try {
-        console.log('🚀 Using Google Gemini (FREE) for document generation...');
         return await this.generateWithGemini(analysisResult, documentType, context);
       } catch (error) {
-        console.warn('Gemini generation failed, trying next service:', error instanceof Error ? error.message : 'Unknown');
+        console.warn('Gemini generation failed, trying fallback services:', error instanceof Error ? error.message : 'Unknown');
       }
     }
-
-    // Fallback to Claude if available
+    
+    // Priority 2: Try Claude if available
     if (this.config.enableClaude && this.config.anthropicApiKey) {
       try {
-        console.log('🤖 Using Claude for document generation...');
         return await this.generateWithClaude(analysisResult, documentType, context);
       } catch (error) {
         console.warn('Claude generation failed, trying GPT-4:', error instanceof Error ? error.message : 'Unknown');
       }
     }
-
-    // Final fallback to GPT-4
+    
+    // Priority 3: Fallback to GPT-4
     return this.generateWithGPT4(analysisResult, documentType, context);
   }
 
   /**
-   * Generate document content using Claude
+   * Generate content using Google Gemini (FREE service)
+   */
+  private async generateWithGemini(
+    analysisResult: DesignAnalysisResult,
+    documentType: string,
+    context?: { 
+      techStack?: string; 
+      projectName?: string; 
+      additionalRequirements?: string 
+    }
+  ): Promise<string> {
+    const prompt = this.getPromptTemplate('document_generation', documentType, context);
+    const enhancedPrompt = this.enhancePromptWithAnalysis(prompt, analysisResult);
+
+    const genAI = new GoogleGenAI({ apiKey: this.config.geminiApiKey! });
+    
+    const result = await genAI.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: enhancedPrompt
+    });
+    
+    return result.text || '';
+  }
+
+  /**
+   * Generate content using Claude
    */
   private async generateWithClaude(
     analysisResult: DesignAnalysisResult,
@@ -204,172 +216,32 @@ export class AdvancedAIService {
       additionalRequirements?: string 
     }
   ): Promise<string> {
-
     const prompt = this.getPromptTemplate('document_generation', documentType, context);
     const enhancedPrompt = this.enhancePromptWithAnalysis(prompt, analysisResult);
 
-    try {
-      const response = await axios.post(
-        'https://api.anthropic.com/v1/messages',
-        {
-          model: 'claude-3-sonnet-20240229',
-          max_tokens: this.config.maxTokens,
-          temperature: this.config.temperature,
-          messages: [
-            {
-              role: 'user',
-              content: enhancedPrompt
-            }
-          ]
-        },
-        {
-          headers: {
-            'x-api-key': this.config.anthropicApiKey,
-            'Content-Type': 'application/json',
-            'anthropic-version': '2023-06-01'
+    const response = await axios.post(
+      'https://api.anthropic.com/v1/messages',
+      {
+        model: 'claude-3-sonnet-20240229',
+        max_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+        messages: [
+          {
+            role: 'user',
+            content: enhancedPrompt
           }
+        ]
+      },
+      {
+        headers: {
+          'x-api-key': this.config.anthropicApiKey,
+          'Content-Type': 'application/json',
+          'anthropic-version': '2023-06-01'
         }
-      );
-
-      return response.data.content[0].text;
-      
-    } catch (error) {
-      console.error('Claude generation failed:', error);
-      // Fallback to GPT-4
-      return this.generateWithGPT4(analysisResult, documentType, context);
-    }
-  }
-
-  /**
-   * Generate document content using Google Gemini (FREE TIER)
-   */
-  async generateWithGemini(
-    analysisResult: DesignAnalysisResult,
-    documentType: string,
-    context?: { 
-      techStack?: string; 
-      projectName?: string; 
-      additionalRequirements?: string 
-    }
-  ): Promise<string> {
-    if (!this.config.enableGemini || !this.config.geminiApiKey) {
-      throw new Error('Gemini not configured - falling back to standard generation');
-    }
-
-    const prompt = this.getPromptTemplate('document_generation', documentType, context);
-    const enhancedPrompt = this.enhancePromptWithAnalysis(prompt, analysisResult);
-
-    try {
-      const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.config.geminiApiKey}`,
-        {
-          contents: [{
-            parts: [{
-              text: enhancedPrompt
-            }]
-          }],
-          generationConfig: {
-            temperature: this.config.temperature,
-            topK: 1,
-            topP: 1,
-            maxOutputTokens: this.config.maxTokens,
-          },
-          safetySettings: [
-            {
-              category: "HARM_CATEGORY_HARASSMENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_HATE_SPEECH", 
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            }
-          ]
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      const generatedText = response.data.candidates[0]?.content?.parts[0]?.text;
-      if (!generatedText) {
-        throw new Error('No content generated by Gemini');
       }
+    );
 
-      return generatedText;
-      
-    } catch (error) {
-      console.error('Gemini generation failed:', error);
-      throw new Error(`Gemini generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
-
-  /**
-   * Analyze design with Gemini Vision (FREE TIER) 
-   */
-  async analyzeWithGeminiVision(
-    imageBuffer: Buffer,
-    documentType: string = 'jira',
-    context?: { techStack?: string; projectName?: string }
-  ): Promise<DesignAnalysisResult> {
-    if (!this.config.enableGemini || !this.config.geminiApiKey) {
-      throw new Error('Gemini Vision not configured');
-    }
-
-    const base64Image = imageBuffer.toString('base64');
-    const prompt = this.getPromptTemplate('design_analysis', documentType, context);
-
-    try {
-      const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${this.config.geminiApiKey}`,
-        {
-          contents: [{
-            parts: [
-              {
-                text: prompt + "\n\nAnalyze this design screenshot and return a structured JSON response:"
-              },
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: base64Image
-                }
-              }
-            ]
-          }],
-          generationConfig: {
-            temperature: this.config.temperature,
-            topK: 1,
-            topP: 1,
-            maxOutputTokens: this.config.maxTokens,
-          }
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      const analysisText = response.data.candidates[0]?.content?.parts[0]?.text;
-      if (!analysisText) {
-        throw new Error('No analysis generated by Gemini Vision');
-      }
-
-      return this.parseAnalysisResponse(analysisText);
-      
-    } catch (error) {
-      console.error('Gemini Vision analysis failed:', error);
-      throw new Error(`Gemini Vision analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    return response.data.content[0].text;
   }
 
   /**
@@ -664,40 +536,19 @@ Please generate the document incorporating these insights and maintaining consis
       gpt4: false
     };
 
-    // Test Gemini (FREE TIER)
+    // Test Gemini (FREE TIER) - Using official SDK
     if (this.config.enableGemini && this.config.geminiApiKey) {
       try {
-        await axios.post(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.config.geminiApiKey}`,
-          {
-            contents: [{ parts: [{ text: 'Test connection' }] }],
-            generationConfig: { maxOutputTokens: 10 }
-          },
-          { timeout: 5000 }
-        );
-        results.gemini = true;
+        const genAI = new GoogleGenAI({ apiKey: this.config.geminiApiKey });
         
-        // Test Gemini Vision if regular Gemini works
-        try {
-          // Create a minimal test image (1x1 transparent PNG)
-          const testImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-          
-          await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${this.config.geminiApiKey}`,
-            {
-              contents: [{
-                parts: [
-                  { text: 'Describe this image briefly' },
-                  { inline_data: { mime_type: 'image/png', data: testImage } }
-                ]
-              }],
-              generationConfig: { maxOutputTokens: 10 }
-            },
-            { timeout: 8000 }
-          );
-          results.geminiVision = true;
-        } catch (error) {
-          console.warn('Gemini Vision test failed:', error instanceof Error ? error.message : 'Unknown');
+        const result = await genAI.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: 'Test connection'
+        });
+        
+        if (result) {
+          results.gemini = true;
+          results.geminiVision = true; // Gemini 2.5 Flash supports vision
         }
       } catch (error) {
         console.warn('Gemini test failed:', error instanceof Error ? error.message : 'Unknown');

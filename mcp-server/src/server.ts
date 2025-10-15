@@ -8,7 +8,11 @@
  * that complement and orchestrate with Figma's tactical MCP server.
  */
 
+import dotenv from 'dotenv';
 import { createServer } from 'http';
+
+// Load environment variables
+dotenv.config();
 import { FigmaWorkflowOrchestrator } from './figma/figma-mcp-client.js';
 import { BoilerplateCodeGenerator } from './figma/boilerplate-generator.js';
 import { AdvancedAIService } from './ai/advanced-ai-service.js';
@@ -570,7 +574,7 @@ class AIEnhancedTicketGenerator {
       const aiStatus = await this.aiService.testConfiguration();
       console.log('🧠 AI Services Status:', aiStatus);
       
-      if (!aiStatus.vision && !aiStatus.claude && !aiStatus.gpt4) {
+      if (!aiStatus.gemini && !aiStatus.vision && !aiStatus.claude && !aiStatus.gpt4) {
         console.warn('⚠️ No AI services available, falling back to standard generation');
         return this.fallbackGenerator.generate(args);
       }
@@ -710,17 +714,22 @@ class AIEnhancedTicketGenerator {
     const result = `# 🧠 AI Services Status Report
 
 ## Service Availability
+- **🆓 Google Gemini**: ${status.gemini ? '✅ Available (FREE)' : '❌ Unavailable'}
+- **🖼️ Gemini Vision**: ${status.geminiVision ? '✅ Available (FREE)' : '❌ Unavailable'}
 - **GPT-4 Vision**: ${status.vision ? '✅ Available' : '❌ Unavailable'}
 - **Claude**: ${status.claude ? '✅ Available' : '❌ Unavailable'}  
 - **GPT-4 (Fallback)**: ${status.gpt4 ? '✅ Available' : '❌ Unavailable'}
 
 ## Capabilities
-${status.vision ? '- 🖼️ Design screenshot analysis with GPT-4 Vision\n' : ''}${status.claude ? '- 📝 Advanced document generation with Claude\n' : ''}${status.gpt4 ? '- 🔄 GPT-4 fallback for document generation\n' : ''}
-${!status.vision && !status.claude && !status.gpt4 ? '- 📄 Standard generation (no AI services available)\n' : ''}
+${status.gemini ? '- 🆓 FREE AI-powered document generation with Google Gemini\n' : ''}${status.geminiVision ? '- 🖼️ FREE design screenshot analysis with Gemini Vision\n' : ''}${status.vision ? '- 🖼️ Advanced design screenshot analysis with GPT-4 Vision\n' : ''}${status.claude ? '- 📝 Premium document generation with Claude\n' : ''}${status.gpt4 ? '- 🔄 GPT-4 fallback for document generation\n' : ''}
+${!status.gemini && !status.vision && !status.claude && !status.gpt4 ? '- 📄 Standard generation (no AI services available)\n' : ''}
 ## Configuration Requirements
-- Set OPENAI_API_KEY for GPT-4 Vision and fallback generation
-- Set ANTHROPIC_API_KEY for Claude document generation
-- Enable services in AI configuration
+${!status.gemini ? '- Set GEMINI_API_KEY for FREE Google AI generation (recommended)\n' : ''}${!status.vision ? '- Set OPENAI_API_KEY for GPT-4 Vision and fallback generation\n' : ''}${!status.claude ? '- Set ANTHROPIC_API_KEY for Claude document generation\n' : ''}
+## Service Priority
+1. 🆓 **Gemini** (FREE) - Primary AI service for generation
+2. 🤖 **Claude** (PAID) - Premium document generation
+3. 🧠 **GPT-4** (PAID) - Advanced analysis and fallback
+4. 📄 **Standard** - Always available fallback
 
 *Tested at ${new Date().toISOString()}*`;
 
