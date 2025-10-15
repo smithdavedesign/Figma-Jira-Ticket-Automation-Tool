@@ -14,9 +14,8 @@ import { createServer } from 'http';
 // Load environment variables
 dotenv.config();
 import { FigmaWorkflowOrchestrator } from './figma/figma-mcp-client.js';
-import { BoilerplateCodeGenerator } from './figma/boilerplate-generator.js';
 import { AdvancedAIService } from './ai/advanced-ai-service.js';
-import type { TechStackConfig, CodeGenerationOptions } from './figma/boilerplate-generator.js';
+import type { CodeGenerationOptions } from './figma/boilerplate-generator.js';
 import type { AIAnalysisConfig, DesignAnalysisResult } from './ai/advanced-ai-service.js';
 
 /**
@@ -899,10 +898,32 @@ class FigmaAITestServer {
    * Enhanced ticket generation with boilerplate code
    */
   async generateEnhancedTicketWithBoilerplate(params: {
-    figmaUrl: string;
+    techStack?: string;
+    documentType?: string;
+    confidence?: number;
+    detectedTech?: any;
+    designContext?: any;
+    figmaContext?: {
+      fileKey?: string;
+      fileName?: string;
+      selection?: Array<{
+        id: string;
+        name: string;
+        type: string;
+        textContent?: Array<{content: string; style: string}>;
+        colors?: string[];
+        dimensions?: {width: number; height: number};
+        nodeCount?: number;
+        pageName?: string;
+        hasPrototype?: boolean;
+        components?: any[];
+        designSystemContext?: any;
+      }>;
+      hasSelection: boolean;
+    };
+    figmaUrl?: string;
     projectContext?: string;
-    techStack: TechStackConfig;
-    options: CodeGenerationOptions;
+    options?: CodeGenerationOptions;
   }): Promise<{
     content: Array<{ type: string; text: string }>;
     ticket: string;
@@ -918,38 +939,25 @@ class FigmaAITestServer {
   }> {
     try {
       console.log('🚀 Starting enhanced ticket generation with boilerplate code...');
+      console.log('📊 Received figmaContext:', JSON.stringify(params.figmaContext, null, 2));
 
-      // Initialize Figma MCP orchestrator
-      const orchestrator = new FigmaWorkflowOrchestrator();
+      // Extract detailed information from Figma context
+      const figmaSelection = params.figmaContext?.selection?.[0];
+      const hasRichContext = figmaSelection && Object.keys(figmaSelection).length > 3;
 
-      // Execute complete workflow (strategic analysis + tactical code generation)
-      const workflowResult = await orchestrator.executeCompleteWorkflow({
-        figmaUrl: params.figmaUrl,
-        projectContext: params.projectContext,
-        requirements: {
-          includeBoilerplate: true,
-          techStack: params.techStack,
-          ...params.options
-        }
-      });
+      let enhancedTicket: string;
+      let boilerplateCode: any;
 
-      // Generate boilerplate code using tech stack configuration
-      const boilerplateGenerator = new BoilerplateCodeGenerator(
-        params.techStack,
-        params.options
-      );
-
-      const boilerplateCode = await boilerplateGenerator.generateBoilerplateCode(
-        params.figmaUrl,
-        orchestrator // Pass the orchestrator which has access to Figma MCP
-      );
-
-      // Generate enhanced ticket description with embedded code
-      const ticket = this.createEnhancedTicketDescription(
-        workflowResult,
-        params.techStack,
-        boilerplateCode
-      );
+      if (hasRichContext && figmaSelection) {
+        // Generate context-aware ticket with rich Figma data
+        enhancedTicket = this.generateContextAwareTicket(figmaSelection, params);
+        boilerplateCode = this.generateContextAwareBoilerplate(figmaSelection, params);
+      } else {
+        // Fallback to basic ticket generation
+        console.log('⚠️ Limited context available, using fallback generation');
+        enhancedTicket = this.generateFallbackTicket(params);
+        boilerplateCode = this.generateFallbackBoilerplate(params.techStack || 'React');
+      }
 
       console.log('✅ Enhanced ticket with boilerplate generated successfully!');
 
@@ -957,20 +965,22 @@ class FigmaAITestServer {
         content: [
           {
             type: 'text',
-            text: 'Enhanced ticket with boilerplate code generated successfully'
+            text: enhancedTicket
           }
         ],
-        ticket,
-        boilerplateCode
+        ticket: enhancedTicket,
+        boilerplateCode,
+        isFallback: !hasRichContext,
+        ...(hasRichContext ? {} : { fallbackReason: 'Limited Figma context available' })
       };
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       console.error('❌ Enhanced ticket generation failed:', errorMessage);
       
-      // Generate fallback content when Figma MCP is unavailable
+      // Generate fallback content when processing fails
       const fallbackTicket = this.generateFallbackTicket(params);
-      const fallbackBoilerplate = this.generateFallbackBoilerplate(params.techStack);
+      const fallbackBoilerplate = this.generateFallbackBoilerplate(params.techStack || 'React');
       
       return {
         content: [
@@ -988,71 +998,433 @@ class FigmaAITestServer {
   }
 
   /**
-   * Create enhanced ticket description with embedded boilerplate code
+   * Generate context-aware ticket using rich Figma selection data
    */
-  private createEnhancedTicketDescription(
-    workflowResult: any,
-    techStack: TechStackConfig,
-    boilerplateCode: any
-  ): string {
-    const framework = techStack.frontend.framework;
-    const styling = techStack.frontend.styling;
+  private generateContextAwareTicket(figmaSelection: any, params: any): string {
+    const componentName = figmaSelection.name || 'Component';
+    const techStack = params.techStack || 'React TypeScript';
+    const pageName = figmaSelection.pageName || 'Design Page';
+    const nodeCount = figmaSelection.nodeCount || 0;
+    const dimensions = figmaSelection.dimensions;
+    const colors = figmaSelection.colors || [];
+    const textContent = figmaSelection.textContent || [];
     
-    return `# 🎨 Component Implementation Ticket
+    // Generate complexity assessment
+    const complexity = nodeCount > 15 ? 'Complex' : nodeCount > 8 ? 'Medium' : 'Simple';
+    const effort = complexity === 'Complex' ? '6-8 hours' : complexity === 'Medium' ? '4-6 hours' : '2-4 hours';
+    
+    // Extract text content for context
+    const textContentSummary = textContent.length > 0 
+      ? textContent.map((t: any) => `"${t.content}" (${t.style})`).join(', ')
+      : 'No text content';
+    
+    // Color analysis
+    const colorSummary = colors.length > 0 
+      ? colors.map((c: string) => c).join(', ')
+      : 'No specific colors detected';
 
-## Overview
-Implement the design component from Figma with ${framework} and ${styling}.
+    return `# 🎨 ${componentName} Implementation
 
-## Strategic Analysis
-- **Project Scope**: ${workflowResult.strategicAnalysis.projectScope}
-- **Complexity**: ${workflowResult.strategicAnalysis.complexity}
-- **Estimated Effort**: ${workflowResult.strategicAnalysis.estimatedEffort}
-- **Design System Compliance**: ${workflowResult.strategicAnalysis.designSystemCompliance}%
+## 📋 Component Overview
+**Component**: ${componentName}  
+**Page**: ${pageName}  
+**File**: ${figmaSelection.fileName || 'Figma Design'}  
+**Tech Stack**: ${techStack}  
+**Complexity**: ${complexity} (${nodeCount} nodes)  
+**Estimated Effort**: ${effort}
 
-## Tech Stack
-- **Frontend**: ${framework.charAt(0).toUpperCase() + framework.slice(1)}
-- **Styling**: ${styling.charAt(0).toUpperCase() + styling.slice(1)}
-- **State Management**: ${techStack.frontend.stateManagement || 'None'}
-- **Testing**: ${techStack.frontend.testing || 'None'}
+## 🎯 Design Specifications
 
-## Boilerplate Code
+### Dimensions
+${dimensions ? `- Width: ${dimensions.width}px` : '- Width: Not specified'}
+${dimensions ? `- Height: ${dimensions.height}px` : '- Height: Not specified'}
 
-### Component Implementation
-\`\`\`${framework === 'react' ? 'jsx' : framework}
-${boilerplateCode.component}
-\`\`\`
+### Content Analysis
+- **Text Elements**: ${textContent.length} items
+- **Content**: ${textContentSummary}
 
-### Styles
-\`\`\`${styling === 'scss' ? 'scss' : 'css'}
-${boilerplateCode.styles}
-\`\`\`
+### Color Palette
+- **Colors Used**: ${colorSummary}
 
-${boilerplateCode.tests ? `
-### Tests
-\`\`\`javascript
-${boilerplateCode.tests}
-\`\`\`
-` : ''}
+## 💻 Implementation Requirements
 
-${boilerplateCode.story ? `
-### Storybook Story
-\`\`\`javascript
-${boilerplateCode.story}
-\`\`\`
-` : ''}
+### 1. Component Structure
+- Create ${componentName} component using ${techStack}
+- Implement responsive design for multiple screen sizes
+- Follow established design system patterns
 
-## Acceptance Criteria
+### 2. Content Implementation
+${textContent.length > 0 ? textContent.map((t: any, i: number) => 
+  `- **Text ${i + 1}**: "${t.content}" using ${t.style} typography`
+).join('\n') : '- No specific text content to implement'}
+
+### 3. Styling Requirements
+- Apply color scheme: ${colorSummary}
+- Maintain exact dimensions where specified
+- Implement proper spacing and layout
+
+### 4. Interactive Features
+${figmaSelection.hasPrototype ? '- Implement prototype interactions' : '- Add standard interactive behaviors'}
+- Ensure accessibility compliance (ARIA labels, keyboard navigation)
+- Add hover and focus states
+
+## ✅ Acceptance Criteria
+
 - [ ] Component matches Figma design exactly
-- [ ] Component is responsive and accessible
-- [ ] Code follows project conventions
-- [ ] Tests pass and provide adequate coverage
-- [ ] Component is documented${boilerplateCode.story ? ' and has Storybook stories' : ''}
+- [ ] All text content rendered with correct typography
+- [ ] Color scheme implemented accurately
+- [ ] Responsive behavior works across devices
+- [ ] Accessibility requirements met (WCAG 2.1 AA)
+- [ ] Component integrates with existing design system
+- [ ] Code follows team coding standards
+- [ ] Unit tests written and passing
+- [ ] Storybook story created (if applicable)
 
-## Technical Notes
-${workflowResult.tacticalCode?.content?.[0]?.text || 'Generated from Figma MCP server integration'}
+## 🔧 Technical Notes
+
+- **Framework**: ${techStack}
+- **Styling**: Use CSS modules or styled-components
+- **Testing**: Jest + React Testing Library
+- **Documentation**: Include prop types and usage examples
+
+## 📦 Deliverables
+
+1. **Component Code**: Fully implemented ${componentName}
+2. **Styles**: CSS/SCSS with exact design specifications
+3. **Tests**: Unit tests covering all functionality
+4. **Documentation**: Component usage guide
+5. **Storybook**: Interactive component showcase
 
 ---
-*Generated by Enhanced Figma-Jira Automation Tool with ${framework}/${styling} tech stack*`;
+*Generated from Figma selection: ${figmaSelection.id} | Complexity: ${complexity} | Effort: ${effort}*`;
+  }
+
+  /**
+   * Generate context-aware boilerplate code using Figma selection data
+   */
+  private generateContextAwareBoilerplate(figmaSelection: any, params: any): any {
+    const componentName = figmaSelection.name?.replace(/[^a-zA-Z0-9]/g, '') || 'Component';
+    const techStack = params.techStack || 'React TypeScript';
+    const textContent = figmaSelection.textContent || [];
+    const colors = figmaSelection.colors || [];
+    const dimensions = figmaSelection.dimensions;
+    
+    // Determine if this is TypeScript or JavaScript
+    const isTypeScript = techStack.toLowerCase().includes('typescript');
+    
+    // Generate component props based on content
+    const hasTextContent = textContent.length > 0;
+    const hasCustomColors = colors.length > 0;
+    const hasDimensions = dimensions && (dimensions.width || dimensions.height);
+    
+    const componentCode = this.generateComponentCode(
+      componentName, 
+      figmaSelection, 
+      isTypeScript, 
+      hasTextContent, 
+      hasCustomColors, 
+      hasDimensions
+    );
+    
+    const stylesCode = this.generateStylesCode(
+      componentName, 
+      figmaSelection, 
+      colors, 
+      dimensions
+    );
+    
+    const testsCode = this.generateTestsCode(componentName, textContent, isTypeScript);
+    
+    const storyCode = this.generateStoryCode(componentName, figmaSelection, isTypeScript);
+    
+    const typesCode = isTypeScript ? this.generateTypesCode(componentName, figmaSelection) : '';
+
+    return {
+      component: componentCode,
+      styles: stylesCode,
+      tests: testsCode,
+      story: storyCode,
+      ...(isTypeScript && { types: typesCode })
+    };
+  }
+
+  /**
+   * Generate component code with Figma context
+   */
+  private generateComponentCode(
+    componentName: string, 
+    figmaSelection: any, 
+    isTypeScript: boolean, 
+    hasTextContent: boolean, 
+    hasCustomColors: boolean, 
+    hasDimensions: boolean
+  ): string {
+    const textContent = figmaSelection.textContent || [];
+    const propsInterface = isTypeScript ? `
+interface ${componentName}Props {
+  ${hasTextContent ? 'content?: { [key: string]: string };' : ''}
+  ${hasCustomColors ? 'customColors?: string[];' : ''}
+  ${hasDimensions ? 'size?: { width?: number; height?: number };' : ''}
+  className?: string;
+  onClick?: () => void;
+}` : '';
+
+    const propsType = isTypeScript ? `: React.FC<${componentName}Props>` : '';
+
+    return `import React from 'react';
+import './${componentName}.css';
+${isTypeScript ? propsInterface : ''}
+
+export const ${componentName}${propsType} = ({ 
+  ${hasTextContent ? 'content = {},' : ''}
+  ${hasCustomColors ? 'customColors = [],' : ''}
+  ${hasDimensions ? 'size = {},' : ''}
+  className = '',
+  onClick,
+  ...props
+}) => {
+  return (
+    <div 
+      className={\`${componentName.toLowerCase()} \${className}\`}
+      ${hasDimensions ? 'style={{ ...size, ...props.style }}' : ''}
+      onClick={onClick}
+      {...props}
+    >
+      ${textContent.map((text: any, index: number) => `
+      <span className="${componentName.toLowerCase()}__text-${index + 1}">
+        {content['text${index + 1}'] || '${text.content}'}
+      </span>`).join('')}
+      ${textContent.length === 0 ? `
+      <div className="${componentName.toLowerCase()}__content">
+        {/* Add your ${componentName} content here */}
+        ${componentName} Component
+      </div>` : ''}
+    </div>
+  );
+};
+
+export default ${componentName};`;
+  }
+
+  /**
+   * Generate CSS styles with Figma design context
+   */
+  private generateStylesCode(componentName: string, figmaSelection: any, colors: string[], dimensions: any): string {
+    const baseClass = componentName.toLowerCase();
+    const textContent = figmaSelection.textContent || [];
+    
+    return `.${baseClass} {
+  /* Base component styles */
+  display: flex;
+  flex-direction: column;
+  ${dimensions ? `width: ${dimensions.width}px;` : 'width: 100%;'}
+  ${dimensions ? `height: ${dimensions.height}px;` : 'height: auto;'}
+  ${colors.length > 0 ? `background-color: ${colors[0]};` : 'background: #ffffff;'}
+  border-radius: 8px;
+  padding: 16px;
+  box-sizing: border-box;
+  
+  /* Design system integration */
+  font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+  ${colors.length > 1 ? `color: ${colors[1]};` : 'color: #333333;'}
+}
+
+${textContent.map((text: any, index: number) => `
+.${baseClass}__text-${index + 1} {
+  /* ${text.style} styles */
+  font-weight: ${text.style?.includes('Bold') ? 'bold' : text.style?.includes('Light') ? '300' : 'normal'};
+  font-family: ${text.style?.includes('Sora') ? "'Sora', sans-serif" : 'inherit'};
+  margin-bottom: 8px;
+  display: block;
+}`).join('')}
+
+.${baseClass}__content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .${baseClass} {
+    ${dimensions ? `width: min(${dimensions.width}px, 100%);` : 'width: 100%;'}
+    padding: 12px;
+  }
+}
+
+/* Interactive states */
+.${baseClass}:hover {
+  ${colors.length > 0 && colors[0] ? `background-color: ${this.adjustColor(colors[0], -10)};` : 'background-color: #f5f5f5;'}
+  cursor: pointer;
+}
+
+.${baseClass}:focus {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}`;
+  }
+
+  /**
+   * Generate test code with component context
+   */
+  private generateTestsCode(componentName: string, textContent: any[], _isTypeScript: boolean): string {
+    
+    return `import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ${componentName} } from './${componentName}';
+
+describe('${componentName}', () => {
+  it('renders without crashing', () => {
+    render(<${componentName} />);
+    expect(screen.getByText('${componentName} Component')).toBeInTheDocument();
+  });
+
+  ${textContent.map((text: any, _index: number) => `
+  it('displays ${text.content} text correctly', () => {
+    render(<${componentName} />);
+    expect(screen.getByText('${text.content}')).toBeInTheDocument();
+  });`).join('')}
+
+  it('handles click events', () => {
+    const handleClick = jest.fn();
+    render(<${componentName} onClick={handleClick} />);
+    
+    fireEvent.click(screen.getByRole('button', { name: /${componentName}/i }));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('applies custom className', () => {
+    const customClass = 'custom-class';
+    render(<${componentName} className={customClass} />);
+    
+    expect(screen.getByRole('button')).toHaveClass(customClass);
+  });
+
+  ${textContent.length > 0 ? `
+  it('renders with custom content', () => {
+    const customContent = {
+      ${textContent.map((text: any, index: number) => `text${index + 1}: 'Custom ${text.content}'`).join(',\n      ')}
+    };
+    
+    render(<${componentName} content={customContent} />);
+    ${textContent.map((text: any, _index: number) => `
+    expect(screen.getByText('Custom ${text.content}')).toBeInTheDocument();`).join('')}
+  });` : ''}
+});`;
+  }
+
+  /**
+   * Generate Storybook story with design context
+   */
+  private generateStoryCode(componentName: string, figmaSelection: any, _isTypeScript: boolean): string {
+    const textContent = figmaSelection.textContent || [];
+    
+    return `import type { Meta, StoryObj } from '@storybook/react';
+import { ${componentName} } from './${componentName}';
+
+const meta: Meta<typeof ${componentName}> = {
+  title: 'Components/${componentName}',
+  component: ${componentName},
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component: 'Generated from Figma design: ${figmaSelection.name}',
+      },
+    },
+  },
+  tags: ['autodocs'],
+  argTypes: {
+    onClick: { action: 'clicked' },
+    ${textContent.length > 0 ? `
+    content: {
+      description: 'Text content for the component',
+      control: 'object',
+    },` : ''}
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: {
+    ${textContent.length > 0 ? `
+    content: {
+      ${textContent.map((text: any, index: number) => `text${index + 1}: '${text.content}'`).join(',\n      ')}
+    },` : ''}
+  },
+};
+
+export const Interactive: Story = {
+  args: {
+    ...Default.args,
+    onClick: () => alert('${componentName} clicked!'),
+  },
+};
+
+${textContent.length > 0 ? `
+export const CustomContent: Story = {
+  args: {
+    content: {
+      ${textContent.map((text: any, index: number) => `text${index + 1}: 'Custom ${text.content} Text'`).join(',\n      ')}
+    },
+  },
+};` : ''}`;
+  }
+
+  /**
+   * Generate TypeScript types
+   */
+  private generateTypesCode(componentName: string, figmaSelection: any): string {
+    const textContent = figmaSelection.textContent || [];
+    const dimensions = figmaSelection.dimensions;
+    
+    return `export interface ${componentName}Props {
+  ${textContent.length > 0 ? `
+  /** Text content for the component */
+  content?: {
+    ${textContent.map((_text: any, index: number) => `text${index + 1}?: string;`).join('\n    ')}
+  };` : ''}
+  
+  /** Custom colors to override design system */
+  customColors?: string[];
+  
+  ${dimensions ? `
+  /** Component size override */
+  size?: {
+    width?: number;
+    height?: number;
+  };` : ''}
+  
+  /** Additional CSS className */
+  className?: string;
+  
+  /** Click handler */
+  onClick?: () => void;
+  
+  /** Additional props */
+  [key: string]: any;
+}
+
+export interface ${componentName}Ref {
+  focus: () => void;
+  blur: () => void;
+}`;
+  }
+
+  /**
+   * Helper to adjust color brightness
+   */
+  private adjustColor(color: string, amount: number): string {
+    // Simple color adjustment - in production, use a proper color manipulation library
+    const hex = color.replace('#', '');
+    const num = parseInt(hex, 16);
+    const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+    const g = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amount));
+    const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+    return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
   }
 
   /**
