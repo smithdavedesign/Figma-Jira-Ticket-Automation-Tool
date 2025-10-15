@@ -15,6 +15,36 @@ dist/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*
+
+# Security and API Keys - CRITICAL
+security-check.sh
+*security-check*
+*api-key*
+*apikey*
+*API_KEY*
+*GEMINI_API_KEY*
+*OPENAI_API_KEY*
+*secret*
+*Secret*
+*SECRET*
+*.key
+*.pem
+*.p12
+*.pfx
+auth.json
+credentials.json
+service-account*.json
+*-credentials.*
+*-key.*
+*token*
+*Token*
+*TOKEN*
+
+# Security scan results
+security-report.*
+vulnerability-report.*
+audit-report.*
 
 # IDE files
 .vscode/

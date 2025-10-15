@@ -39,7 +39,53 @@ export GEMINI_API_KEY="your-free-key-here"
 npm run mcp:start
 ```
 
-## 🏗️ Architecture
+## 🧪 Testing Framework
+
+Our comprehensive testing infrastructure ensures enterprise-grade reliability across all components:
+
+### Test Categories
+
+- **🧩 Unit Tests**: Core tech stack parsing and utilities
+- **🔗 Integration Tests**: Enhanced UI integration with fallbacks  
+- **⚙️ System Tests**: End-to-end system validation
+- **� Browser Tests**: Cross-browser UI validation with Playwright
+- **🔄 Live Tests**: Manual browser-based testing
+
+### Quick Test Commands
+
+```bash
+# System Health & Quick Validation
+npm run health                     # Check system status (no servers needed)
+npm run health:start              # Check + auto-start servers if needed
+npm run test:all:quick            # Quick validation (unit + 1 browser test ~30s)
+
+# Development Testing (Fast)
+npm test                          # Unit tests only (2 seconds)
+npm run test:unit                 # Core tech stack parsing (2 seconds)
+npm run test:integration          # UI integration tests (5 seconds)
+
+# Browser Testing (With Pre-Validation)
+npm run test:browser:quick        # Single UI test with endpoint check (~30s)
+npm run test:browser:smoke        # Essential functionality (~2 minutes)
+npm run test:browser:critical     # Critical path only (~3 minutes)
+npm run test:browser:core         # Core functionality (~5 minutes)
+npm run test:browser              # Full cross-browser suite (~10 minutes)
+
+# Development & Debugging
+npm run test:browser:headed       # Visual debugging (see tests run)
+npm run test:browser:ui           # Interactive test runner
+npm run validate:quick            # Fast complete validation (~3 minutes)
+```
+
+**🚀 Pro Tip**: All browser tests now include automatic endpoint validation to prevent wasting time on broken tests!
+
+### Test Infrastructure Status
+
+- ✅ **330+ Browser Tests**: Comprehensive UI validation across browsers
+- ✅ **Unit Tests**: 100% pass rate for core functionality
+- ✅ **Integration Tests**: Enhanced UI with graceful fallbacks
+- ✅ **Cross-browser**: Chrome, Firefox, Safari, Mobile devices
+- ✅ **Playwright Setup**: Automated server management
 
 ```
 figma-ticket-generator/
@@ -227,6 +273,61 @@ LOG_LEVEL=info                    # Default: info
 
 ## 🎯 Roadmap
 
+### 🏗️ Architecture Overview
+
+Our comprehensive MCP (Model Context Protocol) architecture enables seamless integration between Figma, AI reasoning, and multiple development platforms:
+
+```
+┌─────────────────┐
+│   Figma MCP     │
+└─────────┬───────┘
+          │
+          v
+┌─────────────────┐
+│ Extract metadata,│
+│ code, and assets│
+└─────────┬───────┘
+          │
+          v
+┌─────────────────┐
+│ AI Reasoning    │
+│ Layer (Gemini/  │
+│ GPT/Claude)     │
+└─────┬───┬───┬───┘
+      │   │   │
+      v   v   v   v
+┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
+│Interpret│ │Generate │ │Agent AI │ │Map to   │
+│design   │ │code     │ │Mode     │ │tech     │
+│intent   │ │templates│ │         │ │stack &  │
+│         │ │tickets, │ │         │ │design   │
+│         │ │docs     │ │         │ │system   │
+└─────────┘ └─────────┘ └─────┬───┘ └─────────┘
+                              │   │
+                              v   v
+                    ┌─────────────┐ ┌─────────────┐
+                    │Feed into VS │ │Generate     │
+                    │Code Agent   │ │Agent        │
+                    │or other AI  │ │Blueprint    │
+                    │dev tools    │ │JSON/MCP     │
+                    │             │ │Definition   │
+                    └─────────────┘ └─────────────┘
+                              │   │   │   │
+                              v   v   v   v
+                    ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
+                    │Confluence│ │Jira MCP │ │GitHub   │ │Slack MCP│
+                    │MCP/Docs │ │/Tickets │ │MCP/Repos│ │/Notifica│
+                    │         │ │         │ │         │ │tions    │
+                    └─────────┘ └─────────┘ └─────────┘ └─────────┘
+```
+
+This architecture enables:
+- **Figma Integration**: Direct metadata and asset extraction
+- **AI Processing**: Multi-provider reasoning (Gemini/GPT/Claude)
+- **Agent AI Mode**: Integration with VS Code Agent and other AI development tools
+- **MCP Adapters**: Seamless integration with Confluence, Jira, GitHub, and Slack
+- **Extensible Design**: Easy addition of new integrations and AI providers
+
 ### ✅ Completed (Production Ready)
 - FREE Google Gemini AI integration
 - Professional ticket generation
@@ -235,11 +336,11 @@ LOG_LEVEL=info                    # Default: info
 - Comprehensive test suite
 - Enterprise-grade architecture
 
-### 🚧 In Progress
-- Visual design analysis (screenshot processing)
-- Advanced design system compliance scoring
-- Custom template editor
-- Batch processing optimization
+### 🚧 In Progress (Current Sprint)
+- **MCP Data Layer Foundation**: Core data structures for Figma extraction
+- **AI Reasoning Layer Interfaces**: Multi-provider AI abstractions
+- **MCP Adapter Interfaces**: Base contracts for integrations
+- **Agent AI Mode**: VS Code Agent integration framework
 
 ### 🔮 Future Features
 - Real-time collaboration features
