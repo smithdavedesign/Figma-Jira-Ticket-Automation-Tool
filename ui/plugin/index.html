@@ -228,6 +228,36 @@
       background: #c7d2fe;
     }
 
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .suggestions-grid .suggestion-pill {
+      padding: 8px 12px;
+      text-align: center;
+      font-weight: 500;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+    }
+
+    /* Color-coded tech stack pills */
+    .suggestion-pill[data-type="react"] { background: linear-gradient(135deg, #61DAFB, #21A1C4); color: white; }
+    .suggestion-pill[data-type="vue"] { background: linear-gradient(135deg, #4FC08D, #42B883); color: white; }
+    .suggestion-pill[data-type="angular"] { background: linear-gradient(135deg, #DD0031, #C73225); color: white; }
+    .suggestion-pill[data-type="next"] { background: linear-gradient(135deg, #000000, #333333); color: white; }
+    .suggestion-pill[data-type="mern"] { background: linear-gradient(135deg, #3C873A, #68A063); color: white; }
+    .suggestion-pill[data-type="mean"] { background: linear-gradient(135deg, #FFA500, #FF8C00); color: white; }
+    .suggestion-pill[data-type="python"] { background: linear-gradient(135deg, #3776AB, #FFD43B); color: white; }
+    .suggestion-pill[data-type="java"] { background: linear-gradient(135deg, #ED8B00, #EA7600); color: white; }
+    .suggestion-pill[data-type="dotnet"] { background: linear-gradient(135deg, #512BD4, #9A4993); color: white; }
+    .suggestion-pill[data-type="aem"] { background: linear-gradient(135deg, #FA0F00, #C20E00); color: white; }
+
     #results {
       margin-top: 20px;
       padding: 20px;
@@ -510,7 +540,48 @@ Examples:
 • React 18 with TypeScript, Material-UI v5, React Query for state management
 • Vue 3 with Composition API, Pinia for state, Vite build tool
 • Next.js 13 with App Router, TailwindCSS, Prisma ORM, PostgreSQL
-• Angular 15 with NgRx, Angular Material, RxJS patterns"></textarea>
+• Angular 15 with NgRx, Angular Material, RxJS patterns
+• AEM 6.5 with HTL templates, Sling Models, OSGi services, Oak repository"></textarea>
+          
+          <!-- Parse Tech Button -->
+          <button id="parseTechBtn" class="button-secondary" type="button">🔍 Parse Tech Stack</button>
+        </div>
+
+        <!-- Popular Combinations Section -->
+        <div class="form-group">
+          <label>💡 Popular Tech Stack Combinations</label>
+          <div class="suggestions-grid">
+            <div class="suggestion-pill" data-type="react" onclick="selectTechStack(this)">
+              React + TypeScript + Material-UI
+            </div>
+            <div class="suggestion-pill" data-type="vue" onclick="selectTechStack(this)">
+              Vue 3 + Composition API + Pinia
+            </div>
+            <div class="suggestion-pill" data-type="angular" onclick="selectTechStack(this)">
+              Angular 15 + NgRx + Material
+            </div>
+            <div class="suggestion-pill" data-type="next" onclick="selectTechStack(this)">
+              Next.js + TailwindCSS + Prisma
+            </div>
+            <div class="suggestion-pill" data-type="mern" onclick="selectTechStack(this)">
+              MERN Stack + Redux Toolkit
+            </div>
+            <div class="suggestion-pill" data-type="mean" onclick="selectTechStack(this)">
+              MEAN Stack + Angular Material
+            </div>
+            <div class="suggestion-pill" data-type="python" onclick="selectTechStack(this)">
+              Python + Django + PostgreSQL
+            </div>
+            <div class="suggestion-pill" data-type="java" onclick="selectTechStack(this)">
+              Java + Spring Boot + MySQL
+            </div>
+            <div class="suggestion-pill" data-type="dotnet" onclick="selectTechStack(this)">
+              .NET Core + Entity Framework
+            </div>
+            <div class="suggestion-pill" data-type="aem" onclick="selectTechStack(this)">
+              AEM 6.5 + HTL + Sling + OSGi
+            </div>
+          </div>
         </div>
 
         <div class="form-group">
@@ -627,7 +698,77 @@ Examples:
   </div>
 
   <script>
-    // Global variables
+    // Tech Stack Suggestions Database
+    const techStackTemplates = {
+      react: "React 18 with TypeScript, Material-UI v5, React Query for state management, Jest for testing, Webpack bundling",
+      vue: "Vue 3 with Composition API, Pinia for state management, Vite build tool, Vitest for unit testing, Vue Router",
+      angular: "Angular 15 with NgRx for state management, Angular Material UI components, RxJS for reactive programming, Jasmine/Karma testing",
+      next: "Next.js 13 with App Router, TailwindCSS for styling, Prisma ORM, PostgreSQL database, Vercel deployment",
+      mern: "MongoDB, Express.js, React 18, Node.js, Redux Toolkit for state, JWT authentication, Mongoose ODM",
+      mean: "MongoDB, Express.js, Angular 15, Node.js, Angular Material, RxJS patterns, JWT authentication",
+      python: "Python 3.11, Django 4.x framework, PostgreSQL database, Django REST framework, Celery for background tasks",
+      java: "Java 17, Spring Boot 3.0, MySQL database, Spring Security, Maven build tool, JUnit testing",
+      dotnet: ".NET 6/7, Entity Framework Core, SQL Server, ASP.NET Core Web API, xUnit testing framework",
+      aem: "AEM 6.5 with HTL templates, Sling Models, OSGi services, Oak repository, Maven build, Dispatcher caching"
+    };
+
+    // Select tech stack from suggestions
+    function selectTechStack(element) {
+      const techType = element.getAttribute('data-type');
+      const template = techStackTemplates[techType];
+      
+      if (template) {
+        techStackInput.value = template;
+        
+        // Visual feedback
+        element.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          element.style.transform = 'scale(1)';
+        }, 150);
+        
+        // Trigger parsing and confidence update
+        const parsed = parseTechStack(template);
+        updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
+        
+        // Auto-scroll to show the populated textarea
+        techStackInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // Parse tech stack button functionality
+    function parseTechStackManually() {
+      const techStackDesc = techStackInput.value.trim();
+      
+      if (!techStackDesc) {
+        showError('Please enter a tech stack description to parse.');
+        return;
+      }
+      
+      // Show loading state
+      const parseTechBtn = document.getElementById('parseTechBtn');
+      const originalText = parseTechBtn.textContent;
+      parseTechBtn.innerHTML = '<div class="spinner"></div> Parsing...';
+      parseTechBtn.disabled = true;
+      
+      setTimeout(() => {
+        try {
+          const parsed = parseTechStack(techStackDesc);
+          updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
+          
+          // Show success feedback
+          parseTechBtn.textContent = '✅ Parsed!';
+          setTimeout(() => {
+            parseTechBtn.textContent = originalText;
+            parseTechBtn.disabled = false;
+          }, 2000);
+          
+        } catch (error) {
+          showError('Failed to parse tech stack. Please check your description.');
+          parseTechBtn.textContent = originalText;
+          parseTechBtn.disabled = false;
+        }
+      }, 800); // Simulate processing time
+    }
     const techStackInput = document.getElementById('techStackInput');
     const documentTypeSelect = document.getElementById('documentType');
     const generateBtn = document.getElementById('generate');
@@ -635,6 +776,75 @@ Examples:
     const resultsTextarea = document.getElementById('generatedContent');
     const copyBtn = document.getElementById('copyBtn');
     const statusSection = document.querySelector('.status-section');
+
+    // Figma context variables
+    let figmaContext = null;
+    let frameData = null;
+    let figmaFileInfo = null;
+
+    // Initialize Figma plugin communication
+    function initializeFigmaIntegration() {
+      // Listen for messages from Figma plugin code
+      window.addEventListener('message', (event) => {
+        const { type, data, fileKey, fileName, designSystem } = event.data.pluginMessage || {};
+        
+        switch (type) {
+          case 'file-context':
+            figmaFileInfo = { fileKey, fileName };
+            console.log('📁 Received Figma file context:', figmaFileInfo);
+            break;
+            
+          case 'frame-data':
+            frameData = data;
+            console.log('🎨 Received frame data:', frameData);
+            
+            // Update confidence based on actual Figma selection
+            if (frameData && frameData.length > 0) {
+              const techStackDesc = techStackInput.value.trim();
+              if (techStackDesc) {
+                const parsed = parseTechStack(techStackDesc, { frameData, fileInfo: figmaFileInfo });
+                updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
+              }
+            }
+            break;
+            
+          case 'design-system-detected':
+            console.log('🎨 Design system detected:', designSystem);
+            break;
+            
+          case 'error':
+            showError(event.data.pluginMessage.message);
+            break;
+        }
+      });
+      
+      // Request initial context from Figma
+      parent.postMessage({ pluginMessage: { type: 'get-context' } }, '*');
+    }
+
+    // Request frame data from Figma when generating tickets
+    function requestFigmaContext() {
+      return new Promise((resolve) => {
+        // Set up one-time listener for frame data
+        const handleFrameData = (event) => {
+          if (event.data.pluginMessage?.type === 'frame-data') {
+            window.removeEventListener('message', handleFrameData);
+            resolve(event.data.pluginMessage.data);
+          }
+        };
+        
+        window.addEventListener('message', handleFrameData);
+        
+        // Request frame data from Figma plugin
+        parent.postMessage({ pluginMessage: { type: 'generate-ticket' } }, '*');
+        
+        // Timeout after 2 seconds
+        setTimeout(() => {
+          window.removeEventListener('message', handleFrameData);
+          resolve(null);
+        }, 2000);
+      });
+    }
 
     // Tab Management
     function initializeTabs() {
@@ -690,25 +900,26 @@ Examples:
         mcpStatus.textContent = '🔄';
         mcpStatusText.textContent = 'Checking MCP server...';
         
+        // Use GET request to check server status instead of ping method
         const response = await fetch('http://localhost:3000', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            jsonrpc: '2.0',
-            method: 'ping',
-            id: 1 
-          })
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
         });
         
         if (response.ok) {
-          mcpStatus.textContent = '✅';
-          mcpStatusText.textContent = 'MCP server available';
+          const data = await response.json();
+          if (data.status === 'running') {
+            mcpStatus.textContent = '✅';
+            mcpStatusText.textContent = `MCP server available (${data.tools.length} tools)`;
+          } else {
+            throw new Error('Server status not running');
+          }
         } else {
           throw new Error('Server responded with error');
         }
       } catch (error) {
         mcpStatus.textContent = '❌';
-        mcpStatusText.textContent = 'MCP server unavailable';
+        mcpStatusText.textContent = 'MCP server unavailable (will use fallback)';
         console.warn('MCP server check failed:', error);
       }
     }
@@ -724,10 +935,8 @@ Examples:
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            jsonrpc: '2.0',
             method: method,
-            params: params,
-            id: 1
+            params: params
           }),
         });
         
@@ -739,15 +948,23 @@ Examples:
         
         const data = await response.json();
         console.log('📦 MCP response data:', data);
-        return data.result || data;
+        
+        // Handle different response formats
+        if (data.content) {
+          return data;
+        } else if (data.ticket) {
+          return { content: data.ticket };
+        } else {
+          return { content: JSON.stringify(data) };
+        }
       } catch (error) {
         console.error('❌ MCP call failed:', error);
         throw error;
       }
     }
 
-    // Tech stack parsing and confidence calculation
-    function parseTechStack(description) {
+    // Tech stack parsing and confidence calculation with Figma context (Phase 1)
+    function parseTechStack(description, figmaContext = null) {
       const frameworks = ['react', 'vue', 'angular', 'svelte', 'next.js', 'nuxt', 'gatsby'];
       const languages = ['typescript', 'javascript', 'python', 'java', 'c#', 'go', 'rust'];
       const tools = ['webpack', 'vite', 'parcel', 'rollup', 'esbuild'];
@@ -786,7 +1003,94 @@ Examples:
         suggestions.push('Add specific versions', 'Include testing framework', 'Mention state management');
       }
       
-      return { detected, confidence, suggestions };
+      // Phase 1: Enhanced analysis with Figma context
+      let designContext = null;
+      let enhanced = false;
+      
+      if (figmaContext) {
+        enhanced = true;
+        console.log('🎨 Using Figma context for enhanced analysis:', figmaContext);
+        
+        const patterns = [];
+        const components = [];
+        let complexity = 'medium';
+        
+        // Analyze frame data if available
+        if (figmaContext.frameData && figmaContext.frameData.length > 0) {
+          figmaContext.frameData.forEach(frame => {
+            // Analyze frame structure
+            if (frame.name && frame.name.toLowerCase().includes('form')) {
+              patterns.push({ type: 'form', confidence: 0.9, indicators: [`Form component: ${frame.name}`] });
+            }
+            if (frame.name && frame.name.toLowerCase().includes('nav')) {
+              patterns.push({ type: 'navigation', confidence: 0.85, indicators: [`Navigation: ${frame.name}`] });
+            }
+            if (frame.name && frame.name.toLowerCase().includes('modal')) {
+              patterns.push({ type: 'modal', confidence: 0.8, indicators: [`Modal: ${frame.name}`] });
+            }
+            
+            // Estimate complexity based on frame properties
+            if (frame.children && frame.children.length > 10) {
+              complexity = 'high';
+            } else if (frame.children && frame.children.length < 3) {
+              complexity = 'low';
+            }
+            
+            components.push({ 
+              type: frame.type || 'component', 
+              name: frame.name || 'Unnamed',
+              complexity: complexity,
+              estimatedEffort: complexity === 'high' ? '2-3 hours' : complexity === 'low' ? '30-60 minutes' : '1-2 hours'
+            });
+          });
+          
+          // Boost confidence for real Figma selection
+          const figmaBoost = Math.min(patterns.length * 5 + components.length * 3, 15);
+          confidence = Math.min(confidence + figmaBoost, 95);
+        }
+        
+        // Add file-specific context
+        if (figmaContext.fileInfo) {
+          console.log(`📄 Figma file: ${figmaContext.fileInfo.fileName} (${figmaContext.fileInfo.fileKey})`);
+        }
+        
+        designContext = { 
+          patterns, 
+          components, 
+          source: 'figma-plugin',
+          fileInfo: figmaContext.fileInfo,
+          selectionCount: figmaContext.frameData ? figmaContext.frameData.length : 0
+        };
+      }
+      
+      return { detected, confidence, suggestions, designContext, enhanced };
+    }
+
+    // Phase 1: Helper functions for plugin Figma analysis
+    function extractTextFromLayers(layers) {
+      let text = '';
+      layers.forEach(layer => {
+        if (layer.type === 'TEXT' && layer.characters) {
+          text += layer.characters + ' ';
+        }
+        if (layer.children && Array.isArray(layer.children)) {
+          text += extractTextFromLayers(layer.children);
+        }
+      });
+      return text;
+    }
+
+    function extractLayerNames(layers) {
+      let names = '';
+      layers.forEach(layer => {
+        if (layer.name) {
+          names += layer.name + ' ';
+        }
+        if (layer.children && Array.isArray(layer.children)) {
+          names += extractLayerNames(layer.children);
+        }
+      });
+      return names;
     }
 
     // Update confidence indicator
@@ -823,23 +1127,58 @@ Examples:
       generateBtn.disabled = true;
       generateBtn.innerHTML = '<div class="spinner"></div> Generating...';
       resultsDiv.classList.remove('hidden');
-      resultsTextarea.value = 'Generating enhanced content...';
+      resultsTextarea.value = 'Requesting Figma context...';
       
       try {
-        // Parse tech stack for confidence
-        const parsed = parseTechStack(techStackDesc);
+        // Step 1: Request current Figma context (selection)
+        console.log('🎨 Requesting Figma context...');
+        const currentFrameData = await requestFigmaContext();
+        
+        if (currentFrameData && currentFrameData.length > 0) {
+          console.log(`✅ Retrieved context for ${currentFrameData.length} selected items`);
+          frameData = currentFrameData;
+        } else {
+          console.log('ℹ️ No selection or context retrieved, using text-only analysis');
+        }
+        
+        resultsTextarea.value = 'Analyzing tech stack and design context...';
+        
+        // Step 2: Parse tech stack with Figma context
+        const figmaContextData = frameData || figmaFileInfo ? {
+          frameData: frameData,
+          fileInfo: figmaFileInfo
+        } : null;
+        
+        const parsed = parseTechStack(techStackDesc, figmaContextData);
         updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
+        
+        resultsTextarea.value = 'Generating enhanced content...';
         
         let result;
         
         if (selectedMode === 'mcp') {
-          // Call MCP server
-          result = await callMCPServer('analyze_project', {
-            techStack: techStackDesc,
-            documentType: documentType,
-            confidence: parsed.confidence,
-            detectedTech: parsed.detected
-          });
+          try {
+            // Step 3: Call MCP server with enhanced context
+            result = await callMCPServer('generate_enhanced_ticket', {
+              techStack: techStackDesc,
+              documentType: documentType,
+              confidence: parsed.confidence,
+              detectedTech: parsed.detected,
+              designContext: parsed.designContext,
+              figmaContext: {
+                fileKey: figmaFileInfo?.fileKey,
+                fileName: figmaFileInfo?.fileName,
+                selection: frameData,
+                hasSelection: frameData && frameData.length > 0
+              }
+            });
+          } catch (mcpError) {
+            console.warn('MCP server failed, using fallback generation:', mcpError);
+            
+            // Fallback to local generation with context
+            result = generateFallbackTicket(techStackDesc, documentType, parsed, figmaContextData);
+            result.isFallback = true;
+          }
         } else {
           // Call OpenAI API
           result = await callOpenAI(techStackDesc, documentType);
@@ -850,7 +1189,7 @@ Examples:
         if (result.ticket) {
           content = result.ticket;
         } else if (result.content) {
-          content = result.content;
+          content = Array.isArray(result.content) ? result.content[0]?.text || JSON.stringify(result.content) : result.content;
         } else if (typeof result === 'string') {
           content = result;
         } else {
@@ -858,6 +1197,21 @@ Examples:
         }
         
         resultsTextarea.value = content;
+        
+        // Show context info if available
+        if (parsed.designContext?.selectionCount > 0) {
+          const contextInfo = document.createElement('div');
+          contextInfo.className = 'context-info';
+          contextInfo.innerHTML = `
+            <div style="background: #e8f5e8; border: 1px solid #4caf50; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+              <strong>✅ Figma Context Used:</strong> ${parsed.designContext.selectionCount} selected item(s)
+              ${parsed.designContext.components.map(c => `<br>• ${c.name} (${c.complexity} complexity, ~${c.estimatedEffort})`).join('')}
+            </div>
+          `;
+          resultsDiv.insertBefore(contextInfo, resultsDiv.firstChild.nextSibling);
+          
+          setTimeout(() => contextInfo.remove(), 10000);
+        }
         
         // Show fallback notice if applicable
         if (result.isFallback) {
@@ -874,7 +1228,142 @@ Examples:
       }
     }
 
-    // OpenAI API Communication
+    // Fallback ticket generation when MCP server is unavailable
+    function generateFallbackTicket(techStack, documentType, parsed) {
+      const confidence = parsed.confidence;
+      const frameworks = parsed.detected.frameworks.join(', ') || 'Not specified';
+      const languages = parsed.detected.languages.join(', ') || 'Not specified';
+      
+      const tickets = {
+        jira: `# 🎫 Jira Ticket (Fallback Mode)
+
+## Summary
+Implement ${frameworks} component based on Figma design
+
+## Description
+Create a new component using the specified tech stack with proper implementation following best practices.
+
+### Tech Stack Details
+- **Frameworks**: ${frameworks}
+- **Languages**: ${languages}
+- **Confidence**: ${confidence}%
+
+### Requirements
+- [ ] Implement responsive design
+- [ ] Follow design system guidelines
+- [ ] Add proper error handling
+- [ ] Include unit tests
+- [ ] Ensure accessibility compliance
+
+### Acceptance Criteria
+- Component renders correctly on all screen sizes
+- Follows established coding standards
+- Passes all automated tests
+- Meets performance benchmarks
+
+### Technical Notes
+${techStack}
+
+---
+*Generated with fallback mode - MCP server unavailable*`,
+
+        confluence: `# 📄 Confluence Documentation (Fallback Mode)
+
+## Component Implementation Guide
+
+### Overview
+Implementation guide for ${frameworks} component based on Figma design specifications.
+
+### Tech Stack
+- **Frameworks**: ${frameworks}
+- **Languages**: ${languages}
+- **Analysis Confidence**: ${confidence}%
+
+### Implementation Steps
+1. Set up project structure
+2. Install required dependencies
+3. Create component files
+4. Implement core functionality
+5. Add styling and responsive behavior
+6. Write comprehensive tests
+
+### Code Examples
+\`\`\`javascript
+// Component structure based on ${techStack}
+// Implementation details will vary based on specific requirements
+\`\`\`
+
+### Best Practices
+- Follow framework-specific conventions
+- Implement proper error boundaries
+- Use semantic HTML elements
+- Ensure proper accessibility
+
+---
+*Generated with fallback mode - MCP server unavailable*`,
+
+        wiki: `# 📚 Wiki Documentation (Fallback Mode)
+
+## ${frameworks} Component Implementation
+
+### Technology Stack
+- **Primary Framework**: ${frameworks}
+- **Programming Languages**: ${languages}
+- **Confidence Level**: ${confidence}%
+
+### Development Guidelines
+Based on the provided tech stack: ${techStack}
+
+### Quick Start
+1. Clone the repository
+2. Install dependencies
+3. Follow the component implementation guide
+4. Run tests to verify functionality
+
+### Resources
+- Framework documentation
+- Design system guidelines
+- Testing best practices
+- Deployment procedures
+
+---
+*Generated with fallback mode - MCP server unavailable*`,
+
+        agent: `# 🤖 Agent Task (Fallback Mode)
+
+## Task: Implement ${frameworks} Component
+
+### Context
+Tech Stack: ${techStack}
+Confidence: ${confidence}%
+
+### Objectives
+- Create functional component based on Figma design
+- Ensure code quality and maintainability
+- Follow established patterns and conventions
+
+### Technical Requirements
+- Frameworks: ${frameworks}
+- Languages: ${languages}
+- Testing: Required
+- Documentation: Required
+
+### Success Criteria
+- Component works as specified
+- Code passes quality checks
+- Documentation is complete
+- Tests achieve adequate coverage
+
+---
+*Generated with fallback mode - MCP server unavailable*`
+      };
+
+      return {
+        content: tickets[documentType] || tickets.jira,
+        isFallback: true,
+        confidence: confidence
+      };
+    }
     async function callOpenAI(techStack, documentType) {
       const apiKey = document.getElementById('apiKey').value.trim();
       const model = document.getElementById('model').value;
@@ -990,6 +1479,7 @@ Examples:
     // Event listeners
     generateBtn.addEventListener('click', generateContent);
     copyBtn.addEventListener('click', copyToClipboard);
+    document.getElementById('parseTechBtn').addEventListener('click', parseTechStackManually);
     
     // Tech stack input validation and suggestions
     techStackInput.addEventListener('input', () => {

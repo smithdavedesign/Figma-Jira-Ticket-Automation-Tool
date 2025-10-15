@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Plugin Connectivity</title>
+</head>
+<body>
+    <h1>Plugin Connectivity Test</h1>
+    <button onclick="testMCPServer()">Test MCP Server</button>
+    <div id="results"></div>
+
+    <script>
+        async function testMCPServer() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing MCP server...</p>';
+            
+            try {
+                // Test 1: Check server status
+                console.log('Testing server status...');
+                const statusResponse = await fetch('http://localhost:3000', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!statusResponse.ok) {
+                    throw new Error('Server status check failed');
+                }
+                
+                const statusData = await statusResponse.json();
+                console.log('Server status:', statusData);
+                
+                // Test 2: Test ticket generation
+                console.log('Testing ticket generation...');
+                const ticketResponse = await fetch('http://localhost:3000', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: 'generate_enhanced_ticket',
+                        params: {
+                            techStack: 'React TypeScript',
+                            documentType: 'jira',
+                            confidence: 85
+                        }
+                    })
+                });
+                
+                if (!ticketResponse.ok) {
+                    throw new Error('Ticket generation failed');
+                }
+                
+                const ticketData = await ticketResponse.json();
+                console.log('Ticket data:', ticketData);
+                
+                results.innerHTML = `
+                    <h2>✅ Success!</h2>
+                    <p><strong>Server Status:</strong> ${statusData.status}</p>
+                    <p><strong>Available Tools:</strong> ${statusData.tools.join(', ')}</p>
+                    <p><strong>Ticket Generated:</strong> ${ticketData.content ? 'Yes' : 'No'}</p>
+                    <p><strong>Fallback Mode:</strong> ${ticketData.isFallback ? 'Yes' : 'No'}</p>
+                `;
+                
+            } catch (error) {
+                console.error('Test failed:', error);
+                results.innerHTML = `
+                    <h2>❌ Test Failed</h2>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Check:</strong> Is MCP server running on localhost:3000?</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

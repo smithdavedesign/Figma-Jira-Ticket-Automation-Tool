@@ -519,6 +519,12 @@
       color: #cc4a20;
     }
 
+    .suggestion-pill[data-type="aem"] {
+      background: linear-gradient(135deg, #ff000020 0%, #cc000040 100%);
+      border-color: #ff0000;
+      color: #cc0000;
+    }
+
     .parse-button-container {
       display: flex;
       align-items: center;
@@ -675,6 +681,7 @@
               <div class="suggestion-pill" data-type="angular">Angular + Material</div>
               <div class="suggestion-pill" data-type="node">Node.js + Express + MongoDB</div>
               <div class="suggestion-pill" data-type="python">Python + FastAPI + PostgreSQL</div>
+              <div class="suggestion-pill" data-type="aem">AEM 6.5 + HTL + Sling + OSGi</div>
               <div class="suggestion-pill" data-type="design">Figma + Design System</div>
             </div>
           </div>
@@ -924,8 +931,8 @@
       }
     }
 
-    // Tech stack parsing and confidence calculation
-    function parseTechStack(description) {
+    // Tech stack parsing and confidence calculation with optional Figma context (Phase 1)
+    function parseTechStack(description, figmaContext = null) {
       const frameworks = ['react', 'vue', 'angular', 'svelte', 'next.js', 'nuxt', 'gatsby'];
       const languages = ['typescript', 'javascript', 'python', 'java', 'c#', 'go', 'rust'];
       const tools = ['webpack', 'vite', 'parcel', 'rollup', 'esbuild'];
@@ -964,7 +971,262 @@
         suggestions.push('Add specific versions', 'Include testing framework', 'Mention state management');
       }
       
-      return { detected, confidence, suggestions };
+      // Phase 1: Enhanced analysis with Figma context
+      let designContext = null;
+      let enhanced = false;
+      
+      if (figmaContext && figmaContext.layers) {
+        enhanced = true;
+        // Analyze design patterns from Figma context
+        const patterns = analyzeDesignPatterns(figmaContext);
+        const componentTypes = detectComponentTypes(figmaContext);
+        
+        // Calculate design confidence boost
+        const designBoost = calculateDesignConfidenceBoost(detected, patterns, componentTypes);
+        confidence = Math.min(confidence + designBoost, 98);
+        
+        // Add design-based suggestions
+        const designSuggestions = generateDesignSuggestions(detected, patterns, componentTypes);
+        suggestions.push(...designSuggestions);
+        
+        // Store design context for display
+        designContext = {
+          patterns,
+          componentTypes,
+          confidenceBoost: designBoost,
+          source: figmaContext.source || 'figma'
+        };
+      }
+      
+      return { detected, confidence, suggestions, designContext, enhanced };
+    }
+
+    // Phase 1: Enhanced Design Analysis Functions
+    function analyzeDesignPatterns(figmaContext) {
+      const patterns = [];
+      const layers = figmaContext.layers || [];
+      
+      // Extract text content and layer names for analysis
+      const textContent = extractTextFromLayers(layers).toLowerCase();
+      const layerNames = extractLayerNames(layers).toLowerCase();
+      const combinedText = textContent + ' ' + layerNames;
+      
+      // Detect form patterns
+      if (combinedText.includes('input') || combinedText.includes('form') || combinedText.includes('email') || combinedText.includes('password')) {
+        patterns.push({
+          type: 'form',
+          confidence: 85,
+          elements: ['input fields', 'form validation', 'submit actions'],
+          suggestedLibraries: ['react-hook-form', 'formik', 'yup']
+        });
+      }
+      
+      // Detect navigation patterns
+      if (combinedText.includes('nav') || combinedText.includes('menu') || combinedText.includes('header') || combinedText.includes('home about contact')) {
+        patterns.push({
+          type: 'navigation',
+          confidence: 80,
+          elements: ['navigation menu', 'routing', 'page transitions'],
+          suggestedLibraries: ['react-router', 'vue-router', '@angular/router']
+        });
+      }
+      
+      // Detect data display patterns
+      if (combinedText.includes('table') || combinedText.includes('list') || combinedText.includes('data') || combinedText.includes('row')) {
+        patterns.push({
+          type: 'dataDisplay',
+          confidence: 75,
+          elements: ['data tables', 'lists', 'filtering', 'sorting'],
+          suggestedLibraries: ['ag-grid', 'react-table', 'antd table']
+        });
+      }
+      
+      return patterns;
+    }
+
+    function detectComponentTypes(figmaContext) {
+      const components = [];
+      const layers = figmaContext.layers || [];
+      
+      layers.forEach(layer => {
+        if (layer.type === 'FRAME' && layer.name) {
+          const name = layer.name.toLowerCase();
+          
+          if (name.includes('button')) {
+            components.push({
+              type: 'button',
+              complexity: 'low',
+              layerId: layer.id,
+              layerName: layer.name,
+              estimatedEffort: '30 minutes',
+              suggestedProps: ['onClick', 'disabled', 'variant']
+            });
+          }
+          
+          if (name.includes('input') || name.includes('field')) {
+            components.push({
+              type: 'input',
+              complexity: 'medium',
+              layerId: layer.id,
+              layerName: layer.name,
+              estimatedEffort: '1-2 hours',
+              suggestedProps: ['value', 'onChange', 'placeholder', 'validation']
+            });
+          }
+          
+          if (name.includes('card') || name.includes('item')) {
+            components.push({
+              type: 'card',
+              complexity: 'medium',
+              layerId: layer.id,
+              layerName: layer.name,
+              estimatedEffort: '2-3 hours',
+              suggestedProps: ['title', 'content', 'actions', 'onClick']
+            });
+          }
+          
+          if (name.includes('modal') || name.includes('dialog')) {
+            components.push({
+              type: 'modal',
+              complexity: 'high',
+              layerId: layer.id,
+              layerName: layer.name,
+              estimatedEffort: '4-6 hours',
+              suggestedProps: ['isOpen', 'onClose', 'title', 'children']
+            });
+          }
+        }
+      });
+      
+      return components;
+    }
+
+    function calculateDesignConfidenceBoost(detected, patterns, components) {
+      let boost = 0;
+      
+      // Boost based on pattern-framework alignment
+      const detectedFramework = detected.frameworks[0];
+      if (detectedFramework) {
+        patterns.forEach(pattern => {
+          if (pattern.type === 'form' && ['react', 'vue', 'angular'].includes(detectedFramework)) {
+            boost += 5;
+          }
+          if (pattern.type === 'navigation' && detectedFramework === 'react') {
+            boost += 3;
+          }
+          if (pattern.type === 'dataDisplay' && ['react', 'angular'].includes(detectedFramework)) {
+            boost += 4;
+          }
+        });
+      }
+      
+      // Boost based on component complexity alignment
+      const hasComplexComponents = components.some(c => c.complexity === 'high');
+      if (hasComplexComponents && ['react', 'vue'].includes(detectedFramework)) {
+        boost += 3;
+      }
+      
+      return Math.min(boost, 15);
+    }
+
+    function generateDesignSuggestions(detected, patterns, components) {
+      const suggestions = [];
+      
+      patterns.forEach(pattern => {
+        if (pattern.suggestedLibraries && pattern.suggestedLibraries.length > 0) {
+          suggestions.push(`Consider ${pattern.suggestedLibraries[0]} for ${pattern.type}`);
+        }
+      });
+      
+      const hasComplexComponents = components.some(c => c.complexity === 'high');
+      if (hasComplexComponents) {
+        suggestions.push('Add state management library');
+      }
+      
+      const hasInputs = components.some(c => c.type === 'input');
+      if (hasInputs) {
+        suggestions.push('Include form validation');
+      }
+      
+      return suggestions.slice(0, 3);
+    }
+
+    function extractTextFromLayers(layers) {
+      let text = '';
+      layers.forEach(layer => {
+        if (layer.type === 'TEXT' && layer.characters) {
+          text += layer.characters + ' ';
+        }
+        if (layer.children && Array.isArray(layer.children)) {
+          text += extractTextFromLayers(layer.children);
+        }
+      });
+      return text;
+    }
+
+    function extractLayerNames(layers) {
+      let names = '';
+      layers.forEach(layer => {
+        if (layer.name) {
+          names += layer.name + ' ';
+        }
+        if (layer.children && Array.isArray(layer.children)) {
+          names += extractLayerNames(layer.children);
+        }
+      });
+      return names;
+    }
+
+    function createMockFigmaContextForDemo(techStackDesc) {
+      const lowerDesc = techStackDesc.toLowerCase();
+      const mockLayers = [];
+      
+      if (lowerDesc.includes('form') || lowerDesc.includes('login') || lowerDesc.includes('register')) {
+        mockLayers.push(
+          { id: '1', name: 'Login Form', type: 'FRAME' },
+          { id: '2', name: 'Email Input', type: 'TEXT', characters: 'Email Address' },
+          { id: '3', name: 'Password Input', type: 'TEXT', characters: 'Password' },
+          { id: '4', name: 'Login Button', type: 'RECTANGLE' }
+        );
+      }
+      
+      if (lowerDesc.includes('nav') || lowerDesc.includes('menu') || lowerDesc.includes('header')) {
+        mockLayers.push(
+          { id: '5', name: 'Main Navigation', type: 'FRAME' },
+          { id: '6', name: 'Nav Menu Items', type: 'TEXT', characters: 'Home About Contact' },
+          { id: '7', name: 'Header Logo', type: 'TEXT', characters: 'Logo' }
+        );
+      }
+      
+      if (lowerDesc.includes('table') || lowerDesc.includes('list') || lowerDesc.includes('data')) {
+        mockLayers.push(
+          { id: '8', name: 'Data Table', type: 'FRAME' },
+          { id: '9', name: 'Table Header', type: 'TEXT', characters: 'Name Email Role' },
+          { id: '10', name: 'Table Row', type: 'FRAME' }
+        );
+      }
+      
+      if (lowerDesc.includes('card') || lowerDesc.includes('product')) {
+        mockLayers.push(
+          { id: '11', name: 'Product Card', type: 'FRAME' },
+          { id: '12', name: 'Card Title', type: 'TEXT', characters: 'Product Name' },
+          { id: '13', name: 'Card Button', type: 'RECTANGLE' }
+        );
+      }
+      
+      if (mockLayers.length === 0) {
+        mockLayers.push(
+          { id: '1', name: 'Main Component', type: 'FRAME' },
+          { id: '2', name: 'Action Button', type: 'RECTANGLE' },
+          { id: '3', name: 'Content Text', type: 'TEXT', characters: 'Main content' }
+        );
+      }
+      
+      return {
+        layers: mockLayers,
+        source: 'mock-demo',
+        timestamp: new Date().toISOString()
+      };
     }
 
     // Update confidence indicator
@@ -1216,10 +1478,21 @@
         parseButton.innerHTML = '<span>🧠</span> Analyzing...';
         parseButton.disabled = true;
 
-        // Simulate AI analysis with enhanced parsing
+        // Simulate AI analysis with enhanced parsing (Phase 1)
         setTimeout(() => {
-          const parsed = parseTechStack(techStackValue);
+          // Create mock Figma context for enhanced analysis demo
+          const mockFigmaContext = createMockFigmaContextForDemo(techStackValue);
+          
+          // Enhanced parsing with Figma context
+          const parsed = parseTechStack(techStackValue, mockFigmaContext);
           updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
+          
+          // Log enhanced analysis results
+          if (parsed.enhanced) {
+            console.log('✨ Enhanced tech stack analysis completed');
+            console.log('📊 Design patterns detected:', parsed.designContext?.patterns || []);
+            console.log('🧩 Component types identified:', parsed.designContext?.componentTypes || []);
+          }
           
           // Reset button
           parseButton.innerHTML = '<span>🧠</span> Parse Tech Stack';
