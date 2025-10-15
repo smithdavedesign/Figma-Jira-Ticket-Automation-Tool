@@ -17,11 +17,17 @@ Unit tests for individual components:
 - `test-ai-final.mjs` - AI service unit tests
 - `test-enhanced-figma-mcp.mjs` - MCP server unit tests
 
-### 📁 `e2e/`
-End-to-end tests for full system validation:
-- `comprehensive-e2e-test.mjs` - Complete system E2E testing
-- `test-results/` - E2E test execution results
-- `../e2e-tests/` - Playwright E2E test suite (separate structure)
+### 📁 `system/`
+System integration tests for full pipeline validation:
+- `comprehensive-e2e-test.mjs` - Complete system integration testing
+- `test-results/` - System test execution results
+
+### 📁 `../browser-tests/` (Playwright)
+Browser automation and UI testing (separate from this directory):
+- Cross-browser compatibility testing
+- Accessibility testing with screen readers
+- Visual regression testing
+- UI interaction testing
 
 ### 📁 `live/`
 Live system tests with real services:
@@ -50,8 +56,8 @@ node tests/integration/compliance-integration-tests.js
 # Unit tests
 node tests/unit/test-tech-stack-parsing.js
 
-# E2E tests
-node tests/e2e/comprehensive-e2e-test.mjs
+# System integration tests
+node tests/system/comprehensive-e2e-test.mjs
 
 # Live tests (requires running servers)
 node tests/live/live-system-test.js
@@ -60,9 +66,9 @@ node tests/live/live-system-test.js
 node tests/performance/stress-test-suite.mjs
 ```
 
-### Playwright E2E Tests
+### Playwright Browser Tests
 ```bash
-cd e2e-tests
+cd browser-tests
 npm test
 ```
 
@@ -70,9 +76,10 @@ npm test
 
 - **Unit Tests**: No external dependencies
 - **Integration Tests**: May require MCP server
-- **E2E Tests**: Require full system running
+- **System Tests**: Require full system running (MCP + Web servers)
 - **Live Tests**: Require MCP server (port 3000) and web server
 - **Performance Tests**: Require full system under load
+- **Browser Tests**: Require browsers installed, separate Playwright setup
 
 ## Test Coverage
 
@@ -85,5 +92,6 @@ The test suite covers:
 - ✅ MCP server integration
 - ✅ Figma plugin functionality
 - ✅ Performance under load
-- ✅ Cross-browser compatibility
-- ✅ Accessibility standards
+- ✅ Cross-browser compatibility (Playwright)
+- ✅ Accessibility standards (Playwright)
+- ✅ System integration and workflows

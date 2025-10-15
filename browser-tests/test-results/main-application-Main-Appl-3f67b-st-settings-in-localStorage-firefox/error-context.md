@@ -1,0 +1,59 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "Enhanced Figma Plugin" [level=1] [ref=e4]
+    - generic [ref=e5]: AI-powered ticket generation with design health insights
+  - generic [ref=e7]:
+    - button "🎫 Ticket Generator" [ref=e8] [cursor=pointer]
+    - button "📊 Design Health" [ref=e9] [cursor=pointer]
+  - generic [ref=e11]:
+    - generic [ref=e12]:
+      - heading "🎫 Figma to Document Generator" [level=2] [ref=e13]
+      - paragraph [ref=e14]: Transform Figma designs into professional documents
+    - generic [ref=e15]:
+      - generic [ref=e16]: Generation Mode
+      - generic [ref=e17]:
+        - generic [ref=e18] [cursor=pointer]:
+          - radio "🚀 MCP Server (Enhanced) Local Model Context Protocol server with strategic design analysis" [checked] [ref=e19]
+          - generic [ref=e20]:
+            - generic [ref=e21]: 🚀 MCP Server (Enhanced)
+            - generic [ref=e22]: Local Model Context Protocol server with strategic design analysis
+        - generic [ref=e23] [cursor=pointer]:
+          - radio "🤖 OpenAI API Cloud-based AI generation (requires API key)" [ref=e24]
+          - generic [ref=e25]:
+            - generic [ref=e26]: 🤖 OpenAI API
+            - generic [ref=e27]: Cloud-based AI generation (requires API key)
+    - generic [ref=e28]:
+      - generic [ref=e29]: MCP Configuration
+      - generic [ref=e30]:
+        - generic [ref=e31]: ✅
+        - generic [ref=e32]: MCP server available (4 tools)
+    - generic [ref=e33]:
+      - generic [ref=e34]: Tech Stack Description
+      - textbox "Tech Stack Description" [ref=e35]:
+        - /placeholder: "Describe your tech stack, frameworks, libraries, and architecture. Be specific about versions, patterns, and tools you're using.\n\nExamples:\n• React 18 with TypeScript, Material-UI v5, React Query for state management\n• Vue 3 with Composition API, Pinia for state, Vite build tool\n• Next.js 13 with App Router, TailwindCSS, Prisma ORM, PostgreSQL\n• Angular 15 with NgRx, Angular Material, RxJS patterns\n• AEM 6.5 with HTL templates, Sling Models, OSGi services, Oak repository"
+      - button "🔍 Parse Tech Stack" [ref=e36]
+    - generic [ref=e37]:
+      - generic [ref=e38]: 💡 Popular Tech Stack Combinations
+      - generic [ref=e39]:
+        - generic [ref=e40] [cursor=pointer]: React + TypeScript + Material-UI
+        - generic [ref=e41] [cursor=pointer]: Vue 3 + Composition API + Pinia
+        - generic [ref=e42] [cursor=pointer]: Angular 15 + NgRx + Material
+        - generic [ref=e43] [cursor=pointer]: Next.js + TailwindCSS + Prisma
+        - generic [ref=e44] [cursor=pointer]: MERN Stack + Redux Toolkit
+        - generic [ref=e45] [cursor=pointer]: MEAN Stack + Angular Material
+        - generic [ref=e46] [cursor=pointer]: Python + Django + PostgreSQL
+        - generic [ref=e47] [cursor=pointer]: Java + Spring Boot + MySQL
+        - generic [ref=e48] [cursor=pointer]: .NET Core + Entity Framework
+        - generic [ref=e49] [cursor=pointer]: AEM 6.5 + HTL + Sling + OSGi
+    - generic [ref=e50]:
+      - generic [ref=e51]: Document Type
+      - combobox "Document Type" [ref=e52]:
+        - option "Jira Ticket" [selected]
+        - option "Confluence Page"
+        - option "Wiki Documentation"
+        - option "Agent Task"
+    - button "🚀 Generate Enhanced Document" [ref=e53] [cursor=pointer]
+```

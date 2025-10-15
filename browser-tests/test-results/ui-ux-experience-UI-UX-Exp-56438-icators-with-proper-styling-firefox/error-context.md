@@ -1,0 +1,69 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "Enhanced Figma Plugin" [level=1] [ref=e4]
+    - generic [ref=e5]: AI-powered ticket generation with design health insights
+  - generic [ref=e7]:
+    - button "🎫 Ticket Generator" [ref=e8] [cursor=pointer]
+    - button "📊 Design Health" [ref=e9] [cursor=pointer]
+  - generic [ref=e11]:
+    - generic [ref=e12]:
+      - heading "🎫 Figma to Document Generator" [level=2] [ref=e13]
+      - paragraph [ref=e14]: Transform Figma designs into professional documents
+    - generic [ref=e15]:
+      - generic [ref=e16]: Generation Mode
+      - generic [ref=e17]:
+        - generic [ref=e18] [cursor=pointer]:
+          - radio "🚀 MCP Server (Enhanced) Local Model Context Protocol server with strategic design analysis" [checked] [ref=e19]
+          - generic [ref=e20]:
+            - generic [ref=e21]: 🚀 MCP Server (Enhanced)
+            - generic [ref=e22]: Local Model Context Protocol server with strategic design analysis
+        - generic [ref=e23] [cursor=pointer]:
+          - radio "🤖 OpenAI API Cloud-based AI generation (requires API key)" [ref=e24]
+          - generic [ref=e25]:
+            - generic [ref=e26]: 🤖 OpenAI API
+            - generic [ref=e27]: Cloud-based AI generation (requires API key)
+    - generic [ref=e28]:
+      - generic [ref=e29]: MCP Configuration
+      - generic [ref=e30]:
+        - generic [ref=e31]: ❌
+        - generic [ref=e32]: MCP server unavailable
+    - generic [ref=e33]:
+      - heading "🛠️ Describe Your Tech Stack AI-Powered" [level=3] [ref=e35]:
+        - text: 🛠️ Describe Your Tech Stack
+        - generic [ref=e36]: AI-Powered
+      - paragraph [ref=e37]: "Tell us about your project in plain English:"
+      - textbox "e.g., I need a React app with TypeScript, using Material-UI for styling, Jest for testing, and I want to deploy on Vercel..." [active] [ref=e38]: React with TypeScript, Material-UI, Jest, React Testing Library, GraphQL
+      - generic [ref=e39]:
+        - paragraph [ref=e40]: "Or try these popular combinations:"
+        - generic [ref=e41]:
+          - generic [ref=e42] [cursor=pointer]: React + TypeScript + Tailwind
+          - generic [ref=e43] [cursor=pointer]: Vue 3 + Pinia + SCSS
+          - generic [ref=e44] [cursor=pointer]: Angular + Material
+          - generic [ref=e45] [cursor=pointer]: Node.js + Express + MongoDB
+          - generic [ref=e46] [cursor=pointer]: Python + FastAPI + PostgreSQL
+          - generic [ref=e47] [cursor=pointer]: AEM 6.5 + HTL + Sling + OSGi
+          - generic [ref=e48] [cursor=pointer]: Figma + Design System
+      - generic [ref=e49]:
+        - button "🧠 Parse Tech Stack" [ref=e50] [cursor=pointer]
+        - generic [ref=e51]:
+          - generic [ref=e52]: "Confidence:"
+          - generic [ref=e55]: 0%
+    - generic [ref=e56]:
+      - generic [ref=e57]: Document Type
+      - combobox "Document Type" [ref=e58]:
+        - option "Jira Ticket" [selected]
+        - option "Confluence Page"
+        - option "Wiki Documentation"
+        - option "Agent Task"
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - generic [ref=e61]: "📊 Confidence:"
+        - generic [ref=e62]: 90%
+      - generic [ref=e63]:
+        - generic [ref=e64] [cursor=pointer]: React
+        - generic [ref=e65] [cursor=pointer]: Typescript
+    - button "🚀 Generate Enhanced Document" [ref=e66] [cursor=pointer]
+```

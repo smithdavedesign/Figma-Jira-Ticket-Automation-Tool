@@ -1,0 +1,66 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "Enhanced Figma Plugin" [level=1] [ref=e4]
+    - generic [ref=e5]: AI-powered ticket generation with design health insights
+  - generic [ref=e7]:
+    - button "🎫 Ticket Generator" [ref=e8] [cursor=pointer]
+    - button "📊 Design Health" [ref=e9] [cursor=pointer]
+  - generic [ref=e11]:
+    - heading "📊 Design System Health" [level=2] [ref=e12]
+    - paragraph [ref=e13]: Monitor and improve your design system consistency
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: 87%
+        - generic [ref=e17]: Overall Score
+      - generic [ref=e18]:
+        - generic [ref=e19]: 92%
+        - generic [ref=e20]: Compliance Rate
+      - generic [ref=e21]:
+        - generic [ref=e22]: 78%
+        - generic [ref=e23]: Component Usage
+      - generic [ref=e24]:
+        - generic [ref=e25]: 85%
+        - generic [ref=e26]: Token Adoption
+    - generic [ref=e27]:
+      - heading "Component Analysis" [level=3] [ref=e28]
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: Standard Components
+          - generic [ref=e32]: 85%
+        - generic [ref=e33]:
+          - generic [ref=e34]: Custom Components
+          - generic [ref=e35]: 68%
+        - generic [ref=e36]:
+          - generic [ref=e37]: Most Used Component
+          - generic [ref=e38]: Button
+    - generic [ref=e39]:
+      - heading "Token Adoption" [level=3] [ref=e40]
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: Color Tokens
+          - generic [ref=e44]: 92%
+        - generic [ref=e45]:
+          - generic [ref=e46]: Typography Tokens
+          - generic [ref=e47]: 76%
+        - generic [ref=e48]:
+          - generic [ref=e49]: Spacing Tokens
+          - generic [ref=e50]: 64%
+    - generic [ref=e51]:
+      - heading "Recommendations" [level=3] [ref=e52]
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - text: ✅
+          - strong [ref=e55]: "Good:"
+          - text: High token adoption rate
+        - generic [ref=e56]:
+          - text: ⚠️
+          - strong [ref=e57]: "Improve:"
+          - text: Increase component reuse in navigation areas
+        - generic [ref=e58]:
+          - text: 💡
+          - strong [ref=e59]: "Suggestion:"
+          - text: Consider standardizing button variants
+```
