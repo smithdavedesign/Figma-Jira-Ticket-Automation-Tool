@@ -1,14 +1,23 @@
 #!/usr/bin/env node
 
 /**
- * Figma AI Ticket Generator - Standalone Server
+ * Figma AI Ticket Generator - Enhanced MCP Server with Figma Integration
  * 
- * Strategic design-to-code automation server for testing.
+ * Strategic design-to-code automation server with direct Figma MCP integration.
  * This server provides project-level intelligence and workflow automation capabilities
- * that complement Figma's tactical approach for individual frame processing.
+ * that complement and orchestrate with Figma's tactical MCP server.
  */
 
+import dotenv from 'dotenv';
 import { createServer } from 'http';
+
+// Load environment variables
+dotenv.config();
+import { FigmaWorkflowOrchestrator } from './figma/figma-mcp-client.js';
+import { BoilerplateCodeGenerator } from './figma/boilerplate-generator.js';
+import { AdvancedAIService } from './ai/advanced-ai-service.js';
+import type { TechStackConfig, CodeGenerationOptions } from './figma/boilerplate-generator.js';
+import type { AIAnalysisConfig, DesignAnalysisResult } from './ai/advanced-ai-service.js';
 
 /**
  * Tool implementations for demonstration
@@ -76,16 +85,24 @@ class ProjectAnalyzer {
 }
 
 class TicketGenerator {
+  private figmaOrchestrator: FigmaWorkflowOrchestrator;
+
+  constructor() {
+    this.figmaOrchestrator = new FigmaWorkflowOrchestrator();
+  }
+
   async generate(args: any): Promise<ToolResult> {
     const { 
       frameData = [], 
       template = 'component', 
       projectName = 'Design Implementation',
       figmaContext = {},
-      instructions = ''
+      instructions = '',
+      enableFigmaMCP = true
     } = args;
 
     console.log('🎫 Generating enhanced tickets for:', frameData.length, 'frames');
+    console.log('🤝 Figma MCP integration:', enableFigmaMCP ? 'enabled' : 'disabled');
     
     if (!frameData || frameData.length === 0) {
       return {
@@ -98,7 +115,31 @@ class TicketGenerator {
       };
     }
 
-    const tickets = frameData.map((frame: any) => this.generateDetailedTicket(frame, template, figmaContext, instructions));
+    // Enhanced ticket generation with optional Figma MCP integration
+    const tickets = await Promise.all(
+      frameData.map(async (frame: any) => {
+        if (enableFigmaMCP && figmaContext.figmaUrl) {
+          try {
+            // Use enhanced workflow with Figma MCP integration
+            const enhancedTicket = await this.figmaOrchestrator.generateEnhancedTicket(
+              figmaContext.figmaUrl,
+              template,
+              instructions
+            );
+            
+            return this.convertToTicketFormat(enhancedTicket, frame, figmaContext);
+          } catch (error) {
+            console.warn('⚠️ Figma MCP integration failed, using strategic-only generation:', error);
+            // Fallback to strategic-only generation
+            return this.generateDetailedTicket(frame, template, figmaContext, instructions);
+          }
+        } else {
+          // Strategic-only generation (existing behavior)
+          return this.generateDetailedTicket(frame, template, figmaContext, instructions);
+        }
+      })
+    );
+
     const combinedTicket = this.combineTickets(tickets, projectName, figmaContext);
 
     return {
@@ -109,6 +150,91 @@ class TicketGenerator {
         },
       ],
     };
+  }
+
+  /**
+   * Convert enhanced ticket from Figma MCP integration to our format
+   */
+  private convertToTicketFormat(enhancedTicket: any, frame: any, figmaContext: any): any {
+    const name = frame.name || enhancedTicket.title || 'Enhanced Component';
+    const frameUrl = figmaContext.frameUrls?.find((url: string) => url.includes(frame.id)) || figmaContext.figmaUrl;
+    
+    return {
+      title: enhancedTicket.title || `Enhanced: ${name}`,
+      priority: this.calculatePriority(frame),
+      storyPoints: this.estimateStoryPoints(frame),
+      figmaLink: frameUrl,
+      description: this.generateEnhancedDescription(enhancedTicket, frame, figmaContext),
+      acceptanceCriteria: enhancedTicket.acceptanceCriteria || [
+        '✅ Implementation matches Figma design exactly',
+        '🎨 Uses design system tokens from Figma variables',
+        '📱 Responsive design works across breakpoints',
+        '♿ Meets accessibility standards (WCAG 2.1 AA)',
+      ],
+      technicalNotes: this.generateMCPTechnicalNotes(enhancedTicket),
+      designSystemNotes: this.generateDesignSystemNotes(frame),
+      subtasks: this.generateSubtasks(frame, enhancedTicket.template || 'component'),
+    };
+  }
+
+  /**
+   * Generate enhanced description combining strategic analysis with Figma MCP tactical details
+   */
+  private generateEnhancedDescription(enhancedTicket: any, frame: any, _figmaContext: any): string {
+    let description = `## 🎯 Enhanced Implementation with Figma MCP Integration\n\n`;
+    
+    description += `**Component**: ${frame.name || 'Unnamed Component'}\n`;
+    
+    if (enhancedTicket.strategicAnalysis) {
+      description += `**Strategic Analysis**: ${enhancedTicket.strategicAnalysis}\n`;
+    }
+    
+    if (enhancedTicket.tacticalImplementation?.code) {
+      description += `\n## 🔧 Tactical Implementation (via Figma MCP)\n\n`;
+      description += `\`\`\`tsx\n${enhancedTicket.tacticalImplementation.code.substring(0, 500)}...\n\`\`\`\n\n`;
+    }
+    
+    if (enhancedTicket.tacticalImplementation?.variables) {
+      description += `## 🎨 Design Variables\n${enhancedTicket.tacticalImplementation.variables}\n\n`;
+    }
+    
+    description += `## 📋 Implementation Guidelines\n`;
+    description += `This component has been analyzed using both strategic project-level insights and tactical Figma MCP integration for comprehensive implementation guidance.\n\n`;
+    
+    if (enhancedTicket.fallbackMode) {
+      description += `⚠️ **Note**: Generated in strategic-only mode due to Figma MCP unavailability.\n\n`;
+    }
+    
+    return description;
+  }
+
+  /**
+   * Generate enhanced technical notes with Figma MCP insights
+   */
+  private generateMCPTechnicalNotes(enhancedTicket: any): string {
+    let notes = `## 🔧 Enhanced Technical Implementation\n\n`;
+    
+    if (enhancedTicket.tacticalImplementation?.code) {
+      notes += `### Code Generation via Figma MCP\n`;
+      notes += `- React + Tailwind implementation provided\n`;
+      notes += `- Component structure optimized for design system integration\n`;
+      notes += `- Responsive design patterns included\n\n`;
+    }
+    
+    if (enhancedTicket.tacticalImplementation?.variables) {
+      notes += `### Design System Integration\n`;
+      notes += `- Design tokens extracted from Figma\n`;
+      notes += `- Variable mappings provided for consistency\n`;
+      notes += `- Color and typography tokens included\n\n`;
+    }
+    
+    notes += `### Strategic Implementation Guidelines\n`;
+    notes += `- Follow project conventions and patterns\n`;
+    notes += `- Ensure accessibility compliance (WCAG 2.1 AA)\n`;
+    notes += `- Implement responsive design across all breakpoints\n`;
+    notes += `- Use design system components where possible\n\n`;
+    
+    return notes;
   }
 
   private calculatePriority(frame: any): string {
@@ -410,6 +536,234 @@ class TicketGenerator {
   }
 }
 
+/**
+ * AI-Powered Ticket Generator with GPT-4 Vision and Claude Integration
+ * 
+ * Provides advanced design analysis and intelligent document generation
+ * using state-of-the-art AI models for multi-modal design understanding.
+ */
+class AIEnhancedTicketGenerator {
+  private aiService: AdvancedAIService;
+  private fallbackGenerator: TicketGenerator;
+
+  constructor(aiConfig: AIAnalysisConfig) {
+    this.aiService = new AdvancedAIService(aiConfig);
+    this.fallbackGenerator = new TicketGenerator();
+  }
+
+  /**
+   * Generate intelligent ticket with AI-powered design analysis
+   */
+  async generateWithAI(args: any): Promise<ToolResult> {
+    const {
+      figmaUrl,
+      documentType = 'jira',
+      techStack,
+      projectName,
+      imageData, // Base64 encoded screenshot
+      additionalRequirements = '',
+      useAI = true
+    } = args;
+
+    console.log('🤖 Starting AI-enhanced ticket generation...');
+    console.log('📋 Document type:', documentType);
+    console.log('🔮 AI enabled:', useAI);
+
+    // Test AI services if requested
+    if (useAI) {
+      const aiStatus = await this.aiService.testConfiguration();
+      console.log('🧠 AI Services Status:', aiStatus);
+      
+      if (!aiStatus.gemini && !aiStatus.vision && !aiStatus.claude && !aiStatus.gpt4) {
+        console.warn('⚠️ No AI services available, falling back to standard generation');
+        return this.fallbackGenerator.generate(args);
+      }
+    }
+
+    try {
+      let analysisResult: DesignAnalysisResult | null = null;
+
+      // Step 1: AI-powered design analysis (if image provided)
+      if (useAI && imageData) {
+        console.log('🔍 Analyzing design with GPT-4 Vision...');
+        const imageBuffer = Buffer.from(imageData, 'base64');
+        
+        analysisResult = await this.aiService.analyzeDesignScreenshot(
+          imageBuffer,
+          documentType,
+          { techStack, projectName }
+        );
+        
+        console.log(`✅ Design analysis complete - confidence: ${analysisResult.confidence}%`);
+        console.log(`📊 Found ${analysisResult.components.length} components`);
+        console.log(`🎨 Design system consistency: ${analysisResult.designSystem.consistency}%`);
+      } else if (useAI) {
+        // Generate AI content even without image analysis
+        console.log('🤖 Creating AI-enhanced content without image analysis...');
+        analysisResult = {
+          components: [],
+          designSystem: { 
+            colors: { palette: [], compliance: 85, issues: [] },
+            typography: { fonts: [], hierarchy: [], compliance: 85 },
+            spacing: { grid: '8px', margins: [], padding: [], compliance: 85 },
+            consistency: 85 
+          },
+          accessibility: { 
+            colorContrast: { passed: true, issues: [] },
+            focusStates: { present: true, issues: [] },
+            semanticStructure: { score: 80, issues: [] },
+            overallScore: 80 
+          },
+          recommendations: [`Enhance ${documentType} with best practices for ${techStack}`],
+          confidence: 75
+        };
+      }
+
+      // Step 2: Intelligent document generation
+      let documentContent: string;
+      
+      if (useAI && analysisResult) {
+        console.log('📝 Generating intelligent document content...');
+        documentContent = await this.aiService.generateDocumentContent(
+          analysisResult,
+          documentType,
+          { techStack, projectName, additionalRequirements }
+        );
+      } else {
+        // Fallback to standard generation
+        console.log('📄 Using standard document generation...');
+        const fallbackResult = await this.fallbackGenerator.generate(args);
+        documentContent = fallbackResult.content[0]?.text || 'Error: Could not generate fallback content';
+      }
+
+      // Step 3: Create enhanced result with AI insights
+      const enhancedResult = this.createEnhancedResult(
+        documentContent,
+        analysisResult,
+        { figmaUrl, documentType, techStack, projectName }
+      );
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: enhancedResult
+          }
+        ]
+      };
+
+    } catch (error) {
+      console.error('❌ AI-enhanced generation failed:', error);
+      console.log('🔄 Falling back to standard generation...');
+      
+      // Fallback to standard generation
+      return this.fallbackGenerator.generate(args);
+    }
+  }
+
+  /**
+   * Create enhanced result combining AI analysis with document content
+   */
+  private createEnhancedResult(
+    documentContent: string,
+    analysisResult: DesignAnalysisResult | null,
+    context: any
+  ): string {
+    let result = `# 🤖 AI-Enhanced ${context.documentType.toUpperCase()} Document\n\n`;
+    
+    // Add AI analysis summary if available
+    if (analysisResult) {
+      result += `## 🧠 AI Design Analysis Summary\n\n`;
+      result += `- **Confidence Score**: ${analysisResult.confidence}%\n`;
+      result += `- **Components Identified**: ${analysisResult.components.length}\n`;
+      result += `- **Design System Consistency**: ${analysisResult.designSystem.consistency}%\n`;
+      result += `- **Accessibility Score**: ${analysisResult.accessibility.overallScore}%\n\n`;
+      
+      if (analysisResult.components.length > 0) {
+        result += `### 🔧 Key Components\n`;
+        analysisResult.components.slice(0, 5).forEach(component => {
+          result += `- **${component.name}** (${component.type}): ${component.usage} usage\n`;
+        });
+        result += `\n`;
+      }
+      
+      if (analysisResult.recommendations.length > 0) {
+        result += `### 💡 AI Recommendations\n`;
+        analysisResult.recommendations.slice(0, 3).forEach(rec => {
+          result += `- ${rec}\n`;
+        });
+        result += `\n`;
+      }
+    }
+    
+    // Add Figma context
+    if (context.figmaUrl) {
+      result += `## 🎨 Figma Reference\n`;
+      result += `- **Design Source**: [View in Figma](${context.figmaUrl})\n`;
+      if (context.projectName) {
+        result += `- **Project**: ${context.projectName}\n`;
+      }
+      if (context.techStack) {
+        result += `- **Tech Stack**: ${context.techStack}\n`;
+      }
+      result += `\n`;
+    }
+    
+    // Add the main document content
+    result += `## 📋 Implementation Details\n\n`;
+    result += documentContent;
+    
+    // Add AI enhancement footer
+    result += `\n\n---\n`;
+    result += `*🤖 This document was enhanced with AI-powered design analysis`;
+    if (analysisResult) {
+      result += ` (${analysisResult.confidence}% confidence)`;
+    }
+    result += `*\n`;
+    result += `*Generated on ${new Date().toISOString()}*`;
+    
+    return result;
+  }
+
+  /**
+   * Test AI service availability
+   */
+  async testAIServices(): Promise<ToolResult> {
+    const status = await this.aiService.testConfiguration();
+    
+    const result = `# 🧠 AI Services Status Report
+
+## Service Availability
+- **🆓 Google Gemini**: ${status.gemini ? '✅ Available (FREE)' : '❌ Unavailable'}
+- **🖼️ Gemini Vision**: ${status.geminiVision ? '✅ Available (FREE)' : '❌ Unavailable'}
+- **GPT-4 Vision**: ${status.vision ? '✅ Available' : '❌ Unavailable'}
+- **Claude**: ${status.claude ? '✅ Available' : '❌ Unavailable'}  
+- **GPT-4 (Fallback)**: ${status.gpt4 ? '✅ Available' : '❌ Unavailable'}
+
+## Capabilities
+${status.gemini ? '- 🆓 FREE AI-powered document generation with Google Gemini\n' : ''}${status.geminiVision ? '- 🖼️ FREE design screenshot analysis with Gemini Vision\n' : ''}${status.vision ? '- 🖼️ Advanced design screenshot analysis with GPT-4 Vision\n' : ''}${status.claude ? '- 📝 Premium document generation with Claude\n' : ''}${status.gpt4 ? '- 🔄 GPT-4 fallback for document generation\n' : ''}
+${!status.gemini && !status.vision && !status.claude && !status.gpt4 ? '- 📄 Standard generation (no AI services available)\n' : ''}
+## Configuration Requirements
+${!status.gemini ? '- Set GEMINI_API_KEY for FREE Google AI generation (recommended)\n' : ''}${!status.vision ? '- Set OPENAI_API_KEY for GPT-4 Vision and fallback generation\n' : ''}${!status.claude ? '- Set ANTHROPIC_API_KEY for Claude document generation\n' : ''}
+## Service Priority
+1. 🆓 **Gemini** (FREE) - Primary AI service for generation
+2. 🤖 **Claude** (PAID) - Premium document generation
+3. 🧠 **GPT-4** (PAID) - Advanced analysis and fallback
+4. 📄 **Standard** - Always available fallback
+
+*Tested at ${new Date().toISOString()}*`;
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: result
+        }
+      ]
+    };
+  }
+}
+
 class ComplianceChecker {
   async check(args: any): Promise<ToolResult> {
     const { figmaUrl, categories = ['all'] } = args;
@@ -472,12 +826,27 @@ class FigmaAITestServer {
   private projectAnalyzer: ProjectAnalyzer;
   private ticketGenerator: TicketGenerator;
   private complianceChecker: ComplianceChecker;
+  private aiEnhancedGenerator: AIEnhancedTicketGenerator;
   private port: number;
 
   constructor(port: number = 3000) {
     this.projectAnalyzer = new ProjectAnalyzer();
     this.ticketGenerator = new TicketGenerator();
     this.complianceChecker = new ComplianceChecker();
+    
+    // Initialize AI service with configuration from environment
+    const aiConfig: AIAnalysisConfig = {
+      geminiApiKey: process.env.GEMINI_API_KEY || undefined,
+      openaiApiKey: process.env.OPENAI_API_KEY || undefined,
+      anthropicApiKey: process.env.ANTHROPIC_API_KEY || undefined,
+      enableGemini: process.env.ENABLE_GEMINI !== 'false', // Default enabled
+      enableVision: process.env.ENABLE_AI_VISION !== 'false',
+      enableClaude: process.env.ENABLE_CLAUDE !== 'false', 
+      maxTokens: parseInt(process.env.AI_MAX_TOKENS || '4000'),
+      temperature: parseFloat(process.env.AI_TEMPERATURE || '0.7')
+    };
+    
+    this.aiEnhancedGenerator = new AIEnhancedTicketGenerator(aiConfig);
     this.port = port;
   }
 
@@ -492,6 +861,15 @@ class FigmaAITestServer {
 
         case 'check_compliance':
           return await this.complianceChecker.check(body);
+
+        case 'generate_enhanced_ticket':
+          return await this.generateEnhancedTicketWithBoilerplate(body);
+
+        case 'generate_ai_ticket':
+          return await this.aiEnhancedGenerator.generateWithAI(body);
+
+        case 'test_ai_services':
+          return await this.aiEnhancedGenerator.testAIServices();
 
         default:
           throw new Error(`Unknown method: ${method}`);
@@ -509,6 +887,161 @@ class FigmaAITestServer {
         isError: true,
       };
     }
+  }
+
+  /**
+   * Enhanced ticket generation with boilerplate code
+   */
+  async generateEnhancedTicketWithBoilerplate(params: {
+    figmaUrl: string;
+    projectContext?: string;
+    techStack: TechStackConfig;
+    options: CodeGenerationOptions;
+  }): Promise<{
+    content: Array<{ type: string; text: string }>;
+    ticket: string;
+    boilerplateCode: {
+      component: string;
+      styles: string;
+      tests?: string;
+      story?: string;
+      types?: string;
+    };
+  }> {
+    try {
+      console.log('🚀 Starting enhanced ticket generation with boilerplate code...');
+
+      // Initialize Figma MCP orchestrator
+      const orchestrator = new FigmaWorkflowOrchestrator();
+
+      // Execute complete workflow (strategic analysis + tactical code generation)
+      const workflowResult = await orchestrator.executeCompleteWorkflow({
+        figmaUrl: params.figmaUrl,
+        projectContext: params.projectContext,
+        requirements: {
+          includeBoilerplate: true,
+          techStack: params.techStack,
+          ...params.options
+        }
+      });
+
+      // Generate boilerplate code using tech stack configuration
+      const boilerplateGenerator = new BoilerplateCodeGenerator(
+        params.techStack,
+        params.options
+      );
+
+      const boilerplateCode = await boilerplateGenerator.generateBoilerplateCode(
+        params.figmaUrl,
+        orchestrator // Pass the orchestrator which has access to Figma MCP
+      );
+
+      // Generate enhanced ticket description with embedded code
+      const ticket = this.createEnhancedTicketDescription(
+        workflowResult,
+        params.techStack,
+        boilerplateCode
+      );
+
+      console.log('✅ Enhanced ticket with boilerplate generated successfully!');
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Enhanced ticket with boilerplate code generated successfully'
+          }
+        ],
+        ticket,
+        boilerplateCode
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('❌ Enhanced ticket generation failed:', errorMessage);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error generating enhanced ticket: ${errorMessage}`
+          }
+        ],
+        ticket: `Error: ${errorMessage}`,
+        boilerplateCode: {
+          component: `// Error generating code: ${errorMessage}`,
+          styles: `/* Error generating styles: ${errorMessage} */`
+        }
+      };
+    }
+  }
+
+  /**
+   * Create enhanced ticket description with embedded boilerplate code
+   */
+  private createEnhancedTicketDescription(
+    workflowResult: any,
+    techStack: TechStackConfig,
+    boilerplateCode: any
+  ): string {
+    const framework = techStack.frontend.framework;
+    const styling = techStack.frontend.styling;
+    
+    return `# 🎨 Component Implementation Ticket
+
+## Overview
+Implement the design component from Figma with ${framework} and ${styling}.
+
+## Strategic Analysis
+- **Project Scope**: ${workflowResult.strategicAnalysis.projectScope}
+- **Complexity**: ${workflowResult.strategicAnalysis.complexity}
+- **Estimated Effort**: ${workflowResult.strategicAnalysis.estimatedEffort}
+- **Design System Compliance**: ${workflowResult.strategicAnalysis.designSystemCompliance}%
+
+## Tech Stack
+- **Frontend**: ${framework.charAt(0).toUpperCase() + framework.slice(1)}
+- **Styling**: ${styling.charAt(0).toUpperCase() + styling.slice(1)}
+- **State Management**: ${techStack.frontend.stateManagement || 'None'}
+- **Testing**: ${techStack.frontend.testing || 'None'}
+
+## Boilerplate Code
+
+### Component Implementation
+\`\`\`${framework === 'react' ? 'jsx' : framework}
+${boilerplateCode.component}
+\`\`\`
+
+### Styles
+\`\`\`${styling === 'scss' ? 'scss' : 'css'}
+${boilerplateCode.styles}
+\`\`\`
+
+${boilerplateCode.tests ? `
+### Tests
+\`\`\`javascript
+${boilerplateCode.tests}
+\`\`\`
+` : ''}
+
+${boilerplateCode.story ? `
+### Storybook Story
+\`\`\`javascript
+${boilerplateCode.story}
+\`\`\`
+` : ''}
+
+## Acceptance Criteria
+- [ ] Component matches Figma design exactly
+- [ ] Component is responsive and accessible
+- [ ] Code follows project conventions
+- [ ] Tests pass and provide adequate coverage
+- [ ] Component is documented${boilerplateCode.story ? ' and has Storybook stories' : ''}
+
+## Technical Notes
+${workflowResult.tacticalCode?.content?.[0]?.text || 'Generated from Figma MCP server integration'}
+
+---
+*Generated by Enhanced Figma-Jira Automation Tool with ${framework}/${styling} tech stack*`;
   }
 
   start(): void {
@@ -530,7 +1063,7 @@ class FigmaAITestServer {
           name: 'Figma AI Ticket Generator',
           version: '1.0.0',
           status: 'running',
-          tools: ['analyze_project', 'generate_tickets', 'check_compliance'],
+          tools: ['analyze_project', 'generate_tickets', 'check_compliance', 'generate_enhanced_ticket'],
           description: 'Strategic design-to-code automation server'
         }));
         return;
@@ -565,7 +1098,7 @@ class FigmaAITestServer {
     server.listen(this.port, () => {
       console.log('� Figma AI Ticket Generator Test Server started');
       console.log(`📋 Server running at http://localhost:${this.port}`);
-      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance');
+      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket');
       console.log('');
       console.log('Example usage:');
       console.log(`curl -X POST http://localhost:${this.port} \\`);

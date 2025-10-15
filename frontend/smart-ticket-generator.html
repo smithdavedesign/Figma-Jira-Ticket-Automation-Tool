@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Figma → Jira Ticket Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .suggestion-pill {
+            transition: all 0.2s;
+        }
+        .suggestion-pill:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .confidence-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .tech-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .tab-button {
+            color: #6B7280;
+            background: transparent;
+        }
+        .tab-button.active {
+            color: #3B82F6;
+            background: #EFF6FF;
+            border: 1px solid #DBEAFE;
+        }
+        .tab-button:hover:not(.active) {
+            color: #374151;
+            background: #F9FAFB;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">🎨 Smart Figma → Jira Generator</h1>
+                <p class="text-gray-600 text-lg">Describe your tech stack naturally, get tailored boilerplate code</p>
+                
+                <!-- Tab Navigation -->
+                <div class="mt-6 flex justify-center">
+                    <div class="bg-white rounded-xl shadow-sm p-2 flex space-x-2">
+                        <button id="mainTab" class="tab-button active px-4 py-2 rounded-lg text-sm font-medium transition-all">
+                            🎫 Ticket Generator
+                        </button>
+                        <button id="metricsTab" class="tab-button px-4 py-2 rounded-lg text-sm font-medium transition-all">
+                            📊 Design Health
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Tab Content -->
+            <div id="mainContent" class="tab-content active">
+                <!-- Tech Stack Input -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    🛠️ Describe Your Tech Stack
+                    <span class="ml-auto text-sm font-normal text-gray-500">AI-Powered Parsing</span>
+                </h2>
+                
+                <!-- Natural Language Input -->
+                <div class="mb-6">
+                    <label for="techStackDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tell us about your project in plain English:
+                    </label>
+                    <textarea 
+                        id="techStackDescription" 
+                        rows="4" 
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        placeholder="e.g., I need a React app with TypeScript, using Material-UI for styling, Jest for testing, and I want to deploy on Vercel..."
+                    ></textarea>
+                </div>
+
+                <!-- Quick Suggestions -->
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600 mb-3">Or try these popular combinations:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="suggestion-pill px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm hover:bg-blue-100 transition-colors" data-stack="React with TypeScript, Tailwind CSS, and Jest testing">
+                            React + TypeScript + Tailwind
+                        </button>
+                        <button class="suggestion-pill px-3 py-2 bg-green-50 text-green-700 rounded-lg text-sm hover:bg-green-100 transition-colors" data-stack="Vue 3 with Composition API, SCSS, Pinia, and Vitest">
+                            Vue 3 + Pinia + SCSS
+                        </button>
+                        <button class="suggestion-pill px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-sm hover:bg-purple-100 transition-colors" data-stack="Next.js with TypeScript, Chakra UI, and Playwright tests">
+                            Next.js + Chakra UI
+                        </button>
+                        <button class="suggestion-pill px-3 py-2 bg-red-50 text-red-700 rounded-lg text-sm hover:bg-red-100 transition-colors" data-stack="Angular with Material Design, NgRx, and Karma tests">
+                            Angular + Material
+                        </button>
+                        <button class="suggestion-pill px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg text-sm hover:bg-yellow-100 transition-colors" data-stack="React Native mobile app with Expo and TypeScript">
+                            React Native + Expo
+                        </button>
+                        <button class="suggestion-pill px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm hover:bg-indigo-100 transition-colors" data-stack="Flutter app with Material Design and Dart">
+                            Flutter + Material
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Parse Button -->
+                <div class="text-center">
+                    <button id="parseTechStack" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                        🤖 Parse Tech Stack
+                    </button>
+                </div>
+            </div>
+
+            <!-- Parsed Results -->
+            <div id="parsedResults" class="bg-white rounded-2xl shadow-xl p-8 mb-8 hidden">
+                <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        ✨ Parsed Configuration
+                        <span class="ml-auto">
+                            <span class="text-sm text-gray-600">Confidence: </span>
+                            <span id="confidencePercent" class="font-bold text-green-600">0%</span>
+                        </span>
+                    </h3>
+                    
+                    <!-- Confidence Bar -->
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+                        <div id="confidenceBar" class="confidence-bar bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Parsed Tech Stack Display -->
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-2">Frontend Framework</h4>
+                            <div id="frontendFramework" class="text-blue-600 font-semibold"></div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-2">Language</h4>
+                            <div id="language" class="text-green-600 font-semibold"></div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-2">Styling</h4>
+                            <div id="styling" class="text-purple-600 font-semibold"></div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-2">Testing</h4>
+                            <div id="testing" class="text-orange-600 font-semibold"></div>
+                        </div>
+                    </div>
+
+                    <!-- Suggestions -->
+                    <div id="suggestions" class="mt-4 hidden">
+                        <h4 class="font-medium text-gray-700 mb-2">💡 Suggestions:</h4>
+                        <div id="suggestionsList" class="space-y-2">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Edit Button -->
+                    <button id="editTechStack" class="mt-4 bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg font-medium transition-colors">
+                        ✏️ Edit Configuration
+                    </button>
+                </div>
+            </div>
+
+            <!-- Figma Design Input -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                    🎨 Figma Design Details
+                </h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label for="figmaUrl" class="block text-sm font-medium text-gray-700 mb-2">Figma Frame URL</label>
+                        <input type="url" id="figmaUrl" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="https://www.figma.com/design/...">
+                    </div>
+
+                    <div>
+                        <label for="projectContext" class="block text-sm font-medium text-gray-700 mb-2">Project Context</label>
+                        <textarea id="projectContext" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Describe the component purpose, user flow, and any specific requirements..."></textarea>
+                    </div>
+
+                    <!-- Document Type Selection -->
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-6 border border-purple-200">
+                        <h3 class="font-semibold text-gray-800 mb-4">📄 Output Document Type</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <label class="flex items-center space-x-3 p-3 border border-purple-200 rounded-lg hover:bg-purple-50 cursor-pointer transition-colors">
+                                <input type="radio" name="documentType" value="jira" class="text-purple-600 focus:ring-purple-500" checked>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-800">🎫 Jira Ticket</span>
+                                    <p class="text-xs text-gray-600">Full Jira format with story points & metadata</p>
+                                </div>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 border border-purple-200 rounded-lg hover:bg-purple-50 cursor-pointer transition-colors">
+                                <input type="radio" name="documentType" value="confluence" class="text-purple-600 focus:ring-purple-500">
+                                <div>
+                                    <span class="text-sm font-medium text-gray-800">📖 Confluence Page</span>
+                                    <p class="text-xs text-gray-600">Documentation & specification format</p>
+                                </div>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 border border-purple-200 rounded-lg hover:bg-purple-50 cursor-pointer transition-colors">
+                                <input type="radio" name="documentType" value="agent" class="text-purple-600 focus:ring-purple-500">
+                                <div>
+                                    <span class="text-sm font-medium text-gray-800">🤖 Agent Digestible</span>
+                                    <p class="text-xs text-gray-600">Structured JSON for AI agent consumption</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Generation Options -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <h3 class="font-semibold text-gray-800 mb-4">🎛️ Generation Options</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeTests" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                <span class="text-sm text-gray-700">Generate Tests</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeStorybook" class="rounded text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Storybook Stories</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeA11y" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                <span class="text-sm text-gray-700">Accessibility</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeResponsive" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                <span class="text-sm text-gray-700">Responsive</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeBoilerplate" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                                <span class="text-sm text-gray-700">Boilerplate Code</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeDesignTokens" class="rounded text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Design Tokens</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <button id="generateTicket" class="w-full mt-8 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-4 px-6 rounded-xl font-semibold text-lg transition-all transform hover:scale-105 shadow-lg">
+                    🎫 Generate Smart Ticket + Code
+                </button>
+            </div>
+
+            <!-- Generated Output -->
+            <div id="output" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">📋 Generated Ticket & Code</h2>
+                <div id="outputContent" class="space-y-6"></div>
+            </div>
+
+            <!-- Generated Ticket -->
+            <div id="generatedTicket" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6">🎯 Your Jira Ticket</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Summary</label>
+                        <input type="text" id="ticketSummary" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea id="ticketDescription" rows="8" class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                            <select id="ticketPriority" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Low">Low</option>
+                                <option value="Highest">Highest</option>
+                                <option value="Lowest">Lowest</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Issue Type</label>
+                            <select id="issueType" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="Story">Story</option>
+                                <option value="Task">Task</option>
+                                <option value="Epic">Epic</option>
+                                <option value="Bug">Bug</option>
+                                <option value="Improvement">Improvement</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Story Points</label>
+                            <select id="storyPoints" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="8">8</option>
+                                <option value="13">13</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="21">21</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            📋 Copy to Clipboard
+                        </button>
+                        <button class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                            🔗 Export to Jira
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Tab Content -->
+        <div id="metricsContent" class="tab-content">
+            <!-- Design System Health Analysis -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    📊 Design System Health Analysis
+                    <span class="ml-auto text-sm font-normal text-gray-500">Consistency Metrics</span>
+                </h2>
+                
+                <!-- Health Input -->
+                <div class="mb-6">
+                    <label for="designSystemUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                        Figma File URL or Design System Description:
+                    </label>
+                    <input 
+                        type="text" 
+                        id="designSystemUrl"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="https://figma.com/file/... or describe your design system structure"
+                    />
+                </div>
+
+                <!-- Analyze Button -->
+                <div class="text-center mb-6">
+                    <button id="analyzeHealth" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                        🔍 Analyze Design Health
+                    </button>
+                </div>
+
+                <!-- Health Results -->
+                <div id="healthResults" class="hidden">
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Consistency Score -->
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-800">🎯 Consistency</h3>
+                                <span id="consistencyScore" class="text-2xl font-bold text-blue-600">--</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="consistencyBar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="text-xs text-blue-700 mt-2">Component Consistency</div>
+                        </div>
+
+                        <!-- Color Health -->
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-800">🎨 Colors</h3>
+                                <span id="colorHealth" class="text-2xl font-bold text-green-600">--</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="colorBar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="text-xs text-green-700 mt-2">Color System Health</div>
+                        </div>
+
+                        <!-- Typography -->
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-800">📝 Typography</h3>
+                                <span id="typographyScore" class="text-2xl font-bold text-purple-600">--</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="typographyBar" class="bg-purple-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="text-xs text-purple-700 mt-2">Typography Consistency</div>
+                        </div>
+
+                        <!-- Overall Health -->
+                        <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 border border-orange-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-800">⭐ Overall</h3>
+                                <span id="overallHealth" class="text-2xl font-bold text-orange-600">--</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="overallBar" class="bg-orange-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="text-xs text-orange-700 mt-2">Overall Health Score</div>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Insights -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">🔍 Key Insights</h4>
+                            <div id="healthInsights" class="space-y-3">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">💡 Recommendations</h4>
+                            <div id="recommendations" class="space-y-2">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let parsedTechStack = null;
+
+        // Tech stack parsing functionality
+        const techStackExamples = [
+            "React with TypeScript, Tailwind CSS, and Jest testing",
+            "Vue 3 with Composition API, SCSS, Pinia, and Vitest",
+            "Next.js with TypeScript, Chakra UI, and Playwright tests",
+            "Angular with Material Design, NgRx, and Karma tests",
+            "React Native mobile app with Expo and TypeScript",
+            "Flutter app with Material Design and Dart"
+        ];
+
+        // Quick suggestion click handlers
+        document.querySelectorAll('.suggestion-pill').forEach(pill => {
+            pill.addEventListener('click', function() {
+                const stack = this.getAttribute('data-stack');
+                document.getElementById('techStackDescription').value = stack;
+                parseTechStackDescription();
+            });
+        });
+
+        // Parse tech stack button
+        document.getElementById('parseTechStack').addEventListener('click', parseTechStackDescription);
+
+        // Auto-parse when typing stops
+        let parseTimeout;
+        document.getElementById('techStackDescription').addEventListener('input', function() {
+            clearTimeout(parseTimeout);
+            parseTimeout = setTimeout(() => {
+                const text = this.value.trim();
+                if (text.length > 10) {
+                    parseTechStackDescription();
+                }
+            }, 2000);
+        });
+
+        // Tab switching functionality
+        document.getElementById('mainTab').addEventListener('click', function() {
+            switchTab('main');
+        });
+
+        document.getElementById('metricsTab').addEventListener('click', function() {
+            switchTab('metrics');
+        });
+
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tab === 'main') {
+                document.getElementById('mainTab').classList.add('active');
+                document.getElementById('mainContent').classList.add('active');
+            } else {
+                document.getElementById('metricsTab').classList.add('active');
+                document.getElementById('metricsContent').classList.add('active');
+            }
+        }
+
+        function parseTechStackDescription() {
+            const description = document.getElementById('techStackDescription').value.trim();
+            if (!description) return;
+
+            // Simulate API parsing with realistic results
+            const mockParsing = simulateNaturalLanguageParsing(description);
+            
+            // Display results
+            displayParsedResults(mockParsing);
+            
+            // Store for ticket generation
+            parsedTechStack = mockParsing;
+            
+            // Show results section
+            document.getElementById('parsedResults').classList.remove('hidden');
+            document.getElementById('parsedResults').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function simulateNaturalLanguageParsing(description) {
+            const lowerDesc = description.toLowerCase();
+            
+            // Enhanced Framework Detection with scoring
+            const frameworks = [
+                { name: 'React Native', keywords: ['react native', 'expo', 'rn'], score: 0 },
+                { name: 'Next.js', keywords: ['next.js', 'nextjs', 'next'], score: 0 },
+                { name: 'Nuxt.js', keywords: ['nuxt.js', 'nuxtjs', 'nuxt'], score: 0 },
+                { name: 'Vue.js', keywords: ['vue', 'vuejs', 'vue 3', 'composition api'], score: 0 },
+                { name: 'Angular', keywords: ['angular', 'ng', 'ngrx'], score: 0 },
+                { name: 'Svelte', keywords: ['svelte', 'sveltekit'], score: 0 },
+                { name: 'Flutter', keywords: ['flutter', 'dart flutter'], score: 0 },
+                { name: 'React', keywords: ['react', 'jsx', 'create-react-app'], score: 0 }
+            ];
+
+            // Enhanced Language Detection
+            const languages = [
+                { name: 'TypeScript', keywords: ['typescript', 'ts', '.tsx', '.ts'], score: 0 },
+                { name: 'Dart', keywords: ['dart', 'flutter dart'], score: 0 },
+                { name: 'Kotlin', keywords: ['kotlin', 'android kotlin'], score: 0 },
+                { name: 'Swift', keywords: ['swift', 'ios swift'], score: 0 },
+                { name: 'JavaScript', keywords: ['javascript', 'js', '.jsx', '.js'], score: 0 }
+            ];
+
+            // Enhanced Styling Detection
+            const stylings = [
+                { name: 'Tailwind CSS', keywords: ['tailwind', 'tailwindcss', 'utility-first'], score: 0 },
+                { name: 'Material-UI', keywords: ['material-ui', 'mui', 'material design', '@mui'], score: 0 },
+                { name: 'Chakra UI', keywords: ['chakra ui', 'chakra', '@chakra-ui'], score: 0 },
+                { name: 'Ant Design', keywords: ['ant design', 'antd', 'ant-design'], score: 0 },
+                { name: 'Styled Components', keywords: ['styled-components', 'styled components', 'css-in-js'], score: 0 },
+                { name: 'SCSS/Sass', keywords: ['scss', 'sass', '.scss', '.sass'], score: 0 },
+                { name: 'Bootstrap', keywords: ['bootstrap', 'bs5', 'bootstrap 5'], score: 0 },
+                { name: 'CSS Modules', keywords: ['css modules', '.module.css'], score: 0 },
+                { name: 'CSS', keywords: ['css', 'vanilla css'], score: 0 }
+            ];
+
+            // Enhanced Testing Detection
+            const testings = [
+                { name: 'Playwright', keywords: ['playwright', 'e2e testing', 'end-to-end'], score: 0 },
+                { name: 'Cypress', keywords: ['cypress', 'cypress.io'], score: 0 },
+                { name: 'Jest', keywords: ['jest', 'jest testing'], score: 0 },
+                { name: 'Vitest', keywords: ['vitest', 'vite testing'], score: 0 },
+                { name: 'Testing Library', keywords: ['testing library', '@testing-library', 'react testing library'], score: 0 },
+                { name: 'Karma', keywords: ['karma', 'karma jasmine'], score: 0 },
+                { name: 'Jasmine', keywords: ['jasmine', 'jasmine testing'], score: 0 },
+                { name: 'Manual Testing', keywords: ['manual', 'no testing', 'basic testing'], score: 0 }
+            ];
+
+            // Score each category based on keyword matches
+            function scoreCategory(items) {
+                items.forEach(item => {
+                    item.keywords.forEach(keyword => {
+                        if (lowerDesc.includes(keyword)) {
+                            item.score += keyword.length; // Longer matches get higher scores
+                        }
+                    });
+                });
+                return items.sort((a, b) => b.score - a.score)[0] || items[items.length - 1];
+            }
+
+            const framework = scoreCategory([...frameworks]).name;
+            const language = scoreCategory([...languages]).name;
+            const styling = scoreCategory([...stylings]).name;
+            const testing = scoreCategory([...testings]).name;
+
+            // Calculate confidence based on matches and specificity
+            const totalMatches = frameworks.concat(languages, stylings, testings)
+                .filter(item => item.score > 0).length;
+            
+            let confidence = Math.min(75 + (totalMatches * 3), 98);
+            
+            // Bonus points for specific combinations that make sense
+            if (framework === 'Flutter' && language === 'Dart') confidence += 5;
+            if (framework === 'Next.js' && language === 'TypeScript') confidence += 3;
+            if (framework === 'React' && testing === 'Jest') confidence += 2;
+            if (framework === 'Vue.js' && testing === 'Vitest') confidence += 3;
+            
+            // Penalty for unlikely combinations
+            if (framework === 'Flutter' && language !== 'Dart') confidence -= 10;
+            if (framework === 'Angular' && styling === 'Tailwind CSS') confidence -= 2; // Less common
+            
+            confidence = Math.max(65, Math.min(98, confidence));
+            
+            return {
+                framework,
+                language,
+                styling,
+                testing,
+                confidence: Math.round(confidence),
+                description,
+                projectStructure: generateProjectStructure(framework, language, styling),
+                matches: totalMatches
+            };
+        }
+
+        function generateProjectStructure(framework, language, styling) {
+            const ext = language === 'TypeScript' ? '.ts' : '.js';
+            const jsxExt = language === 'TypeScript' ? '.tsx' : '.jsx';
+            const styleExt = styling === 'SCSS/Sass' ? '.scss' : '.css';
+            
+            if (framework === 'Next.js') {
+                return `next-app/
+├── app/
+│   ├── components/
+│   │   ├── Header${jsxExt}
+│   │   └── Footer${jsxExt}
+│   ├── page${jsxExt}
+│   └── layout${jsxExt}
+├── public/
+├── styles/
+│   └── globals${styleExt}
+├── package.json
+${language === 'TypeScript' ? '├── tsconfig.json' : ''}
+└── next.config${ext}`;
+            }
+            
+            if (framework === 'React') {
+                return `react-app/
+├── src/
+│   ├── components/
+│   │   ├── Header${jsxExt}
+│   │   └── Footer${jsxExt}
+│   ├── pages/
+│   │   ├── Home${jsxExt}
+│   │   └── About${jsxExt}
+│   ├── hooks/
+│   │   └── useCustomHook${ext}
+│   ├── styles/
+│   │   └── index${styleExt}
+│   └── App${jsxExt}
+├── public/
+├── package.json
+${language === 'TypeScript' ? '├── tsconfig.json' : ''}
+└── README.md`;
+            }
+            
+            if (framework === 'Vue.js') {
+                return `vue-app/
+├── src/
+│   ├── components/
+│   │   ├── Header.vue
+│   │   └── Footer.vue
+│   ├── views/
+│   │   ├── Home.vue
+│   │   └── About.vue
+│   ├── composables/
+│   │   └── useCounter${ext}
+│   ├── router/
+│   │   └── index${ext}
+│   └── main${ext}
+├── public/
+├── package.json
+${language === 'TypeScript' ? '├── tsconfig.json' : ''}
+└── vite.config${ext}`;
+            }
+
+            if (framework === 'Angular') {
+                return `angular-app/
+├── src/
+│   ├── app/
+│   │   ├── components/
+│   │   │   ├── header/
+│   │   │   └── footer/
+│   │   ├── services/
+│   │   └── app.component${ext}
+│   ├── assets/
+│   └── styles.${styleExt}
+├── package.json
+├── angular.json
+└── tsconfig.json`;
+            }
+
+            if (framework === 'Flutter') {
+                return `flutter_app/
+├── lib/
+│   ├── screens/
+│   │   ├── home_screen.dart
+│   │   └── profile_screen.dart
+│   ├── widgets/
+│   │   ├── custom_button.dart
+│   │   └── loading_spinner.dart
+│   ├── models/
+│   │   └── user_model.dart
+│   └── main.dart
+├── assets/
+├── test/
+├── pubspec.yaml
+└── README.md`;
+            }
+
+            if (framework === 'React Native') {
+                return `react-native-app/
+├── src/
+│   ├── screens/
+│   │   ├── HomeScreen${jsxExt}
+│   │   └── ProfileScreen${jsxExt}
+│   ├── components/
+│   │   ├── Button${jsxExt}
+│   │   └── Header${jsxExt}
+│   ├── navigation/
+│   │   └── AppNavigator${jsxExt}
+│   └── App${jsxExt}
+├── assets/
+├── package.json
+${language === 'TypeScript' ? '├── tsconfig.json' : ''}
+└── app.json`;
+            }
+
+            if (framework === 'Svelte') {
+                return `svelte-app/
+├── src/
+│   ├── components/
+│   │   ├── Header.svelte
+│   │   └── Footer.svelte
+│   ├── routes/
+│   │   ├── +page.svelte
+│   │   └── about/+page.svelte
+│   ├── lib/
+│   │   └── utils${ext}
+│   └── app.html
+├── static/
+├── package.json
+${language === 'TypeScript' ? '├── tsconfig.json' : ''}
+└── vite.config${ext}`;
+            }
+            
+            // Default fallback
+            return `project-root/
+├── src/
+│   ├── components/
+│   ├── assets/
+│   └── main${ext}
+├── package.json
+└── README.md`;
+        }
+
+        function displayParsedResults(results) {
+            document.getElementById('frontendFramework').textContent = results.framework;
+            document.getElementById('language').textContent = results.language;
+            document.getElementById('styling').textContent = results.styling;
+            document.getElementById('testing').textContent = results.testing;
+            document.getElementById('confidencePercent').textContent = `${results.confidence}%`;
+            
+            // Animate confidence bar
+            const bar = document.getElementById('confidenceBar');
+            setTimeout(() => {
+                bar.style.width = `${results.confidence}%`;
+            }, 100);
+
+            // Enable generate button when tech stack is parsed
+            document.getElementById('generateTicket').disabled = false;
+        }
+
+        // Generate ticket functionality
+        document.getElementById('generateTicket').addEventListener('click', async function() {
+            if (!parsedTechStack) return;
+            
+            // Show loading state
+            this.innerHTML = '⏳ Generating Smart Ticket...';
+            this.disabled = true;
+            
+            try {
+                await generateEnhancedJiraTicket(parsedTechStack);
+            } catch (error) {
+                console.error('Error generating ticket:', error);
+                // Fallback to basic generation
+                generateJiraTicket(parsedTechStack);
+            } finally {
+                this.innerHTML = '🎫 Generate Smart Ticket + Code';
+                this.disabled = false;
+            }
+        });
+
+        function generateJiraTicket(techStack) {
+            const figmaUrl = document.getElementById('figmaUrl').value;
+            const projectContext = document.getElementById('projectContext').value;
+            const includeTests = document.getElementById('includeTests').checked;
+            const includeStorybook = document.getElementById('includeStorybook').checked;
+            const includeA11y = document.getElementById('includeA11y').checked;
+            const includeResponsive = document.getElementById('includeResponsive').checked;
+
+            const summary = `Implement ${techStack.framework} component with ${techStack.language} and ${techStack.styling}`;
+            
+            let acceptanceCriteria = [
+                `Initialize ${techStack.framework} project with ${techStack.language}`,
+                `Configure ${techStack.styling} for styling`,
+                `Setup ${techStack.testing} for testing`,
+                `Create component structure based on Figma design`
+            ];
+
+            if (includeTests) acceptanceCriteria.push('Write comprehensive unit tests');
+            if (includeStorybook) acceptanceCriteria.push('Create Storybook stories');
+            if (includeA11y) acceptanceCriteria.push('Implement accessibility features (ARIA, keyboard navigation)');
+            if (includeResponsive) acceptanceCriteria.push('Ensure responsive design across breakpoints');
+
+            const description = `## Project Setup Requirements
+
+**Framework:** ${techStack.framework}
+**Language:** ${techStack.language}
+**Styling:** ${techStack.styling}
+**Testing:** ${techStack.testing}
+
+## Design Reference
+${figmaUrl ? `**Figma URL:** ${figmaUrl}` : 'No Figma URL provided'}
+
+## Project Context
+${projectContext || 'No additional context provided'}
+
+## Acceptance Criteria
+${acceptanceCriteria.map(criteria => `- [ ] ${criteria}`).join('\n')}
+
+## Additional Notes
+This ticket was generated based on natural language processing with ${techStack.confidence}% confidence.
+Generation options: Tests (${includeTests}), Storybook (${includeStorybook}), A11y (${includeA11y}), Responsive (${includeResponsive})`;
+
+            // Display in output section
+            const outputContent = document.getElementById('outputContent');
+            outputContent.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-2">📋 Jira Ticket</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-medium mb-2">Summary:</h4>
+                            <p class="text-sm mb-4">${summary}</p>
+                            <h4 class="font-medium mb-2">Description:</h4>
+                            <pre class="text-sm whitespace-pre-wrap">${description}</pre>
+                        </div>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button onclick="copyToClipboard('${summary}\\n\\n${description}')" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            📋 Copy to Clipboard
+                        </button>
+                        <button class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                            🔗 Export to Jira
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('output').classList.remove('hidden');
+            document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Enhanced MCP-integrated ticket generation
+        async function generateEnhancedJiraTicket(techStack) {
+            const figmaUrl = document.getElementById('figmaUrl').value;
+            const projectContext = document.getElementById('projectContext').value;
+            
+            let figmaData = null;
+            
+            // If Figma URL is provided, fetch design data from MCP server
+            if (figmaUrl && figmaUrl.includes('figma.com')) {
+                try {
+                    console.log('🎨 Fetching Figma data from MCP server...');
+                    
+                    // Get selected document type and additional options
+                    const documentType = document.querySelector('input[name="documentType"]:checked')?.value || 'jira';
+                    const includeBoilerplate = document.getElementById('includeBoilerplate')?.checked || false;
+                    const includeDesignTokens = document.getElementById('includeDesignTokens')?.checked || false;
+                    
+                    const response = await fetch('http://localhost:3000', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            method: documentType === 'jira' ? 'generate_enhanced_ticket' : 'analyze_project',
+                            params: {
+                                figmaUrl: figmaUrl,
+                                projectContext: projectContext,
+                                documentType: documentType,
+                                techStack: {
+                                    frontend: {
+                                        framework: techStack.framework.toLowerCase(),
+                                        styling: techStack.styling.toLowerCase().replace(/[^a-z]/g, ''),
+                                        stateManagement: 'none', // Could be expanded
+                                        testing: techStack.testing.toLowerCase()
+                                    },
+                                    backend: {
+                                        framework: 'none' // Could be expanded
+                                    }
+                                },
+                                options: {
+                                    includeTests: document.getElementById('includeTests')?.checked || false,
+                                    includeStorybook: document.getElementById('includeStorybook')?.checked || false,
+                                    includeA11y: document.getElementById('includeA11y')?.checked || false,
+                                    includeResponsive: document.getElementById('includeResponsive')?.checked || false,
+                                    includeBoilerplate: includeBoilerplate,
+                                    includeDesignTokens: includeDesignTokens
+                                }
+                            }
+                        })
+                    });
+                    
+                    const mcpResult = await response.json();
+                    console.log('📊 MCP Server Response:', mcpResult);
+                    
+                    if (mcpResult.result) {
+                        figmaData = mcpResult.result;
+                    }
+                } catch (error) {
+                    console.warn('⚠️ MCP server connection failed, using basic generation:', error);
+                }
+            }
+            
+            // Generate enhanced ticket with Figma data
+            const enhancedTicket = await generateMCPEnhancedTicket(techStack, figmaData, projectContext);
+            
+            // Display the enhanced ticket
+            displayEnhancedTicket(enhancedTicket);
+        }
+
+        async function generateMCPEnhancedTicket(techStack, figmaData, projectContext) {
+            const includeTests = document.getElementById('includeTests').checked;
+            const includeStorybook = document.getElementById('includeStorybook').checked;
+            const includeA11y = document.getElementById('includeA11y').checked;
+            const includeResponsive = document.getElementById('includeResponsive').checked;
+            const includeBoilerplate = document.getElementById('includeBoilerplate')?.checked || false;
+            const includeDesignTokens = document.getElementById('includeDesignTokens')?.checked || false;
+            const documentType = document.querySelector('input[name="documentType"]:checked')?.value || 'jira';
+
+            let summary = `Implement ${techStack.framework} component with ${techStack.language}`;
+            let components = [];
+            let designSpecs = [];
+            let boilerplateCode = null;
+            
+            // Enhanced content if Figma data is available
+            if (figmaData) {
+                // Handle different response formats from MCP server
+                if (figmaData.ticket && documentType === 'jira') {
+                    // Enhanced ticket response format
+                    return formatEnhancedTicketResponse(figmaData, techStack, documentType);
+                }
+                
+                if (figmaData.boilerplateCode && includeBoilerplate) {
+                    boilerplateCode = figmaData.boilerplateCode;
+                }
+                
+                if (figmaData.components && figmaData.components.length > 0) {
+                    components = figmaData.components.map(comp => comp.name || 'Component');
+                    summary = `Implement ${components.join(', ')} using ${techStack.framework}`;
+                }
+                
+                if (figmaData.designSystem) {
+                    designSpecs = [
+                        `Colors: ${figmaData.designSystem.colors || 'Custom color palette'}`,
+                        `Typography: ${figmaData.designSystem.typography || 'Custom font system'}`,
+                        `Spacing: ${figmaData.designSystem.spacing || 'Consistent spacing scale'}`
+                    ];
+                }
+            }
+
+            // Build acceptance criteria
+            let acceptanceCriteria = [
+                `Setup ${techStack.framework} project with ${techStack.language}`,
+                `Configure ${techStack.styling} for styling`,
+                `Implement responsive design for all screen sizes`
+            ];
+
+            // Add Figma-specific criteria
+            if (figmaData && components.length > 0) {
+                components.forEach(component => {
+                    acceptanceCriteria.push(`Create ${component} component matching Figma design`);
+                });
+            }
+
+            // Add tech stack specific criteria
+            acceptanceCriteria.push(`Setup ${techStack.testing} for testing`);
+            
+            if (includeTests) acceptanceCriteria.push('Write comprehensive unit and integration tests');
+            if (includeStorybook) acceptanceCriteria.push('Create Storybook stories for all components');
+            if (includeA11y) acceptanceCriteria.push('Implement WCAG 2.1 AA accessibility standards');
+            if (includeResponsive) acceptanceCriteria.push('Ensure responsive behavior across all breakpoints');
+
+            // Build description
+            let description = `## 🚀 Project Overview
+**Framework:** ${techStack.framework}
+**Language:** ${techStack.language}  
+**Styling:** ${techStack.styling}
+**Testing:** ${techStack.testing}
+**Confidence:** ${techStack.confidence}%
+
+## 🎨 Design Reference
+${figmaData ? '**Figma Analysis Results:**' : '**Figma URL:**'} ${document.getElementById('figmaUrl').value || 'No Figma URL provided'}`;
+
+            // Add Figma analysis if available
+            if (figmaData) {
+                description += `
+                
+**Components Detected:** ${components.join(', ') || 'None'}
+**Design System:**
+${designSpecs.map(spec => `- ${spec}`).join('\n')}
+
+**Recommendations:** ${figmaData.recommendations?.join(', ') || 'Standard implementation'}`;
+            }
+
+            description += `
+
+## 📝 Project Context
+${projectContext || 'No additional context provided'}
+
+## ✅ Acceptance Criteria
+${acceptanceCriteria.map(criteria => `- [ ] ${criteria}`).join('\n')}
+
+## 🛠️ Technical Implementation
+- Initialize project using ${techStack.framework} best practices
+- Configure build system and development environment
+- Implement component architecture following ${techStack.framework} patterns
+- Setup ${techStack.styling} theming system
+${figmaData ? '- Match Figma design specifications exactly' : '- Follow design mockups and requirements'}
+- Implement proper error handling and loading states
+- Add proper TypeScript types (if applicable)
+- Setup linting and code formatting
+
+## 🔍 Definition of Done
+- [ ] All components render correctly across browsers
+- [ ] Responsive design works on mobile, tablet, and desktop  
+- [ ] Code passes all linting and formatting checks
+${includeTests ? '- [ ] Test coverage above 80%' : ''}
+${includeA11y ? '- [ ] Accessibility audit passes with no violations' : ''}
+${includeStorybook ? '- [ ] All components documented in Storybook' : ''}
+- [ ] Performance metrics meet requirements (Core Web Vitals)
+- [ ] Code review completed and approved
+
+## 📊 Generated Insights
+- Parsing confidence: ${techStack.confidence}%
+- Tech stack compatibility: High
+${figmaData ? '- Figma integration: ✅ Successful' : '- Figma integration: ⚠️ Manual design review needed'}
+- Estimated complexity: ${getComplexityEstimate(techStack, figmaData)}
+
+---
+*This ticket was auto-generated using AI-powered analysis with ${techStack.confidence}% confidence.*`;
+
+            return {
+                summary,
+                description,
+                priority: figmaData ? 'High' : 'Medium',
+                storyPoints: getStoryPointsEstimate(techStack, figmaData, components.length),
+                labels: [`${techStack.framework.toLowerCase()}`, `${techStack.language.toLowerCase()}`, 'auto-generated'],
+                figmaData,
+                boilerplateCode,
+                documentType
+            };
+        }
+
+        function formatEnhancedTicketResponse(figmaData, techStack, documentType) {
+            if (documentType === 'confluence') {
+                return {
+                    summary: `${techStack.framework} Implementation Specification`,
+                    description: formatConfluenceDocument(figmaData, techStack),
+                    priority: 'Medium',
+                    storyPoints: 0, // Confluence doesn't use story points
+                    labels: ['confluence', 'specification', 'documentation'],
+                    figmaData,
+                    documentType: 'confluence'
+                };
+            }
+            
+            if (documentType === 'agent') {
+                return {
+                    summary: `Agent Task: ${techStack.framework} Component Implementation`,
+                    description: formatAgentDigestibleDocument(figmaData, techStack),
+                    priority: 'High',
+                    storyPoints: getStoryPointsEstimate(techStack, figmaData, 1),
+                    labels: ['agent-task', 'structured-data', 'automation'],
+                    figmaData,
+                    documentType: 'agent'
+                };
+            }
+            
+            // Default to enhanced Jira format
+            return {
+                summary: figmaData.ticket?.split('\\n')[0]?.replace('# ', '') || `${techStack.framework} Implementation`,
+                description: figmaData.ticket || 'Enhanced ticket from MCP server',
+                priority: 'High',
+                storyPoints: getStoryPointsEstimate(techStack, figmaData, 1),
+                labels: [`${techStack.framework.toLowerCase()}`, 'mcp-enhanced', 'figma-integrated'],
+                figmaData,
+                boilerplateCode: figmaData.boilerplateCode,
+                documentType: 'jira'
+            };
+        }
+
+        function formatConfluenceDocument(figmaData, techStack) {
+            return `# ${techStack.framework} Component Specification
+
+## Overview
+This document outlines the implementation specification for components derived from Figma designs using ${techStack.framework} and ${techStack.styling}.
+
+## Technical Stack
+- **Framework**: ${techStack.framework}
+- **Language**: ${techStack.language}
+- **Styling**: ${techStack.styling}
+- **Testing**: ${techStack.testing}
+
+## Design Analysis
+${figmaData.content?.[0]?.text || 'Figma analysis data will be populated here'}
+
+## Implementation Guidelines
+${figmaData.ticket || 'Detailed implementation guidelines from MCP server'}
+
+## Code Samples
+${figmaData.boilerplateCode ? 
+    `### Component Code
+\`\`\`${techStack.language.toLowerCase()}
+${figmaData.boilerplateCode.component}
+\`\`\`
+
+### Styles
+\`\`\`css
+${figmaData.boilerplateCode.styles}
+\`\`\`` 
+    : 'Code samples will be generated based on selected options'}
+
+---
+*Generated by Figma MCP Integration Tool*`;
+        }
+
+        function formatAgentDigestibleDocument(figmaData, techStack) {
+            const agentTask = {
+                taskType: "component_implementation",
+                priority: "high",
+                techStack: {
+                    framework: techStack.framework,
+                    language: techStack.language,
+                    styling: techStack.styling,
+                    testing: techStack.testing,
+                    confidence: techStack.confidence
+                },
+                figmaAnalysis: figmaData.content?.[0]?.text || null,
+                boilerplateCode: figmaData.boilerplateCode || null,
+                requirements: {
+                    responsive: document.getElementById('includeResponsive')?.checked || false,
+                    accessibility: document.getElementById('includeA11y')?.checked || false,
+                    testing: document.getElementById('includeTests')?.checked || false,
+                    storybook: document.getElementById('includeStorybook')?.checked || false
+                },
+                metadata: {
+                    generatedAt: new Date().toISOString(),
+                    mcpIntegration: true,
+                    figmaUrl: document.getElementById('figmaUrl')?.value || null
+                }
+            };
+            
+            return `## Agent-Digestible Task Structure
+
+\`\`\`json
+${JSON.stringify(agentTask, null, 2)}
+\`\`\`
+
+## Human-Readable Summary
+**Task**: Implement ${techStack.framework} component based on Figma design analysis
+**Complexity**: ${techStack.confidence}% confidence in tech stack detection
+**Integration**: Enhanced with Figma MCP server analysis
+
+## Implementation Context
+${figmaData.ticket || 'MCP server analysis and implementation details'}
+
+---
+*Structured for AI agent consumption and workflow automation*`;
+        }
+
+        function getComplexityEstimate(techStack, figmaData) {
+            let complexity = 'Medium';
+            
+            if (figmaData && figmaData.components && figmaData.components.length > 3) {
+                complexity = 'High';
+            } else if (techStack.framework === 'React Native' || techStack.framework === 'Flutter') {
+                complexity = 'High';
+            } else if (techStack.confidence < 70) {
+                complexity = 'High - Review Required';
+            }
+            
+            return complexity;
+        }
+
+        function getStoryPointsEstimate(techStack, figmaData, componentCount) {
+            let basePoints = 5;
+            
+            // Adjust based on component count
+            if (componentCount > 3) basePoints = 8;
+            if (componentCount > 5) basePoints = 13;
+            
+            // Adjust based on framework complexity
+            if (techStack.framework === 'Angular') basePoints += 2;
+            if (techStack.framework === 'React Native' || techStack.framework === 'Flutter') basePoints += 3;
+            
+            // Adjust based on styling complexity
+            if (techStack.styling === 'Styled Components' || techStack.styling === 'CSS Modules') basePoints += 1;
+            
+            return Math.min(basePoints, 21);
+        }
+
+        function displayEnhancedTicket(ticket) {
+            const outputContent = document.getElementById('outputContent');
+            const documentTypeLabels = {
+                'jira': '🎫 Jira Ticket',
+                'confluence': '📖 Confluence Page', 
+                'agent': '🤖 Agent Task'
+            };
+            
+            outputContent.innerHTML = `
+                <div class="space-y-6">
+                    ${/* Ticket Summary */ ''}
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">${documentTypeLabels[ticket.documentType] || '🎫 Document'} Preview</h3>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                    ${ticket.priority} Priority
+                                </span>
+                                ${ticket.storyPoints > 0 ? `<span class="px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                    ${ticket.storyPoints} Story Points
+                                </span>` : ''}
+                            </div>
+                        </div>
+                        
+                        <h4 class="font-semibold text-gray-800 mb-2">Summary:</h4>
+                        <p class="text-gray-700 mb-4">${ticket.summary}</p>
+                        
+                        <h4 class="font-semibold text-gray-800 mb-2">Labels:</h4>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${ticket.labels.map(label => 
+                                `<span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">${label}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Figma Integration Status -->
+                    ${ticket.figmaData ? `
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="text-green-600">✅</span>
+                            <h4 class="font-semibold text-green-800">Figma Integration Successful</h4>
+                        </div>
+                        <p class="text-sm text-green-700">
+                            Successfully analyzed Figma design and integrated component specifications into ticket requirements.
+                        </p>
+                    </div>
+                    ` : `
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="text-yellow-600">⚠️</span>
+                            <h4 class="font-semibold text-yellow-800">Manual Design Review Needed</h4>
+                        </div>
+                        <p class="text-sm text-yellow-700">
+                            No Figma URL provided or unable to fetch design data. Manual review of design requirements needed.
+                        </p>
+                    </div>
+                    `}
+
+                    <!-- Full Description -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">📋 Full Ticket Description</h4>
+                        <pre class="text-sm whitespace-pre-wrap text-gray-700 leading-relaxed">${ticket.description}</pre>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex space-x-4">
+                        <button onclick="copyEnhancedTicket('${ticket.summary}', '${ticket.description.replace(/'/g, "\\'")}', '${ticket.priority}', ${ticket.storyPoints})" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            📋 Copy Complete Ticket
+                        </button>
+                        <button onclick="exportToJira('${ticket.summary}', '${ticket.description.replace(/'/g, "\\'")}', '${ticket.priority}', ${ticket.storyPoints})" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                            🚀 Export to Jira
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('output').classList.remove('hidden');
+            document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyEnhancedTicket(summary, description, priority, storyPoints) {
+            const ticketText = `JIRA TICKET
+
+Summary: ${summary}
+
+Priority: ${priority}
+Story Points: ${storyPoints}
+
+Description:
+${description}`;
+
+            navigator.clipboard.writeText(ticketText).then(() => {
+                alert('✅ Enhanced ticket copied to clipboard!');
+            });
+        }
+
+        function exportToJira(summary, description, priority, storyPoints) {
+            // This would integrate with actual Jira API
+            alert(`🚀 Export to Jira feature would create ticket with:
+            
+Summary: ${summary}
+Priority: ${priority}  
+Story Points: ${storyPoints}
+
+(In production, this would use Jira REST API)`);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Ticket copied to clipboard!');
+            });
+        }
+
+        // Design System Health Analysis
+        document.getElementById('analyzeHealth').addEventListener('click', analyzeDesignSystemHealth);
+
+        function analyzeDesignSystemHealth() {
+            const input = document.getElementById('designSystemUrl').value.trim();
+            if (!input) return;
+
+            // Simulate design system analysis
+            const metrics = simulateDesignSystemAnalysis(input);
+            displayHealthMetrics(metrics);
+        }
+
+        function simulateDesignSystemAnalysis(input) {
+            // Mock analysis based on input patterns
+            const isFigmaUrl = input.includes('figma.com');
+            const hasStructure = input.toLowerCase().includes('component') || input.toLowerCase().includes('system');
+            
+            return {
+                consistency: Math.floor(Math.random() * 20) + 75,
+                colorHealth: Math.floor(Math.random() * 15) + 80,
+                typography: Math.floor(Math.random() * 25) + 70,
+                overall: Math.floor(Math.random() * 20) + 78,
+                insights: [
+                    `${isFigmaUrl ? 'Figma file detected' : 'Design system description provided'}`,
+                    'Component naming follows consistent patterns',
+                    'Color palette uses systematic approach',
+                    'Typography scale needs minor adjustments',
+                    `${hasStructure ? 'Well-structured component library' : 'Consider organizing components systematically'}`
+                ],
+                recommendations: [
+                    { type: 'warning', title: 'Typography Scale', description: 'Consider consolidating similar font sizes to reduce complexity' },
+                    { type: 'info', title: 'Color Tokens', description: 'Document semantic color usage for better consistency' },
+                    { type: 'success', title: 'Component Structure', description: 'Good modular approach to component organization' }
+                ]
+            };
+        }
+
+        function displayHealthMetrics(metrics) {
+            // Update score displays
+            document.getElementById('consistencyScore').textContent = `${metrics.consistency}%`;
+            document.getElementById('colorHealth').textContent = `${metrics.colorHealth}%`;
+            document.getElementById('typographyScore').textContent = `${metrics.typography}%`;
+            document.getElementById('overallHealth').textContent = `${metrics.overall}%`;
+
+            // Animate progress bars
+            setTimeout(() => {
+                document.getElementById('consistencyBar').style.width = `${metrics.consistency}%`;
+                document.getElementById('colorBar').style.width = `${metrics.colorHealth}%`;
+                document.getElementById('typographyBar').style.width = `${metrics.typography}%`;
+                document.getElementById('overallBar').style.width = `${metrics.overall}%`;
+            }, 200);
+
+            // Populate insights
+            const insights = document.getElementById('healthInsights');
+            insights.innerHTML = `
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h5 class="font-medium text-blue-800 mb-2">Analysis Summary</h5>
+                    ${metrics.insights.map(insight => 
+                        `<p class="text-sm text-gray-600 mb-1">• ${insight}</p>`
+                    ).join('')}
+                </div>
+            `;
+
+            // Populate recommendations
+            const recommendations = document.getElementById('recommendations');
+            recommendations.innerHTML = metrics.recommendations.map(rec => {
+                const iconMap = { warning: '⚠️', info: 'ℹ️', success: '✅' };
+                const colorMap = { 
+                    warning: 'border-yellow-300 bg-yellow-50', 
+                    info: 'border-blue-300 bg-blue-50', 
+                    success: 'border-green-300 bg-green-50' 
+                };
+                return `
+                    <div class="flex items-start space-x-3 p-3 rounded-lg border ${colorMap[rec.type]}">
+                        <span class="text-lg">${iconMap[rec.type]}</span>
+                        <div>
+                            <h5 class="font-medium text-gray-800">${rec.title}</h5>
+                            <p class="text-sm text-gray-600 mt-1">${rec.description}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Show results
+            document.getElementById('healthResults').classList.remove('hidden');
+            document.getElementById('healthResults').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

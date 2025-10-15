@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figma Jira Ticket Generator - Enhanced</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .dropdown-container {
+            position: relative;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .dropdown-content.show {
+            display: block;
+        }
+        .dropdown-item {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            border-radius: 6px;
+            margin: 4px;
+        }
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+        }
+        .selected-option {
+            background-color: #e5e7eb;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8">Enhanced Figma → Jira Ticket Generator</h1>
+            
+            <!-- Tech Stack Configuration -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">🛠️ Tech Stack Configuration</h2>
+                <p class="text-gray-600 mb-6">Configure your project's tech stack to generate tailored boilerplate code with each ticket.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Frontend Framework -->
+                    <div class="dropdown-container">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Frontend Framework</label>
+                        <button id="frameworkDropdown" class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <span id="selectedFramework">Select Framework</span>
+                            <span class="float-right">▼</span>
+                        </button>
+                        <div id="frameworkContent" class="dropdown-content">
+                            <div class="dropdown-item" data-value="react">⚛️ React</div>
+                            <div class="dropdown-item" data-value="vue">🟢 Vue.js</div>
+                            <div class="dropdown-item" data-value="angular">🔴 Angular</div>
+                            <div class="dropdown-item" data-value="svelte">🧡 Svelte</div>
+                            <div class="dropdown-item" data-value="html">🌐 HTML/Vanilla</div>
+                        </div>
+                    </div>
+
+                    <!-- Styling Framework -->
+                    <div class="dropdown-container">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Styling Framework</label>
+                        <button id="stylingDropdown" class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <span id="selectedStyling">Select Styling</span>
+                            <span class="float-right">▼</span>
+                        </button>
+                        <div id="stylingContent" class="dropdown-content">
+                            <div class="dropdown-item" data-value="tailwind">💨 Tailwind CSS</div>
+                            <div class="dropdown-item" data-value="styled-components">💅 Styled Components</div>
+                            <div class="dropdown-item" data-value="css-modules">📦 CSS Modules</div>
+                            <div class="dropdown-item" data-value="scss">🎨 SCSS</div>
+                            <div class="dropdown-item" data-value="css">📄 Plain CSS</div>
+                        </div>
+                    </div>
+
+                    <!-- Component Library -->
+                    <div class="dropdown-container">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Component Library</label>
+                        <button id="componentDropdown" class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <span id="selectedComponent">Select Library</span>
+                            <span class="float-right">▼</span>
+                        </button>
+                        <div id="componentContent" class="dropdown-content">
+                            <div class="dropdown-item" data-value="none">🚫 None</div>
+                            <div class="dropdown-item" data-value="mui">🎭 Material-UI</div>
+                            <div class="dropdown-item" data-value="chakra-ui">⚡ Chakra UI</div>
+                            <div class="dropdown-item" data-value="ant-design">🐜 Ant Design</div>
+                            <div class="dropdown-item" data-value="headlessui">👻 Headless UI</div>
+                        </div>
+                    </div>
+
+                    <!-- State Management -->
+                    <div class="dropdown-container">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">State Management</label>
+                        <button id="stateDropdown" class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <span id="selectedState">Select State Management</span>
+                            <span class="float-right">▼</span>
+                        </button>
+                        <div id="stateContent" class="dropdown-content">
+                            <div class="dropdown-item" data-value="none">🚫 None</div>
+                            <div class="dropdown-item" data-value="redux">🔄 Redux Toolkit</div>
+                            <div class="dropdown-item" data-value="zustand">🐻 Zustand</div>
+                            <div class="dropdown-item" data-value="pinia">🍍 Pinia (Vue)</div>
+                            <div class="dropdown-item" data-value="ngrx">📦 NgRx (Angular)</div>
+                        </div>
+                    </div>
+
+                    <!-- Testing Framework -->
+                    <div class="dropdown-container">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Testing Framework</label>
+                        <button id="testingDropdown" class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <span id="selectedTesting">Select Testing</span>
+                            <span class="float-right">▼</span>
+                        </button>
+                        <div id="testingContent" class="dropdown-content">
+                            <div class="dropdown-item" data-value="jest">🃏 Jest</div>
+                            <div class="dropdown-item" data-value="vitest">⚡ Vitest</div>
+                            <div class="dropdown-item" data-value="cypress">🌲 Cypress</div>
+                            <div class="dropdown-item" data-value="playwright">🎭 Playwright</div>
+                            <div class="dropdown-item" data-value="none">🚫 None</div>
+                        </div>
+                    </div>
+
+                    <!-- Backend Language -->
+                    <div class="dropdown-container">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Backend Language</label>
+                        <button id="backendDropdown" class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <span id="selectedBackend">Select Backend</span>
+                            <span class="float-right">▼</span>
+                        </button>
+                        <div id="backendContent" class="dropdown-content">
+                            <div class="dropdown-item" data-value="typescript">📘 TypeScript</div>
+                            <div class="dropdown-item" data-value="javascript">📙 JavaScript</div>
+                            <div class="dropdown-item" data-value="python">🐍 Python</div>
+                            <div class="dropdown-item" data-value="java">☕ Java</div>
+                            <div class="dropdown-item" data-value="csharp">🔷 C#</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Options -->
+                <div class="mt-6 border-t pt-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">📝 Code Generation Options</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="includeTests" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">Generate Tests</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="includeStorybook" class="rounded text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-700">Storybook Stories</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="includeA11y" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">Accessibility</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="includeResponsive" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">Responsive Design</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Save Configuration -->
+                <div class="mt-6 flex justify-end">
+                    <button id="saveTechStack" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                        💾 Save Configuration
+                    </button>
+                </div>
+            </div>
+
+            <!-- Existing Form (Figma URL, etc.) -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">🎨 Figma Design Input</h2>
+                
+                <div class="mb-4">
+                    <label for="figmaUrl" class="block text-sm font-medium text-gray-700 mb-2">Figma Frame URL</label>
+                    <input type="url" id="figmaUrl" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="https://www.figma.com/design/...">
+                </div>
+
+                <div class="mb-4">
+                    <label for="projectContext" class="block text-sm font-medium text-gray-700 mb-2">Project Context</label>
+                    <textarea id="projectContext" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Describe the project context and any specific requirements..."></textarea>
+                </div>
+
+                <button id="generateTicket" 
+                        class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-md font-medium transition-colors text-lg">
+                    🎫 Generate Enhanced Ticket with Boilerplate Code
+                </button>
+            </div>
+
+            <!-- Generated Output -->
+            <div id="output" class="bg-white rounded-lg shadow-md p-6 hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Generated Ticket & Code</h2>
+                <div id="outputContent" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tech stack configuration state
+        let techStackConfig = {
+            frontend: {
+                framework: 'react',
+                styling: 'tailwind',
+                stateManagement: 'none'
+            },
+            backend: {
+                language: 'typescript'
+            },
+            testing: 'jest',
+            componentLibrary: 'none'
+        };
+
+        // Dropdown functionality
+        function setupDropdown(buttonId, contentId, selectedId, configPath) {
+            const button = document.getElementById(buttonId);
+            const content = document.getElementById(contentId);
+            const selectedSpan = document.getElementById(selectedId);
+
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                content.classList.toggle('show');
+            });
+
+            content.addEventListener('click', function(e) {
+                if (e.target.classList.contains('dropdown-item')) {
+                    const value = e.target.getAttribute('data-value');
+                    const text = e.target.textContent;
+                    
+                    selectedSpan.textContent = text;
+                    
+                    // Update config
+                    const paths = configPath.split('.');
+                    let current = techStackConfig;
+                    for (let i = 0; i < paths.length - 1; i++) {
+                        if (!current[paths[i]]) current[paths[i]] = {};
+                        current = current[paths[i]];
+                    }
+                    current[paths[paths.length - 1]] = value;
+                    
+                    // Update UI
+                    content.querySelectorAll('.dropdown-item').forEach(item => {
+                        item.classList.remove('selected-option');
+                    });
+                    e.target.classList.add('selected-option');
+                    
+                    content.classList.remove('show');
+                }
+            });
+        }
+
+        // Initialize dropdowns
+        setupDropdown('frameworkDropdown', 'frameworkContent', 'selectedFramework', 'frontend.framework');
+        setupDropdown('stylingDropdown', 'stylingContent', 'selectedStyling', 'frontend.styling');
+        setupDropdown('componentDropdown', 'componentContent', 'selectedComponent', 'componentLibrary');
+        setupDropdown('stateDropdown', 'stateContent', 'selectedState', 'frontend.stateManagement');
+        setupDropdown('testingDropdown', 'testingContent', 'selectedTesting', 'testing');
+        setupDropdown('backendDropdown', 'backendContent', 'selectedBackend', 'backend.language');
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        });
+
+        // Save tech stack configuration
+        document.getElementById('saveTechStack').addEventListener('click', function() {
+            localStorage.setItem('techStackConfig', JSON.stringify(techStackConfig));
+            
+            // Show success message
+            const button = this;
+            const originalText = button.textContent;
+            button.textContent = '✅ Saved!';
+            button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            button.classList.add('bg-green-600');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('bg-green-600');
+                button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            }, 2000);
+        });
+
+        // Load saved configuration
+        function loadSavedConfig() {
+            const saved = localStorage.getItem('techStackConfig');
+            if (saved) {
+                techStackConfig = JSON.parse(saved);
+                
+                // Update UI to reflect saved config
+                // This would update the dropdown selections
+                console.log('Loaded tech stack config:', techStackConfig);
+            }
+        }
+
+        // Generate ticket with boilerplate code
+        document.getElementById('generateTicket').addEventListener('click', async function() {
+            const figmaUrl = document.getElementById('figmaUrl').value;
+            const projectContext = document.getElementById('projectContext').value;
+            const includeTests = document.getElementById('includeTests').checked;
+            const includeStorybook = document.getElementById('includeStorybook').checked;
+            const includeA11y = document.getElementById('includeA11y').checked;
+            const includeResponsive = document.getElementById('includeResponsive').checked;
+
+            if (!figmaUrl) {
+                alert('Please provide a Figma URL');
+                return;
+            }
+
+            const button = this;
+            const originalText = button.textContent;
+            button.textContent = '🔄 Generating...';
+            button.disabled = true;
+
+            try {
+                // Prepare request payload
+                const payload = {
+                    figmaUrl,
+                    projectContext,
+                    techStack: techStackConfig,
+                    options: {
+                        includeTests,
+                        includeStorybook,
+                        includeAccessibility: includeA11y,
+                        includeResponsive,
+                        testing: techStackConfig.testing
+                    }
+                };
+
+                // Call our enhanced MCP server
+                const response = await fetch('http://localhost:3000', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        method: 'generate_enhanced_ticket',
+                        params: payload
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    displayEnhancedOutput(result);
+                } else {
+                    throw new Error('Failed to generate ticket');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error generating ticket. Please try again.');
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        });
+
+        function displayEnhancedOutput(result) {
+            const output = document.getElementById('output');
+            const content = document.getElementById('outputContent');
+            
+            content.innerHTML = `
+                <div class="border-b pb-4 mb-4">
+                    <h3 class="font-semibold text-lg mb-2">🎫 Jira Ticket</h3>
+                    <div class="bg-gray-50 p-4 rounded-md">
+                        <pre class="whitespace-pre-wrap text-sm">${result.ticket}</pre>
+                    </div>
+                </div>
+                
+                <div class="border-b pb-4 mb-4">
+                    <h3 class="font-semibold text-lg mb-2">⚛️ Component Code</h3>
+                    <div class="bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto">
+                        <pre><code>${result.boilerplateCode.component}</code></pre>
+                    </div>
+                </div>
+                
+                ${result.boilerplateCode.styles ? `
+                <div class="border-b pb-4 mb-4">
+                    <h3 class="font-semibold text-lg mb-2">🎨 Styles</h3>
+                    <div class="bg-gray-900 text-blue-400 p-4 rounded-md overflow-x-auto">
+                        <pre><code>${result.boilerplateCode.styles}</code></pre>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${result.boilerplateCode.tests ? `
+                <div class="border-b pb-4 mb-4">
+                    <h3 class="font-semibold text-lg mb-2">🧪 Tests</h3>
+                    <div class="bg-gray-900 text-yellow-400 p-4 rounded-md overflow-x-auto">
+                        <pre><code>${result.boilerplateCode.tests}</code></pre>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${result.boilerplateCode.story ? `
+                <div class="pb-4">
+                    <h3 class="font-semibold text-lg mb-2">📚 Storybook Story</h3>
+                    <div class="bg-gray-900 text-purple-400 p-4 rounded-md overflow-x-auto">
+                        <pre><code>${result.boilerplateCode.story}</code></pre>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            output.classList.remove('hidden');
+            output.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize
+        loadSavedConfig();
+    </script>
+</body>
+</html>

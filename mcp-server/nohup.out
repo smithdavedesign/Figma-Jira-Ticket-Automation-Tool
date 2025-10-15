@@ -1,0 +1,92 @@
+� Figma AI Ticket Generator Test Server started
+📋 Server running at http://localhost:3000
+🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket
+
+Example usage:
+curl -X POST http://localhost:3000 \
+  -H "Content-Type: application/json" \
+  -d '{"method":"analyze_project","params":{"figmaUrl":"https://figma.com/file/abc123"}}'
+Gemini test failed: Request failed with status code 400
+🤖 Starting AI-enhanced ticket generation...
+📋 Document type: jira
+🔮 AI enabled: true
+Gemini test failed: Request failed with status code 400
+🧠 AI Services Status: {
+  gemini: false,
+  geminiVision: false,
+  vision: false,
+  claude: false,
+  gpt4: false
+}
+⚠️ No AI services available, falling back to standard generation
+🎫 Generating enhanced tickets for: 0 frames
+🤝 Figma MCP integration: enabled
+� Figma AI Ticket Generator Test Server started
+📋 Server running at http://localhost:3000
+🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket
+
+Example usage:
+curl -X POST http://localhost:3000 \
+  -H "Content-Type: application/json" \
+  -d '{"method":"analyze_project","params":{"figmaUrl":"https://figma.com/file/abc123"}}'
+Gemini test failed: Request failed with status code 400
+🤖 Starting AI-enhanced ticket generation...
+📋 Document type: jira
+🔮 AI enabled: true
+Gemini test failed: Request failed with status code 400
+🧠 AI Services Status: {
+  gemini: false,
+  geminiVision: false,
+  vision: false,
+  claude: false,
+  gpt4: false
+}
+⚠️ No AI services available, falling back to standard generation
+🎫 Generating enhanced tickets for: 0 frames
+🤝 Figma MCP integration: enabled
+� Figma AI Ticket Generator Test Server started
+📋 Server running at http://localhost:3000
+🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket
+
+Example usage:
+curl -X POST http://localhost:3000 \
+  -H "Content-Type: application/json" \
+  -d '{"method":"analyze_project","params":{"figmaUrl":"https://figma.com/file/abc123"}}'
+Gemini test failed: Request failed with status code 400
+🤖 Starting AI-enhanced ticket generation...
+📋 Document type: jira
+🔮 AI enabled: true
+Gemini test failed: Request failed with status code 400
+🧠 AI Services Status: {
+  gemini: false,
+  geminiVision: false,
+  vision: false,
+  claude: false,
+  gpt4: false
+}
+⚠️ No AI services available, falling back to standard generation
+🎫 Generating enhanced tickets for: 0 frames
+🤝 Figma MCP integration: enabled
+� Figma AI Ticket Generator Test Server started
+📋 Server running at http://localhost:3000
+🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket
+
+Example usage:
+curl -X POST http://localhost:3000 \
+  -H "Content-Type: application/json" \
+  -d '{"method":"analyze_project","params":{"figmaUrl":"https://figma.com/file/abc123"}}'
+Gemini test failed: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key not valid. Please pass a valid API key."}]}}
+🤖 Starting AI-enhanced ticket generation...
+📋 Document type: jira
+🔮 AI enabled: true
+Gemini test failed: {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key not valid. Please pass a valid API key."}]}}
+🧠 AI Services Status: {
+  gemini: false,
+  geminiVision: false,
+  vision: false,
+  claude: false,
+  gpt4: false
+}
+⚠️ No AI services available, falling back to standard generation
+🎫 Generating enhanced tickets for: 0 frames
+🤝 Figma MCP integration: enabled

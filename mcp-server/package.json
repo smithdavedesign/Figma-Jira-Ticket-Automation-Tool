@@ -24,6 +24,7 @@
   "author": "Figma AI Ticket Generator Team",
   "license": "MIT",
   "dependencies": {
+    "@google/genai": "^1.25.0",
     "axios": "^1.6.0",
     "dotenv": "^16.3.0",
     "zod": "^3.22.0"
