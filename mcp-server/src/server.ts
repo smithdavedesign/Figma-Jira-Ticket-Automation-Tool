@@ -14,7 +14,9 @@ import { createServer } from 'http';
 // Load environment variables
 dotenv.config();
 import { FigmaWorkflowOrchestrator } from './figma/figma-mcp-client.js';
+import { enhancedFigmaMCPService, type FigmaMCPPromptConfig } from './figma/figma-mcp-integration.js';
 import { AdvancedAIService } from './ai/advanced-ai-service.js';
+import { FigmaMCPGeminiOrchestrator } from './ai/figma-mcp-gemini-orchestrator.js';
 import type { CodeGenerationOptions } from './figma/boilerplate-generator.js';
 import type { AIAnalysisConfig, DesignAnalysisResult } from './ai/advanced-ai-service.js';
 
@@ -1428,44 +1430,6 @@ export interface ${componentName}Ref {
   }
 
   /**
-   * Generate fallback ticket when Figma MCP is unavailable
-   */
-  private generateFallbackTicket(params: any): string {
-    const { description, documentType } = params;
-    const docTypeLabel = documentType === 'jira' ? 'Jira Ticket' : 
-                        documentType === 'confluence' ? 'Confluence Page' :
-                        documentType === 'wiki' ? 'Wiki Documentation' :
-                        documentType === 'agent' ? 'Agent Task' : 'Document';
-    
-    return `# ${docTypeLabel}
-
-## Description
-${description || 'Component implementation task'}
-
-## Technical Requirements
-- Implement the component according to Figma design specifications
-- Follow established design patterns and conventions
-- Ensure responsive design across different screen sizes
-- Add appropriate accessibility features (ARIA labels, keyboard navigation)
-
-## Implementation Notes
-- Use semantic HTML structure
-- Follow CSS naming conventions
-- Implement proper error handling
-- Add unit tests for functionality
-- Document any design decisions or constraints
-
-## Acceptance Criteria
-- [ ] Component matches Figma design visually
-- [ ] Responsive behavior works on mobile, tablet, and desktop
-- [ ] Accessibility requirements are met
-- [ ] Code follows team coding standards
-- [ ] Tests are written and passing
-
-*Note: Enhanced analysis temporarily unavailable. This is a standard implementation template.*`;
-  }
-
-  /**
    * Generate fallback boilerplate code when Figma MCP is unavailable
    */
   private generateFallbackBoilerplate(techStack: any): any {
@@ -1552,6 +1516,360 @@ export const Default = () => <Component />;`,
   // Add your prop types here
 }` : undefined
     };
+  }
+
+  /**
+   * Generate ticket using proper layer separation: Figma MCP (data) + Gemini (reasoning)
+   * This is the correct architectural approach where each layer has distinct responsibilities
+   */
+  async generateTicketWithProperLayerSeparation(params: {
+    figmaUrl: string;
+    prompt: string;
+    documentType: string;
+    context?: any;
+  }) {
+    try {
+      console.log('🏗️ Starting proper layer separation workflow...');
+      console.log('📊 Data Layer: Figma MCP');
+      console.log('🧠 Reasoning Layer: Gemini');
+      
+      // Initialize the orchestrator with Gemini API key
+      const geminiApiKey = process.env.GEMINI_API_KEY;
+      if (!geminiApiKey) {
+        throw new Error('Gemini API key not configured for reasoning layer');
+      }
+      
+      const orchestrator = new FigmaMCPGeminiOrchestrator(geminiApiKey);
+      
+      // Generate ticket using proper layer separation
+      const result = await orchestrator.generateTicketWithProperSeparation({
+        figmaUrl: params.figmaUrl,
+        prompt: params.prompt,
+        documentType: params.documentType,
+        context: params.context
+      });
+      
+      if (!result.success) {
+        return {
+          success: false,
+          error: 'Layer separation failed',
+          ticket: result.ticket,
+          metadata: result.metadata
+        };
+      }
+      
+      // Log the successful separation
+      console.log('✅ Layer Separation Complete:');
+      console.log(`   📊 Data Layer: ${result.dataLayer.assets.length} assets, ${Object.keys(result.dataLayer.designTokens).length} tokens`);
+      console.log(`   🧠 Reasoning Layer: ${result.reasoningLayer.analysisResult.length} chars of analysis`);
+      console.log(`   🎯 Final Ticket: ${result.ticket.length} chars`);
+      
+      return {
+        success: true,
+        ticket: result.ticket,
+        dataLayer: result.dataLayer,
+        reasoningLayer: result.reasoningLayer,
+        metadata: result.metadata,
+        architecture: {
+          dataSource: 'Figma MCP',
+          reasoningEngine: 'Gemini',
+          orchestration: 'Proper Layer Separation'
+        }
+      };
+      
+    } catch (error) {
+      console.error('❌ Proper layer separation failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        ticket: `# ❌ Architecture Error: Proper Layer Separation Failed
+
+## Issue
+The architectural separation between Figma MCP (data layer) and Gemini (reasoning layer) failed.
+
+## Error Details
+\`\`\`
+${error instanceof Error ? error.message : JSON.stringify(error)}
+\`\`\`
+
+## Architecture Goals
+- **Figma MCP**: Pure data extraction (design tokens, assets, structure)  
+- **Gemini**: Pure reasoning and generation (interpretation, strategy, recommendations)
+- **Orchestration**: Clean coordination between layers
+
+## Recovery Steps
+1. Verify Figma MCP server is running and accessible
+2. Confirm Gemini API key is valid and has quota
+3. Check network connectivity to both services
+4. Try with a smaller/simpler Figma selection
+5. Review error logs for specific failure point
+
+## Next Actions
+- Contact development team if issue persists
+- Use fallback generation methods if urgent
+- Document specific failure for architecture improvements`,
+        metadata: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          architecture: 'Failed layer separation'
+        }
+      };
+    }
+  }
+
+  /**
+   * Generate enhanced ticket using official Figma MCP server best practices
+   * Implements the complete workflow from Figma MCP documentation
+   */
+  async generateTicketWithFigmaMCP(params: {
+    figmaUrl: string;
+    prompt: string;
+    framework?: string;
+    stylingSystem?: string;
+    context?: any;
+  }) {
+    try {
+      console.log('🚀 Starting enhanced Figma MCP workflow...');
+      
+      // Step 1: Validate frame size following "avoid large frames" guidance
+      if (params.context?.mcpContext) {
+        const sizeCheck = enhancedFigmaMCPService.isOptimalFrameSize(params.context);
+        
+        if (!sizeCheck.isOptimal) {
+          console.warn('⚠️ Frame size not optimal for MCP processing');
+          
+          return {
+            success: false,
+            error: 'Frame too large for optimal processing',
+            suggestions: sizeCheck.suggestions,
+            ticket: `# ⚠️ Frame Size Optimization Required
+
+## Issue
+The selected Figma frame is too large for optimal MCP processing.
+
+## Recommendations
+${sizeCheck.suggestions.map(s => `- ${s}`).join('\n')}
+
+## Next Steps
+1. Select smaller sections (e.g., individual components)
+2. Break complex layouts into logical chunks
+3. Focus on specific areas like headers, cards, or buttons
+
+## Alternative Approach
+Generate tickets for smaller components first, then combine them into larger layouts.`
+          };
+        }
+      }
+      
+      // Step 2: Configure MCP prompt following best practices
+      const mcpConfig: FigmaMCPPromptConfig = {
+        framework: params.framework || 'react',
+        stylingSystem: params.stylingSystem || 'tailwind',
+        codebaseConventions: this.generateCodebaseConventions(params.context),
+        filePath: this.suggestFilePath(params.context),
+        componentLibrary: 'src/components/ui',
+        layoutSystem: 'flexbox'
+      };
+      
+      // Step 3: Generate effective prompt
+      const effectivePrompt = enhancedFigmaMCPService.generateEffectivePrompt(
+        params.prompt,
+        mcpConfig,
+        params.context
+      );
+      
+      // Step 4: Execute Figma MCP workflow
+      const mcpResult = await enhancedFigmaMCPService.generateCodeWithBestPractices(
+        params.figmaUrl,
+        mcpConfig,
+        params.context
+      );
+      
+      if (!mcpResult.success) {
+        console.error('❌ Figma MCP workflow failed:', mcpResult.errors);
+        
+        // Fallback to our enhanced ticket generation
+        console.log('🔄 Falling back to enhanced ticket generation...');
+        return this.generateFallbackTicket(params);
+      }
+      
+      // Step 5: Generate comprehensive ticket with MCP results
+      const ticket = this.generateMCPEnhancedTicket(params, mcpResult, effectivePrompt);
+      
+      console.log('✅ Enhanced Figma MCP ticket generated successfully');
+      
+      return {
+        success: true,
+        ticket: ticket,
+        mcpMetadata: {
+          codeGenerated: !!mcpResult.code,
+          assetsFound: mcpResult.assets?.length || 0,
+          designTokensExtracted: !!mcpResult.designTokens,
+          optimizationSuggestions: mcpResult.optimizationSuggestions
+        },
+        prompt: effectivePrompt
+      };
+      
+    } catch (error) {
+      console.error('💥 Enhanced Figma MCP workflow error:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        ticket: this.generateErrorTicket(params, error)
+      };
+    }
+  }
+
+  /**
+   * Generate codebase conventions based on context
+   */
+  private generateCodebaseConventions(context?: any): string {
+    let conventions = 'Follow these project conventions:\n';
+    conventions += '- Use TypeScript for all components\n';
+    conventions += '- Export components as named exports\n';
+    conventions += '- Include proper PropTypes or TypeScript interfaces\n';
+    conventions += '- Follow BEM methodology for CSS classes\n';
+    
+    if (context?.designSystemContext) {
+      conventions += '- Use design system tokens from detected system\n';
+      conventions += '- Maintain design system compliance\n';
+    }
+    
+    return conventions;
+  }
+
+  /**
+   * Suggest appropriate file path based on context
+   */
+  private suggestFilePath(context?: any): string {
+    if (context?.mcpContext?.componentInfo?.isComponent) {
+      return 'src/components/ui/';
+    }
+    
+    if (context?.mcpContext?.semanticName?.includes('Page')) {
+      return 'src/pages/';
+    }
+    
+    if (context?.mcpContext?.semanticName?.includes('Layout')) {
+      return 'src/layouts/';
+    }
+    
+    return 'src/components/';
+  }
+
+  /**
+   * Generate comprehensive ticket combining our analysis with Figma MCP results
+   */
+  private generateMCPEnhancedTicket(params: any, mcpResult: any, prompt: string): string {
+    const componentName = params.context?.name || 'Component';
+    const complexity = params.context?.mcpContext?.optimizationInfo?.complexity || 'medium';
+    
+    return `# 🎯 ${componentName} Implementation
+
+## Overview
+Generated using enhanced Figma MCP integration following official best practices.
+
+**Figma URL**: ${params.figmaUrl}
+**Component Complexity**: ${complexity}
+**MCP Integration**: ✅ Successfully processed
+
+## 🔧 Generated Code
+
+### Component Implementation
+\`\`\`typescript
+${mcpResult.code || '// Code generation failed - see fallback approach below'}
+\`\`\`
+
+### Design Tokens
+${mcpResult.designTokens ? `
+\`\`\`json
+${JSON.stringify(mcpResult.designTokens, null, 2)}
+\`\`\`
+` : 'No design tokens extracted from Figma'}
+
+## 📐 MCP Analysis Results
+
+### Assets Required
+${mcpResult.assets?.length ? mcpResult.assets.map((asset: string) => `- ${asset}`).join('\n') : 'No assets detected'}
+
+### Optimization Suggestions
+${mcpResult.optimizationSuggestions?.length ? mcpResult.optimizationSuggestions.map((suggestion: string) => `- ${suggestion}`).join('\n') : 'No optimization suggestions'}
+
+## ✅ Implementation Checklist
+
+### Required Steps
+- [ ] Review and test generated code
+- [ ] Download and implement required assets
+- [ ] Apply design tokens consistently
+- [ ] Test responsive behavior
+- [ ] Validate accessibility compliance
+- [ ] Add unit tests
+- [ ] Update Storybook (if applicable)
+
+### Quality Assurance
+- [ ] Code follows project conventions
+- [ ] Design matches Figma exactly
+- [ ] Performance is optimized
+- [ ] Accessibility standards met (WCAG 2.1 AA)
+
+## 📋 Implementation Notes
+
+### Effective Prompt Used
+\`\`\`
+${prompt}
+\`\`\`
+
+### Framework Configuration
+- **Framework**: ${params.framework || 'React'}
+- **Styling**: ${params.stylingSystem || 'Tailwind CSS'}
+- **Component Library**: src/components/ui
+
+---
+*Generated with Enhanced Figma MCP Integration | Following Official Best Practices*`;
+  }
+
+  /**
+   * Generate fallback ticket when MCP fails
+   */
+  private generateFallbackTicket(params: any): any {
+    return {
+      success: true,
+      ticket: `# 🔄 Fallback Implementation: ${params.context?.name || 'Component'}
+
+## Status
+Figma MCP server unavailable - using enhanced local generation.
+
+## Next Steps
+1. Retry when Figma MCP server is available
+2. Use local context analysis for basic implementation
+3. Manually verify design alignment
+
+## Context Available
+${JSON.stringify(params.context || {}, null, 2)}`,
+      isFallback: true
+    };
+  }
+
+  /**
+   * Generate error ticket for debugging
+   */
+  private generateErrorTicket(params: any, error: any): string {
+    return `# ❌ Implementation Error: ${params.context?.name || 'Component'}
+
+## Error Details
+\`\`\`
+${error instanceof Error ? error.message : JSON.stringify(error)}
+\`\`\`
+
+## Debugging Information
+- **Figma URL**: ${params.figmaUrl}
+- **Context**: ${JSON.stringify(params.context || {}, null, 2)}
+
+## Recommended Actions
+1. Verify Figma URL is accessible
+2. Check if frame size is optimal
+3. Retry with smaller selection
+4. Contact development team if issue persists`;
   }
 
   start(): void {
