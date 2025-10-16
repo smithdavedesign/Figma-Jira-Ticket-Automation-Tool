@@ -17,8 +17,14 @@ This directory contains all HTML user interface files, properly organized to avo
 - Used by Playwright tests for automated validation
 - Should be kept in sync with unified file
 
+### `/ui/index.html`
+**✅ MAIN PLUGIN ENTRY POINT** - Enhanced UI with context preview:
+- Self-contained HTML with all dependencies inlined
+- Enhanced context preview functionality
+- Used directly by Figma plugin (manifest points here)
+
 ### `/ui/plugin/index.html`
-**✅ FIGMA PLUGIN** - Copy of unified file for plugin build:
+**⚠️ LEGACY BACKUP** - Old plugin structure (for reference only):
 - Used by build script to create `dist/ui/index.html`
 - Processed with CSS inlining for Figma compatibility
 - Should be kept in sync with unified file

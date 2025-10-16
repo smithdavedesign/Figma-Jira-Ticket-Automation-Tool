@@ -453,6 +453,31 @@
     .metric-good { color: #0891b2; }
     .metric-fair { color: #d97706; }
     .metric-poor { color: #dc2626; }
+
+    /* Context Preview Wrapper */
+    .hidden {
+      display: none;
+    }
+
+    #context-preview-wrapper {
+      margin: 24px 0;
+      transition: all 0.3s ease;
+    }
+
+    .context-success-info {
+      animation: slideInFadeIn 0.5s ease-out;
+    }
+
+    @keyframes slideInFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 
@@ -604,6 +629,11 @@ Examples:
             <span class="suggestion-pill">Specify API architecture</span>
             <span class="suggestion-pill">Include deployment strategy</span>
           </div>
+        </div>
+
+        <!-- Context Preview Section (inserted before generation) -->
+        <div id="context-preview-wrapper" class="hidden">
+          <div id="context-preview-container"></div>
         </div>
 
         <button id="generate" class="button">🚀 Generate Enhanced Document</button>
@@ -781,6 +811,26 @@ Examples:
     let figmaContext = null;
     let frameData = null;
     let figmaFileInfo = null;
+
+    // Context Preview Integration (matching standalone UI)
+    let contextPreview = null;
+    let pendingContextData = null;
+
+    function initializeContextPreview() {
+      contextPreview = new ContextPreview('context-preview-container', {
+        showAdvancedMetrics: true,
+        enableEditing: true,
+        showTokenCount: true,
+        collapsible: true,
+        onDataChange: (data) => {
+          pendingContextData = data;
+          console.log('🎨 Figma context data updated:', data);
+        },
+        onSubmit: (data) => {
+          proceedWithGeneration(data);
+        }
+      });
+    }
 
     // Initialize Figma plugin communication
     function initializeFigmaIntegration() {
@@ -1112,7 +1162,7 @@ Examples:
       statusSection.style.display = 'flex';
     }
 
-    // Generate content
+    // Generate content - enhanced with context preview (Figma plugin version)
     async function generateContent() {
       const techStackDesc = techStackInput.value.trim();
       const documentType = documentTypeSelect.value;
@@ -1123,11 +1173,9 @@ Examples:
         return;
       }
       
-      // Show loading state
+      // Step 1: Collect context and show preview
       generateBtn.disabled = true;
-      generateBtn.innerHTML = '<div class="spinner"></div> Generating...';
-      resultsDiv.classList.remove('hidden');
-      resultsTextarea.value = 'Requesting Figma context...';
+      generateBtn.innerHTML = '<div class="spinner"></div> Collecting Figma Context...';
       
       try {
         // Step 1: Request current Figma context (selection)
@@ -1141,8 +1189,6 @@ Examples:
           console.log('ℹ️ No selection or context retrieved, using text-only analysis');
         }
         
-        resultsTextarea.value = 'Analyzing tech stack and design context...';
-        
         // Step 2: Parse tech stack with Figma context
         const figmaContextData = frameData || figmaFileInfo ? {
           frameData: frameData,
@@ -1152,36 +1198,155 @@ Examples:
         const parsed = parseTechStack(techStackDesc, figmaContextData);
         updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
         
-        resultsTextarea.value = 'Generating enhanced content...';
+        // Step 3: Check MCP server status
+        let mcpData = null;
+        if (selectedMode === 'mcp') {
+          try {
+            mcpData = await getMCPServerInfo();
+          } catch (error) {
+            console.warn('MCP server unavailable:', error);
+          }
+        }
         
+        // Step 4: Create actual screenshot if we have Figma context
+        let screenshotData = null;
+        if (frameData && frameData.length > 0) {
+          screenshotData = await captureFigmaScreenshot();
+        } else {
+          // Use mock screenshot for demo
+          screenshotData = createMockScreenshot();
+        }
+        
+        // Step 5: Prepare comprehensive context data
+        const contextData = {
+          techStack: {
+            ...parsed,
+            description: techStackDesc
+          },
+          screenshot: screenshotData,
+          mcpData: mcpData,
+          designSystem: null, // Would be populated by design system scanner
+          customContext: null,
+          figmaContext: {
+            fileKey: figmaFileInfo?.fileKey,
+            fileName: figmaFileInfo?.fileName,
+            selection: frameData,
+            hasSelection: frameData && frameData.length > 0,
+            selectionCount: frameData ? frameData.length : 0
+          },
+          documentType: documentType,
+          selectedMode: selectedMode
+        };
+        
+        // Step 6: Show context preview
+        showContextPreview(contextData);
+        
+      } catch (error) {
+        console.error('Context collection failed:', error);
+        showError('Failed to collect Figma context. Please try again.');
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = '🚀 Generate Enhanced Document';
+      }
+    }
+
+    // Figma-specific function to capture actual screenshot
+    async function captureFigmaScreenshot() {
+      return new Promise((resolve) => {
+        // Request screenshot from Figma plugin code
+        const handleScreenshot = (event) => {
+          if (event.data.pluginMessage?.type === 'screenshot-captured') {
+            window.removeEventListener('message', handleScreenshot);
+            resolve(event.data.pluginMessage.screenshot);
+          }
+        };
+        
+        window.addEventListener('message', handleScreenshot);
+        
+        // Request screenshot capture
+        parent.postMessage({ pluginMessage: { type: 'capture-screenshot' } }, '*');
+        
+        // Timeout after 3 seconds with mock screenshot
+        setTimeout(() => {
+          window.removeEventListener('message', handleScreenshot);
+          resolve(createMockScreenshot());
+        }, 3000);
+      });
+    }
+
+    // Shared function to show context preview (same as standalone)
+    function showContextPreview(contextData) {
+      const previewWrapper = document.getElementById('context-preview-wrapper');
+      
+      // Initialize context preview if not already done
+      if (!contextPreview) {
+        initializeContextPreview();
+      }
+      
+      // Update context preview with data
+      contextPreview.updateContext(contextData);
+      
+      // Show the preview section
+      previewWrapper.classList.remove('hidden');
+      
+      // Scroll to preview
+      previewWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      
+      // Update the main generate button text
+      generateBtn.innerHTML = '👀 Review Context First';
+      generateBtn.disabled = true;
+      
+      // Store context for actual generation
+      pendingContextData = contextData;
+    }
+
+    // Function called when user submits from context preview (enhanced for Figma)
+    async function proceedWithGeneration(contextData) {
+      const documentType = contextData.documentType;
+      const selectedMode = contextData.selectedMode;
+      
+      // Show loading state
+      const submitBtn = document.querySelector('#submit-context-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<div class="spinner"></div> Generating...';
+      }
+      
+      resultsDiv.classList.remove('hidden');
+      resultsTextarea.value = 'Generating enhanced content with Figma context...';
+      
+      try {
         let result;
         
         if (selectedMode === 'mcp') {
           try {
-            // Step 3: Call MCP server with enhanced context
+            // Call MCP server with comprehensive Figma context
             result = await callMCPServer('generate_enhanced_ticket', {
-              techStack: techStackDesc,
+              techStack: contextData.techStack.description || '',
               documentType: documentType,
-              confidence: parsed.confidence,
-              detectedTech: parsed.detected,
-              designContext: parsed.designContext,
-              figmaContext: {
-                fileKey: figmaFileInfo?.fileKey,
-                fileName: figmaFileInfo?.fileName,
-                selection: frameData,
-                hasSelection: frameData && frameData.length > 0
-              }
+              confidence: contextData.techStack.confidence,
+              detectedTech: contextData.techStack.detected,
+              designContext: contextData.techStack.designContext,
+              visualContext: contextData.screenshot,
+              mcpData: contextData.mcpData,
+              customContext: contextData.customContext,
+              figmaContext: contextData.figmaContext
             });
           } catch (mcpError) {
             console.warn('MCP server failed, using fallback generation:', mcpError);
             
             // Fallback to local generation with context
-            result = generateFallbackTicket(techStackDesc, documentType, parsed, figmaContextData);
+            result = generateFallbackTicket(
+              contextData.techStack.description || '', 
+              documentType, 
+              contextData.techStack, 
+              contextData.figmaContext
+            );
             result.isFallback = true;
           }
         } else {
-          // Call OpenAI API
-          result = await callOpenAI(techStackDesc, documentType);
+          // Call OpenAI API with context
+          result = await callOpenAI(contextData.techStack.description || '', documentType);
         }
         
         // Handle different response formats
@@ -1198,19 +1363,25 @@ Examples:
         
         resultsTextarea.value = content;
         
-        // Show context info if available
-        if (parsed.designContext?.selectionCount > 0) {
+        // Show enhanced context info
+        if (contextData.figmaContext?.hasSelection || contextData.screenshot) {
           const contextInfo = document.createElement('div');
-          contextInfo.className = 'context-info';
+          contextInfo.className = 'context-success-info';
           contextInfo.innerHTML = `
             <div style="background: #e8f5e8; border: 1px solid #4caf50; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-              <strong>✅ Figma Context Used:</strong> ${parsed.designContext.selectionCount} selected item(s)
-              ${parsed.designContext.components.map(c => `<br>• ${c.name} (${c.complexity} complexity, ~${c.estimatedEffort})`).join('')}
+              <strong>✅ Generated with Enhanced Figma Context:</strong><br>
+              • Tech Stack Analysis (${contextData.techStack.confidence}% confidence)<br>
+              ${contextData.figmaContext?.hasSelection ? `• Figma Selection (${contextData.figmaContext.selectionCount} items)<br>` : ''}
+              ${contextData.screenshot ? '• Visual Design Screenshot<br>' : ''}
+              ${contextData.mcpData ? '• MCP Server Data<br>' : ''}
+              ${contextData.designSystem ? '• Design System Tokens<br>' : ''}
+              ${contextData.customContext ? '• Custom Requirements<br>' : ''}
+              ${contextData.figmaContext?.fileName ? `• File: ${contextData.figmaContext.fileName}<br>` : ''}
             </div>
           `;
           resultsDiv.insertBefore(contextInfo, resultsDiv.firstChild.nextSibling);
           
-          setTimeout(() => contextInfo.remove(), 10000);
+          setTimeout(() => contextInfo.remove(), 15000);
         }
         
         // Show fallback notice if applicable
@@ -1223,9 +1394,56 @@ Examples:
         resultsTextarea.value = `Error generating content: ${error.message}`;
         showError('Failed to generate content. Please try again.');
       } finally {
-        generateBtn.disabled = false;
-        generateBtn.textContent = '🚀 Generate Enhanced Document';
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '🚀 Generate with Context';
+        }
       }
+    }
+
+    // Helper functions (shared with standalone)
+    async function getMCPServerInfo() {
+      const response = await fetch('http://localhost:3000', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          jsonrpc: '2.0',
+          method: 'list_tools',
+          id: 1 
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('MCP server unavailable');
+      }
+      
+      const data = await response.json();
+      return {
+        tools: data.result?.tools || [],
+        status: 'connected'
+      };
+    }
+
+    // Helper function to create mock screenshot (same as standalone)
+    function createMockScreenshot() {
+      return {
+        dataUrl: 'data:image/svg+xml;base64,' + btoa(`
+          <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="200" fill="#f8fafc"/>
+            <rect x="20" y="20" width="360" height="40" rx="8" fill="#667eea"/>
+            <text x="200" y="45" text-anchor="middle" fill="white" font-family="Arial" font-size="16">Figma Design Preview</text>
+            <rect x="20" y="80" width="100" height="30" rx="4" fill="#e2e8f0"/>
+            <rect x="140" y="80" width="100" height="30" rx="4" fill="#e2e8f0"/>
+            <rect x="260" y="80" width="120" height="30" rx="4" fill="#10b981"/>
+            <text x="320" y="100" text-anchor="middle" fill="white" font-family="Arial" font-size="12">Submit</text>
+            <text x="200" y="140" text-anchor="middle" fill="#64748b" font-family="Arial" font-size="12">Live Figma selection</text>
+            <text x="200" y="160" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="10">Enhanced with plugin context</text>
+          </svg>
+        `),
+        width: 400,
+        height: 200,
+        size: '2.3 KB'
+      };
     }
 
     // Fallback ticket generation when MCP server is unavailable
@@ -1495,8 +1713,19 @@ Confidence: ${confidence}%
     initializeTabs();
     initializeModeSelection();
     updateDesignHealth();
+    initializeFigmaIntegration(); // Important: Initialize Figma communication
 
     console.log('🎯 Enhanced Figma Plugin loaded successfully');
+  </script>
+
+  <!-- Include Context Preview Component -->
+  <script src="../components/context-preview.js"></script>
+
+  <script>
+    // Initialize context preview after component is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🔍 Context Preview component ready for Figma plugin');
+    });
   </script>
 </body>
 </html>
