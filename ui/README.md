@@ -44,6 +44,14 @@ Test-specific HTML files:
 - `test-ui.html` - Basic test interface
 - `test-interactive-suite.html` - Interactive test suite
 - `test-figma-plugin.html` - Built plugin copy for testing
+- `test-figma-integration.html` - Figma integration testing
+- `test-ui-functionality.html` - UI functionality validation
+- `context-preview-test.html` - Context preview testing
+
+### `/ui/demos/`
+Demonstration and simulation files:
+- `enhanced-data-layer-demo.html` - Enhanced data layer demonstration
+- `figma-plugin-simulator.html` - Figma plugin simulation environment
 
 ## 🔄 Sync Strategy
 

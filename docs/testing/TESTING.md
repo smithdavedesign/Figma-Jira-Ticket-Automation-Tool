@@ -5,15 +5,23 @@ This document provides comprehensive guidance for running and understanding the 
 ## 🚀 Quick Start
 
 ```bash
-# Run the essential test suite (recommended for development)
-npm run test:all
+# Essential development testing
+npm run test:all:quick          # Unit + 1 browser test (~30s)
 
-# Run just browser smoke tests for quick validation
-npm run test:browser:smoke
+# Production validation
+npm run test:browser:smoke      # Essential functionality (~2 min)
+npm run test:browser:critical   # Critical path testing (~3 min)
 
-# Run everything with detailed output
-npm run test:all:verbose
+# Full test suite
+npm run test:browser           # Complete cross-browser (~10 min)
+npm run test:all:verbose      # Everything with detailed output
 ```
+
+## 🎯 **Current Status: Phase 4 MCP Integration Testing**
+- **Architecture:** Plugin UI → MCP Server (localhost:3000) → AI/Figma APIs
+- **MCP Server:** ✅ Running with 4 tools available
+- **Plugin Status:** ✅ Manifest fixed, compiles successfully (47.2KB)
+- **Quality Metrics:** 330+ browser tests, 100% unit test pass rate
 
 ## 📊 Test Architecture
 

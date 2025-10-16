@@ -1,6 +1,21 @@
 # 📚 Figma AI Ticket Generator Documentation
 
-Complete documentation for the production-ready Figma AI Ticket Generator plugin.
+Complete documentation for the production-ready Figma AI Ticket Generator plugin with MCP server integration.
+
+## 🧠 **START HERE: Master Project Context**
+
+**🎯 [MASTER_PROJECT_CONTEXT.md](./MASTER_PROJECT_CONTEXT.md)** - **READ FIRST!**  
+Complete project overview, architecture, current status, and AI assistant rules.
+
+## 🎯 **Documentation Organization** 
+*Updated October 16, 2025 - Systematic cleanup and organization complete*
+
+### ✅ **Recent Cleanup (October 16, 2025)**
+- **22 legacy files removed** - docs/legacy/ directory eliminated
+- **Testing docs consolidated** - Enhanced single testing guide  
+- **Implementation details organized** - Historical fixes summarized
+- **Proper categorization** - All docs in appropriate subdirectories
+- **Clean root structure** - Only essential organizing documents remain
 
 ## � **Documentation Structure**
 
@@ -34,6 +49,11 @@ docs/
 
 ## � **Quick Navigation**
 
+### **🧠 For AI Assistants & New Team Members**
+- **[MASTER PROJECT CONTEXT](./MASTER_PROJECT_CONTEXT.md)** - 🎯 **START HERE** - Complete project overview
+- **[Documentation Standards](./DOCUMENTATION_STANDARDS.md)** - Organization rules and placement guidelines
+- **[Architecture Clarification](./troubleshooting/ARCHITECTURE_CLARIFICATION.md)** - MCP server architecture (CRITICAL)
+
 ### **👤 For Users**
 - **[Quick Start Guide](./User%20Guides/QUICK_START.md)** - Get up and running in 5 minutes
 - **[User Guide](./User%20Guides/USER-GUIDE.md)** - Complete usage documentation
@@ -44,9 +64,9 @@ docs/
 - **[Strategic Analysis](./Strategic%20Planning/FIGMA-MCP-STRATEGIC-ANALYSIS.md)** - 📊 Market positioning & strategy
 
 ### **🔧 Technical Details**
-- **[MCP Implementation](./Technical%20Implementation/MCP-IMPLEMENTATION-PLAN.md)** - Server architecture
-- **[Design System Integration](./Technical%20Implementation/DESIGN_SYSTEM_INTEGRATION.md)** - Advanced features
-- **[Production Status](./PRODUCTION-READINESS.md)** - ✅ Deployment readiness
+- **[Phase 3 Complete](./project-phases/PHASE_3_COMPLETE.md)** - Current achievements and architecture
+- **[Phase 4 Plan](./project-phases/PHASE_4_PLAN.md)** - Production deployment roadmap
+- **[MCP Integration](./Technical%20Implementation/Figma%20MCP%20Integration/)** - Server architecture details
 
 ## 🎯 **Current Status**
 

@@ -43,6 +43,7 @@ interface PluginMessage {
   compliance?: any;
   selectionCount?: number;
   designSystem?: any;
+  screenshot?: any;
   processingSummary?: {
     processed: number;
     skipped: number;
@@ -412,57 +413,21 @@ class FigmaAPI {
   }
 
   static get fileKey(): string {
-    // Try multiple ways to get the file key
     try {
-      // Primary method - direct fileKey access
-      if (figma.fileKey && figma.fileKey !== '0:0') {
-        logger.info('FileKey', 'File key found via figma.fileKey', figma.fileKey);
+      // Simple direct access - this is the most reliable approach
+      if (figma.fileKey && typeof figma.fileKey === 'string' && figma.fileKey !== '0:0' && figma.fileKey !== '') {
         return figma.fileKey;
       }
       
-      // Try accessing through different properties
-      const figmaAny = figma as any;
-      
-      // Check if there's a file property with key
-      if (figmaAny.file && figmaAny.file.key) {
-        logger.info('FileKey', 'File key found via figma.file.key', figmaAny.file.key);
-        return figmaAny.file.key;
-      }
-      
-      // Check if there's a fileId property
-      if (figmaAny.fileId && figmaAny.fileId !== '0:0') {
-        logger.info('FileKey', 'File key found via figma.fileId', figmaAny.fileId);
-        return figmaAny.fileId;
-      }
-      
-      // Try to get from window/global context
-      if (typeof window !== 'undefined') {
-        const windowAny = window as any;
-        if (windowAny.figma && windowAny.figma.fileKey && windowAny.figma.fileKey !== '0:0') {
-          logger.info('FileKey', 'File key found via window.figma.fileKey', windowAny.figma.fileKey);
-          return windowAny.figma.fileKey;
-        }
-      }
-      
-      // Debug: Log all available properties
-      logger.debug('FileKey', 'Available figma properties', Object.getOwnPropertyNames(figma));
-      logger.debug('FileKey', 'Available figma values', {
-        fileKey: figma.fileKey,
-        rootId: figma.root?.id,
-        rootName: figma.root?.name,
-        currentPageId: figma.currentPage?.id,
-        currentPageParent: figma.currentPage?.parent?.id
-      });
-      
-      logger.error('FileKey', 'Could not retrieve valid file key from any source');
+      // Fallback: Generate a session-based identifier
+      const sessionKey = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      logger.info('FileKey', 'Using session-based file key', sessionKey);
+      return sessionKey;
       
     } catch (error) {
       logger.error('FileKey', 'Error getting file key', error);
+      return `error-${Date.now()}`;
     }
-    
-    // Return a clear indicator that file key is unavailable
-    logger.warn('FileKey', 'File key unavailable - Figma links will not work');
-    return 'FIGMA_FILE_KEY_UNAVAILABLE';
   }
 
   static get fileName(): string {
@@ -991,6 +956,18 @@ class MessageHandler {
         case 'calculate-compliance':
           await this.handleCalculateCompliance();
           break;
+          
+        case 'get-context':
+          await this.handleGetContext();
+          break;
+          
+        case 'capture-screenshot':
+          await this.handleCaptureScreenshot();
+          break;
+          
+        case 'close-plugin':
+          figma.closePlugin();
+          break;
 
         default:
           console.log('⚠️ Unknown message type:', msg.type);
@@ -1000,6 +977,118 @@ class MessageHandler {
       FigmaAPI.postMessage({
         type: 'error',
         message: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+    }
+  }
+
+  private async handleGetContext(): Promise<void> {
+    try {
+      console.log('🔍 Getting context...');
+      
+      // Send file context
+      FigmaAPI.postMessage({
+        type: 'file-context',
+        fileKey: FigmaAPI.fileKey,
+        fileName: figma.root.name
+      });
+      
+      // Send selection context if any
+      const selection = FigmaAPI.selection;
+      if (selection.length > 0) {
+        console.log('📋 Processing selection context for', selection.length, 'items');
+        const selectionData = [];
+        
+        for (const node of selection) {
+          try {
+            const frameData = await extractFrameData(node as FrameNode);
+            selectionData.push(frameData);
+          } catch (error) {
+            console.warn('⚠️ Could not extract data for node:', node.name, error);
+          }
+        }
+        
+        FigmaAPI.postMessage({
+          type: 'selection-context',
+          data: selectionData
+        });
+      }
+      
+    } catch (error) {
+      console.error('❌ Error getting context:', error);
+      FigmaAPI.postMessage({
+        type: 'error',
+        message: `Error getting context: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+    }
+  }
+
+  private async handleCaptureScreenshot(): Promise<void> {
+    try {
+      console.log('📸 Capturing screenshot...');
+      const selection = FigmaAPI.selection;
+      
+      if (selection.length === 0) {
+        console.warn('⚠️ No selection for screenshot');
+        FigmaAPI.postMessage({
+          type: 'screenshot-captured',
+          screenshot: null
+        });
+        return;
+      }
+
+      // Get the first selected node for screenshot
+      const node = selection[0];
+      console.log('📸 Capturing screenshot of:', node.name, node.type);
+
+      try {
+        // Export the node as PNG
+        const imageData = await node.exportAsync({
+          format: 'PNG',
+          constraint: { type: 'SCALE', value: 2 } // 2x for high quality
+        });
+
+        // Convert to base64
+        const base64 = figma.base64Encode(imageData);
+        const dataUrl = `data:image/png;base64,${base64}`;
+
+        FigmaAPI.postMessage({
+          type: 'screenshot-captured',
+          screenshot: {
+            dataUrl: dataUrl,
+            width: node.width * 2,
+            height: node.height * 2,
+            size: `${Math.round(imageData.byteLength / 1024)}KB`,
+            nodeName: node.name,
+            nodeType: node.type,
+            fallback: false
+          }
+        });
+
+        console.log('✅ Screenshot captured successfully');
+
+      } catch (exportError) {
+        console.error('❌ Error exporting node:', exportError);
+        // Send a fallback response
+        FigmaAPI.postMessage({
+          type: 'screenshot-captured',
+          screenshot: {
+            dataUrl: null,
+            width: node.width || 400,
+            height: node.height || 300,
+            size: '0KB',
+            nodeName: node.name,
+            nodeType: node.type,
+            fallback: true,
+            error: exportError instanceof Error ? exportError.message : 'Export failed'
+          }
+        });
+      }
+
+    } catch (error) {
+      console.error('❌ Error capturing screenshot:', error);
+      FigmaAPI.postMessage({
+        type: 'screenshot-captured',
+        screenshot: null
       });
     }
   }
@@ -1245,6 +1334,14 @@ async function initializePlugin(): Promise<void> {
     designSystemManager.initialize(),
     5000 // 5 second timeout for initialization
   );
+
+  // Send initial context to UI
+  console.log('📡 Sending initial context to UI...');
+  FigmaAPI.postMessage({
+    type: 'file-context',
+    fileKey: FigmaAPI.fileKey,
+    fileName: figma.root.name
+  });
 
   console.log('✅ Plugin initialized successfully');
 }

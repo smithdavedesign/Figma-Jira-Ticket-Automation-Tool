@@ -762,7 +762,35 @@ Examples:
         </div>
       </div>
 
-      <!-- Enhanced Context Preview Section -->
+      <!-- MCP Server Status Section -->
+      <div class="context-preview">
+        <div class="context-preview-header">
+          <h3 class="context-preview-title">
+            🔌 MCP Server Status
+            <span id="server-status-badge" class="context-preview-badge">Checking...</span>
+          </h3>
+          <p class="context-preview-subtitle">Model Context Protocol server connection</p>
+        </div>
+        <div class="context-preview-body">
+          <div class="context-section" id="server-status-section">
+            <div class="section-header">
+              <h4 class="section-title">🚀 Server Connection</h4>
+              <div class="section-status" id="server-connection-status">
+                <span class="status-indicator">⚪</span>
+                <span class="status-text">Connecting...</span>
+              </div>
+            </div>
+            <div class="section-content" id="server-connection-content">
+              <div class="empty-state">
+                <span class="empty-icon">🔌</span>
+                <p>Checking MCP server connection...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- Enhanced Context Preview Section -->
       <div id="context-preview-wrapper" class="hidden">
         <div class="context-preview">
           <div class="context-preview-header">
@@ -1024,8 +1052,149 @@ Examples:
       design: "Figma design system with design tokens, component library, style guide, accessibility standards, responsive breakpoints"
     };
 
+    // MCP Server Configuration
+    const MCP_SERVER_URL = 'http://localhost:3000';
+    let mcpServerStatus = {
+      connected: false,
+      tools: [],
+      version: null,
+      lastCheck: null
+    };
+
+    // Check MCP Server Status
+    async function checkMCPServerStatus() {
+      try {
+        console.log('🔌 Checking MCP server status...');
+        const response = await fetch(MCP_SERVER_URL, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const serverInfo = await response.json();
+          mcpServerStatus = {
+            connected: true,
+            tools: serverInfo.tools || [],
+            version: serverInfo.version,
+            lastCheck: new Date()
+          };
+          
+          console.log('✅ MCP server connected:', serverInfo);
+          updateServerStatusUI(true, serverInfo);
+        } else {
+          throw new Error(`Server responded with ${response.status}`);
+        }
+      } catch (error) {
+        console.error('❌ MCP server connection failed:', error);
+        mcpServerStatus = {
+          connected: false,
+          tools: [],
+          version: null,
+          lastCheck: new Date()
+        };
+        updateServerStatusUI(false, { error: error.message });
+      }
+    }
+
+    // Update Server Status UI
+    function updateServerStatusUI(connected, info) {
+      const badge = document.getElementById('server-status-badge');
+      const section = document.getElementById('server-status-section');
+      const status = document.getElementById('server-connection-status');
+      const content = document.getElementById('server-connection-content');
+
+      if (connected) {
+        badge.textContent = 'Connected';
+        badge.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        
+        section.classList.add('has-content');
+        
+        status.innerHTML = `
+          <span class="status-indicator">✅</span>
+          <span class="status-text">Connected (v${info.version})</span>
+        `;
+
+        content.innerHTML = `
+          <div style="font-size: 13px;">
+            <div><strong>Server URL:</strong> ${MCP_SERVER_URL}</div>
+            <div><strong>Available Tools:</strong> ${info.tools.length}</div>
+            <div style="margin-top: 8px;">
+              ${info.tools.map(tool => 
+                `<span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin: 2px 4px 2px 0;">${tool}</span>`
+              ).join('')}
+            </div>
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #166534; margin-top: 8px;">
+              🚀 MCP Server Ready - AI-powered design analysis available
+            </div>
+          </div>
+        `;
+      } else {
+        badge.textContent = 'Disconnected';
+        badge.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        
+        section.classList.remove('has-content');
+        
+        status.innerHTML = `
+          <span class="status-indicator">❌</span>
+          <span class="status-text">Connection Failed</span>
+        `;
+
+        content.innerHTML = `
+          <div style="font-size: 13px; color: #dc2626;">
+            <div><strong>Error:</strong> ${info.error}</div>
+            <div style="margin-top: 8px; font-size: 12px; color: #6b7280;">
+              Make sure the MCP server is running:<br>
+              <code style="background: #f3f4f6; padding: 2px 4px; border-radius: 3px;">cd mcp-server && npm start</code>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Call MCP Server Tool
+    async function callMCPTool(toolName, params) {
+      if (!mcpServerStatus.connected) {
+        throw new Error('MCP server not connected');
+      }
+
+      console.log(`🔧 Calling MCP tool: ${toolName}`, params);
+
+      try {
+        const response = await fetch(MCP_SERVER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            method: toolName,
+            params: params
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`MCP call failed: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log(`✅ MCP tool ${toolName} completed:`, result);
+        return result;
+
+      } catch (error) {
+        console.error(`❌ MCP tool ${toolName} failed:`, error);
+        throw error;
+      }
+    }
+
     // Initialize Figma plugin communication
     function initializeFigmaIntegration() {
+      // Check MCP server status first
+      checkMCPServerStatus();
+      
+      // Set up periodic server status checks
+      setInterval(checkMCPServerStatus, 30000); // Check every 30 seconds
+
       // Listen for messages from Figma plugin code
         window.addEventListener('message', (event) => {
           console.log('🎨 Received message:', event.data);
@@ -1401,71 +1570,66 @@ Examples:
       
       // Show loading state
       submitContextBtn.disabled = true;
-      submitContextBtn.innerHTML = '<div class="spinner"></div> Generating...';
+      submitContextBtn.innerHTML = '<div class="spinner"></div> Generating with MCP...';
       
       resultsDiv.classList.remove('hidden');
-      resultsTextarea.value = 'Generating enhanced content with context...';
+      resultsTextarea.value = 'Connecting to MCP server for AI-powered generation...';
       
       try {
-        // Generate enhanced content using Figma plugin message
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'generate-ticket',
-            contextData: contextData
-          } 
-        }, '*');
-        
-        // Show success message
-        resultsTextarea.value = `# Enhanced ${documentType.charAt(0).toUpperCase() + documentType.slice(1)}
+        // Check MCP server connection first
+        if (!mcpServerStatus.connected) {
+          await checkMCPServerStatus();
+          if (!mcpServerStatus.connected) {
+            throw new Error('MCP server is not available. Please start the server first.');
+          }
+        }
 
-## 🎨 Generated with Enhanced Context
+        // Prepare MCP parameters
+        const mcpParams = {
+          figmaUrl: `https://figma.com/file/${contextData.figmaContext?.fileName || 'current-file'}`,
+          techStack: contextData.techStack.description,
+          documentType: documentType,
+          visualContext: contextData.screenshot ? {
+            hasScreenshot: true,
+            description: `Screenshot of ${contextData.figmaContext?.selectionCount || 0} selected elements`
+          } : null,
+          selectionCount: contextData.figmaContext?.selectionCount || 0
+        };
 
-### Tech Stack Analysis
-- **Confidence**: ${contextData.techStack.confidence}%
-- **Frameworks**: ${contextData.techStack.detected.frameworks.join(', ') || 'None detected'}
-- **Languages**: ${contextData.techStack.detected.languages.join(', ') || 'None detected'}
+        console.log('🎯 Calling MCP generate_enhanced_ticket tool...');
+        resultsTextarea.value = 'Generating content using AI-powered MCP server...';
 
-### Context Summary
-- **Visual Context**: ${contextData.screenshot ? 'Screenshot captured' : 'No screenshot'}
-- **Figma Selection**: ${contextData.figmaContext?.selectionCount || 0} items
-- **Description**: ${contextData.techStack.description}
+        // Call MCP server to generate enhanced ticket
+        const result = await callMCPTool('generate_enhanced_ticket', mcpParams);
 
-### Implementation Requirements
-Based on the enhanced context analysis, implement the following:
+        // Extract the generated content
+        let generatedContent = '';
+        if (result.content && Array.isArray(result.content)) {
+          generatedContent = result.content
+            .filter(item => item.type === 'text')
+            .map(item => item.text)
+            .join('\n\n');
+        } else if (result.text) {
+          generatedContent = result.text;
+        } else {
+          generatedContent = JSON.stringify(result, null, 2);
+        }
 
-1. **Setup Development Environment**
-   - Configure ${contextData.techStack.detected.frameworks.join(' + ') || 'specified frameworks'}
-   - Set up development dependencies
-   - Initialize project structure
-
-2. **Component Implementation**
-   - Create responsive components based on design
-   - Implement proper state management
-   - Add error handling and validation
-
-3. **Testing & Quality**
-   - Write unit tests for components
-   - Implement integration tests
-   - Ensure accessibility compliance
-
-4. **Documentation**
-   - API documentation
-   - Component usage examples
-   - Deployment instructions
-
----
-*Generated with Enhanced Context Preview - ${new Date().toLocaleString()}*`;
+        // Display the generated content
+        resultsTextarea.value = generatedContent;
         
         // Show enhanced context info
         const contextInfo = document.createElement('div');
         contextInfo.className = 'context-success-info';
         contextInfo.innerHTML = `
           <div style="background: #e8f5e8; border: 1px solid #4caf50; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-            <strong>✅ Generated with Enhanced Context:</strong><br>
+            <strong>✅ Generated with MCP Server:</strong><br>
+            • AI-Powered Analysis via MCP Protocol<br>
             • Tech Stack Analysis (${contextData.techStack.confidence}% confidence)<br>
             ${contextData.figmaContext?.hasSelection ? `• Figma Selection (${contextData.figmaContext.selectionCount} items)<br>` : ''}
             ${contextData.screenshot ? '• Visual Design Screenshot<br>' : ''}
-            ${contextData.figmaContext?.fileName ? `• File: ${contextData.figmaContext.fileName}<br>` : ''}
+            • Server: ${MCP_SERVER_URL}<br>
+            • Tools Available: ${mcpServerStatus.tools.length}
           </div>
         `;
         resultsDiv.insertBefore(contextInfo, resultsDiv.firstChild.nextSibling);
@@ -1473,12 +1637,38 @@ Based on the enhanced context analysis, implement the following:
         setTimeout(() => contextInfo.remove(), 15000);
         
       } catch (error) {
-        console.error('Generation failed:', error);
-        resultsTextarea.value = `Error generating content: ${error.message}`;
-        showError('Failed to generate content. Please try again.');
+        console.error('MCP generation failed:', error);
+        resultsTextarea.value = `# ❌ Generation Failed
+
+**Error**: ${error.message}
+
+## Troubleshooting:
+
+1. **Check MCP Server Status**: Make sure the server is running
+   \`\`\`bash
+   cd mcp-server
+   npm start
+   \`\`\`
+
+2. **Server URL**: ${MCP_SERVER_URL}
+
+3. **Available Tools**: ${mcpServerStatus.tools.join(', ') || 'None - server disconnected'}
+
+4. **Last Check**: ${mcpServerStatus.lastCheck ? new Date(mcpServerStatus.lastCheck).toLocaleTimeString() : 'Never'}
+
+## Fallback Content:
+
+Based on your input:
+- **Tech Stack**: ${contextData.techStack.description}
+- **Document Type**: ${documentType}
+- **Selection**: ${contextData.figmaContext?.selectionCount || 0} items
+
+Please fix the MCP server connection and try again.`;
+        
+        showError(`MCP Server Error: ${error.message}`);
       } finally {
         submitContextBtn.disabled = false;
-        submitContextBtn.innerHTML = '🚀 Generate with Context';
+        submitContextBtn.innerHTML = '🚀 Generate with MCP';
       }
     }
 

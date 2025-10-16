@@ -1,10 +1,10 @@
 {
-  "name": "Design Intelligence Platform (Production)",
-  "id": "design-intelligence-platform-2025",
+  "name": "Design Intelligence Platform (Development)",
+  "id": "design-intelligence-platform-dev-2025",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui/index.html",
-  "editorType": ["figma", "figjam"],
+  "editorType": ["figma", "figjam", "dev"],
   "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": [
@@ -22,6 +22,7 @@
   },
   "permissions": ["currentuser"],
   "capabilities": [
-    "textreview"
+    "textreview",
+    "inspect"
   ]
 }

@@ -492,10 +492,34 @@ We welcome contributions! Please see [CONTRIBUTING.md](./docs/CONTRIBUTING.md) f
 
 MIT License - see [LICENSE](./LICENSE) for details.
 
+## 📚 Documentation
+
+### 📖 **Quick Start**
+- **[Documentation Standards](./docs/DOCUMENTATION_STANDARDS.md)** - File organization and placement rules
+- **[Getting Started](./docs/guides/)** - Setup and basic usage guides
+- **[API Reference](./docs/api/)** - Technical API documentation
+
+### 🚀 **Project Status** 
+- **[Phase 3 Complete](./docs/project-phases/PHASE_3_COMPLETE.md)** - Design Intelligence Layer
+- **[Phase 4 Plan](./docs/project-phases/PHASE_4_PLAN.md)** - Production deployment roadmap
+- **[Foundation Complete](./docs/project-phases/DESIGN_INTELLIGENCE_FOUNDATION_COMPLETE.md)** - Core system
+
+### 🧪 **Testing & Validation**
+- **[Figma Testing Instructions](./docs/testing/FIGMA_TESTING_INSTRUCTIONS.md)** - How to test plugin
+- **[Testing Guide](./docs/testing/FIGMA_TESTING_GUIDE.md)** - Comprehensive procedures  
+- **[Test Results](./docs/testing/FIGMA_INTEGRATION_TEST_RESULTS.md)** - Latest outcomes
+
+### 🚀 **Deployment**
+- **[Production Launch](./docs/deployment/PRODUCTION_LAUNCH.md)** - Deployment instructions
+- **[Production Complete](./docs/deployment/PRODUCTION_DEPLOYMENT_COMPLETE.md)** - Status
+
+### 🛠️ **Troubleshooting**
+- **[Plugin Fixes](./docs/troubleshooting/PLUGIN_FIXES_APPLIED.md)** - Bug fixes and solutions
+- **[Architecture Guide](./docs/troubleshooting/ARCHITECTURE_CLARIFICATION.md)** - MCP vs Figma API
+
 ## 🆘 Support
 
-- **Documentation**: [./docs/](./docs/)
-- **Test Report**: [TEST_REPORT.md](./TEST_REPORT.md)
+- **Full Documentation**: [./docs/](./docs/)
 - **Issues**: GitHub Issues
 - **Discussions**: GitHub Discussions
 
