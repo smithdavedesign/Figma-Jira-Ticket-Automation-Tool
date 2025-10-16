@@ -447,6 +447,8 @@ Our comprehensive MCP (Model Context Protocol) architecture enables seamless int
                     └─────────┘ └─────────┘ └─────────┘ └─────────┘
 ```
 
+![Architecture Diagram](figma-ticket-generator/docs/architecture-giagram.png)
+
 This architecture enables:
 - **Figma Integration**: Direct metadata and asset extraction
 - **AI Processing**: Multi-provider reasoning (Gemini/GPT/Claude)
