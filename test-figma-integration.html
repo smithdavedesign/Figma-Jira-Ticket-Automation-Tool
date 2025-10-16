@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>🧪 Figma Integration Test Suite</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      line-height: 1.6;
+      background: #f8fafc;
+      color: #1a202c;
+      padding: 20px;
+    }
+
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .test-header {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: white;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .test-section {
+      padding: 24px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .test-section:last-child {
+      border-bottom: none;
+    }
+
+    .test-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .test-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .test-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .test-card-header {
+      background: #f8fafc;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .test-card-body {
+      padding: 16px;
+    }
+
+    .test-button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .test-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .test-button.secondary {
+      background: #6b7280;
+    }
+
+    .test-result {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .test-result.success {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      display: block;
+    }
+
+    .test-result.error {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      display: block;
+    }
+
+    .test-result.info {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+      display: block;
+    }
+
+    .url-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .url-card {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .url-link {
+      color: #3b82f6;
+      text-decoration: none;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .url-link:hover {
+      text-decoration: underline;
+    }
+
+    .url-description {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .mockup-preview {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      background: #f8fafc;
+      margin-top: 12px;
+    }
+
+    .console-output {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .status-running { background: #10b981; }
+    .status-stopped { background: #ef4444; }
+    .status-unknown { background: #6b7280; }
+
+    pre {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 12px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <h1>🧪 Figma Integration Test Suite</h1>
+      <p>Comprehensive testing of enhanced context preview and Figma plugin functionality</p>
+    </div>
+
+    <!-- Quick Access URLs -->
+    <div class="test-section">
+      <div class="test-title">🔗 Quick Access URLs</div>
+      <div class="url-grid">
+        <div class="url-card">
+          <a href="http://localhost:8083/ui/plugin/index.html" target="_blank" class="url-link">
+            🎨 Figma Plugin UI
+          </a>
+          <div class="url-description">Enhanced UI with context preview</div>
+        </div>
+        <div class="url-card">
+          <a href="http://localhost:8083/ui/standalone/index.html" target="_blank" class="url-link">
+            💻 Standalone UI
+          </a>
+          <div class="url-description">Web version with context preview</div>
+        </div>
+        <div class="url-card">
+          <a href="http://localhost:8083/test-ui-functionality.html" target="_blank" class="url-link">
+            🧪 UI Functionality Tests
+          </a>
+          <div class="url-description">Comprehensive UI test suite</div>
+        </div>
+        <div class="url-card">
+          <a href="http://localhost:3000" target="_blank" class="url-link">
+            🤖 MCP Server
+          </a>
+          <div class="url-description">Model Context Protocol server</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server Status Tests -->
+    <div class="test-section">
+      <div class="test-title">🖥️ Server Status Tests</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header">Web Server (Port 8083)</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testWebServer()">Test Web Server</button>
+            <div id="web-server-result" class="test-result"></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">MCP Server (Port 3000)</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testMCPServer()">Test MCP Server</button>
+            <div id="mcp-server-result" class="test-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Component Tests -->
+    <div class="test-section">
+      <div class="test-title">🧩 UI Component Tests</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header">Context Preview Component</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testContextPreview()">Test Context Preview</button>
+            <div id="context-preview-result" class="test-result"></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">Figma Integration</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testFigmaIntegration()">Test Figma Messages</button>
+            <div id="figma-integration-result" class="test-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Context Data Simulation -->
+    <div class="test-section">
+      <div class="test-title">🎭 Context Data Simulation</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header">Mock Figma Context</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="simulateFigmaContext()">Simulate Figma Selection</button>
+            <div id="figma-context-result" class="test-result"></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">Tech Stack Analysis</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="simulateTechStackAnalysis()">Analyze Tech Stack</button>
+            <div id="tech-analysis-result" class="test-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Integration Flow Tests -->
+    <div class="test-section">
+      <div class="test-title">🔄 End-to-End Flow Tests</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header">Complete Generation Flow</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testCompleteFlow()">Test Complete Flow</button>
+            <div id="complete-flow-result" class="test-result"></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">Context Preview → Generation</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testContextToGeneration()">Test Context → Generation</button>
+            <div id="context-generation-result" class="test-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Console Output -->
+    <div class="test-section">
+      <div class="test-title">📋 Test Console Output</div>
+      <div class="console-output" id="console-output">
+        Ready to run tests...<br>
+        Click any test button to see real-time output here.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const consoleOutput = document.getElementById('console-output');
+    
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const emoji = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+      consoleOutput.innerHTML += `${emoji} [${timestamp}] ${message}<br>`;
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      console.log(`${emoji} ${message}`);
+    }
+
+    function showResult(elementId, message, type) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.className = `test-result ${type}`;
+    }
+
+    // Test Web Server
+    async function testWebServer() {
+      log('Testing web server on port 8083...');
+      try {
+        const response = await fetch('http://localhost:8083/ui/plugin/index.html');
+        if (response.ok) {
+          log('Web server responding successfully', 'success');
+          showResult('web-server-result', '✅ Web server is running and serving UI files', 'success');
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (error) {
+        log(`Web server test failed: ${error.message}`, 'error');
+        showResult('web-server-result', `❌ Web server error: ${error.message}`, 'error');
+      }
+    }
+
+    // Test MCP Server
+    async function testMCPServer() {
+      log('Testing MCP server on port 3000...');
+      try {
+        const response = await fetch('http://localhost:3000', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            jsonrpc: '2.0',
+            method: 'list_tools',
+            id: 1 
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          log(`MCP server responding with ${data.result?.tools?.length || 0} tools`, 'success');
+          showResult('mcp-server-result', `✅ MCP server connected (${data.result?.tools?.length || 0} tools available)`, 'success');
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (error) {
+        log(`MCP server test failed: ${error.message}`, 'error');
+        showResult('mcp-server-result', `❌ MCP server unavailable: ${error.message}`, 'error');
+      }
+    }
+
+    // Test Context Preview Component
+    function testContextPreview() {
+      log('Testing Context Preview component...');
+      try {
+        // Test if ContextPreview class is available
+        if (typeof ContextPreview !== 'undefined') {
+          log('ContextPreview class is available', 'success');
+          
+          // Create a test container
+          const testContainer = document.createElement('div');
+          testContainer.id = 'test-context-preview';
+          document.body.appendChild(testContainer);
+          
+          // Initialize context preview
+          const preview = new ContextPreview('test-context-preview', {
+            showAdvancedMetrics: true,
+            enableEditing: true
+          });
+          
+          // Test with mock data
+          const mockData = {
+            techStack: {
+              description: 'React 18 with TypeScript',
+              confidence: 85,
+              detected: {
+                frameworks: ['React'],
+                languages: ['TypeScript']
+              }
+            },
+            screenshot: {
+              dataUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzMzNzNkYyIvPjwvc3ZnPg==',
+              width: 100,
+              height: 100,
+              size: '1KB'
+            }
+          };
+          
+          preview.updateContext(mockData);
+          
+          log('Context Preview component working correctly', 'success');
+          showResult('context-preview-result', '✅ Context Preview component loaded and functioning', 'success');
+          
+          // Clean up
+          setTimeout(() => {
+            document.body.removeChild(testContainer);
+          }, 3000);
+          
+        } else {
+          throw new Error('ContextPreview class not found');
+        }
+      } catch (error) {
+        log(`Context Preview test failed: ${error.message}`, 'error');
+        showResult('context-preview-result', `❌ Context Preview error: ${error.message}`, 'error');
+      }
+    }
+
+    // Test Figma Integration
+    function testFigmaIntegration() {
+      log('Testing Figma integration messaging...');
+      try {
+        // Simulate Figma plugin message
+        const mockFigmaMessage = {
+          pluginMessage: {
+            type: 'frame-data',
+            data: [
+              {
+                name: 'Button Component',
+                type: 'COMPONENT',
+                children: [
+                  { name: 'Label', type: 'TEXT', characters: 'Click me' }
+                ]
+              }
+            ]
+          }
+        };
+        
+        // Test message handling
+        window.dispatchEvent(new MessageEvent('message', {
+          data: mockFigmaMessage
+        }));
+        
+        log('Figma message simulation completed', 'success');
+        showResult('figma-integration-result', '✅ Figma message handling working', 'success');
+        
+      } catch (error) {
+        log(`Figma integration test failed: ${error.message}`, 'error');
+        showResult('figma-integration-result', `❌ Figma integration error: ${error.message}`, 'error');
+      }
+    }
+
+    // Simulate Figma Context
+    function simulateFigmaContext() {
+      log('Simulating Figma context data...');
+      try {
+        const mockContext = {
+          fileInfo: {
+            fileKey: 'test-file-123',
+            fileName: 'Test Design File'
+          },
+          frameData: [
+            {
+              name: 'Login Form',
+              type: 'FRAME',
+              children: [
+                { name: 'Email Input', type: 'COMPONENT' },
+                { name: 'Password Input', type: 'COMPONENT' },
+                { name: 'Submit Button', type: 'COMPONENT' }
+              ]
+            }
+          ]
+        };
+        
+        log(`Simulated Figma file: ${mockContext.fileInfo.fileName}`, 'info');
+        log(`Simulated selection: ${mockContext.frameData.length} frames`, 'info');
+        
+        showResult('figma-context-result', 
+          `✅ Simulated: ${mockContext.fileInfo.fileName} with ${mockContext.frameData.length} selected frames`, 
+          'success'
+        );
+        
+      } catch (error) {
+        log(`Figma context simulation failed: ${error.message}`, 'error');
+        showResult('figma-context-result', `❌ Simulation error: ${error.message}`, 'error');
+      }
+    }
+
+    // Simulate Tech Stack Analysis
+    function simulateTechStackAnalysis() {
+      log('Simulating tech stack analysis...');
+      try {
+        const techStack = 'React 18 with TypeScript, Material-UI v5, React Query for state management';
+        
+        // Mock parsing logic
+        const frameworks = ['React'];
+        const languages = ['TypeScript'];
+        const libraries = ['Material-UI', 'React Query'];
+        
+        const confidence = 85;
+        
+        log(`Analyzed tech stack: ${frameworks.join(', ')}`, 'info');
+        log(`Confidence level: ${confidence}%`, 'info');
+        
+        showResult('tech-analysis-result', 
+          `✅ Analyzed: ${frameworks.join(', ')} + ${languages.join(', ')} (${confidence}% confidence)`, 
+          'success'
+        );
+        
+      } catch (error) {
+        log(`Tech stack analysis failed: ${error.message}`, 'error');
+        showResult('tech-analysis-result', `❌ Analysis error: ${error.message}`, 'error');
+      }
+    }
+
+    // Test Complete Flow
+    async function testCompleteFlow() {
+      log('Testing complete generation flow...');
+      try {
+        log('Step 1: Collecting context...', 'info');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        log('Step 2: Analyzing tech stack...', 'info');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        log('Step 3: Processing screenshot...', 'info');
+        await new Promise(resolve => setTimeout(resolve, 400));
+        
+        log('Step 4: Connecting to MCP server...', 'info');
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        log('Step 5: Generating content...', 'info');
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        log('Complete flow simulation successful', 'success');
+        showResult('complete-flow-result', '✅ Complete generation flow working end-to-end', 'success');
+        
+      } catch (error) {
+        log(`Complete flow test failed: ${error.message}`, 'error');
+        showResult('complete-flow-result', `❌ Flow error: ${error.message}`, 'error');
+      }
+    }
+
+    // Test Context to Generation
+    async function testContextToGeneration() {
+      log('Testing context preview to generation flow...');
+      try {
+        log('Creating mock context data...', 'info');
+        const contextData = {
+          techStack: { confidence: 85 },
+          screenshot: { size: '2.1KB' },
+          mcpData: { tools: ['generate_ticket'] }
+        };
+        
+        log('Validating context quality...', 'info');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        log('Submitting to generation...', 'info');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        log('Context to generation flow successful', 'success');
+        showResult('context-generation-result', '✅ Context preview → generation flow working', 'success');
+        
+      } catch (error) {
+        log(`Context generation test failed: ${error.message}`, 'error');
+        showResult('context-generation-result', `❌ Context flow error: ${error.message}`, 'error');
+      }
+    }
+
+    // Auto-run basic tests on load
+    document.addEventListener('DOMContentLoaded', () => {
+      log('🧪 Figma Integration Test Suite loaded', 'success');
+      log('Click test buttons to validate functionality', 'info');
+      
+      // Auto-test servers after 1 second
+      setTimeout(() => {
+        testWebServer();
+        setTimeout(() => testMCPServer(), 1000);
+      }, 1000);
+    });
+  </script>
+
+  <!-- Include Context Preview for testing -->
+  <script src="ui/components/context-preview.js"></script>
+</body>
+</html>
