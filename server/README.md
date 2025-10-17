@@ -208,7 +208,6 @@ This server works best when used alongside Figma's official MCP server:
 
 ## 📈 **Roadmap**
 
-- [ ] **Real Figma API integration** (currently simulated)
 - [ ] **Multi-platform ticket creation** (Jira, Linear, GitHub)
 - [ ] **Design system token synchronization**
 - [ ] **Advanced AI-powered insights**

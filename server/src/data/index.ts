@@ -78,7 +78,7 @@ export type {
 // Core implementations
 export { FigmaDataExtractor } from './extractor.js';
 export { MCPDataValidator, MCPValidationError, ValidatorFactory } from './validator.js';
-export { MCPPerformanceMonitor, PerformanceMonitorFactory } from './performance.js';
+export { MCPPerformanceMonitor, PerformanceMonitorFactory } from './performance-optimizer.js';
 export { MemoryCache, HybridCache, CacheFactory } from './cache.js';
 
 // =============================================================================
@@ -87,7 +87,7 @@ export { MemoryCache, HybridCache, CacheFactory } from './cache.js';
 
 import { FigmaDataExtractor } from './extractor.js';
 import { ValidatorFactory } from './validator.js';
-import { PerformanceMonitorFactory } from './performance.js';
+import { PerformanceMonitorFactory } from './performance-optimizer.js';
 import { CacheFactory } from './cache.js';
 import type { ValidationLevel, CachingStrategy, FigmaExtractor } from './interfaces.js';
 

@@ -7,7 +7,7 @@
 
 import { FigmaDataExtractor } from './extractor.js';
 import { MCPDataValidator } from './validator.js';
-import { MCPPerformanceMonitor } from './performance.js';
+import { MCPPerformanceMonitor } from './performance-optimizer.js';
 import { CacheFactory } from './cache.js';
 
 import type {

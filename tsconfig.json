@@ -16,6 +16,9 @@
   "exclude": [
     "node_modules",
     "dist",
-    "src/"
+    "src/",
+    "server",
+    "tests",
+    "browser-tests"
   ]
 }

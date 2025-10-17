@@ -1,8 +1,10 @@
-# Enhanced MCP Data Layer - Complete Implementation
+# Enhanced Figma Data Extraction Layer
 
-## Overview
+This directory contains a comprehensive data extraction system for Figma designs, providing both traditional extraction capabilities and advanced semantic analysis features.
 
-We have successfully built a comprehensive MCP (Model Context Protocol) data layer that can extract hierarchical frame data from Figma designs, matching and extending the structure shown in your JSON example. The data layer now supports:
+## 🏗️ Architecture Overview
+
+The data layer is organized into several key components:
 
 ## ✅ Key Features Implemented
 

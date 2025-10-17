@@ -110,6 +110,7 @@ export interface DesignSystemLinks {
   spacing?: string;
   components?: string;
   icons?: string;
+  effects?: string;
   styles?: Record<string, string>;
 }
 
@@ -756,7 +757,7 @@ export interface UserContext {
 }
 
 /**
- * Technical context for code generation
+ * Technical context for code generation and integration
  */
 export interface TechnicalContext {
   framework?: string;
@@ -765,4 +766,63 @@ export interface TechnicalContext {
   designSystem?: string;
   libraries?: string[];
   customRules?: Record<string, any>;
+}
+
+// =============================================================================
+// DESIGN SYSTEM TYPES FOR ENHANCED SCANNER
+// =============================================================================
+
+/**
+ * Component instance information for design system integration
+ */
+export interface ComponentInstance {
+  id: string;
+  name: string;
+  masterComponentId: string;
+  masterComponentName?: string;
+  props: Record<string, any>;
+  overrides: ComponentOverride[];
+  variantProperties: Record<string, string>;
+  parentFrameId?: string;
+  parentFrameName?: string;
+}
+
+/**
+ * Hierarchical data structure for design system analysis
+ */
+export interface HierarchicalData {
+  totalNodes: number;
+  maxDepth: number;
+  layers: LayerInfo[];
+  componentReferences: string[];
+  tokenUsage: Record<string, any>;
+}
+
+/**
+ * Basic design system structure (simplified for scanner compatibility)
+ */
+export interface DesignSystem {
+  id: string;
+  name: string;
+  pages: any[];
+  colors: any[];
+  typography: any[];
+  components: any;
+  spacing: any[];
+  effects: any[];
+  detectionConfidence: number;
+}
+
+/**
+ * Enhanced design system with MCP capabilities
+ */
+export interface EnhancedDesignSystem extends DesignSystem {
+  hierarchy: HierarchicalData;
+  componentInstances: ComponentInstance[];
+  designSystemLinks: DesignSystemLinks;
+  exportCapabilities: {
+    screenshots: boolean;
+    assets: boolean;
+    tokens: boolean;
+  };
 }

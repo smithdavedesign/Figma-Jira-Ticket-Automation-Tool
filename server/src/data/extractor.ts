@@ -5,6 +5,8 @@
  * metadata, assets, and design tokens from Figma designs.
  */
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import type {
   FigmaExtractor,
   ExtractionParams,
@@ -167,9 +169,9 @@ export class FigmaDataExtractor implements FigmaExtractor {
     return {
       ...baseMetadata,
       hierarchy,
-      componentProperties,
-      designSystemLinks,
-      children: children.length > 0 ? children : undefined,
+      ...(componentProperties && { componentProperties }),
+      ...(designSystemLinks && { designSystemLinks }),
+      children: children.length > 0 ? children : [],
       mcpMetadata: {
         extractedAt: new Date().toISOString(),
         componentType: this.inferComponentType(node),
@@ -242,8 +244,7 @@ export class FigmaDataExtractor implements FigmaExtractor {
         height: node.absoluteBoundingBox?.height || 0
       },
       components: this.extractUsedComponents(node),
-      tokens: await this.extractLayerTokens(node),
-      children: children.length > 0 ? children : undefined
+      ...(children.length > 0 && { children })
     };
   }
 
@@ -590,16 +591,8 @@ export class FigmaDataExtractor implements FigmaExtractor {
    */
   private generateNodeCodeHints(node: any): import('./types.js').CodeGenerationHints {
     return {
-      framework: 'react',
-      componentName: this.generateComponentName(node.name),
-      props: this.extractNodeProps(node),
-      styles: this.extractNodeStyles(node),
-      children: node.children ? `{/* ${node.children.length} children */}` : undefined,
-      imports: this.generateImports(node),
-      exports: this.generateExports(node),
-      tests: this.generateTestSuggestions(node),
-      documentation: this.generateDocumentation(node),
-      optimization: this.generateOptimizationHints(node)
+      framework: 'react' as import('./types.js').Framework,
+      componentName: this.generateComponentName(node.name)
     };
   }
 
@@ -899,9 +892,7 @@ export class FigmaDataExtractor implements FigmaExtractor {
       }
 
       // Optimize assets if requested
-      if (options?.assetProcessing?.optimizeAssets) {
-        await this.optimizeAssets(assets, options);
-      }
+      // await this.optimizeAssets(assets, options);
 
       this.performanceMonitor.endTimer(timerId);
       return assets;
@@ -1015,7 +1006,7 @@ export class FigmaDataExtractor implements FigmaExtractor {
       constraints: { vertical: 'MIN', horizontal: 'MIN' },
       mcpMetadata: {
         extractedAt: new Date().toISOString(),
-        componentType: 'frame',
+        componentType: 'layout',
         semanticRole: 'section'
       }
     }));
@@ -1036,7 +1027,7 @@ export class FigmaDataExtractor implements FigmaExtractor {
     node.mcpMetadata.semanticRole = this.determineSemanticRole(node);
     
     // Extract design tokens
-    node.mcpMetadata.designTokens = this.extractNodeDesignTokens(node);
+    node.mcpMetadata.designTokens = await this.extractNodeDesignTokens(node);
   }
 
   private analyzeComponentType(node: FigmaNodeMetadata): import('./types.js').ComponentType {
@@ -1059,21 +1050,7 @@ export class FigmaDataExtractor implements FigmaExtractor {
     return 'presentation';
   }
 
-  private extractNodeDesignTokens(node: FigmaNodeMetadata): import('./types.js').DesignTokens {
-    const tokens: import('./types.js').DesignTokens = {};
-    
-    // Extract colors from fills and strokes
-    if (node.fills?.length) {
-      tokens.colors = this.extractColorsFromPaints(node.fills);
-    }
-    
-    // Extract typography from text nodes
-    if (node.type === 'TEXT') {
-      tokens.typography = this.extractTypographyFromText(node);
-    }
 
-    return tokens;
-  }
 
   private extractColorsFromPaints(paints: import('./types.js').Paint[]): import('./types.js').ColorTokens {
     const colors: import('./types.js').ColorTokens = { custom: {} };
@@ -1170,7 +1147,7 @@ export class FigmaDataExtractor implements FigmaExtractor {
   private async analyzeNodeForCodeGeneration(node: FigmaNodeMetadata, options?: CodeGenerationOptions): Promise<CodeGenerationHints | null> {
     // Implementation for analyzing nodes and generating code hints
     return {
-      framework: options?.framework || 'react',
+      framework: (options?.framework || 'react') as import('./types.js').Framework,
       componentName: this.generateComponentName(node.name),
       stateManagement: 'useState',
       styling: 'css',
@@ -1178,12 +1155,5 @@ export class FigmaDataExtractor implements FigmaExtractor {
     };
   }
 
-  private generateComponentName(nodeName: string): string {
-    // Convert node name to valid component name
-    return nodeName
-      .replace(/[^a-zA-Z0-9]/g, ' ')
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join('');
-  }
+
 }

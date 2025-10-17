@@ -17,6 +17,8 @@ import { FigmaWorkflowOrchestrator } from './figma/figma-mcp-client.js';
 import { enhancedFigmaMCPService, type FigmaMCPPromptConfig } from './figma/figma-mcp-integration.js';
 import { AdvancedAIService } from './ai/advanced-ai-service.js';
 import { FigmaMCPGeminiOrchestrator } from './ai/figma-mcp-gemini-orchestrator.js';
+import { EnhancedDesignHealthAnalyzer } from './data/enhanced-design-health-analyzer.js';
+import { FigmaDataExtractor } from './data/extractor.js';
 import type { CodeGenerationOptions } from './figma/boilerplate-generator.js';
 import type { AIAnalysisConfig, DesignAnalysisResult } from './ai/advanced-ai-service.js';
 
@@ -1014,6 +1016,7 @@ class FigmaAITestServer {
   private ticketGenerator: TicketGenerator;
   private complianceChecker: ComplianceChecker;
   private aiEnhancedGenerator: AIEnhancedTicketGenerator;
+  private designHealthAnalyzer: EnhancedDesignHealthAnalyzer | null = null;
   private port: number;
 
   constructor(port: number = 3000) {
@@ -1034,7 +1037,51 @@ class FigmaAITestServer {
     };
     
     this.aiEnhancedGenerator = new AIEnhancedTicketGenerator(aiConfig);
+    
+    // Initialize design health analyzer with MCP data layer integration
+    if (process.env.GEMINI_API_KEY) {
+      this.initializeDesignHealthAnalyzer();
+    }
+    
     this.port = port;
+  }
+
+  /**
+   * Initialize design health analyzer with MCP data layer
+   */
+  private async initializeDesignHealthAnalyzer(): Promise<void> {
+    try {
+      // Create mock dependencies for FigmaDataExtractor
+      const mockPerformanceMonitor = {
+        startTimer: () => ({ stop: () => 0 }),
+        recordMetric: () => {},
+        getMetrics: () => ({})
+      };
+      const mockCache = {
+        get: () => null,
+        set: () => {},
+        clear: () => {}
+      };
+      const mockValidator = {
+        validate: () => ({ isValid: true, errors: [] })
+      };
+
+      const figmaExtractor = new FigmaDataExtractor(
+        process.env.FIGMA_API_KEY || 'mock-key',
+        mockPerformanceMonitor as any,
+        mockCache as any,
+        mockValidator as any
+      );
+
+      this.designHealthAnalyzer = new EnhancedDesignHealthAnalyzer(figmaExtractor, {
+        analysisDepth: 'standard',
+        cacheEnabled: true
+      });
+
+      console.log('✅ Design Health Analyzer initialized successfully');
+    } catch (error) {
+      console.warn('⚠️ Failed to initialize Design Health Analyzer:', error);
+    }
   }
 
   async handleRequest(method: string, body: any): Promise<any> {
@@ -1060,6 +1107,9 @@ class FigmaAITestServer {
 
         case 'generate_visual_enhanced_ticket':
           return await this.generateVisualEnhancedTicket(body);
+
+        case 'analyze_design_health':
+          return await this.analyzeDesignHealth(body);
 
         default:
           // Don't catch unknown method errors - let them bubble up for proper HTTP error handling
@@ -2347,6 +2397,213 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
   }
 
   /**
+   * Analyze design health using MCP data layer
+   */
+  async analyzeDesignHealth(params: {
+    figmaUrl?: string;
+    fileKey?: string;
+    analysisDepth?: 'basic' | 'standard' | 'comprehensive';
+    categories?: string[];
+  }): Promise<any> {
+    try {
+      console.log('🔍 Starting design health analysis...');
+
+      if (!this.designHealthAnalyzer) {
+        throw new Error('Design Health Analyzer not initialized. Check GEMINI_API_KEY configuration.');
+      }
+
+      const { figmaUrl, fileKey, analysisDepth = 'standard', categories = ['all'] } = params;
+      
+      // Extract file key from URL if needed
+      let targetFileKey = fileKey;
+      if (figmaUrl && !targetFileKey) {
+        const urlMatch = figmaUrl.match(/\/file\/([a-zA-Z0-9]+)/);
+        targetFileKey = urlMatch ? urlMatch[1] : undefined;
+      }
+
+      if (!targetFileKey) {
+        throw new Error('Valid Figma file key required for design health analysis');
+      }
+
+      console.log(`🎯 Analyzing design health for file: ${targetFileKey}`);
+      console.log(`📊 Analysis depth: ${analysisDepth}`);
+      console.log(`🏷️ Categories: ${categories.join(', ')}`);
+
+      // Check cache first
+      const cachedAnalysis = this.designHealthAnalyzer.getCachedAnalysis(targetFileKey);
+      if (cachedAnalysis) {
+        console.log('📋 Using cached analysis');
+        return {
+          content: [
+            {
+              type: 'text',
+              text: this.formatDesignHealthReport(cachedAnalysis, { fromCache: true })
+            }
+          ]
+        };
+      }
+
+      // Perform fresh analysis
+      const analysis = await this.designHealthAnalyzer.analyzeDesignHealth(targetFileKey);
+
+      const formattedReport = this.formatDesignHealthReport(analysis, { 
+        analysisDepth, 
+        categories, 
+        fromCache: false 
+      });
+
+      console.log(`✅ Design health analysis completed`);
+      console.log(`📈 Overall health score: ${analysis.overallScore}/100`);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: formattedReport
+          }
+        ]
+      };
+
+    } catch (error) {
+      console.error('❌ Design health analysis failed:', error);
+      throw new Error(`Design health analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Format design health analysis into readable report
+   */
+  private formatDesignHealthReport(analysis: any, options: {
+    analysisDepth?: string;
+    categories?: string[];
+    fromCache?: boolean;
+  }): string {
+    const { analysisDepth = 'standard', fromCache = false } = options;
+
+    let report = `# 📊 Design System Health Report\n\n`;
+    
+    // Header with metadata
+    report += `**Overall Health Score: ${analysis.overallScore}/100** ${this.getHealthEmoji(analysis.overallScore)}\n`;
+    report += `*Analysis completed: ${new Date(analysis.lastAnalyzed).toLocaleString()}*\n`;
+    report += `*Analysis depth: ${analysisDepth}* ${fromCache ? '*(cached)*' : '*(fresh)*'}\n\n`;
+
+    // Executive Summary
+    report += `## 🎯 Executive Summary\n\n`;
+    report += `Your design system demonstrates **${this.getHealthGrade(analysis.overallScore)}** health with an overall score of **${analysis.overallScore}/100**.\n\n`;
+
+    // Compliance Breakdown
+    report += `## 📋 Compliance Analysis\n\n`;
+    
+    const complianceData = [
+      ['Category', 'Score', 'Grade', 'Compliant', 'Total', 'Issues'],
+      ['Colors', `${analysis.compliance.colors.score}%`, analysis.compliance.colors.grade, analysis.compliance.colors.compliant, analysis.compliance.colors.total, analysis.compliance.colors.violations.length],
+      ['Typography', `${analysis.compliance.typography.score}%`, analysis.compliance.typography.grade, analysis.compliance.typography.compliant, analysis.compliance.typography.total, analysis.compliance.typography.violations.length],
+      ['Components', `${analysis.compliance.components.score}%`, analysis.compliance.components.grade, analysis.compliance.components.compliant, analysis.compliance.components.total, analysis.compliance.components.violations.length],
+      ['Spacing', `${analysis.compliance.spacing.score}%`, analysis.compliance.spacing.grade, analysis.compliance.spacing.compliant, analysis.compliance.spacing.total, analysis.compliance.spacing.violations.length],
+      ['Effects', `${analysis.compliance.effects.score}%`, analysis.compliance.effects.grade, analysis.compliance.effects.compliant, analysis.compliance.effects.total, analysis.compliance.effects.violations.length]
+    ];
+
+    report += this.formatTable(complianceData) + '\n\n';
+
+    // Token Adoption
+    report += `## 🎨 Design Token Adoption\n\n`;
+    report += `- **Colors**: ${analysis.coverage.tokenAdoption.colors.adopted}/${analysis.coverage.tokenAdoption.colors.total} (${analysis.coverage.tokenAdoption.colors.percentage}%)\n`;
+    report += `- **Typography**: ${analysis.coverage.tokenAdoption.typography.adopted}/${analysis.coverage.tokenAdoption.typography.total} (${analysis.coverage.tokenAdoption.typography.percentage}%)\n`;
+    report += `- **Spacing**: ${analysis.coverage.tokenAdoption.spacing.adopted}/${analysis.coverage.tokenAdoption.spacing.total} (${analysis.coverage.tokenAdoption.spacing.percentage}%)\n`;
+    report += `- **Effects**: ${analysis.coverage.tokenAdoption.effects.adopted}/${analysis.coverage.tokenAdoption.effects.total} (${analysis.coverage.tokenAdoption.effects.percentage}%)\n\n`;
+
+    // Top Issues
+    if (analysis.insights.topIssues.length > 0) {
+      report += `## ⚠️  Critical Issues\n\n`;
+      analysis.insights.topIssues.slice(0, 3).forEach((issue: any, index: number) => {
+        const severity = issue.category === 'critical' ? '🚨' : issue.category === 'major' ? '⚠️' : 'ℹ️';
+        report += `${index + 1}. ${severity} **${issue.title}**\n`;
+        report += `   - ${issue.description}\n`;
+        report += `   - Impact: ${issue.impact}\n`;
+        report += `   - Effort: ${issue.effort} | Affected: ${issue.affectedElements} elements\n\n`;
+      });
+    }
+
+    // Recommendations
+    if (analysis.insights.recommendations.length > 0) {
+      report += `## 💡 Recommendations\n\n`;
+      analysis.insights.recommendations.slice(0, 5).forEach((rec: any, index: number) => {
+        const priority = rec.priority === 'high' ? '🔥' : rec.priority === 'medium' ? '⚡' : '💫';
+        report += `${index + 1}. ${priority} **${rec.action}**\n`;
+        report += `   - ${rec.rationale}\n`;
+        report += `   - Expected impact: ${rec.estimatedImpact}\n\n`;
+      });
+    }
+
+    // Performance Impact
+    report += `## ⚡ Performance Impact\n\n`;
+    report += `- **Load Time**: ${analysis.performance.loadTime}ms\n`;
+    report += `- **Asset Optimization**: ${analysis.performance.assetOptimization}%\n`;
+    report += `- **Code Efficiency**: ${analysis.performance.codeEfficiency}%\n\n`;
+
+    // System Consistency
+    report += `## 🎯 System Consistency\n\n`;
+    report += `- **Cross-page**: ${analysis.coverage.systemConsistency.crossPageConsistency}%\n`;
+    report += `- **Naming**: ${analysis.coverage.systemConsistency.namingConsistency}%\n`;
+    report += `- **Structure**: ${analysis.coverage.systemConsistency.structureConsistency}%\n`;
+    report += `- **Tokens**: ${analysis.coverage.systemConsistency.tokenConsistency}%\n\n`;
+
+    // Export Capabilities
+    if (analysis.exports.canExportTokens || analysis.exports.canExportComponents) {
+      report += `## 📤 Export Capabilities\n\n`;
+      report += `- Design tokens: ${analysis.exports.canExportTokens ? '✅ Available' : '❌ Not available'}\n`;
+      report += `- Components: ${analysis.exports.canExportComponents ? '✅ Available' : '❌ Not available'}\n`;
+      report += `- Style guide: ${analysis.exports.canGenerateStyleGuide ? '✅ Available' : '❌ Not available'}\n\n`;
+    }
+
+    // Footer
+    report += `---\n\n`;
+    report += `**Generated by Enhanced Design Health Analyzer v${analysis.analysisVersion}**\n`;
+    report += `🔍 MCP Data Layer Integration | 🤖 AI-Powered Insights | 📊 Comprehensive Analysis\n`;
+
+    return report;
+  }
+
+  /**
+   * Get health emoji based on score
+   */
+  private getHealthEmoji(score: number): string {
+    if (score >= 90) return '🟢';
+    if (score >= 75) return '🟡';
+    if (score >= 60) return '🟠';
+    return '🔴';
+  }
+
+  /**
+   * Get health grade based on score
+   */
+  private getHealthGrade(score: number): string {
+    if (score >= 90) return 'excellent';
+    if (score >= 75) return 'good';
+    if (score >= 60) return 'fair';
+    return 'needs improvement';
+  }
+
+  /**
+   * Format data as table
+   */
+  private formatTable(data: any[][]): string {
+    if (data.length === 0) return '';
+    
+    const [headers, ...rows] = data;
+    if (!headers) return '';
+    
+    let table = '| ' + headers.join(' | ') + ' |\n';
+    table += '| ' + headers.map(() => '---').join(' | ') + ' |\n';
+    
+    rows.forEach(row => {
+      table += '| ' + row.join(' | ') + ' |\n';
+    });
+    
+    return table;
+  }
+
+  /**
    * Count visual data points for confidence calculation
    */
   private countVisualDataPoints(context: any): number {
@@ -2393,7 +2650,7 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
           name: 'Figma AI Ticket Generator',
           version: '1.0.0',
           status: 'running',
-          tools: ['analyze_project', 'generate_tickets', 'check_compliance', 'generate_enhanced_ticket', 'generate_ai_ticket'],
+          tools: ['analyze_project', 'generate_tickets', 'check_compliance', 'generate_enhanced_ticket', 'generate_ai_ticket', 'analyze_design_health'],
           description: 'Strategic design-to-code automation server'
         }));
         return;
@@ -2437,7 +2694,7 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
     server.listen(this.port, () => {
       console.log('� Figma AI Ticket Generator Test Server started');
       console.log(`📋 Server running at http://localhost:${this.port}`);
-      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket, generate_ai_ticket');
+      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket, generate_ai_ticket, analyze_design_health');
       console.log('');
       console.log('Example usage:');
       console.log(`curl -X POST http://localhost:${this.port} \\`);

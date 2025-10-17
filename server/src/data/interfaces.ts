@@ -13,8 +13,7 @@ import type {
   ValidationResult,
   PerformanceMetrics,
   ExtractionResult,
-  ValidationError as ValidationErrorType,
-  ValidationWarning
+  ValidationError as ValidationErrorType
 } from './types.js';
 
 // =============================================================================

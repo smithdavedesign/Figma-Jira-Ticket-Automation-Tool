@@ -5,11 +5,13 @@
   "main": "dist/code.js",
   "scripts": {
     "start": "cd server && node server.js",
+    "start:stable": "cd server && node server.js",
+    "start:dev": "cd server && PORT=3001 npx tsx src/server.ts",
     "deploy": "./scripts/deploy-production.sh",
     "bundle": "./scripts/bundle-production.sh",
     "validate:prod": "./scripts/validate-production.sh",
     "test:e2e": "./scripts/test-e2e.sh",
-    "build": "./build.sh",
+    "build": "./scripts/build.sh",
     "build:ts": "tsc",
     "watch": "tsc --watch",
     "dev": "npm run watch",
@@ -36,6 +38,8 @@
     "test:watch": "echo 'Watch mode: nodemon tests/core-tests.js (install nodemon if needed)'",
     "test:standalone": "node tests/integration/test-standalone.mjs",
     "test:mcp": "node tests/integration/test-standalone.mjs",
+    "test:data:ui": "echo '🧪 Opening Data Layer Test UI...' && python3 -m http.server 8083 --bind localhost > /dev/null 2>&1 & sleep 2 && open http://localhost:8083/test-figma-integration.html",
+    "test:ui": "npm run test:data:ui",
     "health": "./scripts/health-check.sh",
     "health:start": "./scripts/health-check.sh --start-servers",
     "pretest:browser": "./scripts/pre-test-check.sh",
@@ -61,7 +65,7 @@
     "ticket",
     "openai"
   ],
-  "author": "David",
+  "author": "David G Smith",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.37.0",
