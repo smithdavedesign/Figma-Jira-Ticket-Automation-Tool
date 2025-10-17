@@ -1435,13 +1435,18 @@ Examples:
                 // Use real screenshot if available, fallback to mock
                 console.log('📸 Screenshot message received:', msg);
                 let screenshotData = msg.screenshot;
-                if (!screenshotData || !screenshotData.dataUrl) {
+                
+                // Handle both object format {dataUrl: "..."} and direct string format "data:image/png;base64,..."
+                if (typeof screenshotData === 'string' && screenshotData.startsWith('data:image/')) {
+                  console.log('✅ Valid screenshot string received, using LIVE');
+                  screenshotData = { dataUrl: screenshotData, fallback: false };
+                } else if (screenshotData && screenshotData.dataUrl) {
+                  console.log('✅ Valid screenshot object received, using LIVE');
+                  screenshotData.fallback = false;
+                } else {
                   console.log('⚠️ No valid screenshot data, using mock');
                   screenshotData = createMockScreenshot();
                   screenshotData.fallback = true;
-                } else {
-                  console.log('✅ Valid screenshot data received, using LIVE');
-                  screenshotData.fallback = false;
                 }
                 updateScreenshotSection(screenshotData);
                 break;

@@ -4,6 +4,7 @@
   "description": "Figma plugin to generate Jira tickets using AI from design frames",
   "main": "dist/code.js",
   "scripts": {
+    "start": "cd server && node server.js",
     "build": "./build.sh",
     "build:ts": "tsc",
     "watch": "tsc --watch",

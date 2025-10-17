@@ -51,25 +51,45 @@
 3. **Test Features**: Follow the comprehensive testing guide
 4. **Document Issues**: Use the provided templates
 
-## 🔨 Build System Enhanced
+## 🔨 Stable Node.js Server System
 
-### Development Workflow:
+### Production Server Commands:
 ```bash
-# Development build
+# Start stable production server
+cd server && node server.js
+
+# Or use npm scripts (if package.json cache refreshed)
+npm run start:production     # Start production server
+npm run stop                 # Stop server
+npm run restart              # Restart server
+npm run status              # Check if running
+
+# Development build (for plugin)
 ./scripts/build.sh
 
-# Production bundle
+# Production bundle (for distribution)
 ./scripts/bundle-production.sh
-
-# Test in Figma Desktop
-# Import manifest.json from root directory
 ```
 
-### Build Features:
-- **TypeScript Compilation**: ES2017 target with proper Figma compatibility
-- **CSS Inlining**: All styles embedded for plugin distribution
-- **Asset Optimization**: Minimized bundle size
-- **Automated Packaging**: One-command production builds
+### Live Debugging & Monitoring:
+```bash
+# View live server logs with session tracking
+cd server && node server.js
+# Real-time logs show: requests, AI processing, session tracking
+
+# Debug endpoints for monitoring
+curl http://localhost:3000/debug/health      # Server health & stats
+curl http://localhost:3000/debug/sessions    # Session tracking data
+curl http://localhost:3000                   # Full server status
+```
+
+### Server Features:
+- **Stable Node.js**: Replaced unreliable TypeScript/tsx with production-ready Node.js
+- **Live Session Tracking**: Real-time user journey monitoring from Figma → AI → Output
+- **Request Correlation**: Each request gets unique session ID for end-to-end debugging
+- **Performance Monitoring**: Response times, AI processing duration, error tracking
+- **Debug Endpoints**: `/debug/health` and `/debug/sessions` for live monitoring
+- **Graceful Error Handling**: Comprehensive logging with fallback responses
 
 ## 📈 Version 4.0.0 Features
 

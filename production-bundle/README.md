@@ -97,7 +97,7 @@ Our visual-enhanced system generates comprehensive tickets that include:
 ```bash
 # Get your free key at https://makersuite.google.com/app/apikey
 export GEMINI_API_KEY="your-free-key-here"
-npm run mcp:start
+npm run server:dev
 ```
 
 ## 🧪 Visual-Enhanced Demo & Testing
@@ -201,7 +201,7 @@ npm run validate:quick            # Fast complete validation (~3 minutes)
 
 ```
 figma-ticket-generator/
-├── server/               # AI-powered MCP server
+├── server/                   # AI-powered MCP server (renamed from server)
 │   ├── src/
 │   │   ├── server.ts        # Main MCP server with visual-enhanced generation
 │   │   ├── ai/              # Gemini AI integration + Visual-Enhanced AI Service
