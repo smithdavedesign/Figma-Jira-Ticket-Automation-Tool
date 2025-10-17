@@ -176,26 +176,158 @@ docs/
 
 ## 📋 **COMMANDS & WORKFLOWS**
 
-### **Development**
+### **🚀 ESSENTIAL STARTUP COMMANDS**
+
+#### **MCP Server (CRITICAL - Always Start First)**
 ```bash
-# Start MCP server
-cd mcp-server && npm run dev
+# Primary startup method (RECOMMENDED)
+cd mcp-server && npx tsx src/server.ts
 
-# Build plugin
-./scripts/build.sh
+# Alternative methods
+cd mcp-server && npm run dev          # Development mode with watch
+cd mcp-server && npm run build && npm start  # Production mode
 
-# Run tests
-npm test
-npm run test:browser:smoke
+# Health check (ALWAYS VERIFY)
+curl -s http://localhost:3000/ --max-time 3
+lsof -i :3000  # Check if server is running
 ```
 
-### **Production**
+#### **Plugin Build (ESSENTIAL)**
 ```bash
-# Create production bundle
-./scripts/bundle-production.sh
+# TypeScript compilation (PRIMARY)
+npm run build:ts
 
-# Test in Figma Desktop
-# Import manifest.json from root directory
+# Alternative build methods
+./scripts/build.sh                    # Development build script
+./scripts/bundle-production.sh        # Production bundle
+npm run watch                         # Watch mode for development
+```
+
+### **🧪 TESTING COMMAND ARSENAL**
+
+#### **MCP Integration Testing (PRIMARY)**
+```bash
+# Core MCP data layer testing (MOST IMPORTANT)
+npm run test:integration:mcp          # Standalone MCP testing without Figma
+
+# Full integration suite
+npm run test:integration              # All integration tests
+npm run test:integration:mcp && echo "✅ MCP Pipeline Working"
+
+# Direct MCP server testing
+curl -X POST http://localhost:3000/ \
+  -H "Content-Type: application/json" \
+  -d '{"method":"generate_ai_ticket","params":{"enhancedFrameData":[...]}}'
+```
+
+#### **System Health & Validation**
+```bash
+npm run health                        # System health check (no servers needed)
+npm run health:start                  # Health check + auto-start servers  
+npm run validate:quick                # Complete system validation (~3 minutes)
+```
+
+#### **Browser & UI Testing**
+```bash
+npm run test:browser:smoke           # Essential UI functionality (~2 minutes)
+npm run test:browser:quick           # Single UI test (~30 seconds)
+npm run test:browser                 # Full cross-browser suite (~10 minutes)
+npm run test:browser:headed          # Visual debugging mode
+npm run test:browser:ui              # Interactive test runner
+```
+
+#### **Unit & Performance**
+```bash
+npm run test:unit                    # Core logic tests (2 seconds)
+npm run test:performance             # Performance benchmarks
+npm run test:all:quick              # Quick validation suite
+npm run test:all                    # Complete test suite
+```
+
+### **🎯 DAILY DEVELOPMENT WORKFLOW**
+```bash
+# 1. Start development session
+cd /path/to/figma-ticket-generator
+git pull origin main                 # Get latest changes
+
+# 2. Start MCP server (ESSENTIAL)
+cd mcp-server && npx tsx src/server.ts &
+
+# 3. Build plugin
+npm run build:ts
+
+# 4. Verify everything works
+npm run test:integration:mcp         # Should show 3-4 passed tests
+
+# 5. Health check
+npm run health                       # System status
+```
+
+### **🔧 DEBUGGING & TROUBLESHOOTING COMMANDS**
+
+#### **MCP Server Issues**
+```bash
+# Check server status
+lsof -i :3000 || echo "❌ MCP server not running"
+curl -s http://localhost:3000/ | jq '.'
+
+# Check available tools
+curl -s http://localhost:3000/ | jq '.tools'
+
+# Kill stuck processes
+kill $(lsof -t -i:3000) 2>/dev/null
+```
+
+#### **Plugin Build Issues**  
+```bash
+# Check build errors
+npm run build:ts 2>&1 | grep -E "(error|Error)" || echo "✅ Build OK"
+
+# Verify output files
+ls -la dist/ && echo "✅ Dist files created"
+cat manifest.json | jq '.main' && echo "✅ Manifest valid"
+```
+
+#### **AI Integration Issues**
+```bash
+# Check environment
+cd mcp-server && echo $GEMINI_API_KEY | cut -c1-10 && echo "..."
+
+# Test AI pipeline
+npm run test:integration:mcp | grep -E "(✅|❌|Gemini|AI)"
+```
+
+### **🚀 PRODUCTION DEPLOYMENT**
+```bash
+# 1. Complete validation
+npm run validate:quick               # All systems check
+
+# 2. Create production bundle  
+./scripts/bundle-production.sh      # Production-ready files
+
+# 3. Final testing
+npm run test:browser:smoke          # UI validation
+
+# 4. Deploy to Figma
+# Load manifest.json in Figma Desktop → Plugins → Development → Import plugin from manifest
+```
+
+### **⚡ QUICK REFERENCE COMMANDS**
+
+#### **Most Used Commands (Daily)**
+```bash
+cd mcp-server && npx tsx src/server.ts &  # Start MCP server
+npm run build:ts                          # Build plugin  
+npm run test:integration:mcp              # Test MCP pipeline
+npm run health                            # System check
+```
+
+#### **Emergency Reset**
+```bash
+kill $(lsof -t -i:3000) 2>/dev/null      # Kill MCP server
+npm run build:ts                          # Rebuild plugin
+cd mcp-server && npx tsx src/server.ts & # Restart MCP
+sleep 3 && npm run test:integration:mcp   # Verify working
 ```
 
 ---
