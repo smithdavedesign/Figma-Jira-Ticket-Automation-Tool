@@ -2298,7 +2298,17 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
         return;
       }
       
-      // Step 1: Collect context and show preview
+      // Check if we're running standalone (not in Figma)
+      const isStandalone = window.parent === window;
+      console.log('🔍 Checking mode - isStandalone:', isStandalone);
+      
+      if (isStandalone) {
+        // Standalone mode - generate directly
+        console.log('🌐 Running in standalone mode, calling generateStandalone...');
+        return await generateStandalone(techStackDesc, documentType);
+      }
+      
+      // Figma mode - Step 1: Collect context and show preview
       generateBtn.disabled = true;
       generateBtn.innerHTML = '<div class="spinner"></div> Collecting Context...';
       
@@ -2341,6 +2351,193 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
         generateBtn.disabled = false;
         generateBtn.textContent = '🔍 Preview Context & Generate';
       }
+    }
+
+    // Standalone generation function
+    async function generateStandalone(techStackDesc, documentType) {
+      console.log('🚀 generateStandalone called with:', { techStackDesc, documentType });
+      
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<div class="spinner"></div> Generating...';
+      
+      // Show results div immediately
+      console.log('📝 Showing results div...');
+      resultsDiv.classList.remove('hidden');
+      resultsTextarea.value = 'Connecting to MCP server...';
+      
+      try {
+        // Check MCP server connection first
+        if (!mcpServerStatus.connected) {
+          await checkMCPServerStatus();
+          if (!mcpServerStatus.connected) {
+            throw new Error('MCP server is not available. Starting fallback generation...');
+          }
+        }
+
+        // Parse tech stack for confidence
+        const parsed = parseTechStack(techStackDesc);
+        
+        // Prepare MCP parameters for standalone mode
+        const mcpParams = {
+          figmaUrl: 'https://www.figma.com/file/standalone/Test-Design',
+          techStack: techStackDesc,
+          documentType: documentType,
+          visualContext: null,
+          selectionCount: 0,
+          standaloneMode: true
+        };
+
+        console.log('🎯 Calling MCP generate_enhanced_ticket tool (standalone)...');
+        resultsTextarea.value = 'Generating content using AI-powered MCP server...';
+
+        // Call MCP server to generate enhanced ticket
+        const result = await callMCPTool('generate_enhanced_ticket', mcpParams);
+
+        // Extract the generated content
+        let generatedContent = '';
+        if (result.content && Array.isArray(result.content)) {
+          generatedContent = result.content
+            .filter(item => item.type === 'text')
+            .map(item => typeof item.text === 'string' ? item.text : JSON.stringify(item.text))
+            .join('\n\n');
+        } else if (result.ticket && typeof result.ticket === 'object' && result.ticket.ticket) {
+          // Handle nested ticket structure
+          generatedContent = result.ticket.ticket;
+        } else if (result.ticket && typeof result.ticket === 'string') {
+          generatedContent = result.ticket;
+        } else if (result.text) {
+          generatedContent = result.text;
+        } else {
+          // Safe JSON stringify with fallback
+          try {
+            generatedContent = JSON.stringify(result, null, 2);
+          } catch (e) {
+            generatedContent = `Error displaying result: ${e.message}\n\nResult type: ${typeof result}`;
+          }
+        }
+
+        // Display the generated content
+        resultsTextarea.value = generatedContent;
+        copyBtn.disabled = false;
+        
+        console.log('✅ Standalone generation completed successfully');
+
+      } catch (error) {
+        console.error('Standalone generation failed:', error);
+        
+        // Fallback to basic generation
+        const fallbackContent = generateBasicTicket(techStackDesc, documentType);
+        resultsTextarea.value = fallbackContent;
+        copyBtn.disabled = false;
+        
+        showError(`MCP Server unavailable. Generated basic ${documentType} ticket instead.`);
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '🔍 Preview Context & Generate';
+      }
+    }
+
+    // Basic fallback ticket generation
+    function generateBasicTicket(techStack, documentType) {
+      const templates = {
+        jira: `# Feature Implementation - Tech Stack Integration
+
+## Summary
+Implement features using ${techStack}
+
+## Description
+Based on the specified tech stack: ${techStack}
+
+## Acceptance Criteria
+- [ ] Implement core functionality using specified technologies
+- [ ] Follow best practices for ${techStack}
+- [ ] Ensure proper testing coverage
+- [ ] Document implementation approach
+
+## Technical Notes
+- Tech Stack: ${techStack}
+- Generated: ${new Date().toLocaleDateString()}
+- Mode: Standalone (no Figma integration)
+
+## Story Points
+5`,
+        confluence: `# ${techStack} Implementation Guide
+
+## Overview
+This document outlines the implementation approach for ${techStack}.
+
+## Technical Stack
+${techStack}
+
+## Implementation Details
+[To be completed based on specific requirements]
+
+## Best Practices
+- Follow ${techStack} conventions
+- Implement proper error handling  
+- Use appropriate testing strategies
+
+## Resources
+- Generated: ${new Date().toLocaleDateString()}
+- Mode: Standalone documentation`,
+        wiki: `# ${techStack} - Implementation Notes
+
+**Tech Stack**: ${techStack}
+
+**Last Updated**: ${new Date().toLocaleDateString()}
+
+## Overview
+Documentation for ${techStack} implementation.
+
+## Key Components
+[To be detailed based on specific requirements]
+
+## Usage Guidelines
+[Implementation-specific guidelines to be added]
+
+---
+*Generated in standalone mode*`,
+        agent: `# Agent Task: ${techStack} Implementation
+
+## Objective
+Implement functionality using ${techStack}
+
+## Task Details
+- **Tech Stack**: ${techStack}
+- **Priority**: Medium
+- **Estimated Effort**: 2-3 days
+
+## Deliverables
+- [ ] Core implementation
+- [ ] Testing coverage
+- [ ] Documentation update
+
+## Success Criteria
+Implementation follows ${techStack} best practices
+
+*Generated: ${new Date().toISOString()}*`,
+        code: `# ${techStack} - Code Implementation Plan
+
+## Tech Stack Analysis
+${techStack}
+
+## Implementation Approach
+\`\`\`
+// Implementation structure for ${techStack}
+// Generated: ${new Date().toISOString()}
+\`\`\`
+
+## Next Steps
+1. Set up project structure
+2. Implement core features
+3. Add testing coverage
+4. Document API/interfaces
+
+---
+*Standalone mode - no Figma context available*`
+      };
+
+      return templates[documentType] || templates.jira;
     }
 
     // Function called when user submits from context preview
