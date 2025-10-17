@@ -5,6 +5,10 @@
   "main": "dist/code.js",
   "scripts": {
     "start": "cd server && node server.js",
+    "deploy": "./scripts/deploy-production.sh",
+    "bundle": "./scripts/bundle-production.sh",
+    "validate:prod": "./scripts/validate-production.sh",
+    "test:e2e": "./scripts/test-e2e.sh",
     "build": "./build.sh",
     "build:ts": "tsc",
     "watch": "tsc --watch",
