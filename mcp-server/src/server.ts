@@ -2207,7 +2207,7 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
           name: 'Figma AI Ticket Generator',
           version: '1.0.0',
           status: 'running',
-          tools: ['analyze_project', 'generate_tickets', 'check_compliance', 'generate_enhanced_ticket'],
+          tools: ['analyze_project', 'generate_tickets', 'check_compliance', 'generate_enhanced_ticket', 'generate_ai_ticket'],
           description: 'Strategic design-to-code automation server'
         }));
         return;
@@ -2251,7 +2251,7 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
     server.listen(this.port, () => {
       console.log('� Figma AI Ticket Generator Test Server started');
       console.log(`📋 Server running at http://localhost:${this.port}`);
-      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket');
+      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket, generate_ai_ticket');
       console.log('');
       console.log('Example usage:');
       console.log(`curl -X POST http://localhost:${this.port} \\`);

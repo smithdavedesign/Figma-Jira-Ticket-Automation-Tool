@@ -11,7 +11,7 @@
     "outFile": "./dist/code.js"
   },
   "include": [
-    "code-single.ts"
+    "code.ts"
   ],
   "exclude": [
     "node_modules",

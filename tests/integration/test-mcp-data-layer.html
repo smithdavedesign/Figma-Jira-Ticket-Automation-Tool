@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔍 MCP Data Layer Validation Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+        }
+        .button:hover { background: #5a67d8; }
+        .button-success { background: #48bb78; }
+        .button-danger { background: #f56565; }
+        .test-results {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .test-status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-weight: 600;
+        }
+        .status-pass { background: #c6f6d5; color: #22543d; }
+        .status-fail { background: #fed7d7; color: #742a2a; }
+        .status-warn { background: #fefcbf; color: #744210; }
+        .schema-section {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .schema-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🔍 MCP Data Layer Validation Test Suite</h1>
+        <p>Comprehensive testing and validation for the Figma AI Ticket Generator MCP data layer</p>
+    </div>
+
+    <div class="test-container">
+        <h2>🧪 Test Controls</h2>
+        <button class="button" onclick="testMCPServer()">Test MCP Server Connection</button>
+        <button class="button" onclick="testDataSchema()">Validate Data Schema</button>
+        <button class="button" onclick="testAIIntegration()">Test AI Integration</button>
+        <button class="button" onclick="runFullSuite()">🚀 Run Complete Test Suite</button>
+        <button class="button button-danger" onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div class="test-container">
+        <h2>📊 Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>📋 Expected Data Schema</h2>
+        <div class="schema-section">
+            <div class="schema-title">EnhancedFrameData Schema:</div>
+            <div class="test-results" id="expectedSchema"></div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>🔍 Live Data Inspection</h2>
+        <div id="liveDataInspection"></div>
+    </div>
+
+    <script>
+        // Expected schema for validation
+        const EXPECTED_SCHEMA = {
+            enhancedFrameData: [
+                {
+                    id: "string (required)",
+                    name: "string (required)",
+                    type: "string (required)",
+                    description: "string",
+                    pageName: "string",
+                    dimensions: {
+                        width: "number (required)",
+                        height: "number (required)"
+                    },
+                    position: {
+                        x: "number",
+                        y: "number"
+                    },
+                    hierarchy: {
+                        layers: "array (required)",
+                        totalDepth: "number",
+                        componentCount: "number",
+                        textLayerCount: "number"
+                    },
+                    componentInstances: "array",
+                    designSystemLinks: "object",
+                    exportScreenshots: "array",
+                    fileKey: "string",
+                    fileName: "string",
+                    metadata: {
+                        nodeCount: "number",
+                        textContent: "array",
+                        colors: "array",
+                        hasPrototype: "boolean",
+                        semanticRole: "string",
+                        accessibility: "object"
+                    }
+                }
+            ],
+            screenshot: "string (base64) | null",
+            fileContext: {
+                fileKey: "string",
+                fileName: "string",
+                pageName: "string",
+                selectionCount: "number"
+            },
+            metadata: {
+                extractedAt: "string (ISO date)",
+                totalFrames: "number",
+                hasScreenshot: "boolean"
+            }
+        };
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const statusClass = type === 'pass' ? 'status-pass' : type === 'fail' ? 'status-fail' : type === 'warn' ? 'status-warn' : '';
+            
+            results.innerHTML += `<div class="test-status ${statusClass}">[${timestamp}] ${message}</div>`;
+            results.scrollTop = results.scrollHeight;
+            console.log(`[MCP Test] ${message}`);
+        }
+
+        async function testMCPServer() {
+            log('🔄 Testing MCP Server Connection...');
+            
+            try {
+                const response = await fetch('http://localhost:3000/', {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ MCP Server connected successfully`, 'pass');
+                    log(`📊 Server info: ${data.name} v${data.version}`, 'info');
+                    log(`🔧 Available tools: ${data.tools?.join(', ') || 'Unknown'}`, 'info');
+                    return true;
+                } else {
+                    throw new Error(`Server responded with status ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ MCP Server connection failed: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        async function testDataSchema() {
+            log('🔄 Testing Data Schema Validation...');
+            
+            // Display expected schema
+            document.getElementById('expectedSchema').textContent = JSON.stringify(EXPECTED_SCHEMA, null, 2);
+            
+            // Test with mock data
+            const mockData = {
+                enhancedFrameData: [{
+                    id: "test-frame-1",
+                    name: "Test Frame",
+                    type: "FRAME",
+                    description: "Test frame for validation",
+                    pageName: "Test Page",
+                    dimensions: { width: 100, height: 200 },
+                    position: { x: 0, y: 0 },
+                    hierarchy: {
+                        layers: [],
+                        totalDepth: 1,
+                        componentCount: 0,
+                        textLayerCount: 0
+                    },
+                    componentInstances: [],
+                    designSystemLinks: {},
+                    exportScreenshots: [],
+                    fileKey: "test-key",
+                    fileName: "Test File",
+                    metadata: {
+                        nodeCount: 0,
+                        textContent: [],
+                        colors: ["#FF0000"],
+                        hasPrototype: false,
+                        semanticRole: "container",
+                        accessibility: { hasLabel: true }
+                    }
+                }],
+                screenshot: null,
+                fileContext: {
+                    fileKey: "test-key",
+                    fileName: "Test File",
+                    pageName: "Test Page",
+                    selectionCount: 1
+                },
+                metadata: {
+                    extractedAt: new Date().toISOString(),
+                    totalFrames: 1,
+                    hasScreenshot: false
+                }
+            };
+
+            const validation = validateCompleteDataStructure(mockData);
+            
+            if (validation.isValid) {
+                log('✅ Schema validation passed', 'pass');
+            } else {
+                log(`❌ Schema validation failed: ${validation.errors.join(', ')}`, 'fail');
+            }
+            
+            if (validation.warnings.length > 0) {
+                log(`⚠️ Schema warnings: ${validation.warnings.join(', ')}`, 'warn');
+            }
+
+            return validation.isValid;
+        }
+
+        async function testAIIntegration() {
+            log('🔄 Testing AI Integration...');
+            
+            try {
+                const response = await fetch('http://localhost:3000/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: 'generate_ai_ticket',
+                        params: {
+                            figmaUrl: 'https://figma.com/file/test123/Test-File',
+                            techStack: 'React + TypeScript',
+                            documentType: 'jira',
+                            useAI: true
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    log('✅ AI Integration test passed', 'pass');
+                    log(`📄 Generated content length: ${result.content?.[0]?.text?.length || 0} characters`, 'info');
+                    return true;
+                } else {
+                    throw new Error(`AI test failed with status ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ AI Integration test failed: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        function validateCompleteDataStructure(data) {
+            const errors = [];
+            const warnings = [];
+            
+            // Validate enhancedFrameData array
+            if (!Array.isArray(data.enhancedFrameData)) {
+                errors.push('enhancedFrameData must be an array');
+            } else {
+                data.enhancedFrameData.forEach((frame, index) => {
+                    const frameValidation = validateFrameSchema(frame, index);
+                    errors.push(...frameValidation.errors);
+                    warnings.push(...frameValidation.warnings);
+                });
+            }
+            
+            // Validate fileContext
+            if (!data.fileContext) {
+                errors.push('fileContext is required');
+            } else {
+                if (!data.fileContext.fileKey) warnings.push('fileContext.fileKey is missing');
+                if (!data.fileContext.fileName) warnings.push('fileContext.fileName is missing');
+            }
+            
+            // Validate metadata
+            if (!data.metadata) {
+                errors.push('metadata is required');
+            } else {
+                if (!data.metadata.extractedAt) warnings.push('metadata.extractedAt is missing');
+                if (typeof data.metadata.totalFrames !== 'number') warnings.push('metadata.totalFrames should be a number');
+            }
+            
+            return {
+                isValid: errors.length === 0,
+                errors,
+                warnings
+            };
+        }
+
+        function validateFrameSchema(frame, index) {
+            const errors = [];
+            const warnings = [];
+            const prefix = `Frame ${index}: `;
+            
+            // Required fields
+            if (!frame.id) errors.push(prefix + 'id is required');
+            if (!frame.name) warnings.push(prefix + 'name is missing');
+            if (!frame.type) errors.push(prefix + 'type is required');
+            
+            // Dimensions validation
+            if (!frame.dimensions) {
+                errors.push(prefix + 'dimensions is required');
+            } else {
+                if (typeof frame.dimensions.width !== 'number') errors.push(prefix + 'dimensions.width must be a number');
+                if (typeof frame.dimensions.height !== 'number') errors.push(prefix + 'dimensions.height must be a number');
+            }
+            
+            // Hierarchy validation
+            if (!frame.hierarchy) {
+                errors.push(prefix + 'hierarchy is required');
+            } else {
+                if (!Array.isArray(frame.hierarchy.layers)) errors.push(prefix + 'hierarchy.layers must be an array');
+                if (typeof frame.hierarchy.totalDepth !== 'number') warnings.push(prefix + 'hierarchy.totalDepth should be a number');
+            }
+            
+            // Metadata validation
+            if (!frame.metadata) {
+                errors.push(prefix + 'metadata is required');
+            } else {
+                if (!Array.isArray(frame.metadata.colors)) warnings.push(prefix + 'metadata.colors should be an array');
+                if (!frame.metadata.semanticRole) warnings.push(prefix + 'metadata.semanticRole is missing');
+            }
+            
+            return { errors, warnings };
+        }
+
+        async function runFullSuite() {
+            log('🚀 Starting Complete Test Suite...');
+            clearResults();
+            
+            const tests = [
+                { name: 'MCP Server Connection', fn: testMCPServer },
+                { name: 'Data Schema Validation', fn: testDataSchema },
+                { name: 'AI Integration', fn: testAIIntegration }
+            ];
+            
+            let passed = 0;
+            let failed = 0;
+            
+            for (const test of tests) {
+                log(`\n🧪 Running: ${test.name}`);
+                try {
+                    const result = await test.fn();
+                    if (result) {
+                        passed++;
+                        log(`✅ ${test.name} PASSED`, 'pass');
+                    } else {
+                        failed++;
+                        log(`❌ ${test.name} FAILED`, 'fail');
+                    }
+                } catch (error) {
+                    failed++;
+                    log(`❌ ${test.name} ERROR: ${error.message}`, 'fail');
+                }
+            }
+            
+            log(`\n📊 Test Suite Complete: ${passed} passed, ${failed} failed`, passed === tests.length ? 'pass' : 'fail');
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+        }
+
+        // Initialize
+        log('🔍 MCP Data Layer Validation Test Suite Loaded');
+        log('ℹ️ Click "Run Complete Test Suite" to validate your MCP setup');
+    </script>
+</body>
+</html>

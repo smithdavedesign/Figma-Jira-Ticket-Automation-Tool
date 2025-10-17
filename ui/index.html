@@ -251,6 +251,176 @@
       box-shadow: none;
     }
 
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .button-ai {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .button-ai:hover {
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .button-ai::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .button-ai:hover::before {
+      left: 100%;
+    }
+
+    /* Debug Panel Styles */
+    .debug-panel {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: 'Monaco', 'Consolas', monospace;
+      overflow: hidden;
+    }
+
+    .debug-header {
+      background: #2a2a2a;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+    }
+
+    .debug-header h3 {
+      color: #00ff88;
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .button-debug {
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .button-debug:hover {
+      background: #555;
+    }
+
+    .debug-content {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .debug-section {
+      padding: 16px;
+      border-bottom: 1px solid #333;
+    }
+
+    .debug-section:last-child {
+      border-bottom: none;
+    }
+
+    .debug-section h4 {
+      color: #00aaff;
+      margin: 0 0 12px 0;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .debug-code {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 11px;
+      color: #00ff88;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+      margin: 0;
+    }
+
+    .debug-validation {
+      font-size: 12px;
+    }
+
+    .validation-pass {
+      color: #00ff88;
+      background: rgba(0, 255, 136, 0.1);
+      padding: 8px;
+      border-radius: 4px;
+      border-left: 3px solid #00ff88;
+    }
+
+    .validation-error {
+      color: #ff4444;
+      background: rgba(255, 68, 68, 0.1);
+      padding: 8px;
+      border-radius: 4px;
+      border-left: 3px solid #ff4444;
+      margin-bottom: 8px;
+    }
+
+    .validation-warning {
+      color: #ffaa00;
+      background: rgba(255, 170, 0, 0.1);
+      padding: 8px;
+      border-radius: 4px;
+      border-left: 3px solid #ffaa00;
+      margin-bottom: 8px;
+    }
+
+    .debug-mcp {
+      font-size: 11px;
+      color: #ccc;
+    }
+
+    /* Test Panel Styles */
+    .test-panel {
+      background: #f0f8ff;
+      border: 2px solid #4a90e2;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 20px 0;
+    }
+
+    .test-panel h3 {
+      margin: 0 0 12px 0;
+      color: #2c5282;
+      font-size: 14px;
+    }
+
+    .test-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .button-success {
+      background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    }
+
+    .button-success:hover {
+      box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+    }
+
     .button-secondary {
       background: #6b7280;
       width: auto;
@@ -889,7 +1059,46 @@ Examples:
         </div>
       </div>
 
-      <button id="generate" class="button">🔍 Preview Context & Generate</button>
+      <div class="button-group">
+        <button id="generate" class="button">🔍 Preview Context & Generate</button>
+        <button id="generateAI" class="button button-ai">🤖 Generate AI Ticket</button>
+      </div>
+      
+      <div style="text-align: center; margin: 10px 0;">
+        <button id="showDebug" class="button-debug">🔍 Show MCP Data Debug</button>
+      </div>
+
+      <!-- Standalone Testing Panel -->
+      <div class="test-panel">
+        <h3>🧪 Standalone Testing (No Figma Required)</h3>
+        <div class="test-buttons">
+          <button id="testMockAI" class="button button-success">🤖 Test Mock AI Generation</button>
+          <button id="testMockData" class="button button-success">📊 Test Mock Data Extraction</button>
+          <button id="testMCPDirect" class="button button-success">🔧 Test MCP Server Direct</button>
+        </div>
+      </div>
+
+      <!-- Debug Panel for Data Layer Validation -->
+      <div id="debugPanel" class="debug-panel hidden">
+        <div class="debug-header">
+          <h3>🔍 MCP Data Layer Debug</h3>
+          <button id="toggleDebug" class="button-debug">Hide Debug</button>
+        </div>
+        <div class="debug-content">
+          <div class="debug-section">
+            <h4>📊 Extracted Data Schema</h4>
+            <pre id="debugDataSchema" class="debug-code"></pre>
+          </div>
+          <div class="debug-section">
+            <h4>✅ Validation Results</h4>
+            <div id="debugValidation" class="debug-validation"></div>
+          </div>
+          <div class="debug-section">
+            <h4>📡 MCP Server Communication</h4>
+            <div id="debugMCP" class="debug-mcp"></div>
+          </div>
+        </div>
+      </div>
 
       <div id="results" class="hidden">
         <label>Generated Content</label>
@@ -1207,16 +1416,40 @@ Examples:
               case 'file-context':
                 handleFileContext(msg);
                 break;
+              case 'get-real-file-key':
+                // Extract real file key from browser URL
+                const urlMatch = window.location.href.match(/file\/([a-zA-Z0-9]+)/);
+                const realFileKey = urlMatch ? urlMatch[1] : 'dev-file';
+                console.log('🔍 Extracted file key from URL:', realFileKey);
+                
+                // Send back to plugin with the callback
+                parent.postMessage({ 
+                  pluginMessage: { 
+                    type: 'real-file-key-response',
+                    fileKey: realFileKey,
+                    callback: msg.callback
+                  } 
+                }, '*');
+                break;
               case 'screenshot-captured':
                 // Use real screenshot if available, fallback to mock
+                console.log('📸 Screenshot message received:', msg);
                 let screenshotData = msg.screenshot;
                 if (!screenshotData || !screenshotData.dataUrl) {
+                  console.log('⚠️ No valid screenshot data, using mock');
                   screenshotData = createMockScreenshot();
                   screenshotData.fallback = true;
                 } else {
+                  console.log('✅ Valid screenshot data received, using LIVE');
                   screenshotData.fallback = false;
                 }
                 updateScreenshotSection(screenshotData);
+                break;
+              case 'enhanced-frame-data':
+                handleEnhancedFrameData(msg.data, msg.fileContext, msg.processingSummary);
+                break;
+              case 'ai-ticket-data':
+                handleAITicketData(msg.data);
                 break;
               case 'error':
                 console.error('Figma error:', msg.message);
@@ -1238,6 +1471,10 @@ Examples:
       if (selectionData && selectionData.length > 0) {
         // Update global context
         frameData = selectionData;
+        
+        // Trigger screenshot capture for visual context
+        console.log('📸 Triggering screenshot capture...');
+        parent.postMessage({ pluginMessage: { type: 'capture-screenshot' } }, '*');
         
         // Update UI to show selection data
         const figmaSection = document.querySelector('[data-section="figma"]');
@@ -1316,6 +1553,517 @@ Examples:
       
       const parsed = parseTechStack(techStackDesc);
       updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
+    }
+
+    // Handle AI ticket data from plugin and process with MCP + AI
+    async function handleAITicketData(aiData) {
+      console.log('🤖 Processing AI ticket data:', aiData);
+      
+      // Update debug panel with extracted data
+      updateDebugPanel(aiData);
+      
+      const aiBtn = document.getElementById('generateAI');
+      const techStackDesc = techStackInput.value.trim();
+      const documentType = documentTypeSelect.value;
+      
+      try {
+        aiBtn.innerHTML = '<div class="spinner"></div> Processing with AI...';
+        showStatus('🧠 Sending data to MCP server for AI processing...', 'loading');
+        
+        // Prepare data for MCP server generate_ai_ticket tool
+        const mcpParams = {
+          enhancedFrameData: aiData.enhancedFrameData,
+          screenshot: aiData.screenshot,
+          figmaUrl: `https://www.figma.com/file/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}`,
+          techStack: techStackDesc,
+          documentType: documentType,
+          projectName: aiData.fileContext.fileName,
+          fileContext: aiData.fileContext,
+          metadata: aiData.metadata,
+          useAI: true
+        };
+
+        console.log('📤 Calling MCP generate_ai_ticket with enhanced data...');
+        showStatus('🔮 AI analyzing design and generating intelligent ticket...', 'loading');
+        
+        // Call MCP server generate_ai_ticket tool
+        const result = await callMCPTool('generate_ai_ticket', mcpParams);
+        
+        // Process the AI-generated result
+        let generatedContent = '';
+        if (result.content && Array.isArray(result.content)) {
+          generatedContent = result.content
+            .filter(item => item.type === 'text')
+            .map(item => typeof item.text === 'string' ? item.text : JSON.stringify(item.text))
+            .join('\n\n');
+        } else if (result.ticket) {
+          generatedContent = typeof result.ticket === 'string' ? result.ticket : JSON.stringify(result.ticket);
+        } else {
+          throw new Error('No content received from AI generation');
+        }
+
+        // Display the AI-generated ticket
+        document.getElementById('generatedContent').value = generatedContent;
+        document.getElementById('results').classList.remove('hidden');
+        document.getElementById('copyBtn').disabled = false;
+        
+        showStatus('✅ AI-powered ticket generated successfully!', 'success');
+        console.log('✅ AI ticket generation completed');
+        
+      } catch (error) {
+        console.error('❌ AI ticket processing failed:', error);
+        showError(`AI ticket generation failed: ${error.message}`);
+        
+        // Fallback to standard generation
+        try {
+          console.log('🔄 Falling back to standard generation...');
+          const fallbackContent = generateFallbackTicket(aiData);
+          document.getElementById('generatedContent').value = fallbackContent;
+          document.getElementById('results').classList.remove('hidden');
+          document.getElementById('copyBtn').disabled = false;
+          showStatus('⚠️ Used fallback generation (AI unavailable)', 'warning');
+        } catch (fallbackError) {
+          console.error('❌ Fallback generation also failed:', fallbackError);
+          showError('Both AI and fallback generation failed. Please try again.');
+        }
+        
+      } finally {
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = '🤖 Generate AI Ticket';
+      }
+    }
+
+    // Generate fallback ticket when AI fails
+    function generateFallbackTicket(aiData) {
+      const frameData = aiData.enhancedFrameData[0] || {};
+      const fileContext = aiData.fileContext || {};
+      
+      return `# ${frameData.name || 'Design Component'} Implementation
+
+## Overview
+Implement the ${frameData.name || 'selected component'} from ${fileContext.fileName || 'Figma design'}.
+
+## Component Details
+- **Type**: ${frameData.type || 'Component'}
+- **Dimensions**: ${frameData.dimensions?.width || 0}×${frameData.dimensions?.height || 0}px
+- **Page**: ${fileContext.pageName || 'Unknown'}
+- **Hierarchy Depth**: ${frameData.hierarchy?.totalDepth || 1}
+- **Component Count**: ${frameData.hierarchy?.componentCount || 0}
+
+## Technical Requirements
+- Implement using ${techStackInput.value || 'specified tech stack'}
+- Maintain responsive design principles
+- Follow accessibility best practices
+- Use design system tokens where applicable
+
+## Acceptance Criteria
+- [ ] Component renders correctly at specified dimensions
+- [ ] Responsive behavior matches design
+- [ ] Accessibility requirements met
+- [ ] Design system tokens used appropriately
+
+## Story Points
+${Math.max(3, Math.min(8, Math.ceil((frameData.hierarchy?.componentCount || 1) * 2)))}
+
+---
+*Generated with enhanced fallback mode - AI processing unavailable*
+*Extracted at: ${aiData.metadata?.extractedAt || new Date().toISOString()}*`;
+    }
+
+    // Debug Panel Functions
+    function updateDebugPanel(aiData) {
+      console.log('🔍 Updating debug panel with data:', aiData);
+      
+      // Show debug panel
+      document.getElementById('debugPanel').classList.remove('hidden');
+      
+      // Update data schema display
+      const schemaElement = document.getElementById('debugDataSchema');
+      if (schemaElement) {
+        schemaElement.textContent = JSON.stringify(aiData, null, 2);
+      }
+      
+      // Validate the data and show results
+      const validationElement = document.getElementById('debugValidation');
+      if (validationElement && aiData.enhancedFrameData) {
+        let validationHTML = '';
+        
+        aiData.enhancedFrameData.forEach((frameData, index) => {
+          const validation = validateFrameDataSchema(frameData);
+          
+          if (validation.isValid && validation.warnings.length === 0) {
+            validationHTML += `<div class="validation-pass">✅ Frame ${index + 1} (${frameData.name || 'Unnamed'}): All validations passed</div>`;
+          } else {
+            if (validation.errors.length > 0) {
+              validationHTML += `<div class="validation-error">❌ Frame ${index + 1} Errors: ${validation.errors.join(', ')}</div>`;
+            }
+            if (validation.warnings.length > 0) {
+              validationHTML += `<div class="validation-warning">⚠️ Frame ${index + 1} Warnings: ${validation.warnings.join(', ')}</div>`;
+            }
+          }
+        });
+        
+        validationElement.innerHTML = validationHTML || '<div class="validation-pass">✅ No data to validate</div>';
+      }
+      
+      // Update MCP communication status
+      const mcpElement = document.getElementById('debugMCP');
+      if (mcpElement) {
+        mcpElement.innerHTML = `
+          <div>📊 Data Size: ${JSON.stringify(aiData).length} bytes</div>
+          <div>🎯 Frames: ${aiData.enhancedFrameData?.length || 0}</div>
+          <div>📸 Screenshot: ${aiData.screenshot ? 'Available' : 'Not captured'}</div>
+          <div>📄 File: ${aiData.fileContext?.fileName || 'Unknown'}</div>
+          <div>🕒 Extracted: ${aiData.metadata?.extractedAt || 'Unknown'}</div>
+        `;
+      }
+    }
+
+    function validateFrameDataSchema(data) {
+      const errors = [];
+      const warnings = [];
+      
+      // Required field validation
+      if (!data.id) errors.push('Missing required field: id');
+      if (!data.name) warnings.push('Missing field: name');
+      if (!data.type) errors.push('Missing required field: type');
+      if (!data.dimensions) errors.push('Missing required field: dimensions');
+      else {
+        if (typeof data.dimensions.width !== 'number') errors.push('dimensions.width must be a number');
+        if (typeof data.dimensions.height !== 'number') errors.push('dimensions.height must be a number');
+      }
+      
+      // Hierarchy validation
+      if (!data.hierarchy) errors.push('Missing required field: hierarchy');
+      else {
+        if (!Array.isArray(data.hierarchy.layers)) errors.push('hierarchy.layers must be an array');
+        if (typeof data.hierarchy.totalDepth !== 'number') warnings.push('hierarchy.totalDepth should be a number');
+        if (typeof data.hierarchy.componentCount !== 'number') warnings.push('hierarchy.componentCount should be a number');
+      }
+      
+      // Metadata validation
+      if (!data.metadata) errors.push('Missing required field: metadata');
+      else {
+        if (!Array.isArray(data.metadata.colors)) warnings.push('metadata.colors should be an array');
+        if (!data.metadata.semanticRole) warnings.push('Missing metadata.semanticRole');
+      }
+      
+      return {
+        isValid: errors.length === 0,
+        errors,
+        warnings
+      };
+    }
+
+    // Handle enhanced frame data from regular generate button (for debugging)
+    function handleEnhancedFrameData(data, fileContext, processingSummary) {
+      console.log('📊 Enhanced frame data received:', { data, fileContext, processingSummary });
+      
+      // Create debug-friendly data structure
+      const debugData = {
+        enhancedFrameData: data,
+        fileContext: fileContext,
+        metadata: {
+          extractedAt: new Date().toISOString(),
+          processingSummary: processingSummary
+        }
+      };
+      
+      // Update debug panel
+      updateDebugPanel(debugData);
+      
+      // Show success message
+      showStatus(`✅ Enhanced data extracted: ${data.length} frame(s) processed`, 'success');
+    }
+
+    function toggleDebugPanel() {
+      const debugPanel = document.getElementById('debugPanel');
+      const toggleBtn = document.getElementById('showDebug');
+      const hideBtn = document.getElementById('toggleDebug');
+      
+      if (debugPanel.classList.contains('hidden')) {
+        debugPanel.classList.remove('hidden');
+        toggleBtn.textContent = '🔍 Hide MCP Data Debug';
+      } else {
+        debugPanel.classList.add('hidden');
+        toggleBtn.textContent = '🔍 Show MCP Data Debug';
+      }
+    }
+
+    // Mock Data Generator for Testing Without Figma
+    function generateMockAITicketData() {
+      return {
+        enhancedFrameData: [
+          {
+            id: "mock-frame-1",
+            name: "Primary Button Component",
+            type: "COMPONENT",
+            description: "component component: Primary Button Component",
+            pageName: "Design System",
+            dimensions: { width: 120, height: 40 },
+            position: { x: 100, y: 200 },
+            hierarchy: {
+              layers: [
+                {
+                  id: "mock-layer-1",
+                  name: "Button Background",
+                  type: "RECTANGLE",
+                  position: { x: 0, y: 0 },
+                  size: { width: 120, height: 40 },
+                  semanticRole: "background"
+                },
+                {
+                  id: "mock-layer-2", 
+                  name: "Button Text",
+                  type: "TEXT",
+                  position: { x: 10, y: 12 },
+                  size: { width: 100, height: 16 },
+                  semanticRole: "text"
+                }
+              ],
+              totalDepth: 2,
+              componentCount: 1,
+              textLayerCount: 1
+            },
+            componentInstances: [],
+            designSystemLinks: {
+              buttons: "design-system/buttons",
+              colors: "design-system/colors",
+              typography: "design-system/typography",
+              spacing: "design-system/spacing"
+            },
+            exportScreenshots: [],
+            fileKey: "mock-file-key-123",
+            fileName: "Design System Components",
+            metadata: {
+              nodeCount: 2,
+              textContent: [],
+              colors: ["#007AFF", "#FFFFFF"],
+              hasPrototype: false,
+              semanticRole: "button",
+              accessibility: {
+                hasLabel: true,
+                role: "button",
+                colorContrast: "unknown",
+                focusable: true,
+                issues: []
+              }
+            }
+          },
+          {
+            id: "mock-frame-2",
+            name: "Navigation Card",
+            type: "FRAME",
+            description: "frame component: Navigation Card",
+            pageName: "Components",
+            dimensions: { width: 300, height: 200 },
+            position: { x: 0, y: 0 },
+            hierarchy: {
+              layers: [
+                {
+                  id: "mock-layer-3",
+                  name: "Card Background",
+                  type: "RECTANGLE",
+                  position: { x: 0, y: 0 },
+                  size: { width: 300, height: 200 },
+                  semanticRole: "container"
+                },
+                {
+                  id: "mock-layer-4",
+                  name: "Card Title",
+                  type: "TEXT",
+                  position: { x: 20, y: 20 },
+                  size: { width: 260, height: 24 },
+                  semanticRole: "heading"
+                }
+              ],
+              totalDepth: 2,
+              componentCount: 0,
+              textLayerCount: 1
+            },
+            componentInstances: [],
+            designSystemLinks: {
+              buttons: null,
+              colors: "design-system/colors",
+              typography: "design-system/typography",
+              spacing: "design-system/spacing"
+            },
+            exportScreenshots: [],
+            fileKey: "mock-file-key-123",
+            fileName: "Design System Components", 
+            metadata: {
+              nodeCount: 2,
+              textContent: [],
+              colors: ["#F8F9FA", "#1A202C"],
+              hasPrototype: false,
+              semanticRole: "card",
+              accessibility: {
+                hasLabel: true,
+                role: "container",
+                colorContrast: "unknown",
+                focusable: false,
+                issues: []
+              }
+            }
+          }
+        ],
+        screenshot: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        fileContext: {
+          fileKey: "mock-file-key-123",
+          fileName: "Design System Components",
+          pageName: "Components",
+          selectionCount: 2
+        },
+        metadata: {
+          extractedAt: new Date().toISOString(),
+          totalFrames: 2,
+          hasScreenshot: true
+        }
+      };
+    }
+
+    function generateMockEnhancedFrameData() {
+      const mockData = generateMockAITicketData();
+      return {
+        data: mockData.enhancedFrameData,
+        fileContext: mockData.fileContext,
+        processingSummary: {
+          processed: 2,
+          skipped: 0,
+          total: 2,
+          message: "Successfully processed 2 frame(s) with mock data"
+        }
+      };
+    }
+
+    // Test functions for standalone testing
+    async function testMockAIGeneration() {
+      const mockData = generateMockAITicketData();
+      
+      showStatus('🧪 Testing with mock data...', 'loading');
+      console.log('🧪 Generated mock AI ticket data:', mockData);
+      
+      // Update debug panel with mock data
+      updateDebugPanel(mockData);
+      
+      // Simulate AI processing
+      try {
+        const aiBtn = document.getElementById('generateAI');
+        aiBtn.disabled = true;
+        aiBtn.innerHTML = '<div class="spinner"></div> Processing Mock Data...';
+        
+        // Call MCP server with mock data
+        const mcpParams = {
+          enhancedFrameData: mockData.enhancedFrameData,
+          screenshot: mockData.screenshot,
+          figmaUrl: `https://www.figma.com/file/${mockData.fileContext.fileKey}/${encodeURIComponent(mockData.fileContext.fileName)}`,
+          techStack: techStackInput.value.trim() || 'React + TypeScript',
+          documentType: documentTypeSelect.value,
+          projectName: mockData.fileContext.fileName,
+          fileContext: mockData.fileContext,
+          metadata: mockData.metadata,
+          useAI: true
+        };
+
+        console.log('📤 Calling MCP with mock data...');
+        const result = await callMCPTool('generate_ai_ticket', mcpParams);
+        
+        // Process result
+        let generatedContent = '';
+        if (result.content && Array.isArray(result.content)) {
+          generatedContent = result.content
+            .filter(item => item.type === 'text')
+            .map(item => typeof item.text === 'string' ? item.text : JSON.stringify(item.text))
+            .join('\n\n');
+        }
+        
+        // Display result
+        document.getElementById('generatedContent').value = generatedContent;
+        document.getElementById('results').classList.remove('hidden');
+        document.getElementById('copyBtn').disabled = false;
+        
+        showStatus('✅ Mock AI ticket generated successfully!', 'success');
+        
+      } catch (error) {
+        console.error('❌ Mock test failed:', error);
+        showError(`Mock test failed: ${error.message}`);
+      } finally {
+        const aiBtn = document.getElementById('generateAI');
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = '🤖 Generate AI Ticket';
+      }
+    }
+
+    function testMockEnhancedData() {
+      const mockData = generateMockEnhancedFrameData();
+      
+      showStatus('🧪 Testing enhanced data extraction...', 'loading');
+      console.log('🧪 Generated mock enhanced frame data:', mockData);
+      
+      // Simulate the enhanced frame data message
+      handleEnhancedFrameData(mockData.data, mockData.fileContext, mockData.processingSummary);
+      
+      showStatus('✅ Mock enhanced data processed!', 'success');
+    }
+
+    async function testMCPServerDirect() {
+      showStatus('🔧 Testing MCP server direct connection...', 'loading');
+      
+      try {
+        // Test 1: Server health check
+        console.log('1️⃣ Testing server health...');
+        const healthResponse = await fetch('http://localhost:3000/');
+        if (!healthResponse.ok) throw new Error('Server health check failed');
+        
+        const healthData = await healthResponse.json();
+        console.log('✅ Server health:', healthData);
+        
+        // Test 2: Available tools
+        console.log('2️⃣ Testing available tools...');
+        console.log('🔧 Available tools:', healthData.tools);
+        
+        // Test 3: Generate AI ticket with minimal data
+        console.log('3️⃣ Testing generate_ai_ticket...');
+        const testResponse = await callMCPTool('generate_ai_ticket', {
+          figmaUrl: 'https://figma.com/file/test123/Test-Design',
+          techStack: 'React + TypeScript',
+          documentType: 'jira',
+          useAI: true
+        });
+        
+        console.log('✅ AI ticket generation test:', testResponse);
+        
+        // Test 4: Enhanced ticket generation
+        console.log('4️⃣ Testing generate_enhanced_ticket...');
+        const enhancedResponse = await callMCPTool('generate_enhanced_ticket', {
+          figmaUrl: 'https://figma.com/file/test123/Test-Design',
+          techStack: 'React + TypeScript',
+          documentType: 'jira'
+        });
+        
+        console.log('✅ Enhanced ticket generation test:', enhancedResponse);
+        
+        // Display success
+        showStatus('✅ All MCP server tests passed!', 'success');
+        
+        // Show results in textarea
+        const results = `🔧 MCP Server Direct Test Results
+
+✅ Server Health: ${healthData.name} v${healthData.version}
+✅ Available Tools: ${healthData.tools?.join(', ') || 'Unknown'}
+✅ AI Ticket Generation: ${testResponse.content?.[0]?.text?.length || 0} chars
+✅ Enhanced Ticket Generation: ${enhancedResponse.content?.[0]?.text?.length || 0} chars
+
+All tests completed successfully at ${new Date().toLocaleString()}`;
+
+        document.getElementById('generatedContent').value = results;
+        document.getElementById('results').classList.remove('hidden');
+        document.getElementById('copyBtn').disabled = false;
+        
+      } catch (error) {
+        console.error('❌ MCP server test failed:', error);
+        showError(`MCP server test failed: ${error.message}`);
+      }
     }
 
     // Tech stack parsing and confidence calculation
@@ -1509,6 +2257,37 @@ Examples:
       document.getElementById('selection-count').textContent = selectionCount;
     }
 
+    // Generate AI-powered ticket using MCP data layer + Gemini
+    async function generateAITicket() {
+      const techStackDesc = techStackInput.value.trim();
+      const documentType = documentTypeSelect.value;
+      
+      if (!techStackDesc) {
+        showError('Please describe your tech stack for AI ticket generation.');
+        return;
+      }
+      
+      // Update button state
+      const aiBtn = document.getElementById('generateAI');
+      aiBtn.disabled = true;
+      aiBtn.innerHTML = '<div class="spinner"></div> Generating AI Ticket...';
+      showStatus('🤖 Starting AI-powered ticket generation...', 'loading');
+      
+      try {
+        // Step 1: Request enhanced data from plugin
+        parent.postMessage({ pluginMessage: { type: 'generate-ai-ticket' } }, '*');
+        
+        // Wait for AI ticket data to be processed
+        // The response will be handled by the message listener
+        
+      } catch (error) {
+        console.error('❌ AI ticket generation failed:', error);
+        showError('AI ticket generation failed. Please try again.');
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = '🤖 Generate AI Ticket';
+      }
+    }
+
     // Generate content - enhanced with context preview
     async function generateContent() {
       const techStackDesc = techStackInput.value.trim();
@@ -1585,8 +2364,17 @@ Examples:
         }
 
         // Prepare MCP parameters
+        // Extract real file key from current page URL
+        const urlMatch = window.location.href.match(/file\/([a-zA-Z0-9]+)/);
+        const realFileKey = urlMatch ? urlMatch[1] : 'dev-file';
+        const fileName = contextData.figmaContext?.fileName || 'current-file';
+        const figmaUrl = `https://www.figma.com/file/${realFileKey}/${encodeURIComponent(fileName)}`;
+        
+        console.log('🔗 Real file key extracted:', realFileKey);
+        console.log('🔗 Generated Figma URL:', figmaUrl);
+        
         const mcpParams = {
-          figmaUrl: `https://figma.com/file/${contextData.figmaContext?.fileName || 'current-file'}`,
+          figmaUrl: figmaUrl,
           techStack: contextData.techStack.description,
           documentType: documentType,
           visualContext: contextData.screenshot ? {
@@ -1607,12 +2395,22 @@ Examples:
         if (result.content && Array.isArray(result.content)) {
           generatedContent = result.content
             .filter(item => item.type === 'text')
-            .map(item => item.text)
+            .map(item => typeof item.text === 'string' ? item.text : JSON.stringify(item.text))
             .join('\n\n');
+        } else if (result.ticket && typeof result.ticket === 'object' && result.ticket.ticket) {
+          // Handle nested ticket structure
+          generatedContent = result.ticket.ticket;
+        } else if (result.ticket && typeof result.ticket === 'string') {
+          generatedContent = result.ticket;
         } else if (result.text) {
           generatedContent = result.text;
         } else {
-          generatedContent = JSON.stringify(result, null, 2);
+          // Safe JSON stringify with fallback
+          try {
+            generatedContent = JSON.stringify(result, null, 2);
+          } catch (e) {
+            generatedContent = `Error displaying result: ${e.message}\n\nResult type: ${typeof result}`;
+          }
         }
 
         // Display the generated content
@@ -1743,8 +2541,18 @@ Please fix the MCP server connection and try again.`;
 
     // Event listeners
     generateBtn.addEventListener('click', generateContent);
+    document.getElementById('generateAI').addEventListener('click', generateAITicket);
     copyBtn.addEventListener('click', copyToClipboard);
     document.getElementById('parseTechBtn').addEventListener('click', parseTechStackManually);
+    
+    // Debug panel event listeners
+    document.getElementById('showDebug').addEventListener('click', toggleDebugPanel);
+    document.getElementById('toggleDebug').addEventListener('click', toggleDebugPanel);
+    
+    // Standalone testing event listeners
+    document.getElementById('testMockAI').addEventListener('click', testMockAIGeneration);
+    document.getElementById('testMockData').addEventListener('click', testMockEnhancedData);
+    document.getElementById('testMCPDirect').addEventListener('click', testMCPServerDirect);
 
     // Context preview event listeners
     submitContextBtn.addEventListener('click', () => {

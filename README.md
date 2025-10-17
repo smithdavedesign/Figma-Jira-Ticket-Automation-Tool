@@ -153,11 +153,11 @@ Our comprehensive testing infrastructure ensures enterprise-grade reliability ac
 
 ### Test Categories
 
-- **🧩 Unit Tests**: Core tech stack parsing and utilities
-- **🔗 Integration Tests**: Enhanced UI integration with fallbacks  
-- **⚙️ System Tests**: End-to-end system validation
-- **� Browser Tests**: Cross-browser UI validation with Playwright
-- **🔄 Live Tests**: Manual browser-based testing
+- **🧩 Unit Tests** (`tests/unit/`): Core tech stack parsing and utilities
+- **🔗 Integration Tests** (`tests/integration/`): MCP data layer, API integration, component testing  
+- **⚙️ System Tests** (`tests/system/`): End-to-end system validation
+- **🖥️ Browser Tests** (`browser-tests/`): Cross-browser UI validation with Playwright
+- **🔄 Live Tests** (`tests/live/`): Manual browser-based testing
 
 ### Quick Test Commands
 
@@ -171,6 +171,7 @@ npm run test:all:quick            # Quick validation (unit + 1 browser test ~30s
 npm test                          # Unit tests only (2 seconds)
 npm run test:unit                 # Core tech stack parsing (2 seconds)
 npm run test:integration          # UI integration tests (5 seconds)
+npm run test:integration:mcp      # MCP data layer testing (10 seconds)
 
 # Browser Testing (With Pre-Validation)
 npm run test:browser:quick        # Single UI test with endpoint check (~30s)
@@ -505,6 +506,8 @@ MIT License - see [LICENSE](./LICENSE) for details.
 - **[Foundation Complete](./docs/project-phases/DESIGN_INTELLIGENCE_FOUNDATION_COMPLETE.md)** - Core system
 
 ### 🧪 **Testing & Validation**
+- **[Test Organization Rules](./docs/testing/TEST_ORGANIZATION_RULES.md)** - File placement and structure rules
+- **[Testing Options](./docs/testing/TESTING_OPTIONS.md)** - MCP data layer testing guide
 - **[Figma Testing Instructions](./docs/testing/FIGMA_TESTING_INSTRUCTIONS.md)** - How to test plugin
 - **[Testing Guide](./docs/testing/FIGMA_TESTING_GUIDE.md)** - Comprehensive procedures  
 - **[Test Results](./docs/testing/FIGMA_INTEGRATION_TEST_RESULTS.md)** - Latest outcomes

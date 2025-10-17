@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 MCP Data Layer - Standalone Testing</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f7fa;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .button:hover { 
+            background: #5a67d8; 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .button-success { background: #48bb78; }
+        .button-success:hover { background: #38a169; box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4); }
+        .button-danger { background: #f56565; }
+        .button-danger:hover { background: #e53e3e; box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4); }
+        .button-full { width: 100%; margin: 16px 0; padding: 16px; font-size: 16px; }
+        
+        .results {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #2d3748;
+        }
+        .mock-data {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-weight: 600;
+        }
+        .status-pass { background: #c6f6d5; color: #22543d; }
+        .status-fail { background: #fed7d7; color: #742a2a; }
+        .status-warn { background: #fefcbf; color: #744210; }
+        .status-info { background: #bee3f8; color: #2c5282; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 MCP Data Layer - Standalone Testing</h1>
+        <p>Comprehensive testing suite for the Figma AI Ticket Generator MCP data layer</p>
+        <p><strong>No Figma file required!</strong> Test everything with mock data.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 Quick Start</h2>
+        <button id="runAll" class="button button-success button-full">
+            🚀 Run Complete Test Suite
+        </button>
+        <button id="clearResults" class="button button-danger">Clear Results</button>
+    </div>
+
+    <div class="grid">
+        <div class="test-section">
+            <h3>🔧 Server Tests</h3>
+            <button id="testServer" class="button">Test MCP Server</button>
+            <button id="testAI" class="button">Test AI Generation</button>
+            <button id="testGemini" class="button">Test Gemini Direct</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Data Tests</h3>
+            <button id="testValidation" class="button">Test Schema Validation</button>
+            <button id="testMockData" class="button">Test Mock Data</button>
+            <button id="showMockData" class="button">Show Mock Data</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Integration Tests</h3>
+            <button id="testFullPipeline" class="button">Test Full Pipeline</button>
+            <button id="testTicketGeneration" class="button">Test Ticket Generation</button>
+            <button id="testErrorHandling" class="button">Test Error Handling</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>📋 Test Results</h3>
+        <div id="results" class="results">Ready to run tests...\n\nClick "Run Complete Test Suite" to start.</div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔍 Mock Data Preview</h3>
+        <div id="mockDataPreview" class="mock-data">Click "Show Mock Data" to display the test data structure.</div>
+    </div>
+
+    <script>
+        const MCP_SERVER_URL = 'http://localhost:3000';
+        let testResults = [];
+
+        // Mock data generator
+        function generateMockData() {
+            return {
+                enhancedFrameData: [
+                    {
+                        id: "mock-button-1",
+                        name: "Primary CTA Button",
+                        type: "COMPONENT",
+                        description: "Main call-to-action button component",
+                        pageName: "Design System",
+                        dimensions: { width: 160, height: 48 },
+                        position: { x: 100, y: 200 },
+                        hierarchy: {
+                            layers: [
+                                {
+                                    id: "btn-bg",
+                                    name: "Button Background",
+                                    type: "RECTANGLE",
+                                    position: { x: 0, y: 0 },
+                                    size: { width: 160, height: 48 },
+                                    semanticRole: "background"
+                                },
+                                {
+                                    id: "btn-text",
+                                    name: "Button Text",
+                                    type: "TEXT",
+                                    position: { x: 12, y: 16 },
+                                    size: { width: 136, height: 16 },
+                                    semanticRole: "text"
+                                }
+                            ],
+                            totalDepth: 2,
+                            componentCount: 1,
+                            textLayerCount: 1
+                        },
+                        componentInstances: [],
+                        designSystemLinks: {
+                            buttons: "design-system/buttons",
+                            colors: "design-system/colors",
+                            typography: "design-system/typography",
+                            spacing: "design-system/spacing"
+                        },
+                        exportScreenshots: [],
+                        fileKey: "test-file-123",
+                        fileName: "Mock Design System",
+                        metadata: {
+                            nodeCount: 2,
+                            textContent: ["Get Started"],
+                            colors: ["#007AFF", "#FFFFFF"],
+                            hasPrototype: false,
+                            semanticRole: "button",
+                            accessibility: {
+                                hasLabel: true,
+                                role: "button",
+                                colorContrast: "AA",
+                                focusable: true,
+                                issues: []
+                            }
+                        }
+                    }
+                ],
+                screenshot: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                fileContext: {
+                    fileKey: "test-file-123",
+                    fileName: "Mock Design System",
+                    pageName: "Components",
+                    selectionCount: 1
+                },
+                metadata: {
+                    extractedAt: new Date().toISOString(),
+                    totalFrames: 1,
+                    hasScreenshot: true
+                }
+            };
+        }
+
+        // Logging functions
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'pass' ? '✅' : type === 'fail' ? '❌' : type === 'warn' ? '⚠️' : 'ℹ️';
+            
+            const logMessage = `[${timestamp}] ${prefix} ${message}\n`;
+            results.textContent += logMessage;
+            results.scrollTop = results.scrollHeight;
+            
+            testResults.push({ timestamp, type, message });
+            console.log(`[Test] ${message}`);
+        }
+
+        function clearResults() {
+            document.getElementById('results').textContent = 'Results cleared.\n\n';
+            testResults = [];
+        }
+
+        // Test functions
+        async function testMCPServer() {
+            log('Testing MCP Server connection...');
+            
+            try {
+                const response = await fetch(MCP_SERVER_URL, { signal: AbortSignal.timeout(5000) });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                log(`Server connected: ${data.name} v${data.version}`, 'pass');
+                log(`Available tools: ${data.tools?.join(', ')}`);
+                return true;
+            } catch (error) {
+                log(`Server connection failed: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        async function testSchemaValidation() {
+            log('Testing schema validation...');
+            
+            const mockData = generateMockData();
+            
+            // Basic validation checks
+            const errors = [];
+            const warnings = [];
+            
+            if (!Array.isArray(mockData.enhancedFrameData)) {
+                errors.push('enhancedFrameData must be array');
+            }
+            
+            mockData.enhancedFrameData.forEach((frame, i) => {
+                if (!frame.id) errors.push(`Frame ${i}: missing id`);
+                if (!frame.dimensions) errors.push(`Frame ${i}: missing dimensions`);
+                if (!frame.hierarchy) errors.push(`Frame ${i}: missing hierarchy`);
+                if (!frame.metadata) errors.push(`Frame ${i}: missing metadata`);
+            });
+            
+            if (errors.length === 0) {
+                log('Schema validation passed', 'pass');
+                if (warnings.length > 0) {
+                    log(`Warnings: ${warnings.join(', ')}`, 'warn');
+                }
+                return true;
+            } else {
+                log(`Schema validation failed: ${errors.join(', ')}`, 'fail');
+                return false;
+            }
+        }
+
+        async function testAIGeneration() {
+            log('Testing AI ticket generation...');
+            
+            const mockData = generateMockData();
+            
+            try {
+                const response = await fetch(MCP_SERVER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: 'generate_ai_ticket',
+                        params: {
+                            enhancedFrameData: mockData.enhancedFrameData,
+                            techStack: 'React + TypeScript',
+                            documentType: 'jira',
+                            useAI: true
+                        }
+                    }),
+                    signal: AbortSignal.timeout(10000)
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const result = await response.json();
+                
+                if (result.content?.[0]?.text) {
+                    log(`AI generation successful (${result.content[0].text.length} chars)`, 'pass');
+                    return true;
+                } else {
+                    throw new Error('No content in response');
+                }
+            } catch (error) {
+                log(`AI generation failed: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        async function testFullPipeline() {
+            log('Testing complete pipeline...');
+            
+            const tests = [
+                { name: 'Server Health', fn: testMCPServer },
+                { name: 'Schema Validation', fn: testSchemaValidation },
+                { name: 'AI Generation', fn: testAIGeneration }
+            ];
+            
+            let passed = 0;
+            
+            for (const test of tests) {
+                log(`Running: ${test.name}`);
+                const result = await test.fn();
+                if (result) passed++;
+            }
+            
+            if (passed === tests.length) {
+                log('Full pipeline test passed!', 'pass');
+                return true;
+            } else {
+                log(`Pipeline test failed: ${passed}/${tests.length} passed`, 'fail');
+                return false;
+            }
+        }
+
+        function showMockData() {
+            const mockData = generateMockData();
+            document.getElementById('mockDataPreview').textContent = JSON.stringify(mockData, null, 2);
+            log('Mock data displayed in preview section');
+        }
+
+        async function runCompleteTestSuite() {
+            log('🚀 Starting Complete Test Suite');
+            log('='.repeat(50));
+            
+            const startTime = Date.now();
+            
+            await testFullPipeline();
+            
+            const duration = Date.now() - startTime;
+            log('='.repeat(50));
+            log(`Test suite completed in ${duration}ms`);
+        }
+
+        // Event listeners
+        document.getElementById('runAll').addEventListener('click', runCompleteTestSuite);
+        document.getElementById('clearResults').addEventListener('click', clearResults);
+        document.getElementById('testServer').addEventListener('click', testMCPServer);
+        document.getElementById('testAI').addEventListener('click', testAIGeneration);
+        document.getElementById('testValidation').addEventListener('click', testSchemaValidation);
+        document.getElementById('testFullPipeline').addEventListener('click', testFullPipeline);
+        document.getElementById('showMockData').addEventListener('click', showMockData);
+
+        // Initialize
+        log('🧪 Standalone testing suite loaded');
+        log('Ready to test MCP data layer without Figma dependency');
+    </script>
+</body>
+</html>
