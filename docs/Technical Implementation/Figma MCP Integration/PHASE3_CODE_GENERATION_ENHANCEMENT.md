@@ -320,7 +320,7 @@ const StyledGrid = styled.div\`
 **Objective**: Extend MCP server to handle advanced code generation
 
 ```javascript
-// In mcp-server/src/tools/enhanced-code-generator.ts
+// In server/src/tools/enhanced-code-generator.ts
 export class EnhancedCodeGeneratorTool {
   async generateFrameworkCode(params) {
     const { 

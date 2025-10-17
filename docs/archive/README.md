@@ -39,7 +39,7 @@ figma-ticket-generator/
 │   │   ├── js/           # JavaScript logic
 │   │   └── index.html    # Main HTML
 │   └── shared/           # Shared utilities
-├── mcp-server/           # 🎯 NEW: MCP Server Implementation
+├── server/           # 🎯 NEW: MCP Server Implementation
 │   ├── src/
 │   │   ├── server.ts     # Main MCP server with enhanced ticket generation
 │   │   ├── tools/        # Strategic automation tools (6 tools)

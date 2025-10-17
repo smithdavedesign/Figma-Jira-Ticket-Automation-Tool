@@ -166,7 +166,7 @@ curl -X POST http://localhost:3000/ -H "Content-Type: application/json" \
 -d '{"method":"analyze_project","params":{"figmaUrl":"REAL_FIGMA_URL"}}'
 
 # Monitor server logs
-cd mcp-server && npm run dev
+cd server && npm run dev
 ```
 
 ### Next Steps After Testing

@@ -36,7 +36,7 @@ interface FrameData {
   semanticInfo: any;
 }
 
-interface DesignSystemInfo {
+export interface DesignSystemInfo {
   name: string;
   version?: string;
   tokens?: any;
@@ -45,7 +45,7 @@ interface DesignSystemInfo {
   typography?: any;
 }
 
-interface ComplianceReport {
+export interface ComplianceReport {
   overallScore: number;
   usedTokens: any[];
   violations: any[];

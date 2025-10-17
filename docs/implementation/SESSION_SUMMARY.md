@@ -98,14 +98,14 @@ Status: Pushed to remote repository
 
 ### **📁 New Files Added**
 - `TEST_REPORT.md` - Comprehensive system validation report
-- `mcp-server/quick-test.mjs` - Essential 4-test validation suite
-- `mcp-server/comprehensive-test-suite.mjs` - Full system testing
+- `server/quick-test.mjs` - Essential 4-test validation suite
+- `server/comprehensive-test-suite.mjs` - Full system testing
 - `README_OLD.md` - Backup of previous README
 
 ### **🔄 Files Updated**
 - `AGENT_CONTEXT.md` - Added context management protocols
 - `README.md` - Complete production-ready rewrite
-- `mcp-server/src/server.ts` - Enhanced for context management
+- `server/src/server.ts` - Enhanced for context management
 
 ## 🎉 **Mission Accomplished**
 

@@ -3389,17 +3389,17 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-chromium/test-failed-1.png"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-chromium/test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-chromium/video.webm"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-chromium/video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-chromium/error-context.md"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-chromium/error-context.md"
                         }
                       ],
                       "errorLocation": {
@@ -3465,17 +3465,17 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-firefox/test-failed-1.png"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-firefox/test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-firefox/video.webm"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-firefox/video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-firefox/error-context.md"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-firefox/error-context.md"
                         }
                       ],
                       "errorLocation": {
@@ -3541,17 +3541,17 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-webkit/test-failed-1.png"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-webkit/test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-webkit/video.webm"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-webkit/video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-webkit/error-context.md"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-webkit/error-context.md"
                         }
                       ],
                       "errorLocation": {
@@ -3617,17 +3617,17 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Chrome/test-failed-1.png"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Chrome/test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Chrome/video.webm"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Chrome/video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Chrome/error-context.md"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Chrome/error-context.md"
                         }
                       ],
                       "errorLocation": {
@@ -3693,17 +3693,17 @@
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Safari/test-failed-1.png"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Safari/test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Safari/video.webm"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Safari/video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Safari/error-context.md"
+                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Safari/error-context.md"
                         }
                       ],
                       "errorLocation": {

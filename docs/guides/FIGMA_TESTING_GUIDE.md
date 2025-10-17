@@ -104,7 +104,7 @@ ps aux | grep "node.*server" | grep -v grep
 curl -X POST http://localhost:3000 -H "Content-Type: application/json" -d '{"method":"test"}'
 
 # Restart MCP server if needed
-cd /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/mcp-server
+cd /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/server
 lsof -ti:3000 | xargs kill -9 2>/dev/null || true
 node dist/server.js &
 

@@ -9,8 +9,7 @@
     "watch": "tsc --watch",
     "dev": "npm run watch",
     "clean": "rm -rf dist",
-    "lint": "eslint 'src/**/*.ts' 'code*.ts' 'design-system-scanner.ts' --fix",
-    
+    "lint": "eslint 'src/**/*.ts' 'code*.ts' --fix",
     "test": "npm run test:unit",
     "test:unit": "node tests/unit/test-tech-stack-parsing.js",
     "test:integration": "cd tests/integration && find . -name '*.js' -exec node {} \\;",
@@ -18,7 +17,6 @@
     "test:system": "cd tests/system && find . -name '*.js' -exec node {} \\;",
     "test:live": "cd tests/live && find . -name '*.html' -exec echo 'Open {} in browser to test' \\;",
     "test:performance": "cd tests/performance && find . -name '*.js' -exec node {} \\;",
-    
     "test:browser": "./scripts/pre-test-check.sh --continue --reporter=list",
     "test:browser:headed": "./scripts/pre-test-check.sh --continue --headed --reporter=list",
     "test:browser:ui": "./scripts/pre-test-check.sh --continue --ui",
@@ -27,25 +25,27 @@
     "test:browser:core": "./scripts/pre-test-check.sh --continue tests/core-functionality.spec.js --reporter=list",
     "test:browser:quick": "./scripts/pre-test-check.sh --continue tests/core-functionality.spec.js --grep 'should load the enhanced UI' --reporter=list",
     "test:browser:unsafe": "cd browser-tests && npx playwright test --reporter=list",
-    
     "test:all": "npm run test:unit && npm run test:integration && npm run test:system && npm run test:browser:smoke",
     "test:all:verbose": "echo 'Running all test suites...' && npm run test:unit && npm run test:integration && npm run test:system && npm run test:browser",
     "test:all:quick": "npm run test:unit && npm run test:browser:quick",
     "test:watch": "echo 'Watch mode: nodemon tests/core-tests.js (install nodemon if needed)'",
     "test:standalone": "node tests/integration/test-standalone.mjs",
     "test:mcp": "node tests/integration/test-standalone.mjs",
-    
     "health": "./scripts/health-check.sh",
     "health:start": "./scripts/health-check.sh --start-servers",
     "pretest:browser": "./scripts/pre-test-check.sh",
     "validate": "npm run test:all && npm run build && echo '✅ All validation passed'",
     "validate:quick": "npm run test:all:quick && npm run build && echo '✅ Quick validation passed'",
-    
-    "mcp:setup": "cd mcp-server && ./setup.sh",
-    "mcp:install": "cd mcp-server && npm install",
-    "mcp:build": "cd mcp-server && npm run build",
-    "mcp:dev": "cd mcp-server && npm run dev",
-    "mcp:test": "cd mcp-server && npm test"
+    "server:setup": "cd server && ./setup.sh",
+    "server:install": "cd server && npm install",
+    "server:build": "cd server && npm run build",
+    "server:dev": "cd server && npm run dev",
+    "server:test": "cd server && npm test",
+    "mcp:setup": "cd server && ./setup.sh",
+    "mcp:install": "cd server && npm install",
+    "mcp:build": "cd server && npm run build",
+    "mcp:dev": "cd server && npm run dev",
+    "mcp:test": "cd server && npm test"
   },
   "keywords": [
     "figma",
@@ -64,6 +64,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
     "eslint": "^9.37.0",
+    "playwright": "^1.56.1",
     "typescript": "^5.0.0"
   },
   "figma": {

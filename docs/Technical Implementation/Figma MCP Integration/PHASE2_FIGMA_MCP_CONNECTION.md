@@ -76,7 +76,7 @@ class FigmaMCPConnector {
 
 **New MCP Methods**:
 ```javascript
-// In mcp-server/src/server.ts
+// In server/src/server.ts
 export class FigmaAnalysisServer {
   
   async analyzeProjectWithContext(params) {

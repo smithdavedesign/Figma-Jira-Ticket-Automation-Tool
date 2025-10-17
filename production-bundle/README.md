@@ -7,9 +7,10 @@ An intelligent enterprise tool that transforms Figma designs into comprehensive 
 ## 🎯 Status: **PRODUCTION READY** ✅
 
 - ✅ **100% Test Success Rate** - All systems operational
-- ✅ **FREE AI Integration** - Google Gemini 2.5 Flash working
-- ✅ **Professional Output** - 10,000+ character comprehensive tickets
+- ✅ **FREE AI Integration** - Google Gemini 2.0 Flash working with real AI generation
+- ✅ **Professional Output** - 10,000+ character comprehensive tickets with real AI analysis
 - ✅ **Enterprise Architecture** - MCP server with graceful fallbacks
+- 🎉 **AI BREAKTHROUGH** - No more fallback responses, real Gemini AI content generation!
 
 ## ✨ Core Features
 
@@ -80,9 +81,11 @@ Our visual-enhanced system generates comprehensive tickets that include:
 
 **Impact**: This provides LLMs like Gemini with **significantly richer context** than traditional hierarchical data alone, enabling more accurate and detailed development guidance.
 
-## 🆓 FREE Google Gemini AI Integration
+## 🆓 FREE Google Gemini AI Integration - **NOW WORKING!** 🎉
 
-✨ **No API costs required!** Get intelligent design analysis with Google's generous free tier:
+✨ **Real AI generation active!** Recent breakthrough resolved API integration - now generating actual AI content instead of fallback responses.
+
+**Google's generous free tier provides:**
 
 - 🧠 **60 requests/minute** - Perfect for individual and team use
 - 🚀 **100,000 tokens/day** - Analyze hundreds of designs daily
@@ -104,7 +107,7 @@ Experience our visual-enhanced context system with the included demo suite:
 ### 🎯 Demo Features
 ```bash
 # Test visual-enhanced ticket generation
-cd mcp-server
+cd server
 node visual-enhanced-demo-server.mjs &  # Start demo server
 node test-visual-enhanced.mjs           # Run visual context demo
 ```
@@ -153,11 +156,11 @@ Our comprehensive testing infrastructure ensures enterprise-grade reliability ac
 
 ### Test Categories
 
-- **🧩 Unit Tests**: Core tech stack parsing and utilities
-- **🔗 Integration Tests**: Enhanced UI integration with fallbacks  
-- **⚙️ System Tests**: End-to-end system validation
-- **� Browser Tests**: Cross-browser UI validation with Playwright
-- **🔄 Live Tests**: Manual browser-based testing
+- **🧩 Unit Tests** (`tests/unit/`): Core tech stack parsing and utilities
+- **🔗 Integration Tests** (`tests/integration/`): MCP data layer, API integration, component testing  
+- **⚙️ System Tests** (`tests/system/`): End-to-end system validation
+- **🖥️ Browser Tests** (`browser-tests/`): Cross-browser UI validation with Playwright
+- **🔄 Live Tests** (`tests/live/`): Manual browser-based testing
 
 ### Quick Test Commands
 
@@ -171,6 +174,7 @@ npm run test:all:quick            # Quick validation (unit + 1 browser test ~30s
 npm test                          # Unit tests only (2 seconds)
 npm run test:unit                 # Core tech stack parsing (2 seconds)
 npm run test:integration          # UI integration tests (5 seconds)
+npm run test:integration:mcp      # MCP data layer testing (10 seconds)
 
 # Browser Testing (With Pre-Validation)
 npm run test:browser:quick        # Single UI test with endpoint check (~30s)
@@ -197,7 +201,7 @@ npm run validate:quick            # Fast complete validation (~3 minutes)
 
 ```
 figma-ticket-generator/
-├── mcp-server/               # AI-powered MCP server
+├── server/               # AI-powered MCP server
 │   ├── src/
 │   │   ├── server.ts        # Main MCP server with visual-enhanced generation
 │   │   ├── ai/              # Gemini AI integration + Visual-Enhanced AI Service
@@ -355,7 +359,7 @@ npm test
 ```
 
 ### Project Structure
-- **`mcp-server/`**: AI-powered Model Context Protocol server
+- **`server/`**: AI-powered Model Context Protocol server
 - **`src/plugin/`**: Figma plugin code (runs in sandbox)
 - **`src/core/`**: Shared business logic
 - **`src/ui/`**: Plugin user interface
@@ -492,10 +496,36 @@ We welcome contributions! Please see [CONTRIBUTING.md](./docs/CONTRIBUTING.md) f
 
 MIT License - see [LICENSE](./LICENSE) for details.
 
+## 📚 Documentation
+
+### 📖 **Quick Start**
+- **[Documentation Standards](./docs/DOCUMENTATION_STANDARDS.md)** - File organization and placement rules
+- **[Getting Started](./docs/guides/)** - Setup and basic usage guides
+- **[API Reference](./docs/api/)** - Technical API documentation
+
+### 🚀 **Project Status** 
+- **[Phase 3 Complete](./docs/project-phases/PHASE_3_COMPLETE.md)** - Design Intelligence Layer
+- **[Phase 4 Plan](./docs/project-phases/PHASE_4_PLAN.md)** - Production deployment roadmap
+- **[Foundation Complete](./docs/project-phases/DESIGN_INTELLIGENCE_FOUNDATION_COMPLETE.md)** - Core system
+
+### 🧪 **Testing & Validation**
+- **[Test Organization Rules](./docs/testing/TEST_ORGANIZATION_RULES.md)** - File placement and structure rules
+- **[Testing Options](./docs/testing/TESTING_OPTIONS.md)** - MCP data layer testing guide
+- **[Figma Testing Instructions](./docs/testing/FIGMA_TESTING_INSTRUCTIONS.md)** - How to test plugin
+- **[Testing Guide](./docs/testing/FIGMA_TESTING_GUIDE.md)** - Comprehensive procedures  
+- **[Test Results](./docs/testing/FIGMA_INTEGRATION_TEST_RESULTS.md)** - Latest outcomes
+
+### 🚀 **Deployment**
+- **[Production Launch](./docs/deployment/PRODUCTION_LAUNCH.md)** - Deployment instructions
+- **[Production Complete](./docs/deployment/PRODUCTION_DEPLOYMENT_COMPLETE.md)** - Status
+
+### 🛠️ **Troubleshooting**
+- **[Plugin Fixes](./docs/troubleshooting/PLUGIN_FIXES_APPLIED.md)** - Bug fixes and solutions
+- **[Architecture Guide](./docs/troubleshooting/ARCHITECTURE_CLARIFICATION.md)** - MCP vs Figma API
+
 ## 🆘 Support
 
-- **Documentation**: [./docs/](./docs/)
-- **Test Report**: [TEST_REPORT.md](./TEST_REPORT.md)
+- **Full Documentation**: [./docs/](./docs/)
 - **Issues**: GitHub Issues
 - **Discussions**: GitHub Discussions
 

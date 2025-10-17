@@ -41,13 +41,13 @@
 ## 🚀 STARTUP SCRIPT PATHS
 
 ### MCP Server
-- **Directory**: `mcp-server/`
-- **Source**: `mcp-server/src/server.ts`
-- **Environment**: `mcp-server/.env`
+- **Directory**: `server/`
+- **Source**: `server/src/server.ts`
+- **Environment**: `server/.env`
 - **Startup Commands**:
-  - `cd mcp-server && npx tsx src/server.ts` - Direct TypeScript execution
-  - `cd mcp-server && npm run dev` - Development mode
-  - `cd mcp-server && npm run build && npm start` - Production build
+  - `cd server && npx tsx src/server.ts` - Direct TypeScript execution
+  - `cd server && npm run dev` - Development mode
+  - `cd server && npm run build && npm start` - Production build
 
 ### Plugin Development
 - **Main Code**: `code.ts` - Main plugin TypeScript code
@@ -118,7 +118,7 @@ npm run test:browser:smoke
 ### Live Figma Testing
 ```bash
 # 1. Start MCP server
-cd mcp-server && npx tsx src/server.ts
+cd server && npx tsx src/server.ts
 
 # 2. Build plugin
 npm run build:ts
@@ -130,8 +130,8 @@ npm run build:ts
 ## 🎯 CRITICAL PATHS FOR AI INTEGRATION TESTING
 
 ### MCP Server Startup
-- **Path**: `mcp-server/src/server.ts`
-- **Command**: `cd mcp-server && npx tsx src/server.ts`
+- **Path**: `server/src/server.ts`
+- **Command**: `cd server && npx tsx src/server.ts`
 - **Port**: 3000
 - **Health Check**: `curl -s http://localhost:3000/`
 

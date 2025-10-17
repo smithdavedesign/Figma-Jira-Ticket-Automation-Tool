@@ -2,7 +2,7 @@
   "name": "Design Intelligence Platform (Production)",
   "id": "design-intelligence-platform-2025",
   "api": "1.0.0",
-  "main": "code.js",
+  "main": "dist/code.js",
   "ui": "ui/index.html",
   "editorType": ["figma", "figjam"],
   "documentAccess": "dynamic-page",
@@ -22,7 +22,6 @@
   },
   "permissions": ["currentuser"],
   "capabilities": [
-    "textreview",
-    "inspect"
+    "textreview"
   ]
 }

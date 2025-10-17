@@ -86,7 +86,7 @@ figma-ticket-generator/
 ├── .ai-context-rules.md        # AI assistant documentation rules
 ├── src/                        # Source code (organized)
 ├── ui/                         # Plugin UI (main interface)
-├── mcp-server/                 # MCP server implementation
+├── server/                     # MCP server implementation (renamed for clarity)
 ├── docs/                       # ALL documentation (organized)
 ├── scripts/                    # Build and utility scripts
 ├── tests/                      # Test suites
@@ -158,11 +158,11 @@ docs/
 
 ## 🔧 **KEY TECHNICAL COMPONENTS**
 
-### **MCP Server (mcp-server/)**
-- **Main Server:** src/server.ts with 4 tools
+### **MCP Server (server/)**
+- **Main Server:** src/server.ts with 5 tools (renamed from server for clarity)
 - **AI Integration:** Gemini API with structured prompts
 - **Figma Integration:** Official Figma API for data extraction
-- **HTTP Endpoints:** /analyze-project, /generate-tickets, /check-compliance, /generate-enhanced-ticket
+- **HTTP Endpoints:** /analyze-project, /generate-tickets, /check-compliance, /generate-enhanced-ticket, /generate-ai-ticket
 
 ### **Plugin Core (src/plugin/)**
 - **Main Source:** code-single.ts (authoritative TypeScript source)
@@ -183,11 +183,11 @@ docs/
 #### **MCP Server (CRITICAL - Always Start First)**
 ```bash
 # Primary startup method (RECOMMENDED)
-cd mcp-server && npx tsx src/server.ts
+cd server && npx tsx src/server.ts
 
 # Alternative methods
-cd mcp-server && npm run dev          # Development mode with watch
-cd mcp-server && npm run build && npm start  # Production mode
+cd server && npm run dev          # Development mode with watch
+cd server && npm run build && npm start  # Production mode
 
 # Health check (ALWAYS VERIFY)
 curl -s http://localhost:3000/ --max-time 3
@@ -253,7 +253,7 @@ cd /path/to/figma-ticket-generator
 git pull origin main                 # Get latest changes
 
 # 2. Start MCP server (ESSENTIAL)
-cd mcp-server && npx tsx src/server.ts &
+cd server && npx tsx src/server.ts &
 
 # 3. Build plugin
 npm run build:ts
@@ -293,7 +293,7 @@ cat manifest.json | jq '.main' && echo "✅ Manifest valid"
 #### **AI Integration Issues**
 ```bash
 # Check environment
-cd mcp-server && echo $GEMINI_API_KEY | cut -c1-10 && echo "..."
+cd server && echo $GEMINI_API_KEY | cut -c1-10 && echo "..."
 
 # Test AI pipeline
 npm run test:integration:mcp | grep -E "(✅|❌|Gemini|AI)"
@@ -318,7 +318,7 @@ npm run test:browser:smoke          # UI validation
 
 #### **Most Used Commands (Daily)**
 ```bash
-cd mcp-server && npx tsx src/server.ts &  # Start MCP server
+cd server && npx tsx src/server.ts &      # Start MCP server
 npm run build:ts                          # Build plugin  
 npm run test:integration:mcp              # Test MCP pipeline
 npm run health                            # System check
@@ -328,7 +328,7 @@ npm run health                            # System check
 ```bash
 kill $(lsof -t -i:3000) 2>/dev/null      # Kill MCP server
 npm run build:ts                          # Rebuild plugin
-cd mcp-server && npx tsx src/server.ts & # Restart MCP
+cd server && npx tsx src/server.ts &     # Restart MCP
 sleep 3 && npm run test:integration:mcp   # Verify working
 ```
 

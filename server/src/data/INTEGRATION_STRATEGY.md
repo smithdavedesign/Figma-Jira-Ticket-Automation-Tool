@@ -7,7 +7,7 @@ We discovered that we have **duplicate design system extraction code**:
 1. **Existing Infrastructure** (already implemented):
    - `src/core/design-system/scanner.ts` - Design system detection
    - `src/core/compliance/analyzer.ts` - Compliance analysis  
-   - `mcp-server/src/compliance/design-system-compliance-checker.ts` - Advanced compliance checking
+   - `server/src/compliance/design-system-compliance-checker.ts` - Advanced compliance checking
    - `src/plugin/handlers/design-system-handler.ts` - UI integration
 
 2. **New MCP Data Layer** (just built):

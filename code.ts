@@ -578,7 +578,8 @@ function validateEnhancedFrameData(data: any): { isValid: boolean; errors: strin
 }
 
 function logDataLayerDebug(data: any, context: string) {
-  console.group(`🔍 MCP Data Layer Debug - ${context}`);
+  // Note: console.group not available in Figma plugin environment
+  console.log(`🔍 MCP Data Layer Debug - ${context}`);
   console.log('📊 Raw Data:', data);
   console.log('📏 Data Size:', JSON.stringify(data).length, 'bytes');
   
@@ -607,7 +608,7 @@ function logDataLayerDebug(data: any, context: string) {
       console.log('✅ Data validation passed');
     }
   }
-  console.groupEnd();
+  console.log('🔚 End MCP Data Layer Debug');
 }
 
 console.log('✅ Figma AI Ticket Generator plugin initialized with validation');

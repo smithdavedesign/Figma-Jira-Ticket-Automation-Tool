@@ -314,7 +314,7 @@ describe('Responsive Code Generation', () => {
 
 ### **Test Cases:**
 ```javascript
-// Test file: tests/phase3/mcp-server-integration.test.js
+// Test file: tests/phase3/server-integration.test.js
 describe('Enhanced MCP Server Integration', () => {
   test('should generate framework-specific code via MCP server', async () => {
     const payload = {
@@ -530,7 +530,7 @@ describe('Phase 3 Integration Tests', () => {
 ### **Commit Protocol:**
 ```bash
 # 1. Ensure all services running
-cd mcp-server && npm start &
+cd server && npm start &
 cd .. && npm run build
 
 # 2. Run comprehensive test suite

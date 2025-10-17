@@ -112,7 +112,7 @@ result = await callMCPServer('generate_enhanced_ticket', {
 ### Modified Files
 - `ui/plugin/index.html` - Main plugin UI with context integration
 - `code.ts` - Figma plugin sandbox (existing frame extraction)
-- `mcp-server/src/` - Enhanced ticket generation with context
+- `server/src/` - Enhanced ticket generation with context
 
 ### Key Functions Added
 - `initializeFigmaIntegration()` - Communication setup

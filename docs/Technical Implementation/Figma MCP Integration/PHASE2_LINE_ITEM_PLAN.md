@@ -388,7 +388,7 @@ describe('Phase 2 Integration Tests', () => {
 ### **Commit Protocol:**
 ```bash
 # 1. Ensure MCP server is running
-cd mcp-server && npm start
+cd server && npm start
 
 # 2. Run all tests including integration
 npm test -- --coverage --testPathPattern=phase2

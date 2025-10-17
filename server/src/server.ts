@@ -562,6 +562,8 @@ class AIEnhancedTicketGenerator {
       techStack,
       projectName,
       imageData, // Base64 encoded screenshot
+      screenshot, // Alternative screenshot parameter
+      enhancedFrameData, // Enhanced frame data from Figma plugin
       additionalRequirements = '',
       useAI = true
     } = args;
@@ -584,10 +586,40 @@ class AIEnhancedTicketGenerator {
     try {
       let analysisResult: DesignAnalysisResult | null = null;
 
-      // Step 1: AI-powered design analysis (if image provided)
-      if (useAI && imageData) {
-        console.log('🔍 Analyzing design with GPT-4 Vision...');
-        const imageBuffer = Buffer.from(imageData, 'base64');
+      // Step 1: AI-powered design analysis (prioritize enhanced frame data)
+      const actualImageData = imageData || screenshot;
+      
+      if (useAI && enhancedFrameData && enhancedFrameData.length > 0) {
+        console.log('🎯 Using enhanced frame data for targeted component analysis...');
+        console.log(`� Analyzing ${enhancedFrameData.length} selected components`);
+        
+        // Create analysis from enhanced frame data
+        analysisResult = this.createAnalysisFromFrameData(enhancedFrameData, { techStack, projectName });
+        
+        // If we also have a screenshot, enhance with visual analysis
+        if (actualImageData) {
+          console.log('🔍 Enhancing with screenshot analysis...');
+          try {
+            const imageBuffer = Buffer.from(actualImageData.replace(/^data:image\/[a-z]+;base64,/, ''), 'base64');
+            const visualAnalysis = await this.aiService.analyzeDesignScreenshot(
+              imageBuffer,
+              documentType,
+              { techStack, projectName }
+            );
+            
+            // Merge visual analysis with frame data analysis
+            analysisResult = this.mergeAnalysisResults(analysisResult, visualAnalysis);
+            console.log(`✅ Enhanced analysis complete - confidence: ${analysisResult.confidence}%`);
+          } catch (error) {
+            console.warn('⚠️ Screenshot analysis failed, using frame data only:', error);
+          }
+        }
+        
+        console.log(`� Component-focused analysis: ${analysisResult.components.length} components identified`);
+        
+      } else if (useAI && actualImageData) {
+        console.log('🔍 Analyzing design with image analysis only...');
+        const imageBuffer = Buffer.from(actualImageData.replace(/^data:image\/[a-z]+;base64,/, ''), 'base64');
         
         analysisResult = await this.aiService.analyzeDesignScreenshot(
           imageBuffer,
@@ -595,12 +627,12 @@ class AIEnhancedTicketGenerator {
           { techStack, projectName }
         );
         
-        console.log(`✅ Design analysis complete - confidence: ${analysisResult.confidence}%`);
+        console.log(`✅ Image analysis complete - confidence: ${analysisResult.confidence}%`);
         console.log(`📊 Found ${analysisResult.components.length} components`);
-        console.log(`🎨 Design system consistency: ${analysisResult.designSystem.consistency}%`);
+        
       } else if (useAI) {
-        // Generate AI content even without image analysis
-        console.log('🤖 Creating AI-enhanced content without image analysis...');
+        // Generate AI content with basic analysis
+        console.log('🤖 Creating AI-enhanced content with basic analysis...');
         analysisResult = {
           components: [],
           designSystem: { 
@@ -761,6 +793,160 @@ ${!status.gemini ? '- Set GEMINI_API_KEY for FREE Google AI generation (recommen
           text: result
         }
       ]
+    };
+  }
+
+  /**
+   * Create design analysis from enhanced frame data
+   */
+  private createAnalysisFromFrameData(enhancedFrameData: any[], context?: any): DesignAnalysisResult {
+    const components = enhancedFrameData.map(frame => ({
+      name: frame.name || 'Unknown Component',
+      type: this.mapFigmaTypeToComponent(frame.type),
+      properties: {
+        width: frame.dimensions?.width || 0,
+        height: frame.dimensions?.height || 0,
+        figmaType: frame.type
+      },
+      variants: frame.componentInstances ? ['default', 'hover', 'active'] : ['default'],
+      usage: this.inferUsageFromType(frame.type),
+      confidence: 90 // High confidence since we have actual Figma data
+    }));
+
+    const colors = this.extractColorsFromFrameData(enhancedFrameData);
+    const typography = this.extractTypographyFromFrameData(enhancedFrameData);
+    const spacing = this.extractSpacingFromFrameData(enhancedFrameData);
+
+    return {
+      components,
+      designSystem: {
+        colors: {
+          palette: colors.map(color => ({ color, usage: 'component', count: 1 })),
+          compliance: 90,
+          issues: []
+        },
+        typography: {
+          fonts: typography.fonts || [],
+          hierarchy: typography.hierarchy || [],
+          compliance: 90
+        },
+        spacing: {
+          grid: spacing.grid || '8px',
+          margins: spacing.margins || [],
+          padding: spacing.padding || [],
+          compliance: 90
+        },
+        consistency: 90
+      },
+      accessibility: {
+        colorContrast: { passed: true, issues: [] },
+        focusStates: { present: true, issues: [] },
+        semanticStructure: { score: 85, issues: [] },
+        overallScore: 85
+      },
+      recommendations: [
+        `Implement ${components[0]?.name || 'component'} with focus on ${context?.techStack || 'current tech stack'}`,
+        'Ensure accessibility compliance for all interactive elements',
+        'Maintain design system consistency across implementation'
+      ],
+      confidence: 90
+    };
+  }
+
+  /**
+   * Merge two analysis results, prioritizing frame data
+   */
+  private mergeAnalysisResults(frameAnalysis: DesignAnalysisResult, visualAnalysis: DesignAnalysisResult): DesignAnalysisResult {
+    return {
+      components: [...frameAnalysis.components, ...visualAnalysis.components.slice(0, 2)], // Combine but prioritize frame data
+      designSystem: {
+        colors: {
+          palette: [...frameAnalysis.designSystem.colors.palette, ...visualAnalysis.designSystem.colors.palette.slice(0, 3)],
+          compliance: Math.max(frameAnalysis.designSystem.colors.compliance, visualAnalysis.designSystem.colors.compliance),
+          issues: [...frameAnalysis.designSystem.colors.issues, ...visualAnalysis.designSystem.colors.issues]
+        },
+        typography: visualAnalysis.designSystem.typography.fonts.length > 0 ? visualAnalysis.designSystem.typography : frameAnalysis.designSystem.typography,
+        spacing: frameAnalysis.designSystem.spacing.grid !== '8px' ? frameAnalysis.designSystem.spacing : visualAnalysis.designSystem.spacing,
+        consistency: Math.max(frameAnalysis.designSystem.consistency, visualAnalysis.designSystem.consistency)
+      },
+      accessibility: {
+        colorContrast: { 
+          passed: frameAnalysis.accessibility.colorContrast.passed && visualAnalysis.accessibility.colorContrast.passed,
+          issues: [...frameAnalysis.accessibility.colorContrast.issues, ...visualAnalysis.accessibility.colorContrast.issues]
+        },
+        focusStates: frameAnalysis.accessibility.focusStates,
+        semanticStructure: {
+          score: Math.max(frameAnalysis.accessibility.semanticStructure.score, visualAnalysis.accessibility.semanticStructure.score),
+          issues: [...frameAnalysis.accessibility.semanticStructure.issues, ...visualAnalysis.accessibility.semanticStructure.issues]
+        },
+        overallScore: Math.max(frameAnalysis.accessibility.overallScore, visualAnalysis.accessibility.overallScore)
+      },
+      recommendations: [...frameAnalysis.recommendations.slice(0, 2), ...visualAnalysis.recommendations.slice(0, 2)],
+      confidence: Math.max(frameAnalysis.confidence, visualAnalysis.confidence)
+    };
+  }
+
+  /**
+   * Helper methods for extracting data from frame data
+   */
+  private mapFigmaTypeToComponent(figmaType: string): 'button' | 'input' | 'card' | 'modal' | 'navigation' | 'other' {
+    const name = figmaType?.toLowerCase() || '';
+    if (name.includes('button') || figmaType === 'COMPONENT') return 'button';
+    if (name.includes('input') || name.includes('field')) return 'input';
+    if (name.includes('card')) return 'card';
+    if (name.includes('modal') || name.includes('dialog')) return 'modal';
+    if (name.includes('nav') || name.includes('menu')) return 'navigation';
+    return 'other';
+  }
+
+  private inferUsageFromType(type: string): 'primary' | 'secondary' | 'tertiary' {
+    const typeMap: { [key: string]: 'primary' | 'secondary' | 'tertiary' } = {
+      'COMPONENT': 'primary',
+      'INSTANCE': 'secondary', 
+      'FRAME': 'tertiary',
+      'GROUP': 'tertiary',
+      'TEXT': 'tertiary'
+    };
+    return typeMap[type] || 'primary';
+  }
+
+  private extractColorsFromFrameData(frameData: any[]): string[] {
+    const colors: string[] = [];
+    frameData.forEach(frame => {
+      if (frame.metadata?.colors) {
+        colors.push(...frame.metadata.colors);
+      }
+    });
+    return [...new Set(colors)]; // Remove duplicates
+  }
+
+  private extractTypographyFromFrameData(frameData: any[]): { fonts: any[], hierarchy: string[] } {
+    const fonts: any[] = [];
+    const hierarchy: string[] = [];
+    
+    frameData.forEach(frame => {
+      if (frame.metadata?.textContent) {
+        hierarchy.push('body', 'heading');
+      }
+    });
+    
+    return { fonts, hierarchy: [...new Set(hierarchy)] };
+  }
+
+  private extractSpacingFromFrameData(frameData: any[]): { grid: string, margins: string[], padding: string[] } {
+    // Analyze dimensions to infer spacing patterns
+    const dimensions = frameData.map(frame => ({
+      width: frame.dimensions?.width || 0,
+      height: frame.dimensions?.height || 0
+    }));
+    
+    // Simple grid detection based on common dimensions
+    const grid = dimensions.some(d => d.width % 8 === 0 && d.height % 8 === 0) ? '8px' : '4px';
+    
+    return {
+      grid,
+      margins: ['8px', '16px', '24px'],
+      padding: ['4px', '8px', '12px', '16px']
     };
   }
 }

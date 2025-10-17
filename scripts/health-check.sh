@@ -84,7 +84,7 @@ start_servers() {
     # Start MCP server in background
     if ! check_port 3000 "MCP Server" >/dev/null 2>&1; then
         echo "🧠 Starting MCP server on port 3000..."
-        cd mcp-server && npm run dev > /dev/null 2>&1 &
+        cd server && npm run dev > /dev/null 2>&1 &
         MCP_SERVER_PID=$!
         cd ..
         sleep 3
@@ -124,7 +124,7 @@ else
     ((HEALTH_ISSUES++))
 fi
 
-if [ -f "mcp-server/package.json" ]; then
+if [ -f "server/package.json" ]; then
     echo -e "   ${GREEN}✅${NC} MCP server present"
 else
     echo -e "   ${RED}❌${NC} MCP server missing"
@@ -181,10 +181,10 @@ else
     echo -e "   ${YELLOW}⚠️${NC}  Browser test dependencies missing - run 'cd browser-tests && npm install'"
 fi
 
-if [ -d "mcp-server/node_modules" ]; then
+if [ -d "server/node_modules" ]; then
     echo -e "   ${GREEN}✅${NC} MCP server dependencies installed"
 else
-    echo -e "   ${YELLOW}⚠️${NC}  MCP server dependencies missing - run 'cd mcp-server && npm install'"
+    echo -e "   ${YELLOW}⚠️${NC}  MCP server dependencies missing - run 'cd server && npm install'"
 fi
 
 echo

@@ -9,7 +9,7 @@
  * - Comprehensive ticket generation
  */
 
-import { enhancedFigmaMCPService } from './mcp-server/dist/figma/figma-mcp-integration.js';
+import { enhancedFigmaMCPService } from './server/dist/figma/figma-mcp-integration.js';
 
 /**
  * Test comprehensive Figma MCP workflow

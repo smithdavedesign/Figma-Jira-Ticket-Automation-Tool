@@ -66,7 +66,7 @@ npm run mcp:dev        # Development mode
 
 ### **Core Components**
 ```
-mcp-server/
+server/
 ├── src/server.ts           # Main MCP server
 ├── src/tools/              # Strategic tool modules
 │   ├── project-analyzer.ts

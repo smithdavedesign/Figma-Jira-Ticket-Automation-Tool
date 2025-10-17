@@ -40,7 +40,7 @@ We have successfully built a comprehensive MCP (Model Context Protocol) data lay
 ## 📁 File Structure
 
 ```
-mcp-server/src/data/
+server/src/data/
 ├── types.ts              # Enhanced type definitions (768+ lines)
 ├── interfaces.ts         # Enhanced interface contracts (650+ lines)  
 ├── extractor.ts          # Main extraction implementation with hierarchy support

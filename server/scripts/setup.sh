@@ -15,7 +15,7 @@ echo "✅ Node.js version: $node_version"
 
 # Check if we're in the right directory
 if [ ! -f "package.json" ]; then
-    echo "❌ Please run this script from the mcp-server directory"
+    echo "❌ Please run this script from the server directory"
     exit 1
 fi
 

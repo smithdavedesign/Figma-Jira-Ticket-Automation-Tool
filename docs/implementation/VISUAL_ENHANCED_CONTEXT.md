@@ -283,7 +283,7 @@ The system tracks visual data quality with a 4-point scale:
 Run the included demo to experience visual-enhanced context:
 
 ```bash
-cd mcp-server
+cd server
 node visual-enhanced-demo-server.mjs &
 node test-visual-enhanced.mjs
 ```
@@ -312,11 +312,11 @@ node test-visual-enhanced.mjs
    - `extractFrameData()`: Screenshot capture with exportAsync
    - `extractVisualDesignContext()`: Visual analysis functions
 
-2. **`mcp-server/src/server.ts`**: Enhanced MCP server
+2. **`server/src/server.ts`**: Enhanced MCP server
    - `generateVisualEnhancedTicket()`: New endpoint for visual context
    - `generateVisualContextTicket()`: Template generation with visual data
 
-3. **`mcp-server/src/ai/visual-enhanced-ai-service.ts`**: Gemini Vision integration
+3. **`server/src/ai/visual-enhanced-ai-service.ts`**: Gemini Vision integration
    - `VisualEnhancedAIService`: Multi-modal AI processing
    - `processVisualEnhancedContext()`: Combined visual + structured analysis
 

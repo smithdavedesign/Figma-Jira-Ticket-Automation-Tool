@@ -149,7 +149,7 @@ curl -X POST http://localhost:3000/ \
 
 2. **MCP server not responding**
    - Check server is running: `lsof -i :3000`
-   - Restart server if needed: `cd mcp-server && npm run dev`
+   - Restart server if needed: `cd server && npm run dev`
 
 3. **AI generation failing**
    - Verify GEMINI_API_KEY is set correctly

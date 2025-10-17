@@ -41,7 +41,7 @@ Based on the provided architecture diagram, we're implementing:
 ## 🛠️ Implementation Strategy
 
 ### Phase 1: Data Layer Foundation (Current)
-- **Location**: `mcp-server/src/data/`
+- **Location**: `server/src/data/`
 - **Components**:
   - FigmaExtractor: Metadata, code, asset extraction
   - DataStructures: Type-safe data models
@@ -59,7 +59,7 @@ Based on the provided architecture diagram, we're implementing:
 
 ```
 figma-ticket-generator/
-├── mcp-server/src/
+├── server/src/
 │   ├── data/           # 🔨 IMPLEMENTING: Core data layer
 │   ├── ai/             # ✅ Basic AI integration exists
 │   ├── figma/          # ✅ Basic Figma integration exists
@@ -127,7 +127,7 @@ The architecture diagram from the attachment shows our complete MCP integration 
 ## 🚀 Next Steps
 
 ### Immediate (This Session)
-1. **Create data layer structure** in `mcp-server/src/data/`
+1. **Create data layer structure** in `server/src/data/`
 2. **Define core interfaces** for Figma extraction
 3. **Implement type-safe data models** for metadata, code, assets
 4. **Add validation layer** for data integrity

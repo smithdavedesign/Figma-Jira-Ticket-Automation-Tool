@@ -130,7 +130,7 @@ class E2ETestSuite {
         // Start MCP server in background
         const { spawn } = require('child_process');
         this.serverProcess = spawn('node', ['dist/server.js'], {
-          cwd: process.cwd() + '/mcp-server',
+          cwd: process.cwd() + '/server',
           detached: false,
           stdio: 'pipe'
         });

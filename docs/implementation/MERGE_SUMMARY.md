@@ -55,8 +55,8 @@
 
 ### **🔄 Updated Production Files**
 - `README.md` - Complete production-ready rewrite
-- `mcp-server/src/ai/advanced-ai-service.ts` - Enhanced AI integration
-- `mcp-server/src/server.ts` - Improved MCP server functionality
+- `server/src/ai/advanced-ai-service.ts` - Enhanced AI integration
+- `server/src/server.ts` - Improved MCP server functionality
 
 ### **📚 Documentation Structure**
 ```
@@ -68,8 +68,8 @@ docs/
 ```
 
 ### **🧪 Test Infrastructure**
-- `mcp-server/quick-test.mjs` - Essential validation (4 tests)
-- `mcp-server/comprehensive-test-suite.mjs` - Full system testing
+- `server/quick-test.mjs` - Essential validation (4 tests)
+- `server/comprehensive-test-suite.mjs` - Full system testing
 - Multiple AI integration test files
 
 ## 🎯 Current System Status

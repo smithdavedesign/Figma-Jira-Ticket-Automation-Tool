@@ -257,7 +257,7 @@
           <div class="test-card-header">MCP Server (Port 3000)</div>
           <div class="test-card-body">
             <button class="test-button" onclick="testMCPServer()">Test MCP Server</button>
-            <div id="mcp-server-result" class="test-result"></div>
+            <div id="server-result" class="test-result"></div>
           </div>
         </div>
       </div>
@@ -387,13 +387,13 @@
         if (response.ok) {
           const data = await response.json();
           log(`MCP server responding with ${data.result?.tools?.length || 0} tools`, 'success');
-          showResult('mcp-server-result', `✅ MCP server connected (${data.result?.tools?.length || 0} tools available)`, 'success');
+          showResult('server-result', `✅ MCP server connected (${data.result?.tools?.length || 0} tools available)`, 'success');
         } else {
           throw new Error(`HTTP ${response.status}`);
         }
       } catch (error) {
         log(`MCP server test failed: ${error.message}`, 'error');
-        showResult('mcp-server-result', `❌ MCP server unavailable: ${error.message}`, 'error');
+        showResult('server-result', `❌ MCP server unavailable: ${error.message}`, 'error');
       }
     }
 

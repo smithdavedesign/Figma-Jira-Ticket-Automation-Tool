@@ -1,6 +1,8 @@
 // Design System Scanner for Figma Plugin
 // Analyzes Figma files for design system compliance and patterns
 
+import { DesignSystemInfo, ComplianceReport } from './types';
+
 class DesignSystemScanner {
   private detectedDesignSystem: DesignSystemInfo | null = null;
 
@@ -111,7 +113,7 @@ class DesignSystemScanner {
     try {
       // In a real implementation, this would traverse figma.root.children
       return [{ name: figma.currentPage.name }];
-    } catch (error) {
+    } catch {
       return [];
     }
   }
@@ -123,7 +125,7 @@ class DesignSystemScanner {
       
       // Mock implementation - in real version would traverse the file
       if (figma.currentPage && figma.currentPage.selection) {
-        figma.currentPage.selection.forEach(node => {
+        figma.currentPage.selection.forEach((node: any) => {
           if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
             components.push({
               name: node.name,
@@ -150,7 +152,7 @@ class DesignSystemScanner {
       colors.push('#667eea', '#764ba2', '#f8fafc', '#1a202c');
       
       return colors;
-    } catch (error) {
+    } catch {
       return [];
     }
   }
@@ -162,7 +164,7 @@ class DesignSystemScanner {
         sizes: [12, 14, 16, 18, 24, 32],
         weights: ['Regular', 'Medium', 'Semibold', 'Bold']
       };
-    } catch (error) {
+    } catch {
       return {};
     }
   }

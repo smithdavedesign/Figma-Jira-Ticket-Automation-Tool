@@ -41,7 +41,7 @@ Unlike Figma's MCP server which focuses on individual frame code generation, thi
 
 1. **Install dependencies:**
 ```bash
-cd mcp-server
+cd server
 npm install
 ```
 
@@ -54,7 +54,7 @@ npm run build
 
 #### For Claude Code
 ```bash
-claude mcp add --transport stdio figma-ai-ticket-generator node /path/to/mcp-server/dist/server.js
+claude mcp add --transport stdio figma-ai-ticket-generator node /path/to/server/dist/server.js
 ```
 
 #### For VS Code
@@ -65,7 +65,7 @@ Add to your `mcp.json`:
   "servers": {
     "figma-ai-ticket-generator": {
       "command": "node",
-      "args": ["/path/to/mcp-server/dist/server.js"],
+      "args": ["/path/to/server/dist/server.js"],
       "type": "stdio"
     }
   }
@@ -77,7 +77,7 @@ Add to your `mcp.json`:
 {
   "name": "Figma AI Ticket Generator",
   "command": "node",
-  "args": ["/path/to/mcp-server/dist/server.js"]
+  "args": ["/path/to/server/dist/server.js"]
 }
 ```
 

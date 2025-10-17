@@ -89,7 +89,7 @@ fi
 if ! curl -s http://localhost:3000 > /dev/null; then
     print_warning "MCP server not running on port 3000"
     print_status "Starting MCP server..."
-    cd ../mcp-server && npm start > /dev/null 2>&1 &
+    cd ../server && npm start > /dev/null 2>&1 &
     MCP_PID=$!
     cd ../browser-tests
     sleep 3

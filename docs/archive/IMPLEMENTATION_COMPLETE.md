@@ -63,7 +63,7 @@ Instead of complex dropdowns, users can simply describe their stack:
 
 ```
 figma-ticket-generator/
-├── mcp-server/                           # MCP Server Implementation
+├── server/                           # MCP Server Implementation
 │   ├── src/
 │   │   ├── figma/
 │   │   │   ├── tech-stack-parser.ts      # 🧠 Natural language parser
@@ -186,7 +186,7 @@ Select Testing: [Jest ▼]
 
 ### **1. Start the MCP Server**
 ```bash
-cd mcp-server
+cd server
 npm install
 npm run build
 npm start

@@ -26,7 +26,7 @@ This document outlines the implementation of our Model Context Protocol (MCP) se
 
 ### **MCP Server Structure**
 ```
-mcp-server/
+server/
 ├── src/
 │   ├── server.ts           # Main MCP server implementation
 │   ├── tools/              # MCP tool definitions

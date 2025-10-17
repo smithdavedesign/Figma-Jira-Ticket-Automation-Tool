@@ -89,7 +89,7 @@ npm run validate:quick                  # Fast CI validation
 npm run health:start                    # Auto-start servers
 # OR manually:
 python3 -m http.server 8101            # Terminal 1
-cd mcp-server && npm run dev           # Terminal 2
+cd server && npm run dev           # Terminal 2
 ```
 
 ### "Browser tests taking too long"
@@ -100,7 +100,7 @@ npm run test:browser:smoke              # Essential tests only
 
 ### "MCP server not responding"
 ```bash
-cd mcp-server
+cd server
 npm install                            # Install dependencies
 npm run build                          # Build TypeScript
 npm run dev                            # Start development server

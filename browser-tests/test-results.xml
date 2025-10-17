@@ -242,23 +242,23 @@
         at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/tests/mcp-integration.spec.js:28:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-chromium/test-failed-1.png
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-chromium/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-chromium/video.webm
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-chromium/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-chromium/error-context.md
+    Error Context: ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-chromium/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-chromium/test-failed-1.png]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-chromium/test-failed-1.png]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-chromium/video.webm]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-chromium/video.webm]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-chromium/error-context.md]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-chromium/error-context.md]]
 ]]>
 </system-out>
 </testcase>
@@ -776,23 +776,23 @@
         at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/tests/mcp-integration.spec.js:28:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-firefox/test-failed-1.png
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-firefox/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-firefox/video.webm
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-firefox/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-firefox/error-context.md
+    Error Context: ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-firefox/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-firefox/test-failed-1.png]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-firefox/test-failed-1.png]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-firefox/video.webm]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-firefox/video.webm]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-firefox/error-context.md]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-firefox/error-context.md]]
 ]]>
 </system-out>
 </testcase>
@@ -1310,23 +1310,23 @@
         at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/tests/mcp-integration.spec.js:28:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-webkit/test-failed-1.png
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-webkit/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-webkit/video.webm
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-webkit/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-webkit/error-context.md
+    Error Context: ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-webkit/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-webkit/test-failed-1.png]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-webkit/test-failed-1.png]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-webkit/video.webm]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-webkit/video.webm]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-webkit/error-context.md]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-webkit/error-context.md]]
 ]]>
 </system-out>
 </testcase>
@@ -1812,23 +1812,23 @@
         at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/tests/mcp-integration.spec.js:28:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Chrome/test-failed-1.png
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Chrome/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Chrome/video.webm
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Chrome/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Chrome/error-context.md
+    Error Context: ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Chrome/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Chrome/test-failed-1.png]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Chrome/test-failed-1.png]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Chrome/video.webm]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Chrome/video.webm]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Chrome/error-context.md]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Chrome/error-context.md]]
 ]]>
 </system-out>
 </testcase>
@@ -2346,23 +2346,23 @@
         at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/e2e-tests/tests/mcp-integration.spec.js:28:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Safari/test-failed-1.png
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Safari/test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Safari/video.webm
+    ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Safari/video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ../test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Safari/error-context.md
+    Error Context: ../test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Safari/error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Safari/test-failed-1.png]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Safari/test-failed-1.png]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Safari/video.webm]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Safari/video.webm]]
 
-[[ATTACHMENT|test-results/mcp-integration-MCP-Server-217aa--receive-enhanced-responses-Mobile-Safari/error-context.md]]
+[[ATTACHMENT|test-results/mcp-integration-server-217aa--receive-enhanced-responses-Mobile-Safari/error-context.md]]
 ]]>
 </system-out>
 </testcase>

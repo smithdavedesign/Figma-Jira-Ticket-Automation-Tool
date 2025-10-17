@@ -26,12 +26,12 @@ Successfully implemented and merged a breakthrough **Visual-Enhanced Context Sys
 
 ### 3. Enhanced MCP Server Architecture
 - **New Endpoint**: `generate_visual_enhanced_ticket` method
-- **Location**: `mcp-server/src/server.ts`
+- **Location**: `server/src/server.ts`
 - **Integration**: `VisualEnhancedAIService` for Gemini Vision processing
 - **Template Engine**: Rich prompt generation combining visual + structural data
 
 ### 4. Gemini Vision Integration
-- **Service**: `mcp-server/src/ai/visual-enhanced-ai-service.ts`
+- **Service**: `server/src/ai/visual-enhanced-ai-service.ts`
 - **Dependency**: `@google/generative-ai` package
 - **Capability**: Multi-modal processing (screenshots + structured data)
 - **Confidence Scoring**: Visual data richness assessment
@@ -62,7 +62,7 @@ Successfully implemented and merged a breakthrough **Visual-Enhanced Context Sys
 ### File Structure Changes
 ```
 code.ts                     # Enhanced with screenshot capture
-mcp-server/
+server/
 ├── src/
 │   ├── server.ts          # Added visual-enhanced ticket generation
 │   └── ai/

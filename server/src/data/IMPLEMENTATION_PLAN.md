@@ -20,7 +20,7 @@ We've identified **significant overlap** between existing design system code and
    - UI integration and message passing
    - Health metrics generation
 
-4. **Advanced Compliance Checker** (`mcp-server/src/compliance/design-system-compliance-checker.ts`)
+4. **Advanced Compliance Checker** (`server/src/compliance/design-system-compliance-checker.ts`)
    - Tech stack compatibility checking
    - Design system pattern recognition
    - Multiple design system support (Material, Apple HIG, Fluent)
