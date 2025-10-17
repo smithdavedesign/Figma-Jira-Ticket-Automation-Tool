@@ -15,7 +15,7 @@
  */
 
 import axios from 'axios';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export interface AIAnalysisConfig {
   openaiApiKey?: string | undefined;
@@ -194,14 +194,13 @@ export class AdvancedAIService {
     const prompt = this.getPromptTemplate('document_generation', documentType, context);
     const enhancedPrompt = this.enhancePromptWithAnalysis(prompt, analysisResult);
 
-    const genAI = new GoogleGenAI({ apiKey: this.config.geminiApiKey! });
+    const genAI = new GoogleGenerativeAI(this.config.geminiApiKey!);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     
-    const result = await genAI.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: enhancedPrompt
-    });
+    const result = await model.generateContent(enhancedPrompt);
+    const response = await result.response;
     
-    return result.text || '';
+    return response.text() || '';
   }
 
   /**
@@ -539,16 +538,18 @@ Please generate the document incorporating these insights and maintaining consis
     // Test Gemini (FREE TIER) - Using official SDK
     if (this.config.enableGemini && this.config.geminiApiKey) {
       try {
-        const genAI = new GoogleGenAI({ apiKey: this.config.geminiApiKey });
+        // Debug: Log the API key being used
+        console.log('🔑 Testing with API key:', this.config.geminiApiKey?.substring(0, 20) + '...');
         
-        const result = await genAI.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: 'Test connection'
-        });
+        const genAI = new GoogleGenerativeAI(this.config.geminiApiKey);
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
         
-        if (result) {
+        const result = await model.generateContent('Test connection');
+        const response = await result.response;
+        
+        if (response.text()) {
           results.gemini = true;
-          results.geminiVision = true; // Gemini 2.5 Flash supports vision
+          results.geminiVision = true; // Gemini 2.0 Flash supports vision
         }
       } catch (error) {
         console.warn('Gemini test failed:', error instanceof Error ? error.message : 'Unknown');

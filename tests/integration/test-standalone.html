@@ -141,6 +141,14 @@
             <button id="testTicketGeneration" class="button">Test Ticket Generation</button>
             <button id="testErrorHandling" class="button">Test Error Handling</button>
         </div>
+
+        <div class="test-section">
+            <h3>🧪 UI Test Functions</h3>
+            <button id="testMockAI" class="button">Test Mock AI Generation</button>
+            <button id="testMockEnhancedData" class="button">Test Mock Enhanced Data</button>
+            <button id="testMCPDirect" class="button">Test MCP Server Direct</button>
+            <button id="generateAI" class="button button-success">Generate AI Ticket</button>
+        </div>
     </div>
 
     <div class="test-section">
@@ -252,6 +260,32 @@
             testResults = [];
         }
 
+        // Status display function (required by test functions)
+        function showStatus(message, type = 'info') {
+            log(message, type);
+            
+            // Also create a temporary status indicator
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status status-${type}`;
+            statusDiv.textContent = message;
+            
+            // Insert at top of results
+            const results = document.getElementById('results');
+            results.insertBefore(statusDiv, results.firstChild);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (statusDiv.parentNode) {
+                    statusDiv.remove();
+                }
+            }, 3000);
+        }
+
+        // Error display function (required by test functions)
+        function showError(message) {
+            showStatus(`❌ Error: ${message}`, 'fail');
+        }
+
         // Test functions
         async function testMCPServer() {
             log('Testing MCP Server connection...');
@@ -298,6 +332,50 @@
                 return true;
             } else {
                 log(`Schema validation failed: ${errors.join(', ')}`, 'fail');
+                return false;
+            }
+        }
+
+        async function testGemini() {
+            showStatus('🧪 Testing Gemini API direct connection...', 'loading');
+            log('Testing Gemini API direct connection...');
+            
+            try {
+                // Test through MCP server's Gemini integration
+                const response = await fetch(MCP_SERVER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: 'generate_ai_ticket',
+                        params: {
+                            figmaUrl: 'https://figma.com/file/test123/Gemini-Test',
+                            techStack: 'React + TypeScript',
+                            documentType: 'jira',
+                            useAI: true,
+                            testMode: true
+                        }
+                    }),
+                    signal: AbortSignal.timeout(10000)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.content && result.content.length > 0) {
+                    showStatus('✅ Gemini API test successful via MCP server!', 'pass');
+                    log(`Gemini response: ${result.content[0].text?.substring(0, 100)}...`);
+                    return true;
+                } else if (result.error) {
+                    throw new Error(result.error);
+                } else {
+                    throw new Error('No content in Gemini response');
+                }
+            } catch (error) {
+                showStatus(`❌ Gemini API test failed: ${error.message}`, 'fail');
+                log(`Gemini error details: ${error.message}`);
                 return false;
             }
         }
@@ -365,10 +443,430 @@
             }
         }
 
+        async function testTicketGeneration() {
+            showStatus('🎫 Testing ticket generation...', 'loading');
+            log('🎫 Starting ticket generation test...');
+            
+            const mockData = generateMockData();
+            
+            try {
+                // Test different ticket generation methods
+                const tests = [
+                    {
+                        name: 'AI Ticket Generation',
+                        method: 'generate_ai_ticket',
+                        params: {
+                            enhancedFrameData: mockData.enhancedFrameData,
+                            screenshot: mockData.screenshot,
+                            figmaUrl: `https://www.figma.com/file/${mockData.fileContext.fileKey}/${encodeURIComponent(mockData.fileContext.fileName)}`,
+                            techStack: 'React + TypeScript',
+                            documentType: 'jira',
+                            useAI: true
+                        }
+                    },
+                    {
+                        name: 'Enhanced Ticket Generation',
+                        method: 'generate_enhanced_ticket',
+                        params: {
+                            figmaUrl: `https://www.figma.com/file/${mockData.fileContext.fileKey}`,
+                            selection: 'button-component',
+                            techStack: 'React + TypeScript'
+                        }
+                    },
+                    {
+                        name: 'Basic Ticket Generation',
+                        method: 'generate_tickets',
+                        params: {
+                            figmaUrl: `https://www.figma.com/file/${mockData.fileContext.fileKey}`,
+                            componentName: 'Primary CTA Button'
+                        }
+                    }
+                ];
+                
+                let successful = 0;
+                
+                for (const test of tests) {
+                    log(`🧪 Testing ${test.name}...`);
+                    
+                    try {
+                        const response = await fetch(MCP_SERVER_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                method: test.method,
+                                params: test.params
+                            }),
+                            signal: AbortSignal.timeout(10000)
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        const result = await response.json();
+                        
+                        if (result.content || result.ticket || result.tickets) {
+                            log(`✅ ${test.name} successful`, 'pass');
+                            successful++;
+                        } else {
+                            log(`⚠️ ${test.name} returned unexpected format`, 'warn');
+                        }
+                        
+                    } catch (error) {
+                        log(`❌ ${test.name} failed: ${error.message}`, 'fail');
+                    }
+                }
+                
+                if (successful === tests.length) {
+                    showStatus('✅ All ticket generation tests passed!', 'pass');
+                    log(`🎉 All ${tests.length} ticket generation methods working`);
+                } else if (successful > 0) {
+                    showStatus(`⚠️ Partial success: ${successful}/${tests.length} tests passed`, 'warn');
+                    log(`📊 ${successful} out of ${tests.length} generation methods working`);
+                } else {
+                    showStatus('❌ All ticket generation tests failed!', 'fail');
+                    log('💥 No ticket generation methods are working');
+                }
+                
+                return successful > 0;
+                
+            } catch (error) {
+                showStatus(`❌ Ticket generation test failed: ${error.message}`, 'fail');
+                log(`💥 Test error: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function testErrorHandling() {
+            showStatus('🚨 Testing error handling...', 'loading');
+            log('🚨 Starting error handling test...');
+            
+            try {
+                const errorTests = [
+                    {
+                        name: 'Invalid URL Test',
+                        request: {
+                            method: 'generate_ai_ticket',
+                            params: {
+                                figmaUrl: 'invalid-url',
+                                techStack: 'React'
+                            }
+                        }
+                    },
+                    {
+                        name: 'Missing Parameters Test',
+                        request: {
+                            method: 'generate_ai_ticket',
+                            params: {}
+                        }
+                    },
+                    {
+                        name: 'Invalid Method Test',
+                        request: {
+                            method: 'nonexistent_method',
+                            params: {
+                                figmaUrl: 'https://figma.com/file/test123'
+                            }
+                        }
+                    },
+                    {
+                        name: 'Server Timeout Test',
+                        request: {
+                            method: 'generate_ai_ticket',
+                            params: {
+                                figmaUrl: 'https://figma.com/file/test123',
+                                techStack: 'React'
+                            }
+                        },
+                        timeout: 1 // Very short timeout to force error
+                    }
+                ];
+                
+                let errorsCaught = 0;
+                
+                for (const test of errorTests) {
+                    log(`🧪 Testing ${test.name}...`);
+                    
+                    try {
+                        const response = await fetch(MCP_SERVER_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(test.request),
+                            signal: AbortSignal.timeout(test.timeout || 5000)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (!response.ok || result.error) {
+                            log(`✅ ${test.name} properly handled error`, 'pass');
+                            errorsCaught++;
+                        } else {
+                            log(`⚠️ ${test.name} unexpectedly succeeded`, 'warn');
+                        }
+                        
+                    } catch (error) {
+                        log(`✅ ${test.name} caught error: ${error.message}`, 'pass');
+                        errorsCaught++;
+                    }
+                }
+                
+                if (errorsCaught >= errorTests.length * 0.75) { // At least 75% should catch errors
+                    showStatus('✅ Error handling tests passed!', 'pass');
+                    log(`🛡️ ${errorsCaught}/${errorTests.length} error scenarios handled properly`);
+                } else {
+                    showStatus(`⚠️ Some error handling issues: ${errorsCaught}/${errorTests.length} passed`, 'warn');
+                    log(`🚨 Only ${errorsCaught} out of ${errorTests.length} error scenarios handled`);
+                }
+                
+                return errorsCaught > 0;
+                
+            } catch (error) {
+                showStatus(`❌ Error handling test failed: ${error.message}`, 'fail');
+                log(`💥 Test error: ${error.message}`);
+                return false;
+            }
+        }
+
         function showMockData() {
             const mockData = generateMockData();
             document.getElementById('mockDataPreview').textContent = JSON.stringify(mockData, null, 2);
             log('Mock data displayed in preview section');
+        }
+
+        function testMockData() {
+            showStatus('📊 Testing mock data generation...', 'loading');
+            log('📊 Starting mock data generation test...');
+            
+            try {
+                const mockData = generateMockData();
+                
+                // Basic checks
+                if (!mockData) {
+                    throw new Error('No mock data generated');
+                }
+                
+                log(`✅ Mock data generated successfully`);
+                log(`📋 Data structure: ${Object.keys(mockData).join(', ')}`);
+                log(`🎯 Enhanced frames: ${mockData.enhancedFrameData?.length || 0}`);
+                log(`📸 Screenshot: ${mockData.screenshot ? 'included' : 'missing'}`);
+                log(`📁 File context: ${mockData.fileContext ? 'included' : 'missing'}`);
+                
+                // Update the preview
+                document.getElementById('mockDataPreview').textContent = JSON.stringify(mockData, null, 2);
+                
+                showStatus('✅ Mock data generation successful!', 'pass');
+                return true;
+                
+            } catch (error) {
+                showStatus(`❌ Mock data generation failed: ${error.message}`, 'fail');
+                log(`❌ Error: ${error.message}`);
+                return false;
+            }
+        }
+
+        // Additional test functions that mirror the main UI
+        async function testMockAIGeneration() {
+            showStatus('🧪 Testing AI generation with mock data...', 'loading');
+            
+            const mockData = generateMockData();
+            
+            try {
+                const response = await fetch(MCP_SERVER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: 'generate_ai_ticket',
+                        params: {
+                            enhancedFrameData: mockData.enhancedFrameData,
+                            screenshot: mockData.screenshot,
+                            techStack: 'React + TypeScript',
+                            documentType: 'jira',
+                            useAI: true
+                        }
+                    }),
+                    signal: AbortSignal.timeout(10000)
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const result = await response.json();
+                
+                if (result.content?.[0]?.text) {
+                    showStatus('✅ Mock AI generation completed successfully!', 'pass');
+                    log(`Generated content: ${result.content[0].text.length} characters`);
+                    return true;
+                } else {
+                    throw new Error('No content in response');
+                }
+            } catch (error) {
+                showStatus(`❌ Mock AI generation failed: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        function testMockEnhancedData() {
+            showStatus('🧪 Testing enhanced data structure...', 'loading');
+            log('🧪 Starting enhanced data structure test...');
+            
+            const mockData = generateMockData();
+            log(`📊 Generated mock data with ${mockData.enhancedFrameData.length} frames`);
+            
+            // Validate enhanced data structure
+            const errors = [];
+            
+            if (!Array.isArray(mockData.enhancedFrameData)) {
+                errors.push('enhancedFrameData must be array');
+            }
+            
+            mockData.enhancedFrameData.forEach((frame, i) => {
+                log(`🔍 Validating frame ${i + 1}: ${frame.name || frame.id}`);
+                if (!frame.id) errors.push(`Frame ${i}: missing id`);
+                if (!frame.dimensions) errors.push(`Frame ${i}: missing dimensions`);
+                if (!frame.hierarchy) errors.push(`Frame ${i}: missing hierarchy`);
+                if (!frame.metadata) errors.push(`Frame ${i}: missing metadata`);
+            });
+            
+            // Validate file context
+            if (mockData.fileContext) {
+                log(`📁 File context: ${mockData.fileContext.fileName} (${mockData.fileContext.fileKey})`);
+            }
+            
+            // Validate screenshot
+            if (mockData.screenshot) {
+                log(`📸 Screenshot data: ${mockData.screenshot.length} characters`);
+            }
+            
+            if (errors.length === 0) {
+                showStatus('✅ Enhanced data structure validation passed!', 'pass');
+                log(`✅ Validated ${mockData.enhancedFrameData.length} frame(s) successfully`);
+                log(`📋 Data includes: hierarchy, metadata, file context, screenshot`);
+            } else {
+                showStatus(`❌ Enhanced data validation failed: ${errors.join(', ')}`, 'fail');
+                log(`❌ Validation errors: ${errors.join(', ')}`);
+            }
+        }
+
+        async function testMCPServerDirect() {
+            showStatus('🔧 Testing MCP server direct connection...', 'loading');
+            
+            try {
+                // Test server health
+                const response = await fetch(MCP_SERVER_URL, { signal: AbortSignal.timeout(5000) });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                showStatus(`✅ MCP server connected: ${data.name} v${data.version}`, 'pass');
+                log(`Available tools: ${data.tools?.join(', ')}`);
+                
+                // Test a simple tool call
+                const testCall = await fetch(MCP_SERVER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: 'check_compliance',
+                        params: {
+                            figmaUrl: 'https://figma.com/file/test123',
+                            categories: ['color', 'typography']
+                        }
+                    }),
+                    signal: AbortSignal.timeout(10000)
+                });
+                
+                if (testCall.ok) {
+                    showStatus('✅ MCP tool call test passed!', 'pass');
+                } else {
+                    throw new Error(`Tool call failed: ${testCall.status}`);
+                }
+                
+                return true;
+            } catch (error) {
+                showStatus(`❌ MCP server test failed: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        // AI ticket generation function that mirrors the main UI
+        async function generateAITicket() {
+            showStatus('🤖 Starting AI ticket generation...', 'loading');
+            log('🤖 Starting AI ticket generation with mock data...');
+            
+            const mockData = generateMockData();
+            log(`📊 Using mock data: ${mockData.enhancedFrameData.length} frames`);
+            
+            try {
+                log('📤 Sending request to MCP server...');
+                const requestData = {
+                    method: 'generate_ai_ticket',
+                    params: {
+                        enhancedFrameData: mockData.enhancedFrameData,
+                        screenshot: mockData.screenshot,
+                        figmaUrl: `https://www.figma.com/file/${mockData.fileContext.fileKey}/${encodeURIComponent(mockData.fileContext.fileName)}`,
+                        techStack: 'React + TypeScript',
+                        documentType: 'jira',
+                        projectName: mockData.fileContext.fileName,
+                        fileContext: mockData.fileContext,
+                        metadata: mockData.metadata,
+                        useAI: true
+                    }
+                };
+                
+                log(`🔗 Request URL: ${MCP_SERVER_URL}`);
+                log(`📋 Request params: ${JSON.stringify(requestData.params, null, 2).substring(0, 200)}...`);
+                
+                const response = await fetch(MCP_SERVER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData),
+                    signal: AbortSignal.timeout(15000)
+                });
+                
+                log(`📡 Response status: ${response.status} ${response.statusText}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const result = await response.json();
+                log(`📦 Response received: ${JSON.stringify(result).substring(0, 100)}...`);
+                
+                let generatedContent = '';
+                if (result.content && Array.isArray(result.content)) {
+                    generatedContent = result.content
+                        .filter(item => item.type === 'text')
+                        .map(item => typeof item.text === 'string' ? item.text : JSON.stringify(item.text))
+                        .join('\n\n');
+                    log(`✅ Extracted content: ${generatedContent.length} characters`);
+                } else if (result.ticket) {
+                    generatedContent = typeof result.ticket === 'string' ? result.ticket : JSON.stringify(result.ticket);
+                    log(`✅ Extracted ticket: ${generatedContent.length} characters`);
+                } else {
+                    generatedContent = JSON.stringify(result, null, 2);
+                    log(`⚠️ Using raw response: ${generatedContent.length} characters`);
+                }
+                
+                // Display the result
+                let resultsContainer = document.getElementById('generatedTicketResults');
+                if (!resultsContainer) {
+                    resultsContainer = document.createElement('div');
+                    resultsContainer.id = 'generatedTicketResults';
+                    resultsContainer.style.marginTop = '16px';
+                    document.getElementById('results').parentNode.appendChild(resultsContainer);
+                }
+                
+                resultsContainer.innerHTML = `
+                    <h4>🎫 Generated AI Ticket:</h4>
+                    <textarea style="width: 100%; height: 300px; font-family: monospace; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; padding: 8px;">${generatedContent}</textarea>
+                `;
+                
+                showStatus('✅ AI ticket generated successfully!', 'pass');
+                log(`✅ AI ticket generation completed: ${generatedContent.length} characters`);
+                
+            } catch (error) {
+                showStatus(`❌ AI ticket generation failed: ${error.message}`, 'fail');
+                log(`❌ Generation error: ${error.message}`);
+                log(`🔍 Error details: ${error.stack}`);
+            }
         }
 
         async function runCompleteTestSuite() {
@@ -389,9 +887,27 @@
         document.getElementById('clearResults').addEventListener('click', clearResults);
         document.getElementById('testServer').addEventListener('click', testMCPServer);
         document.getElementById('testAI').addEventListener('click', testAIGeneration);
+        document.getElementById('testGemini').addEventListener('click', testGemini);
         document.getElementById('testValidation').addEventListener('click', testSchemaValidation);
+        document.getElementById('testMockData').addEventListener('click', testMockData);
         document.getElementById('testFullPipeline').addEventListener('click', testFullPipeline);
+        document.getElementById('testTicketGeneration').addEventListener('click', testTicketGeneration);
+        document.getElementById('testErrorHandling').addEventListener('click', testErrorHandling);
         document.getElementById('showMockData').addEventListener('click', showMockData);
+
+        // Additional event listeners that might be called from injected code
+        if (document.getElementById('testMockAI')) {
+            document.getElementById('testMockAI').addEventListener('click', testMockAIGeneration);
+        }
+        if (document.getElementById('testMockEnhancedData')) {
+            document.getElementById('testMockEnhancedData').addEventListener('click', testMockEnhancedData);
+        }
+        if (document.getElementById('testMCPDirect')) {
+            document.getElementById('testMCPDirect').addEventListener('click', testMCPServerDirect);
+        }
+        if (document.getElementById('generateAI')) {
+            document.getElementById('generateAI').addEventListener('click', generateAITicket);
+        }
 
         // Initialize
         log('🧪 Standalone testing suite loaded');
