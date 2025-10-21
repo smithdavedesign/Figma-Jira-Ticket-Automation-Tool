@@ -271,41 +271,216 @@ function rgbToHex(r: number, g: number, b: number): string {
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
-// Helper function to build hierarchy information
+// Helper function to build hierarchy information with enhanced token extraction
 async function buildHierarchy(node: any): Promise<any> {
     const layers: any[] = [];
+    const designTokens = {
+        colors: new Set<string>(),
+        typography: new Set<string>(),
+        spacing: new Set<number>(),
+        borderRadius: new Set<number>(),
+        shadows: new Set<string>()
+    };
     let totalDepth = 1;
     let componentCount = 0;
+    let textLayerCount = 0;
     
-    // Count components and analyze depth
-    function analyzeNode(currentNode: any, depth: number = 1): void {
+    // Enhanced node analysis with design token extraction
+    async function analyzeNode(currentNode: any, depth: number = 1): Promise<void> {
         totalDepth = Math.max(totalDepth, depth);
         
         if (currentNode.type === 'INSTANCE' || currentNode.type === 'COMPONENT') {
             componentCount++;
         }
         
-        layers.push({
+        if (currentNode.type === 'TEXT') {
+            textLayerCount++;
+        }
+        
+        // Extract design tokens from this node
+        const nodeTokens = await extractDesignTokens(currentNode);
+        
+        // Collect extracted tokens
+        if (nodeTokens.colors) nodeTokens.colors.forEach((c: string) => designTokens.colors.add(c));
+        if (nodeTokens.typography) nodeTokens.typography.forEach((t: string) => designTokens.typography.add(t));
+        if (nodeTokens.spacing) nodeTokens.spacing.forEach((s: number) => designTokens.spacing.add(s));
+        if (nodeTokens.borderRadius) nodeTokens.borderRadius.forEach((r: number) => designTokens.borderRadius.add(r));
+        if (nodeTokens.shadows) nodeTokens.shadows.forEach((sh: string) => designTokens.shadows.add(sh));
+        
+        // Enhanced layer information
+        const layerInfo: any = {
             id: currentNode.id,
             name: currentNode.name,
             type: currentNode.type,
-            depth: depth
-        });
+            depth: depth,
+            position: { x: currentNode.x, y: currentNode.y },
+            size: { width: currentNode.width, height: currentNode.height },
+            visible: currentNode.visible,
+            semanticRole: determineSemanticRole(currentNode),
+            tokens: nodeTokens
+        };
         
+        // Add component-specific information
+        if (currentNode.type === 'INSTANCE') {
+            try {
+                const masterComponent = await currentNode.getMainComponentAsync();
+                layerInfo.masterComponent = {
+                    id: masterComponent?.id,
+                    name: masterComponent?.name
+                };
+                
+                // Extract component properties and variants
+                if (currentNode.componentProperties) {
+                    layerInfo.componentProperties = currentNode.componentProperties;
+                }
+                
+                // Extract variant properties if available
+                if (masterComponent && 'variantProperties' in masterComponent) {
+                    layerInfo.variantProperties = masterComponent.variantProperties;
+                }
+            } catch (error) {
+                console.warn('Could not access master component:', error);
+            }
+        }
+        
+        layers.push(layerInfo);
+        
+        // Recursively analyze children
         if ('children' in currentNode && currentNode.children) {
-            currentNode.children.forEach((child: any) => {
-                analyzeNode(child, depth + 1);
-            });
+            for (const child of currentNode.children) {
+                await analyzeNode(child, depth + 1);
+            }
         }
     }
     
-    analyzeNode(node);
+    await analyzeNode(node);
     
     return {
         layers: layers,
         totalDepth: totalDepth,
-        componentCount: componentCount
+        componentCount: componentCount,
+        textLayerCount: textLayerCount,
+        designTokens: {
+            colors: Array.from(designTokens.colors),
+            typography: Array.from(designTokens.typography),
+            spacing: Array.from(designTokens.spacing),
+            borderRadius: Array.from(designTokens.borderRadius),
+            shadows: Array.from(designTokens.shadows)
+        }
     };
+}
+
+// Enhanced design token extraction function
+async function extractDesignTokens(node: any): Promise<any> {
+    const tokens: any = {
+        colors: [],
+        typography: [],
+        spacing: [],
+        borderRadius: [],
+        shadows: []
+    };
+    
+    try {
+        // Extract color tokens
+        if ('fills' in node && node.fills) {
+            node.fills.forEach((fill: any) => {
+                if (fill.type === 'SOLID' && fill.color) {
+                    const hex = rgbToHex(
+                        Math.round(fill.color.r * 255),
+                        Math.round(fill.color.g * 255),
+                        Math.round(fill.color.b * 255)
+                    );
+                    tokens.colors.push(hex);
+                }
+            });
+        }
+        
+        // Extract stroke colors
+        if ('strokes' in node && node.strokes) {
+            node.strokes.forEach((stroke: any) => {
+                if (stroke.type === 'SOLID' && stroke.color) {
+                    const hex = rgbToHex(
+                        Math.round(stroke.color.r * 255),
+                        Math.round(stroke.color.g * 255),
+                        Math.round(stroke.color.b * 255)
+                    );
+                    tokens.colors.push(hex);
+                }
+            });
+        }
+        
+        // Extract typography tokens
+        if (node.type === 'TEXT') {
+            const fontSize = node.fontSize || 16;
+            const fontFamily = node.fontName?.family || 'Inter';
+            const fontWeight = node.fontName?.style || 'Regular';
+            const lineHeight = node.lineHeight?.value || fontSize * 1.2;
+            
+            const typographyToken = `${fontFamily}-${fontSize}px-${fontWeight}`;
+            tokens.typography.push(typographyToken);
+            
+            // Extract letter spacing if available
+            if (node.letterSpacing && node.letterSpacing.value !== 0) {
+                tokens.spacing.push(node.letterSpacing.value);
+            }
+        }
+        
+        // Extract spacing tokens from layout properties
+        if ('paddingLeft' in node || 'paddingTop' in node) {
+            [node.paddingLeft, node.paddingRight, node.paddingTop, node.paddingBottom].forEach((padding: any) => {
+                if (padding && padding > 0) {
+                    tokens.spacing.push(padding);
+                }
+            });
+        }
+        
+        // Extract spacing from positioning (relative to siblings)
+        if ('x' in node && 'y' in node) {
+            // Common spacing values: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64
+            const spacingValues = [4, 8, 12, 16, 20, 24, 32, 40, 48, 64];
+            spacingValues.forEach(value => {
+                if (node.x % value === 0 || node.y % value === 0) {
+                    tokens.spacing.push(value);
+                }
+            });
+        }
+        
+        // Extract border radius tokens
+        if ('cornerRadius' in node && node.cornerRadius > 0) {
+            tokens.borderRadius.push(node.cornerRadius);
+        }
+        
+        // Extract individual corner radii
+        if ('topLeftRadius' in node) {
+            [node.topLeftRadius, node.topRightRadius, node.bottomLeftRadius, node.bottomRightRadius].forEach((radius: any) => {
+                if (radius && radius > 0) {
+                    tokens.borderRadius.push(radius);
+                }
+            });
+        }
+        
+        // Extract shadow tokens
+        if ('effects' in node && node.effects) {
+            node.effects.forEach((effect: any) => {
+                if (effect.type === 'DROP_SHADOW') {
+                    const shadow = `${effect.offset?.x || 0}px ${effect.offset?.y || 0}px ${effect.radius || 0}px`;
+                    tokens.shadows.push(shadow);
+                }
+            });
+        }
+        
+    } catch (error) {
+        console.warn('Error extracting design tokens:', error);
+    }
+    
+    // Remove duplicates and sort
+    tokens.colors = [...new Set(tokens.colors)];
+    tokens.typography = [...new Set(tokens.typography)];
+    tokens.spacing = ([...new Set(tokens.spacing)] as number[]).sort((a, b) => a - b);
+    tokens.borderRadius = ([...new Set(tokens.borderRadius)] as number[]).sort((a, b) => a - b);
+    tokens.shadows = [...new Set(tokens.shadows)];
+    
+    return tokens;
 }
 
 // Helper function to determine semantic role
