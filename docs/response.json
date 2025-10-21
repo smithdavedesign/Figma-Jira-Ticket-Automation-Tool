@@ -1,0 +1,247 @@
+{
+  "enhancedFrameData": [
+    {
+      "id": "I10582:37809;10582:36353",
+      "name": "Right",
+      "type": "GROUP",
+      "x": 960,
+      "y": 0,
+      "width": 960,
+      "height": 600.0009765625,
+      "visible": true,
+      "locked": false,
+      "dimensions": {
+        "width": 960,
+        "height": 600.0009765625,
+        "x": 960,
+        "y": 0
+      },
+      "hierarchy": {
+        "layers": [
+          {
+            "id": "I10582:37809;10582:36353",
+            "name": "Right",
+            "type": "GROUP",
+            "depth": 1
+          },
+          {
+            "id": "I10582:37809;10582:36354",
+            "name": "Rectangle 43",
+            "type": "RECTANGLE",
+            "depth": 2
+          },
+          {
+            "id": "I10582:37809;10582:36355",
+            "name": "Subtract",
+            "type": "BOOLEAN_OPERATION",
+            "depth": 2
+          },
+          {
+            "id": "I10582:37809;10582:36356",
+            "name": "AdobeStock_615337843_Video_HD_Preview",
+            "type": "RECTANGLE",
+            "depth": 3
+          },
+          {
+            "id": "I10582:37809;10582:36357",
+            "name": "Group 1000004097",
+            "type": "GROUP",
+            "depth": 2
+          },
+          {
+            "id": "I10582:37809;10582:36358",
+            "name": "Solution Card",
+            "type": "FRAME",
+            "depth": 3
+          },
+          {
+            "id": "I10582:37809;10582:36359",
+            "name": "Rectangle 3469335",
+            "type": "RECTANGLE",
+            "depth": 4
+          },
+          {
+            "id": "I10582:37809;10582:36360",
+            "name": "Frame 1000003837",
+            "type": "FRAME",
+            "depth": 4
+          },
+          {
+            "id": "I10582:37809;10582:36361",
+            "name": "Supplier FA",
+            "type": "TEXT",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36362",
+            "name": "Line 148",
+            "type": "LINE",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36363",
+            "name": "Lorem ipsum dolor set consectuera lodolor prium",
+            "type": "TEXT",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36364",
+            "name": "Arrow",
+            "type": "INSTANCE",
+            "depth": 4
+          },
+          {
+            "id": "I10582:37809;10582:36364;1:6248",
+            "name": "Vector 234",
+            "type": "VECTOR",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36364;1:6249",
+            "name": "Vector 235",
+            "type": "VECTOR",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36365",
+            "name": "Solution Card",
+            "type": "FRAME",
+            "depth": 3
+          },
+          {
+            "id": "I10582:37809;10582:36366",
+            "name": "Rectangle 3469335",
+            "type": "RECTANGLE",
+            "depth": 4
+          },
+          {
+            "id": "I10582:37809;10582:36367",
+            "name": "Frame 1000003837",
+            "type": "FRAME",
+            "depth": 4
+          },
+          {
+            "id": "I10582:37809;10582:36368",
+            "name": "Business Continuity Practices",
+            "type": "TEXT",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36369",
+            "name": "Line 148",
+            "type": "LINE",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36370",
+            "name": "Lorem ipsum dolor set consectuera lodolor prium",
+            "type": "TEXT",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36371",
+            "name": "Arrow",
+            "type": "INSTANCE",
+            "depth": 4
+          },
+          {
+            "id": "I10582:37809;10582:36371;1:6248",
+            "name": "Vector 234",
+            "type": "VECTOR",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36371;1:6249",
+            "name": "Vector 235",
+            "type": "VECTOR",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36372",
+            "name": "Solution Card",
+            "type": "FRAME",
+            "depth": 3
+          },
+          {
+            "id": "I10582:37809;10582:36373",
+            "name": "Rectangle 3469335",
+            "type": "RECTANGLE",
+            "depth": 4
+          },
+          {
+            "id": "I10582:37809;10582:36374",
+            "name": "Frame 1000003837",
+            "type": "FRAME",
+            "depth": 4
+          },
+          {
+            "id": "I10582:37809;10582:36375",
+            "name": "New Supplier Registration",
+            "type": "TEXT",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36376",
+            "name": "Line 148",
+            "type": "LINE",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36377",
+            "name": "Lorem ipsum dolor set consectuera lodolor prium",
+            "type": "TEXT",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36378",
+            "name": "Arrow",
+            "type": "INSTANCE",
+            "depth": 4
+          },
+          {
+            "id": "I10582:37809;10582:36378;1:6248",
+            "name": "Vector 234",
+            "type": "VECTOR",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36378;1:6249",
+            "name": "Vector 235",
+            "type": "VECTOR",
+            "depth": 5
+          },
+          {
+            "id": "I10582:37809;10582:36379",
+            "name": "Eyebrow",
+            "type": "TEXT",
+            "depth": 2
+          }
+        ],
+        "totalDepth": 5,
+        "componentCount": 3
+      },
+      "metadata": {
+        "colors": [],
+        "semanticRole": "group",
+        "extractedAt": "2025-10-21T17:47:42.827Z",
+        "figmaType": "GROUP",
+        "hasText": false,
+        "isComponent": false,
+        "childCount": 4
+      }
+    }
+  ],
+  "fileContext": {
+    "fileKey": "dev-file",
+    "fileName": "Solidigm Dotcom 3.0 - Dayani",
+    "pageId": "10513:20218",
+    "pageName": "✅ Suppliers"
+  },
+  "metadata": {
+    "selectionCount": 1,
+    "pageInfo": {
+      "id": "10513:20218",
+      "name": "✅ Suppliers"
+    }
+  }
+}

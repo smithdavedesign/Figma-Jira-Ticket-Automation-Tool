@@ -1,30 +1,66 @@
-# UI Test Files
+# UI Test Directory
 
-This directory contains HTML test files for validating UI functionality outside of the Figma environment.
+This directory contains comprehensive test files for the Figma AI Ticket Generator UI components and functionality.
 
-## Files
+## Test Files
 
+### 🧪 **test-figma-integration.html** - Main Test Suite
+- **Enhanced Frame Data Tests**: Validation compliance, hierarchy analysis, semantic role detection
+- **Screenshot & Visual Context Tests**: Screenshot capture simulation, visual analysis
+- **AI Integration Tests**: AI ticket generation, enhanced vs fallback modes, MCP tool integration  
+- **UI Component Tests**: Context preview, parse tech stack, debug panel, Figma message handling
+- **End-to-End Flow Tests**: Complete generation workflow, plugin lifecycle testing
+- **Server Status Tests**: Web server and MCP server connectivity
+
+### 📊 **enhanced-data-layer-demo.html** - Data Layer Demo
+- Visual demonstration of enhanced frame data extraction
+- Shows hierarchy analysis, semantic roles, and design token extraction
+- Interactive examples of component classification
+
+### 🎭 **figma-plugin-simulator.html** - Plugin Simulator  
+- Simulates Figma plugin environment for testing without Figma
+- Mock Figma API responses and plugin message handling
+- Isolated testing of plugin functionality
+
+### 🧪 **Other Test Files**
 - **`test-ui-functionality.html`** - UI functionality validation
-- **`test-figma-integration.html`** - Figma integration testing
 - **`test-ui.html`** - Basic test interface  
 - **`test-interactive-suite.html`** - Interactive test suite
 - **`test-figma-plugin.html`** - Built plugin copy for testing
 - **`context-preview-test.html`** - Context preview testing
 
+## Key Features Tested
+
+✅ **Enhanced Frame Data**: Dimensions, hierarchy, metadata validation  
+✅ **Screenshot Capture**: PNG export with proper scaling  
+✅ **AI Integration**: Enhanced vs fallback ticket generation  
+✅ **Parse Tech Stack**: Technology detection and confidence scoring  
+✅ **Context Preview**: Visual context display and editing  
+✅ **Debug Panel**: Comprehensive debugging information  
+✅ **MCP Server**: All 6 tools (analyze_project, generate_tickets, etc.)  
+✅ **Semantic Roles**: Button, input, header, component detection  
+✅ **Design Tokens**: Color, typography, spacing extraction  
+
 ## Usage
 
-Open these files directly in your browser to test specific UI components and functionality:
-
 ```bash
-# Serve locally for testing
-python -m http.server 8080
-# Open http://localhost:8080/ui/test/test-ui-functionality.html
+# Open main test suite
+open ui/test/test-figma-integration.html
+
+# Run comprehensive test suite (in browser)
+Click "🚀 Run Comprehensive Test Suite" button
+
+# Individual feature testing
+Click specific test buttons for targeted validation
 ```
 
-## Purpose
+## Test Coverage
 
-These test files enable:
-- UI development without Figma Desktop
-- Feature validation in browser environment
-- Integration testing of MCP server communication
-- Visual debugging of UI components
+- **Server Connectivity**: Web server and MCP server connectivity
+- **Data Validation**: All required fields (dimensions, hierarchy, metadata)  
+- **Visual Context**: Screenshot capture and analysis
+- **AI Processing**: Enhanced context vs fallback generation
+- **Component Analysis**: Semantic roles and design token extraction
+- **End-to-End Workflows**: Complete plugin lifecycle testing
+
+This test suite validates all core functionality and ensures production readiness.

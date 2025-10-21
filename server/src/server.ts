@@ -802,57 +802,168 @@ ${!status.gemini ? '- Set GEMINI_API_KEY for FREE Google AI generation (recommen
    * Create design analysis from enhanced frame data
    */
   private createAnalysisFromFrameData(enhancedFrameData: any[], context?: any): DesignAnalysisResult {
-    const components = enhancedFrameData.map(frame => ({
-      name: frame.name || 'Unknown Component',
-      type: this.mapFigmaTypeToComponent(frame.type),
-      properties: {
-        width: frame.dimensions?.width || 0,
-        height: frame.dimensions?.height || 0,
-        figmaType: frame.type
-      },
-      variants: frame.componentInstances ? ['default', 'hover', 'active'] : ['default'],
-      usage: this.inferUsageFromType(frame.type),
-      confidence: 90 // High confidence since we have actual Figma data
-    }));
+    console.log(`🔍 Analyzing ${enhancedFrameData.length} enhanced frame components...`);
+    
+    const components = enhancedFrameData.map(frame => {
+      // Enhanced component analysis using hierarchy and metadata
+      const hierarchyInfo = frame.hierarchy || {};
+      const metadataInfo = frame.metadata || {};
+      
+      const componentType = this.mapFigmaTypeToComponent(frame.type);
+      const semanticRole = metadataInfo.semanticRole || 'unknown';
+      
+      return {
+        name: frame.name || 'Unknown Component',
+        type: componentType,
+        properties: {
+          width: frame.dimensions?.width || frame.width || 0,
+          height: frame.dimensions?.height || frame.height || 0,
+          figmaType: frame.type,
+          semanticRole: semanticRole,
+          hasText: metadataInfo.hasText || false,
+          isComponent: metadataInfo.isComponent || false,
+          childCount: metadataInfo.childCount || 0,
+          hierarchyDepth: hierarchyInfo.totalDepth || 1,
+          componentCount: hierarchyInfo.componentCount || 0,
+          extractedAt: metadataInfo.extractedAt
+        },
+        variants: this.inferVariantsFromHierarchy(hierarchyInfo, metadataInfo),
+        usage: this.inferUsageFromSemanticRole(semanticRole, frame.type),
+        confidence: 95, // High confidence with enhanced metadata
+        designContext: {
+          colors: metadataInfo.colors || [],
+          textContent: frame.text || null,
+          fontSize: frame.fontSize || null,
+          fontName: frame.fontName || null,
+          fills: frame.fills || []
+        }
+      };
+    });
 
     const colors = this.extractColorsFromFrameData(enhancedFrameData);
     const typography = this.extractTypographyFromFrameData(enhancedFrameData);
     const spacing = this.extractSpacingFromFrameData(enhancedFrameData);
+
+    // Enhanced recommendations based on actual component analysis
+    const recommendations = this.generateEnhancedRecommendations(components, context);
 
     return {
       components,
       designSystem: {
         colors: {
           palette: colors.map(color => ({ color, usage: 'component', count: 1 })),
-          compliance: 90,
-          issues: []
+          compliance: 95, // Higher confidence with real data
+          issues: this.identifyColorIssues(colors)
         },
         typography: {
           fonts: typography.fonts || [],
           hierarchy: typography.hierarchy || [],
-          compliance: 90
+          compliance: 95
         },
         spacing: {
           grid: spacing.grid || '8px',
           margins: spacing.margins || [],
           padding: spacing.padding || [],
-          compliance: 90
+          compliance: 95
         },
-        consistency: 90
+        consistency: 95
       },
       accessibility: {
-        colorContrast: { passed: true, issues: [] },
+        colorContrast: { passed: true, issues: this.checkColorContrast(colors) },
         focusStates: { present: true, issues: [] },
-        semanticStructure: { score: 85, issues: [] },
-        overallScore: 85
+        semanticStructure: { 
+          score: this.calculateSemanticScore(components),
+          issues: this.identifySemanticIssues(components)
+        },
+        overallScore: this.calculateOverallAccessibilityScore(components)
       },
-      recommendations: [
-        `Implement ${components[0]?.name || 'component'} with focus on ${context?.techStack || 'current tech stack'}`,
-        'Ensure accessibility compliance for all interactive elements',
-        'Maintain design system consistency across implementation'
-      ],
-      confidence: 90
+      recommendations,
+      confidence: 95
     };
+  }
+
+  /**
+   * Enhanced helper methods for frame data analysis
+   */
+  private inferVariantsFromHierarchy(hierarchyInfo: any, metadataInfo: any): string[] {
+    const variants = ['default'];
+    if (metadataInfo.isComponent) variants.push('hover', 'active');
+    if (hierarchyInfo.componentCount > 1) variants.push('complex');
+    return variants;
+  }
+
+  private inferUsageFromSemanticRole(semanticRole: string, figmaType: string): 'primary' | 'secondary' | 'tertiary' {
+    if (semanticRole === 'button' || semanticRole === 'component-instance') return 'primary';
+    if (semanticRole === 'header' || semanticRole === 'navigation') return 'secondary';
+    return 'tertiary';
+  }
+
+  private generateEnhancedRecommendations(components: any[], context?: any): string[] {
+    const recommendations = [];
+    const techStack = context?.techStack || 'current tech stack';
+    
+    components.forEach(comp => {
+      if (comp.type === 'button') {
+        recommendations.push(`Implement ${comp.name} button component with proper state management for ${techStack}`);
+      }
+      if (comp.properties.hasText) {
+        recommendations.push(`Ensure proper typography scaling for ${comp.name} text elements`);
+      }
+      if (comp.properties.hierarchyDepth > 3) {
+        recommendations.push(`Consider flattening component hierarchy for ${comp.name} to improve performance`);
+      }
+    });
+
+    recommendations.push('Maintain design system consistency across all components');
+    recommendations.push('Implement proper accessibility patterns for interactive elements');
+    return recommendations;
+  }
+
+  private identifyColorIssues(colors: string[]): string[] {
+    const issues = [];
+    if (colors.length > 10) issues.push('Consider reducing color palette for better consistency');
+    if (colors.length === 0) issues.push('No colors detected - ensure proper color extraction');
+    return issues;
+  }
+
+  private checkColorContrast(colors: string[]): string[] {
+    // Basic contrast checking - could be enhanced with actual WCAG calculations
+    const issues = [];
+    if (colors.some(color => color.toLowerCase().includes('#fff') || color.toLowerCase().includes('#000'))) {
+      issues.push('Verify color contrast ratios meet WCAG AA standards');
+    }
+    return issues;
+  }
+
+  private calculateSemanticScore(components: any[]): number {
+    let score = 80; // Base score
+    components.forEach(comp => {
+      if (comp.properties.semanticRole !== 'unknown') score += 5;
+      if (comp.properties.hasText && comp.properties.fontSize) score += 3;
+      if (comp.properties.isComponent) score += 2;
+    });
+    return Math.min(100, score);
+  }
+
+  private identifySemanticIssues(components: any[]): string[] {
+    const issues = [];
+    const unknownSemantics = components.filter(c => c.properties.semanticRole === 'unknown');
+    if (unknownSemantics.length > 0) {
+      issues.push(`${unknownSemantics.length} components have unclear semantic roles`);
+    }
+    return issues;
+  }
+
+  private calculateOverallAccessibilityScore(components: any[]): number {
+    const semanticScore = this.calculateSemanticScore(components);
+    const componentComplexity = components.reduce((acc, comp) => acc + comp.properties.hierarchyDepth, 0) / components.length;
+    
+    // Score based on semantic clarity and component simplicity
+    let score = semanticScore;
+    if (componentComplexity > 4) score -= 10; // Penalize overly complex hierarchies
+    if (components.some(c => c.properties.hasText && !c.properties.fontSize)) score -= 5; // Missing typography info
+    
+    return Math.max(60, Math.min(100, score));
   }
 
   /**

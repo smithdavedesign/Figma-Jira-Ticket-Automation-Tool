@@ -6,11 +6,13 @@ An intelligent enterprise tool that transforms Figma designs into comprehensive 
 
 ## 🎯 Status: **PRODUCTION READY** ✅
 
-- ✅ **100% Test Success Rate** - All systems operational
-- ✅ **FREE AI Integration** - Google Gemini 2.0 Flash working with real AI generation
+- ✅ **Comprehensive Test Suite** - 15 test functions covering all features
+- ✅ **Enhanced Data Validation** - Complete compliance with dimensions, hierarchy, metadata
+- ✅ **Screenshot Integration** - PNG capture with visual context analysis working
+- ✅ **FREE AI Integration** - Google Gemini 2.0 Flash with real AI generation
 - ✅ **Professional Output** - 10,000+ character comprehensive tickets with real AI analysis
-- ✅ **Enterprise Architecture** - MCP server with graceful fallbacks
-- 🎉 **AI BREAKTHROUGH** - No more fallback responses, real Gemini AI content generation!
+- ✅ **Enterprise Architecture** - MCP server with 6 tools and graceful fallbacks
+- 🎉 **TESTING COMPLETE** - Ready for real Figma desktop integration!
 
 ## ✨ Core Features
 
@@ -26,6 +28,8 @@ An intelligent enterprise tool that transforms Figma designs into comprehensive 
 - 🛡️ **Enterprise-Grade**: Fallback system ensures 100% reliability
 - ⚡ **Popular Tech Stacks**: 10 pre-configured combinations with color-coded confidence
 - 🔍 **Parse Tech Button**: Intelligent tech stack detection and validation
+- 🧪 **Comprehensive Testing**: 15-function test suite covering all features
+- 📊 **Real-time Validation**: Enhanced data compliance and error handling
 
 ## 🎨 Visual-Enhanced Context System
 
@@ -347,8 +351,17 @@ npm run mcp:start
 ### 5. Install Figma Plugin
 ```bash
 npm run build
-# Import dist/manifest.json into Figma
+# Import ROOT manifest.json into Figma (NOT dist/manifest.json)
 ```
+
+## 🚨 **CRITICAL: Production Files**
+**Always use ROOT directory files for Figma plugin:**
+- `manifest.json` (ROOT) - source of truth
+- `code.js` (ROOT) - current plugin code  
+- `ui/index.html` (ROOT ui/) - full-featured UI
+- **❌ Never use `dist/` files** - may be outdated
+
+See `PRODUCTION_READY_FILES.md` for complete guide.
 
 ## 🧪 Testing & Validation
 

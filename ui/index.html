@@ -1518,7 +1518,7 @@ Examples:
                 ${selectionData.map(item => `
                   <div style="margin-bottom: 8px; padding: 8px; background: #f8fafc; border-radius: 6px;">
                     <strong>${item.name}</strong> (${item.type})<br>
-                    <small style="color: #6b7280;">${item.dimensions.width}×${item.dimensions.height}px</small>
+                    <small style="color: #6b7280;">${item.width || 0}×${item.height || 0}px</small>
                   </div>
                 `).join('')}
               </div>
@@ -1837,10 +1837,15 @@ ${Math.max(3, Math.min(8, Math.ceil((frameData.hierarchy?.componentCount || 1) *
       if (!data.id) errors.push('Missing required field: id');
       if (!data.name) warnings.push('Missing field: name');
       if (!data.type) errors.push('Missing required field: type');
-      if (!data.dimensions) errors.push('Missing required field: dimensions');
-      else {
+      // Check for dimensions (either nested or direct properties)
+      if (!data.dimensions && (typeof data.width !== 'number' || typeof data.height !== 'number')) {
+        errors.push('Missing dimensions: need either dimensions object or width/height properties');
+      } else if (data.dimensions) {
         if (typeof data.dimensions.width !== 'number') errors.push('dimensions.width must be a number');
         if (typeof data.dimensions.height !== 'number') errors.push('dimensions.height must be a number');
+      } else {
+        if (typeof data.width !== 'number') errors.push('width must be a number');
+        if (typeof data.height !== 'number') errors.push('height must be a number');
       }
       
       // Hierarchy validation

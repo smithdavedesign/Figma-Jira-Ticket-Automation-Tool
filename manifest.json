@@ -2,7 +2,7 @@
   "name": "Design Intelligence Platform (Production)",
   "id": "design-intelligence-platform-2025",
   "api": "1.0.0",
-  "main": "dist/code.js",
+  "main": "code.js",
   "ui": "ui/index.html",
   "editorType": ["figma", "figjam"],
   "documentAccess": "dynamic-page",
@@ -16,6 +16,7 @@
     ],
     "devAllowedDomains": [
       "http://localhost:3000", 
+      "http://localhost:3001",
       "http://localhost:8080",
       "http://localhost:8085"
     ]
