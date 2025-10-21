@@ -1,0 +1,86 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "🎨 Enhanced Figma Plugin" [level=1] [ref=e4]
+    - generic [ref=e5]: AI-powered ticket generation with design intelligence preview
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - button "🎫 Smart Generator" [ref=e8] [cursor=pointer]
+      - button "📊 Design Health" [ref=e9] [cursor=pointer]
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - heading "🎫 Enhanced Document Generator" [level=2] [ref=e12]
+        - paragraph [ref=e13]: See exactly what context is sent to AI before generation
+      - generic [ref=e14]:
+        - generic [ref=e15]: Tech Stack Description
+        - textbox "Tech Stack Description" [ref=e16]:
+          - /placeholder: "Describe your tech stack, frameworks, libraries, and architecture. Be specific about versions, patterns, and tools you're using.\n\nExamples:\n• React 18 with TypeScript, Material-UI v5, React Query for state management\n• Vue 3 with Composition API, Pinia for state, Vite build tool\n• Next.js 13 with App Router, TailwindCSS, Prisma ORM, PostgreSQL\n• Angular 15 with NgRx, Angular Material, RxJS patterns"
+        - button "🔍 Parse Tech Stack" [ref=e17]
+      - generic [ref=e18]:
+        - generic [ref=e19]: 💡 Popular Tech Stack Combinations
+        - generic [ref=e20]:
+          - generic [ref=e21] [cursor=pointer]: React + TypeScript + Material-UI
+          - generic [ref=e22] [cursor=pointer]: Vue 3 + Composition API + Pinia
+          - generic [ref=e23] [cursor=pointer]: Angular 15 + NgRx + Material
+          - generic [ref=e24] [cursor=pointer]: Next.js + TailwindCSS + Prisma
+          - generic [ref=e25] [cursor=pointer]: AEM 6.5 + HTL + Sling + OSGi
+          - generic [ref=e26] [cursor=pointer]: Figma + Design System + Tokens
+      - generic [ref=e27]:
+        - generic [ref=e28]: Document Type
+        - combobox "Document Type" [ref=e29]:
+          - option "Jira Ticket" [selected]
+          - option "Confluence Page"
+          - option "Wiki Documentation"
+          - option "Agent Task"
+          - option "Code Generation"
+      - generic [ref=e30]:
+        - heading "📝 LLM Context Template" [level=4] [ref=e31]
+        - generic [ref=e32]:
+          - strong [ref=e34]: Jira Ticket Template
+          - generic [ref=e35]:
+            - generic [ref=e36]: "• Focus on: User story, acceptance criteria, design requirements"
+            - generic [ref=e37]: "• Include: Visual description, component specifications, interaction details"
+            - generic [ref=e38]: "• Exclude: Technical implementation details unless specifically requested"
+            - generic [ref=e39]: "• Format: Jira ticket with clear user story format"
+          - generic [ref=e40]: Create a detailed Jira ticket based on the selected Figma design. Focus on user experience requirements and design specifications rather than technical implementation.
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - heading "🔌 MCP Server Status Connected" [level=3] [ref=e43]:
+            - text: 🔌 MCP Server Status
+            - generic [ref=e44]: Connected
+          - paragraph [ref=e45]: Model Context Protocol server connection
+        - generic [ref=e47]:
+          - generic [ref=e48]:
+            - heading "🚀 Server Connection" [level=4] [ref=e49]
+            - generic [ref=e50]:
+              - generic [ref=e51]: ✅
+              - generic [ref=e52]: Connected (v4.0.0)
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - strong [ref=e56]: "Server URL:"
+              - text: http://localhost:3000
+            - generic [ref=e57]:
+              - strong [ref=e58]: "Available Tools:"
+              - text: "5"
+            - generic [ref=e59]:
+              - generic [ref=e60]: analyze_project
+              - generic [ref=e61]: generate_tickets
+              - generic [ref=e62]: check_compliance
+              - generic [ref=e63]: generate_enhanced_ticket
+              - generic [ref=e64]: generate_ai_ticket
+            - generic [ref=e65]: 🚀 MCP Server Ready - AI-powered design analysis available
+      - generic [ref=e66]:
+        - button "🔍 Preview Context & Generate" [ref=e67] [cursor=pointer]
+        - button "🤖 Generate AI Ticket" [ref=e68] [cursor=pointer]
+      - generic [ref=e69]:
+        - button "🔬 Advanced Context Dashboard" [ref=e70] [cursor=pointer]
+        - button "🔍 Show MCP Data Debug" [ref=e71] [cursor=pointer]
+      - generic [ref=e72]:
+        - heading "🧪 Standalone Testing (No Figma Required)" [level=3] [ref=e73]
+        - generic [ref=e74]:
+          - button "🤖 Test Mock AI Generation" [ref=e75] [cursor=pointer]
+          - button "📊 Test Mock Data Extraction" [ref=e76] [cursor=pointer]
+          - button "🔧 Test MCP Server Direct" [ref=e77] [cursor=pointer]
+```

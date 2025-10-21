@@ -1,0 +1,143 @@
+template_id: "figma_component_spec"
+version: "2.0.0"
+organization: "default"
+platform: "figma"
+description: "Figma component specification template for design handoffs and MCP integration"
+
+variables:
+  component_name: "{{ figma.component_name }}"
+  status: "{{ figma.design_status }}"
+  last_updated: "{{ figma.last_modified }}"
+  owner: "{{ figma.designer_name }}"
+  frame_id: "{{ figma.frame_id }}"
+  purpose: "{{ figma.component_purpose }}"
+  variants: "{{ figma.variants }}"
+  states: "{{ figma.interaction_states }}"
+  constraints: "{{ figma.constraints }}"
+
+team_standards:
+  testing_framework: "jest-rtl"
+  accessibility_level: "wcag-aa"
+  documentation_format: "markdown"
+  code_style: "prettier"
+  review_process: "design-review"
+
+output_format:
+  ticket_type: "Design Spec"
+  sections: ["header", "purpose", "design_tokens", "component_structure", "interactions", "related_files"]
+  formatting:
+    use_emojis: true
+    include_diagrams: false
+    code_highlighting: false
+    table_formatting: true
+    link_formatting: true
+  ai_context_markers: true
+  include_metadata: true
+
+customization:
+  include_ai_context_markers: true
+  generate_test_files: false
+  create_storybook_stories: false
+  add_accessibility_checklist: false
+  include_performance_metrics: false
+  enable_automated_testing: false
+  include_design_tokens: true
+  add_similar_components: false
+  include_risk_assessment: false
+
+# Figma template content following exact format
+content: |
+  # Figma Component Spec — {{ component_name }}
+
+  **Status:** {{ status }}  
+  **Last Updated:** {{ last_updated }}  
+  **Owner:** {{ owner }}  
+  **Figma Frame ID:** {{ frame_id }}
+
+  ---
+
+  ## 🎯 Purpose
+  {{ purpose }}
+
+  This component is designed for use across our application interface to provide consistent user interaction patterns and maintain design system coherence.
+
+  ---
+
+  ## 🎨 Design Tokens
+  | Token | Type | Value | Description |
+  |--------|------|-------|-------------|
+  | `color-primary` | Color | {{ figma.design_tokens.colors.primary }} | Primary brand color |
+  | `color-secondary` | Color | {{ figma.design_tokens.colors.secondary }} | Secondary accent color |
+  | `color-text` | Color | {{ figma.design_tokens.colors.text }} | Primary text color |
+  | `color-background` | Color | {{ figma.design_tokens.colors.background }} | Background color |
+  | `radius-md` | Border Radius | {{ figma.design_tokens.borders.radius_md }} | Default component rounding |
+  | `spacing-sm` | Spacing | {{ figma.design_tokens.spacing.sm }} | Small internal spacing |
+  | `spacing-md` | Spacing | {{ figma.design_tokens.spacing.md }} | Medium internal spacing |
+  | `font-weight-medium` | Typography | {{ figma.design_tokens.typography.font_weight_medium }} | Medium font weight |
+
+  ---
+
+  ## 🧩 Component Structure
+  - **Variants:** {{ variants }}
+  - **States:** {{ states }}
+  - **Constraints:** {{ constraints }}
+
+  **Layer Hierarchy:**
+  ```
+  {{ component_name }}
+  ├── Background
+  ├── Content Container
+  │   ├── Icon (optional)
+  │   ├── Text Label
+  │   └── Secondary Text (optional)
+  └── Focus Ring (state-dependent)
+  ```
+
+  ---
+
+  ## 🧠 Interactions
+  - **On Hover** → Background color transition to hover state
+  - **On Focus** → Blue focus ring appears with 2px offset
+  - **On Active** → Slight scale transform (98%) with color change
+  - **On Disabled** → Reduced opacity (50%) and cursor change
+  - **On Error** → Red border and error icon display
+
+  **Animation Specifications:**
+  - Hover transition: 150ms ease-out
+  - Focus ring: Instant appearance, 200ms fade-out
+  - Active state: 100ms ease-in-out transform
+
+  ---
+
+  ## 🔗 Related Files
+  - [Interactive Prototype]({{ figma.prototype_link }})
+  - [Design System Frame]({{ figma.design_system_frame }})
+  - [Usage Examples in UI]({{ figma.usage_examples }})
+  - [Component Library]({{ figma.component_library }})
+
+  ---
+
+  <!-- START: figma_context_markers -->
+  **MCP Integration Data:**
+  ```json
+  {
+    "component_id": "{{ frame_id }}",
+    "component_type": "{{ figma.component_type }}",
+    "design_tokens": {{ figma.design_tokens | json }},
+    "variants": {{ variants | json }},
+    "states": {{ states | json }},
+    "last_modified": "{{ last_updated }}",
+    "ready_for_dev": {{ figma.ready_for_dev }}
+  }
+  ```
+  <!-- END: figma_context_markers -->
+
+  ---
+
+  ## 📋 Development Notes
+  - Use semantic HTML elements for accessibility
+  - Implement all interaction states as specified
+  - Ensure keyboard navigation follows tab order
+  - Test with screen readers for proper announcements
+  - Validate color contrast meets WCAG 2.1 AA standards
+  - Implement responsive breakpoint behavior as designed

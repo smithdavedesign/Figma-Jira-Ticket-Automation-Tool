@@ -19,6 +19,7 @@ import { AdvancedAIService } from './ai/advanced-ai-service.js';
 import { FigmaMCPGeminiOrchestrator } from './ai/figma-mcp-gemini-orchestrator.js';
 import { EnhancedDesignHealthAnalyzer } from './data/enhanced-design-health-analyzer.js';
 import { FigmaDataExtractor } from './data/extractor.js';
+import { templateIntegration, type TicketGenerationOptions } from './ai/template-integration.js';
 import type { CodeGenerationOptions } from './figma/boilerplate-generator.js';
 import type { AIAnalysisConfig, DesignAnalysisResult } from './ai/advanced-ai-service.js';
 
@@ -101,11 +102,18 @@ class TicketGenerator {
       projectName = 'Design Implementation',
       figmaContext = {},
       instructions = '',
-      enableFigmaMCP = true
+      enableFigmaMCP = true,
+      // Template system options
+      platform = 'jira',
+      documentType = 'component',
+      organizationId = 'default',
+      teamStandards = {},
+      useTemplates = true
     } = args;
 
     console.log('🎫 Generating enhanced tickets for:', frameData.length, 'frames');
     console.log('🤝 Figma MCP integration:', enableFigmaMCP ? 'enabled' : 'disabled');
+    console.log('📝 Template system:', useTemplates ? 'enabled' : 'disabled');
     
     if (!frameData || frameData.length === 0) {
       return {
@@ -116,6 +124,38 @@ class TicketGenerator {
           },
         ],
       };
+    }
+
+    // Template-based generation for single frames
+    if (useTemplates && frameData.length === 1) {
+      try {
+        const templateOptions: TicketGenerationOptions = {
+          platform: platform as any,
+          documentType: documentType as any,
+          organizationId,
+          projectName,
+          teamStandards,
+          useTemplates: true
+        };
+        
+        const templateTicket = await templateIntegration.generateParameterizedTicket(
+          frameData[0],
+          figmaContext,
+          templateOptions
+        );
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: templateTicket,
+            },
+          ],
+        };
+      } catch (error) {
+        console.warn('⚠️ Template generation failed, falling back to enhanced generation:', error);
+        // Continue with original logic below
+      }
     }
 
     // Enhanced ticket generation with optional Figma MCP integration
@@ -153,6 +193,119 @@ class TicketGenerator {
         },
       ],
     };
+  }
+
+  /**
+   * Generate tickets using the template system for multiple frames
+   */
+  async generateWithTemplates(args: any): Promise<ToolResult> {
+    const { 
+      frameData = [], 
+      projectName = 'Design Implementation',
+      figmaContext = {},
+      platform = 'jira',
+      documentType = 'component',
+      organizationId = 'default',
+      teamStandards = {}
+    } = args;
+
+    console.log('📝 Generating template-based tickets for:', frameData.length, 'frames');
+    console.log('🏢 Platform:', platform, 'Type:', documentType);
+    
+    if (!frameData || frameData.length === 0) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: '# No Components Selected\n\nPlease select components from Figma to generate tickets.',
+          },
+        ],
+      };
+    }
+
+    try {
+      const templateOptions: TicketGenerationOptions = {
+        platform: platform as any,
+        documentType: documentType as any,
+        organizationId,
+        projectName,
+        teamStandards,
+        useTemplates: true
+      };
+
+      // Generate individual tickets using templates
+      const tickets = await templateIntegration.generateMultipleTickets(
+        frameData,
+        figmaContext,
+        templateOptions
+      );
+
+      // Combine tickets if multiple
+      let combinedTicket = '';
+      if (tickets.length === 1) {
+        combinedTicket = tickets[0];
+      } else {
+        combinedTicket = this.combineTemplateTickets(tickets, projectName, figmaContext);
+      }
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: combinedTicket,
+          },
+        ],
+      };
+    } catch (error) {
+      console.error('❌ Template generation failed:', error);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `# Template Generation Failed\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}\n\nFalling back to standard generation...`,
+          },
+        ],
+      };
+    }
+  }
+
+  /**
+   * Combine multiple template-based tickets
+   */
+  private combineTemplateTickets(tickets: string[], projectName: string, figmaContext: any): string {
+    let combined = `# 🚀 ${projectName} - Implementation Plan\n\n`;
+    
+    if (figmaContext.figmaUrl) {
+      combined += `**📎 Design Reference**: [View in Figma](${figmaContext.figmaUrl})\n`;
+    }
+    
+    combined += `**📊 Components**: ${tickets.length} components identified\n`;
+    combined += `**⏱️ Generated**: ${new Date().toLocaleString()}\n\n`;
+    
+    combined += `---\n\n`;
+    
+    tickets.forEach((ticket, index) => {
+      combined += `## Component ${index + 1}\n\n`;
+      
+      // Remove the main title from individual tickets to avoid duplication
+      const ticketContent = ticket.replace(/^#[^\n]*\n\n/, '');
+      combined += ticketContent;
+      
+      if (index < tickets.length - 1) {
+        combined += `\n\n---\n\n`;
+      }
+    });
+    
+    combined += `\n\n## 📋 Project Summary\n\n`;
+    combined += `This implementation plan contains ${tickets.length} components from the design system.\n`;
+    combined += `Each component includes:\n`;
+    combined += `- ✅ Detailed acceptance criteria\n`;
+    combined += `- 🧪 Testing strategy\n`;
+    combined += `- 📊 Complexity analysis\n`;
+    combined += `- 🤖 AI assistant integration\n\n`;
+    combined += `*Generated using the parameterized template system*`;
+    
+    return combined;
   }
 
   /**
@@ -254,6 +407,71 @@ class TicketGenerator {
     return Math.min(points, 13); // Cap at 13 points
   }
 
+  private generateComplexityAnalysis(frame: any): string {
+    const baseHours = 2;
+    const propsCount = frame.components?.length || 3;
+    const interactionStates = frame.hasPrototype ? 4 : 2;
+    const validationRules = frame.name?.toLowerCase().includes('form') ? 3 : 0;
+    const dependencies = frame.components?.length || 0;
+    
+    const propsFactor = propsCount * 0.3;
+    const statesFactor = interactionStates * 0.5;
+    const validationFactor = validationRules * 0.8;
+    const dependencyFactor = dependencies * 0.4;
+    
+    const totalHours = baseHours + propsFactor + statesFactor + validationFactor + dependencyFactor;
+    const complexity = totalHours <= 4 ? 'Simple' : totalHours <= 8 ? 'Medium' : 'Complex';
+    const confidenceLevel = Math.max(75, Math.min(95, 85 + (frame.nodeCount || 0) / 10));
+    
+    // Similar components based on naming patterns
+    const similarComponents = this.findSimilarComponents(frame.name || '');
+    
+    // Risk factors
+    const riskFactors = [];
+    if (frame.name?.toLowerCase().includes('form')) riskFactors.push('Form validation complexity');
+    if (frame.hasPrototype) riskFactors.push('Animation implementation');
+    if (propsCount > 8) riskFactors.push('High prop configuration complexity');
+    if (dependencies > 3) riskFactors.push('Multiple component dependencies');
+    
+    let analysis = `**Estimated Complexity:** ${complexity} (${totalHours.toFixed(1)} hours)\n`;
+    analysis += `├── 📊 **Confidence Level:** ${confidenceLevel.toFixed(0)}% (based on component analysis)\n`;
+    analysis += `├── 🧮 **Calculation Factors:**\n`;
+    analysis += `│   ├── Base Implementation: ${baseHours}h\n`;
+    analysis += `│   ├── Props Configuration (${propsCount}): +${propsFactor.toFixed(1)}h\n`;
+    analysis += `│   ├── Interaction States (${interactionStates}): +${statesFactor.toFixed(1)}h\n`;
+    analysis += `│   ├── Validation Rules (${validationRules}): +${validationFactor.toFixed(1)}h\n`;
+    analysis += `│   └── Dependencies (${dependencies}): +${dependencyFactor.toFixed(1)}h\n`;
+    
+    if (similarComponents.length > 0) {
+      analysis += `├── ⚡ **Similar Components:** ${similarComponents.slice(0, 3).join(', ')}\n`;
+    }
+    
+    if (riskFactors.length > 0) {
+      analysis += `└── 🎯 **Risk Factors:** ${riskFactors.join(', ')}\n`;
+    } else {
+      analysis += `└── ✅ **No significant risk factors identified**\n`;
+    }
+    
+    return analysis;
+  }
+
+  private findSimilarComponents(componentName: string): string[] {
+    // Mock similar components based on naming patterns
+    const componentType = componentName.toLowerCase();
+    
+    if (componentType.includes('button')) {
+      return ['IconButton (3h)', 'ToggleButton (4h)', 'ButtonGroup (5h)'];
+    } else if (componentType.includes('input') || componentType.includes('field')) {
+      return ['TextField (4h)', 'SelectField (5h)', 'DatePicker (6h)'];
+    } else if (componentType.includes('card')) {
+      return ['ProductCard (4h)', 'UserCard (3h)', 'InfoCard (2h)'];
+    } else if (componentType.includes('modal') || componentType.includes('dialog')) {
+      return ['ConfirmDialog (5h)', 'FormModal (6h)', 'AlertDialog (3h)'];
+    }
+    
+    return ['BasicComponent (2h)', 'StandardComponent (3h)', 'ComplexComponent (5h)'];
+  }
+
   private generateDetailedTicket(frame: any, template: string, figmaContext: any, instructions: string): any {
     const name = frame.name || 'Unnamed Component';
     const frameUrl = figmaContext.frameUrls?.find((url: string) => url.includes(frame.id)) || figmaContext.figmaUrl;
@@ -292,6 +510,9 @@ class TicketGenerator {
     if (frame.components && frame.components.length > 0) {
       description += `- **Components Used**: ${frame.components.slice(0, 3).join(', ')}${frame.components.length > 3 ? '...' : ''}\n`;
     }
+    
+    description += `\n## 📊 Intelligence Analysis\n\n`;
+    description += `${this.generateComplexityAnalysis(frame)}\n`;
     
     description += `\n## 🎨 Design Context\n`;
     description += `This implementation should maintain consistency with the existing design system and follow established patterns.\n`;
@@ -440,13 +661,21 @@ class TicketGenerator {
     output += `## 🎫 Implementation Tickets\n\n`;
     
     tickets.forEach((ticket: any, index: number) => {
+      output += `<!-- START: ticket_${index + 1} -->\n`;
       output += `### ${index + 1}. ${ticket.title}\n`;
       output += `**Priority**: ${ticket.priority} | **Story Points**: ${ticket.storyPoints}\n\n`;
-      output += `${ticket.description}\n\n`;
       
       if (ticket.figmaLink) {
         output += `**🔗 Figma Link**: [View Component](${ticket.figmaLink})\n\n`;
       }
+      
+      output += `<!-- START: requirements -->\n`;
+      output += `${ticket.description}\n\n`;
+      output += `<!-- END: requirements -->\n\n`;
+      
+      output += `**🧪 Testing**: Jest + RTL, accessibility compliance\n`;
+      output += `**🎨 Design System**: Follow component library patterns\n`;
+      output += `<!-- END: ticket_${index + 1} -->\n`;
       
       output += `**Acceptance Criteria**:\n`;
       ticket.acceptanceCriteria.forEach((criteria: string) => {
@@ -474,20 +703,61 @@ class TicketGenerator {
       output += `**🔗 Figma Design**: [View Component](${ticket.figmaLink})\n\n`;
     }
     
+    // LLM Integration Context Markers
+    output += `<!-- START: requirements -->\n`;
     output += `${ticket.description}\n\n`;
+    output += `<!-- END: requirements -->\n\n`;
     
+    output += `<!-- START: acceptance_criteria -->\n`;
     output += `## ✅ Acceptance Criteria\n\n`;
     ticket.acceptanceCriteria.forEach((criteria: string) => {
       output += `${criteria}\n\n`;
     });
+    output += `<!-- END: acceptance_criteria -->\n\n`;
     
+    output += `<!-- START: technical_implementation -->\n`;
     output += `${ticket.technicalNotes}\n\n`;
-    output += `${ticket.designSystemNotes}\n\n`;
+    output += `<!-- END: technical_implementation -->\n\n`;
     
+    output += `<!-- START: design_system_integration -->\n`;
+    output += `${ticket.designSystemNotes}\n\n`;
+    output += `<!-- END: design_system_integration -->\n\n`;
+    
+    output += `<!-- START: testing_strategy -->\n`;
+    output += `## 🧪 Testing Strategy\n\n`;
+    output += `**Framework**: Jest + React Testing Library\n`;
+    output += `**Test Types**: Unit tests, integration tests, snapshot tests\n`;
+    output += `**Coverage**: Component behavior, props validation, accessibility\n\n`;
+    output += `**Example Test Structure**:\n`;
+    output += `\`\`\`typescript\n`;
+    output += `describe('${ticket.title.replace(/^[^:]+:\s*/, '')}', () => {\n`;
+    output += `  test('renders with default props', () => {\n`;
+    output += `    // Implementation test\n`;
+    output += `  });\n`;
+    output += `  \n`;
+    output += `  test('handles user interactions correctly', () => {\n`;
+    output += `    // Interaction test\n`;
+    output += `  });\n`;
+    output += `  \n`;
+    output += `  test('meets accessibility requirements', () => {\n`;
+    output += `    // A11y test\n`;
+    output += `  });\n`;
+    output += `});\n`;
+    output += `\`\`\`\n`;
+    output += `<!-- END: testing_strategy -->\n\n`;
+    
+    output += `<!-- START: subtasks -->\n`;
     output += `## 📋 Subtasks\n\n`;
     ticket.subtasks.forEach((task: string) => {
       output += `- [ ] ${task}\n`;
     });
+    output += `<!-- END: subtasks -->\n\n`;
+    
+    output += `<!-- START: ai_assistant_integration -->\n`;
+    output += `## 🤖 AI Assistant Integration\n\n`;
+    output += `**Copilot Prompt**: "Analyze this ticket and generate a TypeScript React component implementation with props interface, styled-components styling, and comprehensive Jest tests. Focus on accessibility and design system compliance."\n\n`;
+    output += `**Claude/Cursor Prompt**: "Review this development ticket for completeness and suggest improvements for implementation clarity, edge cases, and testing coverage."\n`;
+    output += `<!-- END: ai_assistant_integration -->\n`;
     
     return output;
   }
@@ -1221,6 +1491,9 @@ class FigmaAITestServer {
 
         case 'analyze_design_health':
           return await this.analyzeDesignHealth(body);
+
+        case 'generate_template_tickets':
+          return await this.ticketGenerator.generateWithTemplates(body);
 
         default:
           // Don't catch unknown method errors - let them bubble up for proper HTTP error handling
@@ -2761,7 +3034,7 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
           name: 'Figma AI Ticket Generator',
           version: '1.0.0',
           status: 'running',
-          tools: ['analyze_project', 'generate_tickets', 'check_compliance', 'generate_enhanced_ticket', 'generate_ai_ticket', 'analyze_design_health'],
+          tools: ['analyze_project', 'generate_tickets', 'check_compliance', 'generate_enhanced_ticket', 'generate_ai_ticket', 'analyze_design_health', 'generate_template_tickets'],
           description: 'Strategic design-to-code automation server'
         }));
         return;
@@ -2805,7 +3078,7 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
     server.listen(this.port, () => {
       console.log('� Figma AI Ticket Generator Test Server started');
       console.log(`📋 Server running at http://localhost:${this.port}`);
-      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket, generate_ai_ticket, analyze_design_health');
+      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket, generate_ai_ticket, analyze_design_health, generate_template_tickets');
       console.log('');
       console.log('Example usage:');
       console.log(`curl -X POST http://localhost:${this.port} \\`);

@@ -22,6 +22,13 @@ This directory contains comprehensive test files for the Figma AI Ticket Generat
 - Mock Figma API responses and plugin message handling
 - Isolated testing of plugin functionality
 
+### 🎯 **template-system-test.html** - Template System Test Suite
+- **Platform Template Tests**: Comprehensive testing for 10+ platforms (Jira, Confluence, Notion, etc.)
+- **Variable Substitution Tests**: Test context variable replacement and template rendering
+- **Integration Tests**: MCP server integration, Figma data integration, fallback system
+- **Comprehensive Test Runner**: Automated test suite with metrics dashboard and reporting
+- **Interactive Platform Switching**: Test templates across different platforms and document types
+
 ### 🧪 **Other Test Files**
 - **`test-ui-functionality.html`** - UI functionality validation
 - **`test-ui.html`** - Basic test interface  
@@ -40,6 +47,9 @@ This directory contains comprehensive test files for the Figma AI Ticket Generat
 ✅ **MCP Server**: All 6 tools (analyze_project, generate_tickets, etc.)  
 ✅ **Semantic Roles**: Button, input, header, component detection  
 ✅ **Design Tokens**: Color, typography, spacing extraction  
+✅ **Template System**: Parameterized ticket generation across 10+ platforms  
+✅ **Variable Substitution**: Context-aware template rendering  
+✅ **AI Integration**: Template-based AI assistant prompts and context markers  
 
 ## Usage
 
@@ -47,11 +57,17 @@ This directory contains comprehensive test files for the Figma AI Ticket Generat
 # Open main test suite
 open ui/test/test-figma-integration.html
 
+# Open template system test suite
+open ui/test/template-system-test.html
+
 # Run comprehensive test suite (in browser)
 Click "🚀 Run Comprehensive Test Suite" button
 
 # Individual feature testing
 Click specific test buttons for targeted validation
+
+# Template system testing
+Click "🎯 Run All Template System Tests" in template test suite
 ```
 
 ## Test Coverage

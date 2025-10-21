@@ -1,0 +1,159 @@
+template_id: "wiki_component_guide"
+version: "2.0.0"
+organization: "default"
+platform: "wiki"
+description: "Wiki documentation template for component usage guides and developer documentation"
+
+variables:
+  page_title: "{{ figma.component_name }} Usage Guide"
+  last_updated: "{{ project.current_date }}"
+  owner: "{{ team.name }}"
+  tags: "{{ project.tags }}"
+  component_name: "{{ figma.component_name }}"
+  import_path: "{{ project.import_path }}"
+  example_code: "{{ project.example_code }}"
+
+team_standards:
+  testing_framework: "jest-rtl"
+  accessibility_level: "wcag-aa"
+  documentation_format: "markdown"
+  code_style: "prettier"
+  review_process: "standard"
+
+output_format:
+  ticket_type: "Guide"
+  sections: ["header", "overview", "usage", "examples", "props", "accessibility", "related_docs"]
+  formatting:
+    use_emojis: true
+    include_diagrams: false
+    code_highlighting: true
+    table_formatting: true
+    link_formatting: true
+  ai_context_markers: false
+  include_metadata: true
+
+customization:
+  include_ai_context_markers: false
+  generate_test_files: false
+  create_storybook_stories: true
+  add_accessibility_checklist: true
+  include_performance_metrics: false
+  enable_automated_testing: false
+  include_design_tokens: true
+  add_similar_components: true
+  include_risk_assessment: false
+
+# Wiki template content following exact format
+content: |
+  # {{ page_title }}
+
+  **Last Updated:** {{ last_updated }}  
+  **Owner:** {{ owner }}  
+  **Tags:** {{ tags }}
+
+  ---
+
+  ## 🔍 Overview
+  The {{ component_name }} component provides a consistent, accessible interface element for user interactions. This guide covers installation, usage patterns, and best practices for implementation.
+
+  ---
+
+  ## 💻 Usage
+  **Example:**
+  ```jsx
+  {{ example_code }}
+  ```
+
+  **Import:**
+  ```javascript
+  import { {{ component_name }} } from '{{ import_path }}';
+  ```
+
+  ---
+
+  ## 📋 Props
+
+  | Prop | Type | Default | Description |
+  |------|------|---------|-------------|
+  | `variant` | `'primary' \| 'secondary' \| 'danger'` | `'primary'` | Visual style variant |
+  | `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | Component size |
+  | `disabled` | `boolean` | `false` | Whether the component is disabled |
+  | `onClick` | `(event: MouseEvent) => void` | `undefined` | Click event handler |
+  | `children` | `ReactNode` | `undefined` | Component content |
+
+  ---
+
+  ## ♿ Accessibility
+  - **ARIA Labels**: Component includes proper ARIA labeling
+  - **Keyboard Navigation**: Full keyboard accessibility support
+  - **Screen Readers**: Compatible with screen reader technology
+  - **Focus Management**: Proper focus indicators and management
+  - **Color Contrast**: Meets WCAG 2.1 AA contrast requirements
+
+  ---
+
+  ## 🎨 Design Tokens
+  The component uses the following design tokens:
+
+  | Token | Purpose | Value |
+  |-------|---------|-------|
+  | `--color-primary` | Primary brand color | `#3B82F6` |
+  | `--radius-md` | Border radius | `8px` |
+  | `--spacing-md` | Internal padding | `16px` |
+  | `--font-weight-medium` | Text weight | `500` |
+
+  ---
+
+  ## 📖 Examples
+
+  ### Basic Usage
+  ```jsx
+  <{{ component_name }}>
+    Click me
+  </{{ component_name }}>
+  ```
+
+  ### With Props
+  ```jsx
+  <{{ component_name }}
+    variant="secondary"
+    size="large"
+    onClick={() => console.log('Clicked!')}
+  >
+    Secondary Button
+  </{{ component_name }}>
+  ```
+
+  ### Disabled State
+  ```jsx
+  <{{ component_name }} disabled>
+    Disabled Button
+  </{{ component_name }}>
+  ```
+
+  ---
+
+  ## 🔗 Related Documentation
+  - [Design System Guidelines]({{ project.design_system_url }})
+  - [Component Library]({{ project.component_library_url }})
+  - [Accessibility Standards]({{ project.accessibility_url }})
+  - [Figma Design]({{ figma.live_link }})
+
+  ---
+
+  ## 🐛 Troubleshooting
+
+  **Component not rendering:**
+  - Ensure all required props are provided
+  - Check for TypeScript errors in console
+  - Verify component is properly imported
+
+  **Styling issues:**
+  - Confirm design tokens are loaded
+  - Check for CSS specificity conflicts
+  - Validate theme provider is configured
+
+  **Accessibility concerns:**
+  - Run automated accessibility tests
+  - Test with keyboard navigation
+  - Verify screen reader compatibility
