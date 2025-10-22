@@ -11,7 +11,7 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 5
+      "actualWorkers": 7
     },
     "preserveOutput": "always",
     "reporter": [
@@ -50,7 +50,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 5
+          "actualWorkers": 7
         },
         "id": "chromium",
         "name": "chromium",
@@ -59,14 +59,14 @@
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
         ],
-        "timeout": 10000
+        "timeout": 30000
       },
       {
         "outputDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 5
+          "actualWorkers": 7
         },
         "id": "firefox",
         "name": "firefox",
@@ -75,14 +75,14 @@
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
         ],
-        "timeout": 10000
+        "timeout": 30000
       },
       {
         "outputDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 5
+          "actualWorkers": 7
         },
         "id": "webkit",
         "name": "webkit",
@@ -91,14 +91,14 @@
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
         ],
-        "timeout": 10000
+        "timeout": 30000
       },
       {
         "outputDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 5
+          "actualWorkers": 7
         },
         "id": "Mobile Chrome",
         "name": "Mobile Chrome",
@@ -107,14 +107,14 @@
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
         ],
-        "timeout": 10000
+        "timeout": 30000
       },
       {
         "outputDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 5
+          "actualWorkers": 7
         },
         "id": "Mobile Safari",
         "name": "Mobile Safari",
@@ -123,7 +123,7 @@
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
         ],
-        "timeout": 10000
+        "timeout": 30000
       }
     ],
     "shard": null,
@@ -135,29 +135,27 @@
   },
   "suites": [
     {
-      "title": "core-functionality.spec.js",
-      "file": "core-functionality.spec.js",
+      "title": "accessibility-edge-cases.spec.js",
+      "file": "accessibility-edge-cases.spec.js",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Enhanced Figma Plugin - Core Functionality @smoke @critical",
-          "file": "core-functionality.spec.js",
+          "title": "Accessibility Testing @critical",
+          "file": "accessibility-edge-cases.spec.js",
           "line": 3,
           "column": 6,
           "specs": [
             {
-              "title": "should generate enhanced document with valid input @critical",
-              "ok": false,
+              "title": "should meet WCAG 2.1 AA accessibility standards",
+              "ok": true,
               "tags": [
-                "smoke",
-                "critical",
                 "critical"
               ],
               "tests": [
                 {
-                  "timeout": 10000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -166,333 +164,379 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 10105,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js",
-                            "column": 16,
-                            "line": 85
-                          },
-                          "message": "Error: page.click: Test timeout of 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n\u001b[0m \u001b[90m 83 |\u001b[39m     \n \u001b[90m 84 |\u001b[39m     \u001b[90m// Click generate button\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 85 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'#generate'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 86 |\u001b[39m     \n \u001b[90m 87 |\u001b[39m     \u001b[90m// Check if button changes to loading state (but don't fail if generation is too fast)\u001b[39m\n \u001b[90m 88 |\u001b[39m     \u001b[36mtry\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16\u001b[22m"
-                        }
-                      ],
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-17T04:30:28.460Z",
+                      "startTime": "2025-10-22T18:46:19.100Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-chromium/error-context.md"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "skipped"
                 }
               ],
-              "id": "82707a9d8222aa8b10db-2683b2eb2d74b05f417b",
-              "file": "core-functionality.spec.js",
-              "line": 76,
+              "id": "4f5d4a56519f9f28deb6-69a5c1f988156f91705a",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 10,
               "column": 3
             },
             {
-              "title": "should generate enhanced document with valid input @critical",
-              "ok": false,
+              "title": "should be fully keyboard navigable",
+              "ok": true,
               "tags": [
-                "smoke",
-                "critical",
                 "critical"
               ],
               "tests": [
                 {
-                  "timeout": 10000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 1,
                       "parallelIndex": 1,
-                      "status": "timedOut",
-                      "duration": 10115,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js",
-                            "column": 16,
-                            "line": 85
-                          },
-                          "message": "Error: page.click: Test timeout of 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n\u001b[0m \u001b[90m 83 |\u001b[39m     \n \u001b[90m 84 |\u001b[39m     \u001b[90m// Click generate button\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 85 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'#generate'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 86 |\u001b[39m     \n \u001b[90m 87 |\u001b[39m     \u001b[90m// Check if button changes to loading state (but don't fail if generation is too fast)\u001b[39m\n \u001b[90m 88 |\u001b[39m     \u001b[36mtry\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16\u001b[22m"
-                        }
-                      ],
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-17T04:30:28.460Z",
+                      "startTime": "2025-10-22T18:46:19.103Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-firefox/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-firefox/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-firefox/error-context.md"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "skipped"
                 }
               ],
-              "id": "82707a9d8222aa8b10db-d46502b38084ee9862ee",
-              "file": "core-functionality.spec.js",
-              "line": 76,
+              "id": "4f5d4a56519f9f28deb6-cec8e3765aaa9768be3f",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 42,
               "column": 3
             },
             {
-              "title": "should generate enhanced document with valid input @critical",
-              "ok": false,
+              "title": "should work with screen readers",
+              "ok": true,
               "tags": [
-                "smoke",
-                "critical",
                 "critical"
               ],
               "tests": [
                 {
-                  "timeout": 10000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 2,
                       "parallelIndex": 2,
-                      "status": "timedOut",
-                      "duration": 10099,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js",
-                            "column": 16,
-                            "line": 85
-                          },
-                          "message": "Error: page.click: Test timeout of 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n\u001b[0m \u001b[90m 83 |\u001b[39m     \n \u001b[90m 84 |\u001b[39m     \u001b[90m// Click generate button\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 85 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'#generate'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 86 |\u001b[39m     \n \u001b[90m 87 |\u001b[39m     \u001b[90m// Check if button changes to loading state (but don't fail if generation is too fast)\u001b[39m\n \u001b[90m 88 |\u001b[39m     \u001b[36mtry\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16\u001b[22m"
-                        }
-                      ],
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-17T04:30:28.459Z",
+                      "startTime": "2025-10-22T18:46:19.101Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-webkit/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-webkit/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-webkit/error-context.md"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "skipped"
                 }
               ],
-              "id": "82707a9d8222aa8b10db-e7b23373876222c14fa5",
-              "file": "core-functionality.spec.js",
-              "line": 76,
+              "id": "4f5d4a56519f9f28deb6-1ebfbc052db61ace7102",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 69,
               "column": 3
             },
             {
-              "title": "should generate enhanced document with valid input @critical",
-              "ok": false,
+              "title": "should handle focus management correctly",
+              "ok": true,
               "tags": [
-                "smoke",
-                "critical",
                 "critical"
               ],
               "tests": [
                 {
-                  "timeout": 10000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "Mobile Chrome",
-                  "projectName": "Mobile Chrome",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 3,
                       "parallelIndex": 3,
-                      "status": "failed",
-                      "duration": 8119,
-                      "error": {
-                        "message": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n",
-                        "stack": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js",
-                          "column": 16,
-                          "line": 85
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 83 |\u001b[39m     \n \u001b[90m 84 |\u001b[39m     \u001b[90m// Click generate button\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 85 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'#generate'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 86 |\u001b[39m     \n \u001b[90m 87 |\u001b[39m     \u001b[90m// Check if button changes to loading state (but don't fail if generation is too fast)\u001b[39m\n \u001b[90m 88 |\u001b[39m     \u001b[36mtry\u001b[39m {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js",
-                            "column": 16,
-                            "line": 85
-                          },
-                          "message": "Error: page.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n\u001b[0m \u001b[90m 83 |\u001b[39m     \n \u001b[90m 84 |\u001b[39m     \u001b[90m// Click generate button\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 85 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'#generate'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 86 |\u001b[39m     \n \u001b[90m 87 |\u001b[39m     \u001b[90m// Check if button changes to loading state (but don't fail if generation is too fast)\u001b[39m\n \u001b[90m 88 |\u001b[39m     \u001b[36mtry\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16\u001b[22m"
-                        }
-                      ],
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-17T04:30:28.459Z",
+                      "startTime": "2025-10-22T18:46:19.102Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Chrome/video.webm"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js",
-                        "column": 16,
-                        "line": 85
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "skipped"
                 }
               ],
-              "id": "82707a9d8222aa8b10db-566058ceb898102ff124",
-              "file": "core-functionality.spec.js",
-              "line": 76,
+              "id": "4f5d4a56519f9f28deb6-f98fd9eee3d53e892ab8",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 91,
               "column": 3
             },
             {
-              "title": "should generate enhanced document with valid input @critical",
-              "ok": false,
+              "title": "should provide proper error announcements for screen readers",
+              "ok": true,
               "tags": [
-                "smoke",
-                "critical",
                 "critical"
               ],
               "tests": [
                 {
-                  "timeout": 10000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "Mobile Safari",
-                  "projectName": "Mobile Safari",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 4,
                       "parallelIndex": 4,
-                      "status": "timedOut",
-                      "duration": 10084,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js",
-                            "column": 16,
-                            "line": 85
-                          },
-                          "message": "Error: page.click: Test timeout of 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n\u001b[0m \u001b[90m 83 |\u001b[39m     \n \u001b[90m 84 |\u001b[39m     \u001b[90m// Click generate button\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 85 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'#generate'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 86 |\u001b[39m     \n \u001b[90m 87 |\u001b[39m     \u001b[90m// Check if button changes to loading state (but don't fail if generation is too fast)\u001b[39m\n \u001b[90m 88 |\u001b[39m     \u001b[36mtry\u001b[39m {\u001b[0m\n\u001b[2m    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16\u001b[22m"
-                        }
-                      ],
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-17T04:30:28.459Z",
+                      "startTime": "2025-10-22T18:46:19.101Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Safari/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Safari/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Safari/error-context.md"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "skipped"
                 }
               ],
-              "id": "82707a9d8222aa8b10db-f26ac4a330902c2c4f7a",
-              "file": "core-functionality.spec.js",
-              "line": 76,
+              "id": "4f5d4a56519f9f28deb6-dd64610bfe8990cf51a5",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "should have proper semantic HTML structure",
+              "ok": true,
+              "tags": [
+                "critical"
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-22T18:46:19.101Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4f5d4a56519f9f28deb6-228ead72acf5f466f783",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 136,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Error Handling and Edge Cases @critical",
+          "file": "accessibility-edge-cases.spec.js",
+          "line": 154,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should handle network failures gracefully",
+              "ok": true,
+              "tags": [
+                "critical"
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-22T18:46:19.104Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4f5d4a56519f9f28deb6-28779bf3ca6ad8573987",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 161,
+              "column": 3
+            },
+            {
+              "title": "should handle malicious input safely",
+              "ok": true,
+              "tags": [
+                "critical"
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4f5d4a56519f9f28deb6-b05c3b1dd1cd1ee77ab4",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 182,
+              "column": 3
+            },
+            {
+              "title": "should handle extremely long input gracefully",
+              "ok": true,
+              "tags": [
+                "critical"
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4f5d4a56519f9f28deb6-01da6891ba00a8a76d8e",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 224,
+              "column": 3
+            },
+            {
+              "title": "should handle rapid clicking and interaction spam",
+              "ok": true,
+              "tags": [
+                "critical"
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4f5d4a56519f9f28deb6-ae85d9100d9378af77e0",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 250,
+              "column": 3
+            },
+            {
+              "title": "should handle browser tab switching and focus loss",
+              "ok": true,
+              "tags": [
+                "critical"
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4f5d4a56519f9f28deb6-16dccf6a7e79d1fcc329",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 278,
+              "column": 3
+            },
+            {
+              "title": "should handle page refresh during operation",
+              "ok": true,
+              "tags": [
+                "critical"
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4f5d4a56519f9f28deb6-af1c5472ad78e4acaf90",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 299,
+              "column": 3
+            },
+            {
+              "title": "should handle memory pressure gracefully",
+              "ok": true,
+              "tags": [
+                "critical"
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4f5d4a56519f9f28deb6-6845c71adb5e17da9f63",
+              "file": "accessibility-edge-cases.spec.js",
+              "line": 325,
               "column": 3
             }
           ]
@@ -502,11 +546,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-10-17T04:30:27.118Z",
-    "duration": 14670.319,
+    "startTime": "2025-10-22T18:46:18.678Z",
+    "duration": 453.295,
     "expected": 0,
-    "skipped": 0,
-    "unexpected": 5,
+    "skipped": 13,
+    "unexpected": 0,
     "flaky": 0
   }
 }

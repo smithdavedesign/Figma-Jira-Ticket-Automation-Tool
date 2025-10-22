@@ -315,10 +315,17 @@
       <div class="test-title">📸 Screenshot & Visual Context Tests</div>
       <div class="test-grid">
         <div class="test-card">
-          <div class="test-card-header">Screenshot Capture Simulation</div>
+          <div class="test-card-header">Real Screenshot API Test</div>
           <div class="test-card-body">
-            <button class="test-button" onclick="testScreenshotCapture()">Test Screenshot Capture</button>
+            <button class="test-button" onclick="testScreenshotCapture()">Test Real Screenshot API</button>
             <div id="screenshot-result" class="test-result"></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">Screenshot API Comprehensive</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testScreenshotAPIComprehensive()">Full API Test Suite</button>
+            <div id="screenshot-comprehensive-result" class="test-result"></div>
           </div>
         </div>
         <div class="test-card">
@@ -664,32 +671,183 @@
     }
 
     // Screenshot Capture Test
-    function testScreenshotCapture() {
-      log('Testing screenshot capture simulation...');
+    async function testScreenshotCapture() {
+      log('Testing real screenshot capture API...');
       try {
-        // Simulate screenshot capture process
-        const mockScreenshot = {
-          format: 'PNG',
-          scale: 2,
-          width: 1920,
-          height: 1080,
-          size: '245KB',
-          dataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
-        };
+        // Test with real Figma file key
+        const fileKey = 'BioUSVD6t51ZNeG0g9AcNz';
+        const nodeIds = ['40:2']; // Known node ID
+        
+        log(`Testing screenshot API with fileKey: ${fileKey}`, 'info');
+        log(`Node IDs: ${nodeIds.join(', ')}`, 'info');
+        
+        const response = await fetch(`http://localhost:3000/api/figma/screenshot?fileKey=${fileKey}&nodeId=${nodeIds[0]}&scale=2&format=png`);
 
-        log(`Screenshot captured: ${mockScreenshot.width}x${mockScreenshot.height}`, 'info');
-        log(`File size: ${mockScreenshot.size}`, 'info');
-        log(`Scale factor: ${mockScreenshot.scale}x`, 'info');
+        if (!response.ok) {
+          throw new Error(`Screenshot API error: ${response.status} ${response.statusText}`);
+        }
 
-        showResult('screenshot-result', 
-          `✅ Screenshot simulation: ${mockScreenshot.width}x${mockScreenshot.height}, ${mockScreenshot.size}`, 
-          'success'
-        );
+        const result = await response.json();
+        
+        if (result.imageUrl) {
+          log(`✅ Screenshot URL received: ${result.imageUrl}`, 'success');
+          log(`📊 Cache status: ${result.cached ? 'HIT' : 'MISS'}`, 'info');
+          
+          // Test if the image URL is actually accessible
+          const imageTest = new Image();
+          imageTest.onload = () => {
+            log(`✅ Image accessible: ${imageTest.width}x${imageTest.height}`, 'success');
+            showResult('screenshot-result', 
+              `✅ Screenshot API: Real image URL received and accessible (${result.cached ? 'cached' : 'fresh'})`, 
+              'success'
+            );
+          };
+          imageTest.onerror = () => {
+            log(`❌ Image URL not accessible`, 'error');
+            showResult('screenshot-result', 
+              `⚠️ Screenshot API: URL received but image not accessible`, 
+              'error'
+            );
+          };
+          imageTest.src = result.imageUrl;
+          
+        } else if (result.error === 'Screenshot not found' && result.availableNodes) {
+          log(`✅ API responded correctly - no screenshot available for node ${nodeIds[0]}`, 'success');
+          showResult('screenshot-result', 
+            `✅ Screenshot API: Working correctly (no screenshot available for this node)`, 
+            'success'
+          );
+        } else {
+          throw new Error(`API returned: ${JSON.stringify(result)}`);
+        }
         
       } catch (error) {
         log(`Screenshot test failed: ${error.message}`, 'error');
-        showResult('screenshot-result', `❌ Screenshot error: ${error.message}`, 'error');
+        showResult('screenshot-result', `❌ Screenshot API error: ${error.message}`, 'error');
       }
+    }
+
+    // Comprehensive Screenshot API Test
+    async function testScreenshotAPIComprehensive() {
+      log('Testing comprehensive screenshot API functionality...');
+      
+      const results = {
+        healthCheck: false,
+        paramValidation: false,
+        errorHandling: false,
+        realFileTest: false,
+        imageAccessibility: false
+      };
+
+      try {
+        // Test 1: Server Health Check
+        log('🔍 Step 1: Server health check...', 'info');
+        const healthResponse = await fetch('http://localhost:3000/api/figma/health');
+        if (healthResponse.ok) {
+          results.healthCheck = true;
+          log('✅ Server health check passed', 'success');
+        } else {
+          throw new Error(`Health check failed: ${healthResponse.status}`);
+        }
+
+        // Test 2: Parameter Validation
+        log('🔍 Step 2: Parameter validation...', 'info');
+        const missingParamsResponse = await fetch('http://localhost:3000/api/figma/screenshot?fileKey=test');
+        if (missingParamsResponse.status === 400) {
+          results.paramValidation = true;
+          log('✅ Parameter validation working', 'success');
+        } else {
+          log(`⚠️ Parameter validation test got status: ${missingParamsResponse.status}`, 'info');
+        }
+
+        // Test 3: Error Handling (dev-file should return 404 from Figma API)
+        log('🔍 Step 3: Error handling test...', 'info');
+        const errorResponse = await fetch('http://localhost:3000/api/figma/screenshot?fileKey=dev-file&nodeId=test-node');
+        const errorResult = await errorResponse.json();
+        if (errorResult.figmaStatus === 404 || errorResponse.status === 404) {
+          results.errorHandling = true;
+          log('✅ Error handling working (expected 404 for dev-file)', 'success');
+        } else {
+          log(`⚠️ Error handling test got status: ${errorResponse.status}, figmaStatus: ${errorResult.figmaStatus}`, 'info');
+        }
+
+        // Test 4: Real File Test
+        log('🔍 Step 4: Real file test...', 'info');
+        const realFileResponse = await fetch('http://localhost:3000/api/figma/screenshot?fileKey=BioUSVD6t51ZNeG0g9AcNz&nodeId=40:2&scale=2&format=png');
+        const realResult = await realFileResponse.json();
+        
+        if (realResult.imageUrl) {
+          results.realFileTest = true;
+          log('✅ Real file test passed - got image URL', 'success');
+          
+          // Test 5: Image Accessibility
+          log('🔍 Step 5: Image accessibility test...', 'info');
+          const imageTest = new Image();
+          imageTest.onload = () => {
+            results.imageAccessibility = true;
+            log('✅ Image accessible and loaded', 'success');
+            displayComprehensiveResults(results, realResult);
+          };
+          imageTest.onerror = () => {
+            log('❌ Image URL not accessible', 'error');
+            displayComprehensiveResults(results, realResult);
+          };
+          imageTest.src = realResult.imageUrl;
+          return; // Exit here to wait for image load
+        } else if (realResult.error === 'Screenshot not found' && realResult.availableNodes) {
+          // This is expected - API responded correctly but no screenshot available for this node
+          results.realFileTest = true;
+          log('✅ Real file test passed - API responded correctly (no screenshot available for this node)', 'success');
+        } else {
+          log(`⚠️ Real file test: ${JSON.stringify(realResult)}`, 'info');
+        }
+
+        displayComprehensiveResults(results);
+        
+      } catch (error) {
+        log(`Comprehensive test failed: ${error.message}`, 'error');
+        displayComprehensiveResults(results, null, error.message);
+      }
+    }
+
+    function displayComprehensiveResults(results, imageData = null, error = null) {
+      const passed = Object.values(results).filter(Boolean).length;
+      const total = Object.keys(results).length;
+      const success = passed === total;
+      
+      let resultHtml = `
+        <div style="margin: 10px 0;">
+          <strong>Test Results: ${passed}/${total} passed</strong>
+          <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>Health Check: ${results.healthCheck ? '✅' : '❌'}</li>
+            <li>Parameter Validation: ${results.paramValidation ? '✅' : '❌'}</li>
+            <li>Error Handling: ${results.errorHandling ? '✅' : '❌'}</li>
+            <li>Real File Test: ${results.realFileTest ? '✅' : '❌'}</li>
+            <li>Image Accessibility: ${results.imageAccessibility ? '✅' : '❌'}</li>
+          </ul>
+        </div>
+      `;
+      
+      if (imageData && imageData.imageUrl) {
+        resultHtml += `
+          <div style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+            <strong>Image Details:</strong><br>
+            URL: <a href="${imageData.imageUrl}" target="_blank">${imageData.imageUrl.substring(0, 50)}...</a><br>
+            Cached: ${imageData.cached ? 'Yes' : 'No'}
+          </div>
+        `;
+      }
+      
+      if (error) {
+        resultHtml += `<div style="color: red; margin: 10px 0;">Error: ${error}</div>`;
+      }
+      
+      showResult('screenshot-comprehensive-result', 
+        `${success ? '✅' : '⚠️'} Comprehensive Screenshot API Test: ${passed}/${total} tests passed`,
+        success ? 'success' : 'error'
+      );
+      
+      document.getElementById('screenshot-comprehensive-result').innerHTML += resultHtml;
     }
 
     // Visual Analysis Test
@@ -827,28 +985,95 @@
       }
     }
 
+    // Real Tech Stack Detection Logic
+    function detectTechStackPlatform(techStack, defaultPlatform = 'jira') {
+      if (!techStack) return defaultPlatform;
+      
+      const techStackString = Array.isArray(techStack) 
+        ? techStack.join(' ').toLowerCase()
+        : techStack.toLowerCase();
+      
+      log(`🔍 Analyzing tech stack: ${techStackString}`, 'info');
+      
+      // AEM detection patterns
+      if (techStackString.includes('aem') || 
+          techStackString.includes('htl') ||
+          techStackString.includes('sling') ||
+          techStackString.includes('osgi') ||
+          techStackString.includes('jcr')) {
+        log('✅ AEM tech stack detected!', 'success');
+        return 'AEM';
+      }
+      
+      // React/Next.js detection
+      if (techStackString.includes('react') || techStackString.includes('next')) {
+        log('⚛️ React/Next.js tech stack detected!', 'success');
+        return 'jira';
+      }
+      
+      // Vue detection
+      if (techStackString.includes('vue')) {
+        log('💚 Vue tech stack detected!', 'success');
+        return 'jira';
+      }
+      
+      // Angular detection
+      if (techStackString.includes('angular')) {
+        log('🅰️ Angular tech stack detected!', 'success');
+        return 'jira';
+      }
+      
+      log(`🔄 Using default platform: ${defaultPlatform}`, 'info');
+      return defaultPlatform;
+    }
+
     // Parse Tech Stack Test
     function testParseTechStack() {
       log('Testing Parse Tech Stack functionality...');
       try {
-        const testDescription = 'React 18 with TypeScript, Material-UI v5, Jest testing';
-        
-        // Mock parse function
-        const mockParsedTech = {
-          frameworks: ['React'],
-          languages: ['TypeScript'],
-          tools: ['Material-UI'],
-          testing: ['Jest'],
-          confidence: 92
-        };
+        const testCases = [
+          {
+            input: 'React 18 with TypeScript, Material-UI v5, Jest testing',
+            expected: 'jira',
+            name: 'React + TypeScript'
+          },
+          {
+            input: 'AEM 6.5 with HTL (HTML Template Language), Apache Sling framework',
+            expected: 'AEM',
+            name: 'AEM + HTL'
+          },
+          {
+            input: 'Vue 3 with Composition API, Pinia for state',
+            expected: 'jira',
+            name: 'Vue 3'
+          },
+          {
+            input: 'Angular 15, NgRx, Angular Material',
+            expected: 'jira',
+            name: 'Angular 15'
+          }
+        ];
 
-        log(`Parsing: "${testDescription}"`, 'info');
-        log(`Detected: ${mockParsedTech.frameworks.join(', ')} + ${mockParsedTech.languages.join(', ')}`, 'info');
-        log(`Confidence: ${mockParsedTech.confidence}%`, 'info');
+        let passedTests = 0;
+        testCases.forEach((testCase, index) => {
+          log(`Test ${index + 1}: ${testCase.name}`, 'info');
+          log(`Input: "${testCase.input}"`, 'info');
+          
+          const detected = detectTechStackPlatform(testCase.input);
+          const passed = detected === testCase.expected;
+          
+          if (passed) {
+            passedTests++;
+            log(`✅ PASS: Detected ${detected}`, 'success');
+          } else {
+            log(`❌ FAIL: Expected ${testCase.expected}, got ${detected}`, 'error');
+          }
+        });
 
+        const successRate = Math.round((passedTests / testCases.length) * 100);
         showResult('parse-tech-result', 
-          `✅ Parse Tech Stack: ${mockParsedTech.confidence}% confidence, detected React + TypeScript`, 
-          'success'
+          `✅ Parse Tech Stack: ${passedTests}/${testCases.length} tests passed (${successRate}%)`, 
+          passedTests === testCases.length ? 'success' : 'error'
         );
         
       } catch (error) {
@@ -1137,6 +1362,7 @@
         { name: 'Semantic Roles', func: testSemanticRoles },
         { name: 'Design Tokens', func: testDesignTokens },
         { name: 'Screenshot Capture', func: testScreenshotCapture },
+        { name: 'Screenshot API Comprehensive', func: testScreenshotAPIComprehensive },
         { name: 'Visual Analysis', func: testVisualAnalysis },
         { name: 'Parse Tech Stack', func: testParseTechStack },
         { name: 'Context Preview', func: testContextPreview },

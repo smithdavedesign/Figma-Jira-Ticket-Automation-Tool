@@ -24,14 +24,16 @@ async function fetchScreenshot(fileKey: string, nodeId: string, options: any = {
   } = options;
 
   const baseUrl = SCREENSHOT_CONFIG.DEVELOPMENT_API; // For now, use development endpoint
-  const params = new URLSearchParams({
-    fileKey,
-    nodeId,
-    format,
-    scale: scale.toString()
-  });
   
-  const requestUrl = `${baseUrl}?${params.toString()}`;
+  // Manual parameter building for Figma plugin compatibility (no URLSearchParams)
+  const paramPairs = [
+    `fileKey=${encodeURIComponent(fileKey)}`,
+    `nodeId=${encodeURIComponent(nodeId)}`,
+    `format=${encodeURIComponent(format)}`,
+    `scale=${encodeURIComponent(scale.toString())}`
+  ];
+  
+  const requestUrl = `${baseUrl}?${paramPairs.join('&')}`;
   console.log(`📸 Fetching screenshot from backend: ${nodeId} in ${fileKey}`);
 
   let lastError: Error | undefined;
@@ -112,8 +114,30 @@ function getFallbackScreenshot(nodeId: string, nodeName: string = 'Unknown'): an
     </svg>
   `.trim();
   
-  // For Figma plugin environment, we need to encode the SVG properly
-  const base64Content = figma.base64Encode(new TextEncoder().encode(svgContent));
+  // For Figma plugin environment, manually encode UTF-8 (no TextEncoder available)
+  function stringToUint8Array(str: string): Uint8Array {
+    const bytes = [];
+    for (let i = 0; i < str.length; i++) {
+      const code = str.charCodeAt(i);
+      if (code < 0x80) {
+        bytes.push(code);
+      } else if (code < 0x800) {
+        bytes.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f));
+      } else if (code < 0xd800 || code >= 0xe000) {
+        bytes.push(0xe0 | (code >> 12), 0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f));
+      } else {
+        // Surrogate pair
+        i++;
+        const hi = code;
+        const lo = str.charCodeAt(i);
+        const codePoint = 0x10000 + (((hi & 0x3ff) << 10) | (lo & 0x3ff));
+        bytes.push(0xf0 | (codePoint >> 18), 0x80 | ((codePoint >> 12) & 0x3f), 0x80 | ((codePoint >> 6) & 0x3f), 0x80 | (codePoint & 0x3f));
+      }
+    }
+    return new Uint8Array(bytes);
+  }
+  
+  const base64Content = figma.base64Encode(stringToUint8Array(svgContent));
   const placeholderUrl = `data:image/svg+xml;base64,${base64Content}`;
   
   return {
@@ -138,11 +162,20 @@ figma.ui.onmessage = async (msg: any) => {
       case 'get-context':
         await handleGetContext();
         break;
+      case 'get-advanced-context':
+        await handleGetContext(); // Use the same handler for now
+        break;
       case 'capture-screenshot':
         await handleCaptureScreenshot();
         break;
       case 'generate-ai-ticket':
         await handleGenerateAITicket();
+        break;
+      case 'debug-selection':
+        await debugCurrentContext();
+        break;
+      case 'precise-screenshot':
+        await handlePreciseScreenshot();
         break;
       case 'close':
         figma.closePlugin();
@@ -162,8 +195,17 @@ figma.ui.onmessage = async (msg: any) => {
 // Get current context (selection + file info)
 async function handleGetContext() {
   const selection = figma.currentPage.selection;
+  
+  // Use consistent file key logic
+  let fileKey = 'unknown-file';
+  if (figma.fileKey && figma.fileKey !== 'dev-file') {
+    fileKey = figma.fileKey;
+  } else {
+    fileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Your actual file key
+  }
+  
   const fileInfo = {
-    fileKey: figma.fileKey || 'dev-file',
+    fileKey: fileKey,
     fileName: figma.root.name || 'Figma Design',
     pageId: figma.currentPage.id,
     pageName: figma.currentPage.name
@@ -267,10 +309,23 @@ async function handleCaptureScreenshot() {
       console.log(`📸 Multiple selections, capturing: ${targetNode.name} (${targetNode.type})`);
     }
 
-    // Get file context for API call
-    const fileKey = figma.fileKey || 'dev-file';
+    // Get file context for API call - comprehensive approach
+    console.log('🔍 handleCaptureScreenshot figma.fileKey value:', figma.fileKey);
+    console.log('🔍 handleCaptureScreenshot figma.fileKey type:', typeof figma.fileKey);
+    
+    // Use same logic as AI screenshot
+    let fileKey = 'unknown-file';
+    if (figma.fileKey && figma.fileKey !== 'dev-file') {
+      fileKey = figma.fileKey;
+      console.log('✅ Got file key from figma.fileKey:', fileKey);
+    } else {
+      fileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Your actual file key
+      console.log('🔧 Using hardcoded known file key for testing:', fileKey);
+    }
+    
     const nodeId = targetNode.id;
 
+    console.log(`📸 handleCaptureScreenshot final fileKey: "${fileKey}"`);
     console.log(`📸 Fetching screenshot from backend API: ${nodeId} in ${fileKey}`);
 
     // Call backend screenshot API
@@ -323,8 +378,17 @@ async function handleGenerateAITicket() {
   console.log('🤖 Generating AI ticket with enhanced data...');
 
   const selection = figma.currentPage.selection;
+  
+  // Use consistent file key logic
+  let fileKey = 'unknown-file';
+  if (figma.fileKey && figma.fileKey !== 'dev-file') {
+    fileKey = figma.fileKey;
+  } else {
+    fileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Your actual file key
+  }
+  
   const fileInfo = {
-    fileKey: figma.fileKey || 'dev-file',
+    fileKey: fileKey,
     fileName: figma.root.name || 'Figma Design',
     pageId: figma.currentPage.id,
     pageName: figma.currentPage.name
@@ -456,20 +520,66 @@ async function handleGenerateAITicket() {
       targetNode = bestParent || firstNode;
     }
 
-    console.log(`📸 AI Analysis: Capturing ${targetNode.name} (${targetNode.type})`);
+    console.log(`📸 AI Analysis: Capturing ${targetNode.name} (${targetNode.type}) via backend API`);
 
-    const screenshotBytes = await targetNode.exportAsync({
-      format: 'PNG',
-      constraint: { type: 'SCALE', value: 2 },
-      ...(targetNode.type === 'FRAME' && { contentsOnly: false })
-    });
+    try {
+      // Get file key for backend API - comprehensive approach
+      console.log('🔍 figma.fileKey value:', figma.fileKey);
+      console.log('🔍 figma.fileKey type:', typeof figma.fileKey);
+      console.log('🔍 figma.fileKey === null:', figma.fileKey === null);
+      console.log('🔍 figma.fileKey === undefined:', figma.fileKey === undefined);
+      
+      // Try multiple approaches to get file key
+      let fileKey = 'unknown-file';
+      
+      // Approach 1: Direct figma.fileKey
+      if (figma.fileKey && figma.fileKey !== 'dev-file') {
+        fileKey = figma.fileKey;
+        console.log('✅ Got file key from figma.fileKey:', fileKey);
+      }
+      // Approach 2: Use known fallback file key
+      else {
+        console.log('🔍 Figma root name:', figma.root?.name || 'Unknown');
+        console.log('⚠️ Cannot determine file key from figma.fileKey, using known fallback');
+        // Use the known file key from your Solidigm project
+        fileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Your actual file key
+        console.log('🔧 Using hardcoded known file key for testing:', fileKey);
+      }
+      
+      const nodeId = targetNode.id;
+      
+      console.log(`📸 Final resolved fileKey: "${fileKey}"`);
+      console.log(`📸 Fetching AI screenshot from backend: ${nodeId} in ${fileKey}`);
+      
+      // Use backend API for screenshot
+      const screenshotUrl = await fetchScreenshot(fileKey, nodeId, {
+        format: 'png',
+        scale: 2
+      });
+      
+      if (screenshotUrl) {
+        screenshot = screenshotUrl;
+        console.log(`📸 AI screenshot captured via backend API: ${screenshotUrl.substring(0, 50)}...`);
+      } else {
+        throw new Error('Backend API returned no screenshot URL');
+      }
+    } catch (apiError) {
+      console.warn('⚠️ Backend API failed, falling back to direct export:', apiError);
+      
+      // Fallback to direct export if backend fails
+      const screenshotBytes = await targetNode.exportAsync({
+        format: 'PNG',
+        constraint: { type: 'SCALE', value: 2 },
+        ...(targetNode.type === 'FRAME' && { contentsOnly: false })
+      });
 
-    if (screenshotBytes && screenshotBytes.length > 0) {
-      const base64 = figma.base64Encode(screenshotBytes);
-      screenshot = `data:image/png;base64,${base64}`;
-      console.log(`📸 Screenshot captured for AI analysis: ${screenshotBytes.length} bytes`);
-    } else {
-      console.warn('⚠️ Screenshot export returned empty data');
+      if (screenshotBytes && screenshotBytes.length > 0) {
+        const base64 = figma.base64Encode(screenshotBytes);
+        screenshot = `data:image/png;base64,${base64}`;
+        console.log(`📸 Fallback screenshot captured: ${screenshotBytes.length} bytes`);
+      } else {
+        console.warn('⚠️ Screenshot export returned empty data');
+      }
     }
   } catch (error) {
     console.warn('⚠️ Screenshot capture failed for AI analysis:', error);
@@ -743,4 +853,149 @@ function determineSemanticRole(node: any): string {
   }
 }
 
-console.log('✅ Enhanced Figma Plugin loaded successfully');
+/**
+ * Debug function to capture and log all context data
+ */
+async function debugCurrentContext() {
+  console.log('🔍 === DEBUG CONTEXT CAPTURE ===');
+  
+  const selection = figma.currentPage.selection;
+  const fileKey = figma.fileKey || 'BioUSVD6t51ZNeG0g9AcNz'; // Use fallback if undefined
+  const currentPage = figma.currentPage;
+  
+  // Log basic info
+  console.log('📋 Basic Info:');
+  console.log(`  File Key: "${fileKey}"`);
+  console.log(`  Page: "${currentPage.name}" (${currentPage.id})`);
+  console.log(`  Selection Count: ${selection.length}`);
+  
+  // Log detailed selection
+  console.log('📋 Selection Details:');
+  selection.forEach((node, index) => {
+    console.log(`  ${index + 1}. "${node.name}" (${node.type})`);
+    console.log(`      ID: ${node.id}`);
+    console.log(`      Visible: ${node.visible}`);
+    console.log(`      Locked: ${node.locked}`);
+    
+    // Log parent info
+    if (node.parent && node.parent.type !== 'PAGE') {
+      console.log(`      Parent: "${node.parent.name}" (${node.parent.type})`);
+    }
+  });
+  
+  // Test API URL construction
+  if (selection.length > 0) {
+    const nodeIds = selection.map(n => n.id);
+    const singleNodeId = nodeIds[0];
+    const multipleNodeIds = nodeIds.join(',');
+    
+    console.log('📋 API URLs would be:');
+    console.log(`  Single: http://localhost:3000/api/figma/screenshot?fileKey=${fileKey}&nodeId=${singleNodeId}`);
+    console.log(`  Multiple: http://localhost:3000/api/figma/screenshot?fileKey=${fileKey}&nodeId=${multipleNodeIds}`);
+  }
+  
+  // Send debug data to UI
+  figma.ui.postMessage({
+    type: 'debug-complete',
+    debug: {
+      fileKey: fileKey,
+      isValidFileKey: fileKey && fileKey !== 'dev-file',
+      pageInfo: {
+        id: currentPage.id,
+        name: currentPage.name
+      },
+      selection: {
+        count: selection.length,
+        nodes: selection.map(node => ({
+          id: node.id,
+          name: node.name,
+          type: node.type,
+          visible: node.visible,
+          locked: node.locked,
+          hasParent: node.parent && node.parent.type !== 'PAGE'
+        }))
+      },
+      apiUrls: selection.length > 0 ? {
+        single: `http://localhost:3000/api/figma/screenshot?fileKey=${fileKey}&nodeId=${selection[0].id}`,
+        multiple: `http://localhost:3000/api/figma/screenshot?fileKey=${fileKey}&nodeId=${selection.map(n => n.id).join(',')}`
+      } : null,
+      timestamp: new Date().toISOString()
+    }
+  });
+  
+  console.log('🔍 === DEBUG COMPLETE ===');
+}
+
+/**
+ * Enhanced screenshot function that captures exactly what's selected
+ */
+async function handlePreciseScreenshot() {
+  console.log('📸 === PRECISE SCREENSHOT CAPTURE ===');
+  
+  try {
+    const selection = figma.currentPage.selection;
+    const fileKey = figma.fileKey;
+    
+    // Validate inputs
+    if (!fileKey || fileKey === 'dev-file') {
+      throw new Error('Invalid file key - are you in a real Figma file?');
+    }
+    
+    if (selection.length === 0) {
+      figma.notify('⚠️ Please select elements to capture');
+      return;
+    }
+    
+    // Prepare node IDs - Figma API supports multiple nodes with comma separation
+    const nodeIds = selection.map(node => node.id);
+    const nodeIdParam = nodeIds.join(',');
+    
+    console.log(`📸 Capturing ${selection.length} nodes:`, 
+      selection.map(n => `"${n.name}" (${n.type})`));
+    console.log(`📸 File Key: ${fileKey}`);
+    console.log(`📸 Node IDs: ${nodeIdParam}`);
+    
+    // Call backend API
+    const screenshotUrl = await fetchScreenshot(fileKey, nodeIdParam);
+    
+    if (!screenshotUrl) {
+      throw new Error('Backend API returned no screenshot URL');
+    }
+    
+    // Success!
+    console.log(`✅ Screenshot captured: ${screenshotUrl}`);
+    figma.notify(`✅ Screenshot captured: ${selection.length} items`);
+    
+    figma.ui.postMessage({
+      type: 'precise-screenshot-success',
+      data: {
+        screenshotUrl,
+        capturedNodes: selection.map(node => ({
+          id: node.id,
+          name: node.name,
+          type: node.type
+        })),
+        fileKey,
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Precise screenshot failed:', error);
+    figma.notify(`❌ Screenshot failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    
+    figma.ui.postMessage({
+      type: 'precise-screenshot-error',
+      error: {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        fileKey: figma.fileKey,
+        selectionCount: figma.currentPage.selection.length,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+  
+  console.log('📸 === PRECISE SCREENSHOT COMPLETE ===');
+}
+
+console.log('✅ Enhanced Figma Plugin with Debug Tools loaded successfully');

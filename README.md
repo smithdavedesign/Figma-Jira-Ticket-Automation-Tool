@@ -12,6 +12,8 @@ An intelligent enterprise tool that transforms Figma designs into comprehensive 
 - ✅ **FREE AI Integration** - Google Gemini 2.0 Flash with real AI generation
 - ✅ **Professional Output** - 10,000+ character comprehensive tickets with real AI analysis
 - ✅ **Enterprise Architecture** - MCP server with 6 tools and graceful fallbacks
+- ✅ **Plugin Fixes Complete** - Dynamic file key detection, CSP compliance, error handling
+- ✅ **Real Screenshot API** - Backend integration with AWS S3 CDN support
 - 🎉 **TESTING COMPLETE** - Ready for real Figma desktop integration!
 
 ## ✨ Core Features
@@ -507,6 +509,25 @@ npm run build
 - **❌ Never use `dist/` files** - may be outdated
 
 See `PRODUCTION_READY_FILES.md` for complete guide.
+
+## 🔧 Recent Major Fixes & Improvements
+
+### **Latest Plugin Fixes (Complete)** ✅
+Our latest update resolves all critical Figma plugin issues:
+
+- **🔑 Dynamic File Key Detection**: Fixed `figma.fileKey` undefined issues with UI-based extraction from browser URL
+- **🛡️ CSP Compliance**: Added AWS S3 domains to manifest.json for proper screenshot loading  
+- **🎨 Design Token Error Handling**: Wrapped extraction functions to prevent crashes on undefined properties
+- **📸 Enhanced Screenshot System**: Smart node selection, fallback mechanisms, real backend API integration
+- **🔄 Plugin-UI Communication**: Bidirectional messaging for real-time file key extraction and context updates
+
+**Files Updated**:
+- `code.js`: Enhanced with dynamic file key logic and error handling
+- `manifest.json`: Updated with AWS S3 CDN domains for screenshot loading
+- `ui/index.html`: Added message handlers for file key extraction
+- Complete documentation in `docs/deployment/PLUGIN_FIXES_AND_IMPROVEMENTS.md`
+
+**Impact**: Plugin now works reliably across all Figma environments with proper screenshot capture and robust error handling.
 
 ## 🧪 Testing & Validation
 

@@ -373,12 +373,14 @@
             setTimeout(() => {
               sendMessageToPlugin({
                 type: 'screenshot-captured',
-                screenshot: {
-                  dataUrl: createMockScreenshot(),
-                  width: 400,
-                  height: 300,
-                  size: '2.1 KB',
-                  selectionCount: selectedItems.length
+                screenshotUrl: createMockScreenshot(),
+                metadata: {
+                  nodeName: selectedItems[0]?.name || 'Test Node',
+                  nodeType: selectedItems[0]?.type || 'FRAME',
+                  nodeId: selectedItems[0]?.id || 'test-123',
+                  fileKey: 'dev-file',
+                  captureTime: new Date().toISOString(),
+                  source: 'backend-api-simulator'
                 }
               });
             }, 500);

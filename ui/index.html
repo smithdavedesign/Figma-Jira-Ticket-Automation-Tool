@@ -1095,6 +1095,13 @@ Examples:
           <button id="testMockData" class="button button-success">📊 Test Mock Data Extraction</button>
           <button id="testMCPDirect" class="button button-success">🔧 Test MCP Server Direct</button>
         </div>
+        
+        <!-- Debug & Screenshot Testing -->
+        <div class="test-buttons">
+          <button id="debugSelection" class="button button-debug">🔍 Debug Selection Context</button>
+          <button id="preciseScreenshot" class="button button-debug">📸 Precise Screenshot</button>
+          <button id="testScreenshotAPI" class="button button-debug">🧪 Test Screenshot API</button>
+        </div>
       </div>
 
       <!-- Debug Panel for Data Layer Validation -->
@@ -1448,6 +1455,35 @@ Examples:
                     type: 'real-file-key-response',
                     fileKey: realFileKey,
                     callback: msg.callback
+                  } 
+                }, '*');
+                break;
+              case 'request-file-key':
+                // Extract real file key from browser URL for context
+                const contextUrlMatch = window.location.href.match(/file\/([a-zA-Z0-9]+)/);
+                const contextFileKey = contextUrlMatch ? contextUrlMatch[1] : 'dev-file';
+                console.log('🔍 Context: Extracted file key from URL:', contextFileKey);
+                
+                // Send back to plugin
+                parent.postMessage({ 
+                  pluginMessage: { 
+                    type: 'file-key-response',
+                    fileKey: contextFileKey
+                  } 
+                }, '*');
+                break;
+              case 'request-file-key-for-screenshot':
+                // Extract real file key from browser URL for screenshot
+                const screenshotUrlMatch = window.location.href.match(/file\/([a-zA-Z0-9]+)/);
+                const screenshotFileKey = screenshotUrlMatch ? screenshotUrlMatch[1] : 'dev-file';
+                console.log('🔍 Screenshot: Extracted file key from URL:', screenshotFileKey);
+                
+                // Send back to plugin with node ID
+                parent.postMessage({ 
+                  pluginMessage: { 
+                    type: 'file-key-response-for-screenshot',
+                    fileKey: screenshotFileKey,
+                    nodeId: msg.nodeId
                   } 
                 }, '*');
                 break;
@@ -3437,6 +3473,11 @@ Please fix the MCP server connection and try again.`;
     document.getElementById('testMockAI').addEventListener('click', testMockAIGeneration);
     document.getElementById('testMockData').addEventListener('click', testMockEnhancedData);
     document.getElementById('testMCPDirect').addEventListener('click', testMCPServerDirect);
+    
+    // Debug & Screenshot testing event listeners
+    document.getElementById('debugSelection').addEventListener('click', debugSelectionContext);
+    document.getElementById('preciseScreenshot').addEventListener('click', takePreciseScreenshot);
+    document.getElementById('testScreenshotAPI').addEventListener('click', testScreenshotAPIConnection);
 
     // Context preview event listeners
     submitContextBtn.addEventListener('click', () => {
@@ -3506,6 +3547,36 @@ Please fix the MCP server connection and try again.`;
 
     // Add event listener for design health analysis
     document.getElementById('analyzeHealthBtn').addEventListener('click', analyzeDesignHealth);
+
+    // Debug & Screenshot Functions
+    function debugSelectionContext() {
+      console.log('🔍 Debug: Requesting selection context...');
+      addStatusMessage('🔍 Debugging selection context...', 'info');
+      parent.postMessage({ pluginMessage: { type: 'debug-selection' } }, '*');
+    }
+
+    function takePreciseScreenshot() {
+      console.log('📸 Debug: Taking precise screenshot...');
+      addStatusMessage('📸 Taking precise screenshot of selection...', 'info');
+      parent.postMessage({ pluginMessage: { type: 'precise-screenshot' } }, '*');
+    }
+
+    function testScreenshotAPIConnection() {
+      console.log('🔗 Testing screenshot API connection...');
+      addStatusMessage('🔗 Testing screenshot API connection...', 'info');
+      
+      // Test the health endpoint first
+      fetch('http://localhost:3000/api/figma/health')
+        .then(response => response.json())
+        .then(data => {
+          console.log('✅ Screenshot API health check:', data);
+          addStatusMessage(`✅ Screenshot API is healthy: ${data.status}`, 'success');
+        })
+        .catch(error => {
+          console.error('❌ Screenshot API connection failed:', error);
+          addStatusMessage('❌ Screenshot API connection failed', 'error');
+        });
+    }
 
     console.log('🎯 Enhanced Figma Plugin with Context Preview loaded successfully');
   </script>
@@ -4542,7 +4613,43 @@ Please fix the MCP server connection and try again.`;
     // Initialize advanced debug modal
     initializeAdvancedDebugModal();
 
-    console.log('🎯 Enhanced Figma Plugin with Context Preview loaded successfully');
+    // Listen for debug messages from plugin
+    window.addEventListener('message', (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+
+      if (msg.type === 'debug-complete') {
+        console.log('🔍 Debug Data:', msg.debug);
+        addStatusMessage(`🔍 Debug Complete: ${msg.debug.selection.count} items selected`, 'info');
+        
+        // Display debug info in console and UI
+        const debugInfo = `
+File Key: ${msg.debug.fileKey}
+Valid File: ${msg.debug.isValidFileKey}
+Page: ${msg.debug.pageInfo.name}
+Selection: ${msg.debug.selection.count} items
+${msg.debug.selection.nodes.map(n => `  - ${n.name} (${n.type})`).join('\n')}
+${msg.debug.apiUrls ? `\nAPI URLs:\nSingle: ${msg.debug.apiUrls.single}\nMultiple: ${msg.debug.apiUrls.multiple}` : ''}
+        `;
+        
+        console.log('📋 Debug Info:\n' + debugInfo);
+      }
+      
+      if (msg.type === 'precise-screenshot-success') {
+        console.log('✅ Precise Screenshot Success:', msg.data);
+        addStatusMessage(`✅ Screenshot captured: ${msg.data.capturedNodes.length} items`, 'success');
+        
+        // Display the screenshot URL
+        console.log('🖼️ Screenshot URL:', msg.data.screenshotUrl);
+      }
+      
+      if (msg.type === 'precise-screenshot-error') {
+        console.error('❌ Precise Screenshot Error:', msg.error);
+        addStatusMessage(`❌ Screenshot Error: ${msg.error.message}`, 'error');
+      }
+    });
+
+    console.log('🎯 Enhanced Figma Plugin with Context Preview and Debug Tools loaded successfully');
   </script>
 </body>
 </html>

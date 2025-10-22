@@ -1,205 +1,56 @@
-<testsuites id="" name="" tests="5" failures="5" skipped="0" errors="0" time="14.670319">
-<testsuite name="core-functionality.spec.js" timestamp="2025-10-17T04:30:28.050Z" hostname="chromium" tests="1" failures="1" skipped="0" time="10.105" errors="0">
-<testcase name="Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical" classname="core-functionality.spec.js" time="10.105">
-<failure message="core-functionality.spec.js:76:3 should generate enhanced document with valid input @critical" type="FAILURE">
-<![CDATA[  [chromium] › core-functionality.spec.js:76:3 › Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical 
-
-    Test timeout of 10000ms exceeded.
-
-    Error: page.click: Test timeout of 10000ms exceeded.
-    Call log:
-      - waiting for locator('#generate')
-
-
-      83 |     
-      84 |     // Click generate button
-    > 85 |     await page.click('#generate');
-         |                ^
-      86 |     
-      87 |     // Check if button changes to loading state (but don't fail if generation is too fast)
-      88 |     try {
-        at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-chromium/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-chromium/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-chromium/error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-chromium/test-failed-1.png]]
-
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-chromium/video.webm]]
-
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-chromium/error-context.md]]
-]]>
-</system-out>
+<testsuites id="" name="" tests="13" failures="0" skipped="13" errors="0" time="0.453295">
+<testsuite name="accessibility-edge-cases.spec.js" timestamp="2025-10-22T18:46:18.699Z" hostname="chromium" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testcase name="Accessibility Testing @critical › should meet WCAG 2.1 AA accessibility standards" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
 </testcase>
-</testsuite>
-<testsuite name="core-functionality.spec.js" timestamp="2025-10-17T04:30:28.050Z" hostname="firefox" tests="1" failures="1" skipped="0" time="10.115" errors="0">
-<testcase name="Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical" classname="core-functionality.spec.js" time="10.115">
-<failure message="core-functionality.spec.js:76:3 should generate enhanced document with valid input @critical" type="FAILURE">
-<![CDATA[  [firefox] › core-functionality.spec.js:76:3 › Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical 
-
-    Test timeout of 10000ms exceeded.
-
-    Error: page.click: Test timeout of 10000ms exceeded.
-    Call log:
-      - waiting for locator('#generate')
-
-
-      83 |     
-      84 |     // Click generate button
-    > 85 |     await page.click('#generate');
-         |                ^
-      86 |     
-      87 |     // Check if button changes to loading state (but don't fail if generation is too fast)
-      88 |     try {
-        at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-firefox/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-firefox/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-firefox/error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-firefox/test-failed-1.png]]
-
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-firefox/video.webm]]
-
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-firefox/error-context.md]]
-]]>
-</system-out>
+<testcase name="Accessibility Testing @critical › should be fully keyboard navigable" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
 </testcase>
-</testsuite>
-<testsuite name="core-functionality.spec.js" timestamp="2025-10-17T04:30:28.050Z" hostname="webkit" tests="1" failures="1" skipped="0" time="10.099" errors="0">
-<testcase name="Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical" classname="core-functionality.spec.js" time="10.099">
-<failure message="core-functionality.spec.js:76:3 should generate enhanced document with valid input @critical" type="FAILURE">
-<![CDATA[  [webkit] › core-functionality.spec.js:76:3 › Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical 
-
-    Test timeout of 10000ms exceeded.
-
-    Error: page.click: Test timeout of 10000ms exceeded.
-    Call log:
-      - waiting for locator('#generate')
-
-
-      83 |     
-      84 |     // Click generate button
-    > 85 |     await page.click('#generate');
-         |                ^
-      86 |     
-      87 |     // Check if button changes to loading state (but don't fail if generation is too fast)
-      88 |     try {
-        at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-webkit/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-webkit/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-webkit/error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-webkit/test-failed-1.png]]
-
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-webkit/video.webm]]
-
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-webkit/error-context.md]]
-]]>
-</system-out>
+<testcase name="Accessibility Testing @critical › should work with screen readers" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
 </testcase>
-</testsuite>
-<testsuite name="core-functionality.spec.js" timestamp="2025-10-17T04:30:28.050Z" hostname="Mobile Chrome" tests="1" failures="1" skipped="0" time="8.119" errors="0">
-<testcase name="Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical" classname="core-functionality.spec.js" time="8.119">
-<failure message="core-functionality.spec.js:76:3 should generate enhanced document with valid input @critical" type="FAILURE">
-<![CDATA[  [Mobile Chrome] › core-functionality.spec.js:76:3 › Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical 
-
-    Error: page.click: Target page, context or browser has been closed
-    Call log:
-      - waiting for locator('#generate')
-
-
-      83 |     
-      84 |     // Click generate button
-    > 85 |     await page.click('#generate');
-         |                ^
-      86 |     
-      87 |     // Check if button changes to loading state (but don't fail if generation is too fast)
-      88 |     try {
-        at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16
-
-    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Chrome/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Chrome/video.webm]]
-]]>
-</system-out>
+<testcase name="Accessibility Testing @critical › should handle focus management correctly" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
 </testcase>
-</testsuite>
-<testsuite name="core-functionality.spec.js" timestamp="2025-10-17T04:30:28.050Z" hostname="Mobile Safari" tests="1" failures="1" skipped="0" time="10.084" errors="0">
-<testcase name="Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical" classname="core-functionality.spec.js" time="10.084">
-<failure message="core-functionality.spec.js:76:3 should generate enhanced document with valid input @critical" type="FAILURE">
-<![CDATA[  [Mobile Safari] › core-functionality.spec.js:76:3 › Enhanced Figma Plugin - Core Functionality @smoke @critical › should generate enhanced document with valid input @critical 
-
-    Test timeout of 10000ms exceeded.
-
-    Error: page.click: Test timeout of 10000ms exceeded.
-    Call log:
-      - waiting for locator('#generate')
-
-
-      83 |     
-      84 |     // Click generate button
-    > 85 |     await page.click('#generate');
-         |                ^
-      86 |     
-      87 |     // Check if button changes to loading state (but don't fail if generation is too fast)
-      88 |     try {
-        at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/browser-tests/tests/core-functionality.spec.js:85:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Safari/test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Safari/video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ../test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Safari/error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Safari/test-failed-1.png]]
-
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Safari/video.webm]]
-
-[[ATTACHMENT|test-results/core-functionality-Enhance-38d4c-t-with-valid-input-critical-Mobile-Safari/error-context.md]]
-]]>
-</system-out>
+<testcase name="Accessibility Testing @critical › should provide proper error announcements for screen readers" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Accessibility Testing @critical › should have proper semantic HTML structure" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Error Handling and Edge Cases @critical › should handle network failures gracefully" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Error Handling and Edge Cases @critical › should handle malicious input safely" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Error Handling and Edge Cases @critical › should handle extremely long input gracefully" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Error Handling and Edge Cases @critical › should handle rapid clicking and interaction spam" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Error Handling and Edge Cases @critical › should handle browser tab switching and focus loss" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Error Handling and Edge Cases @critical › should handle page refresh during operation" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Error Handling and Edge Cases @critical › should handle memory pressure gracefully" classname="accessibility-edge-cases.spec.js" time="0">
+<skipped>
+</skipped>
 </testcase>
 </testsuite>
 </testsuites>

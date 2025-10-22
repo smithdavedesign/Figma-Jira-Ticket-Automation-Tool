@@ -3100,6 +3100,191 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
     return Math.min(confidence, 95);
   }
 
+  // Screenshot cache for rate limiting and performance
+  private screenshotCache = new Map();
+  private readonly CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+
+  private async handleScreenshotRequest(req: any, res: any): Promise<void> {
+    const startTime = Date.now();
+    
+    try {
+      const url = new URL(req.url, `http://localhost:${this.port}`);
+      const fileKey = url.searchParams.get('fileKey');
+      const nodeId = url.searchParams.get('nodeId');
+      const format = url.searchParams.get('format') || 'png';
+      const scale = parseInt(url.searchParams.get('scale') || '2');
+
+      // Validate required parameters
+      if (!fileKey || !nodeId) {
+        res.writeHead(400);
+        res.end(JSON.stringify({
+          error: 'Missing required parameters',
+          message: 'Both fileKey and nodeId are required',
+          required: ['fileKey', 'nodeId'],
+          provided: { fileKey: !!fileKey, nodeId: !!nodeId }
+        }));
+        return;
+      }
+
+      // Validate Figma API key
+      const figmaApiKey = process.env.FIGMA_API_KEY;
+      if (!figmaApiKey) {
+        console.error('❌ FIGMA_API_KEY environment variable not set');
+        res.writeHead(500);
+        res.end(JSON.stringify({
+          error: 'Server configuration error',
+          message: 'Figma API key not configured'
+        }));
+        return;
+      }
+
+      // Check cache first
+      const cacheKey = `${fileKey}:${nodeId}:${format}:${scale}`;
+      const cached = this.screenshotCache.get(cacheKey);
+      
+      if (cached && (Date.now() - cached.timestamp < this.CACHE_DURATION)) {
+        console.log(`📸 Cache hit for ${nodeId} in ${fileKey}`);
+        res.writeHead(200);
+        res.end(JSON.stringify({
+          imageUrl: cached.imageUrl,
+          cached: true,
+          metadata: {
+            nodeId,
+            fileKey,
+            format,
+            scale,
+            cacheAge: Math.round((Date.now() - cached.timestamp) / 1000),
+            requestTime: Date.now() - startTime
+          }
+        }));
+        return;
+      }
+
+      // Build Figma API URL
+      const figmaApiUrl = `https://api.figma.com/v1/images/${fileKey}`;
+      const params = new URLSearchParams({
+        ids: nodeId,
+        format: format,
+        scale: scale.toString()
+      });
+
+      console.log(`📸 Fetching screenshot from Figma API: ${nodeId} in ${fileKey}`);
+      console.log(`🔗 API URL: ${figmaApiUrl}?${params.toString()}`);
+
+      // Dynamic import for fetch in Node.js
+      const fetch = (await import('node-fetch')).default;
+
+      // Call Figma API
+      const figmaResponse = await fetch(`${figmaApiUrl}?${params.toString()}`, {
+        headers: {
+          'X-Figma-Token': figmaApiKey,
+          'User-Agent': 'Design-Intelligence-Platform/1.0.0'
+        }
+      });
+
+      // Handle API errors
+      if (!figmaResponse.ok) {
+        const errorText = await figmaResponse.text();
+        console.error(`❌ Figma API error (${figmaResponse.status}):`, errorText);
+        
+        res.writeHead(figmaResponse.status);
+        res.end(JSON.stringify({
+          error: 'Figma API error',
+          message: `Failed to fetch screenshot: ${figmaResponse.status} ${figmaResponse.statusText}`,
+          details: errorText,
+          figmaStatus: figmaResponse.status,
+          requestTime: Date.now() - startTime
+        }));
+        return;
+      }
+
+      const figmaData = await figmaResponse.json() as any;
+      console.log('📸 Figma API response:', {
+        error: figmaData.error,
+        hasImages: !!figmaData.images,
+        nodeIds: figmaData.images ? Object.keys(figmaData.images) : []
+      });
+
+      // Handle Figma API errors in response
+      if (figmaData.error) {
+        console.error('❌ Figma API returned error:', figmaData.error);
+        res.writeHead(400);
+        res.end(JSON.stringify({
+          error: 'Figma API error',
+          message: figmaData.error,
+          requestTime: Date.now() - startTime
+        }));
+        return;
+      }
+
+      // Check if image URL exists
+      const imageUrl = figmaData.images?.[nodeId];
+      if (!imageUrl) {
+        console.error(`❌ No image URL found for node ${nodeId}. Available nodes:`, 
+          Object.keys(figmaData.images || {}));
+        
+        res.writeHead(404);
+        res.end(JSON.stringify({
+          error: 'Screenshot not found',
+          message: `No screenshot available for node ${nodeId}`,
+          availableNodes: Object.keys(figmaData.images || {}),
+          requestTime: Date.now() - startTime
+        }));
+        return;
+      }
+
+      // Cache the result
+      this.screenshotCache.set(cacheKey, {
+        imageUrl,
+        timestamp: Date.now()
+      });
+
+      // Clean up old cache entries (simple cleanup)
+      if (this.screenshotCache.size > 1000) {
+        const entries = Array.from(this.screenshotCache.entries());
+        const oldEntries = entries.filter(([, data]) => 
+          Date.now() - data.timestamp > this.CACHE_DURATION
+        );
+        oldEntries.forEach(([key]) => this.screenshotCache.delete(key));
+        console.log(`🧹 Cleaned up ${oldEntries.length} old cache entries`);
+      }
+
+      console.log(`✅ Screenshot fetched successfully: ${imageUrl.substring(0, 50)}...`);
+
+      // Return success response
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        imageUrl,
+        cached: false,
+        metadata: {
+          nodeId,
+          fileKey,
+          format,
+          scale,
+          figmaResponse: {
+            status: figmaResponse.status,
+            headers: {
+              'x-ratelimit-limit': figmaResponse.headers.get('x-ratelimit-limit'),
+              'x-ratelimit-remaining': figmaResponse.headers.get('x-ratelimit-remaining')
+            }
+          },
+          requestTime: Date.now() - startTime,
+          cacheSize: this.screenshotCache.size
+        }
+      }));
+
+    } catch (error) {
+      console.error('🚨 Screenshot request error:', error);
+      res.writeHead(500);
+      res.end(JSON.stringify({
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined,
+        requestTime: Date.now() - startTime
+      }));
+    }
+  }
+
   start(): void {
     const server = createServer(async (req, res) => {
       res.setHeader('Content-Type', 'application/json');
@@ -3121,6 +3306,47 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
           status: 'running',
           tools: ['analyze_project', 'generate_tickets', 'check_compliance', 'generate_enhanced_ticket', 'generate_ai_ticket', 'analyze_design_health', 'generate_template_tickets'],
           description: 'Strategic design-to-code automation server'
+        }));
+        return;
+      }
+
+      // Add Figma API endpoints for screenshot proxy
+      if (req.method === 'GET' && req.url === '/api/figma/health') {
+        res.writeHead(200);
+        res.end(JSON.stringify({
+          status: 'healthy',
+          service: 'figma-screenshot-proxy',
+          version: '1.0.0',
+          cache: {
+            size: this.screenshotCache.size,
+            maxAge: this.CACHE_DURATION
+          },
+          config: {
+            hasApiKey: !!process.env.FIGMA_API_KEY,
+            environment: process.env.NODE_ENV || 'development'
+          },
+          timestamp: new Date().toISOString()
+        }));
+        return;
+      }
+
+      if (req.method === 'GET' && req.url?.startsWith('/api/figma/screenshot')) {
+        await this.handleScreenshotRequest(req, res);
+        return;
+      }
+
+      if (req.method === 'POST' && req.url === '/api/figma/cache/clear') {
+        const previousSize = this.screenshotCache.size;
+        this.screenshotCache.clear();
+        
+        console.log(`🧹 Cache cleared: ${previousSize} entries removed`);
+        
+        res.writeHead(200);
+        res.end(JSON.stringify({
+          message: 'Cache cleared successfully',
+          previousSize,
+          currentSize: this.screenshotCache.size,
+          timestamp: new Date().toISOString()
         }));
         return;
       }
@@ -3164,14 +3390,20 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
     });
 
     server.listen(this.port, () => {
-      console.log('� Figma AI Ticket Generator Test Server started');
+      console.log('🚀 Figma AI Ticket Generator - Unified MCP + Express Server');
       console.log(`📋 Server running at http://localhost:${this.port}`);
-      console.log('🔗 Available tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket, generate_ai_ticket, analyze_design_health, generate_template_tickets');
+      console.log('🔗 MCP Tools: analyze_project, generate_tickets, check_compliance, generate_enhanced_ticket, generate_ai_ticket, analyze_design_health, generate_template_tickets');
+      console.log('📸 Figma API: /api/figma/screenshot, /api/figma/health, /api/figma/cache/clear');
+      console.log(`🤖 AI Service: ${process.env.GEMINI_API_KEY ? '✅ Enabled' : '❌ Disabled'}`);
+      console.log(`🎨 Figma Integration: ${process.env.FIGMA_API_KEY ? '✅ Enabled' : '❌ Disabled'}`);
       console.log('');
-      console.log('Example usage:');
+      console.log('Example MCP usage:');
       console.log(`curl -X POST http://localhost:${this.port} \\`);
       console.log(`  -H "Content-Type: application/json" \\`);
       console.log(`  -d '{"method":"analyze_project","params":{"figmaUrl":"https://figma.com/file/abc123"}}'`);
+      console.log('');
+      console.log('Example Figma API usage:');
+      console.log(`curl "http://localhost:${this.port}/api/figma/screenshot?fileKey=ABC123&nodeId=1:2"`);
     });
   }
 }

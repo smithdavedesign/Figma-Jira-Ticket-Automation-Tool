@@ -2,7 +2,7 @@
   "name": "Design Intelligence Platform (Production)",
   "id": "design-intelligence-platform-2025",
   "api": "1.0.0",
-  "main": "code.js",
+  "main": "dist/code.js",
   "ui": "ui/index.html",
   "editorType": ["figma", "figjam"],
   "documentAccess": "dynamic-page",
@@ -12,6 +12,7 @@
       "https://generativelanguage.googleapis.com",
       "https://api.anthropic.com",
       "https://api.figma.com",
+      "https://figma-alpha-api.s3.us-west-2.amazonaws.com",
       "https://your-production-server.com",
       "https://api.your-domain.com"
     ],
