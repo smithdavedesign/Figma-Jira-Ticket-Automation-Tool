@@ -3,6 +3,132 @@
 // Show UI
 figma.showUI(__html__, { width: 500, height: 700 });
 
+// Screenshot API Configuration
+const SCREENSHOT_CONFIG = {
+  DEVELOPMENT_API: 'http://localhost:3000/api/figma/screenshot',
+  PRODUCTION_API: 'https://your-production-server.com/api/figma/screenshot',
+  DEFAULT_FORMAT: 'png',
+  DEFAULT_SCALE: 2,
+  TIMEOUT_MS: 15000,
+  MAX_RETRIES: 3,
+  RETRY_DELAY: 1000
+};
+
+// Screenshot utility functions
+async function fetchScreenshot(fileKey: string, nodeId: string, options: any = {}): Promise<string> {
+  const {
+    format = SCREENSHOT_CONFIG.DEFAULT_FORMAT,
+    scale = SCREENSHOT_CONFIG.DEFAULT_SCALE,
+    timeout = SCREENSHOT_CONFIG.TIMEOUT_MS,
+    retries = SCREENSHOT_CONFIG.MAX_RETRIES
+  } = options;
+
+  const baseUrl = SCREENSHOT_CONFIG.DEVELOPMENT_API; // For now, use development endpoint
+  const params = new URLSearchParams({
+    fileKey,
+    nodeId,
+    format,
+    scale: scale.toString()
+  });
+  
+  const requestUrl = `${baseUrl}?${params.toString()}`;
+  console.log(`📸 Fetching screenshot from backend: ${nodeId} in ${fileKey}`);
+
+  let lastError: Error | undefined;
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`📸 Attempt ${attempt}/${retries}: ${requestUrl}`);
+      
+      const response = await fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Design-Intelligence-MCP-Client/1.0.0'
+        }
+      });
+      
+      if (!response.ok) {
+        let errorMessage = `Screenshot API error: ${response.status} ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage += `. ${errorData.message}`;
+          }
+        } catch {
+          // Ignore JSON parse errors for error responses
+        }
+        throw new Error(errorMessage);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.imageUrl) {
+        throw new Error('No image URL returned from screenshot API');
+      }
+      
+      console.log(`✅ Screenshot fetched successfully:`, {
+        nodeId,
+        fileKey,
+        cached: data.cached,
+        imageUrl: data.imageUrl.substring(0, 50) + '...',
+        requestTime: data.metadata?.requestTime
+      });
+      
+      return data.imageUrl;
+      
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error');
+      console.error(`❌ Screenshot fetch attempt ${attempt} failed:`, lastError.message);
+      
+      if (lastError.message.includes('400') || lastError.message.includes('404')) {
+        throw lastError;
+      }
+      
+      if (attempt < retries) {
+        const delay = SCREENSHOT_CONFIG.RETRY_DELAY * Math.pow(2, attempt - 1);
+        console.log(`⏳ Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError || new Error('Screenshot fetch failed after all retries');
+}
+
+function getFallbackScreenshot(nodeId: string, nodeName: string = 'Unknown'): any {
+  const svgContent = `
+    <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#f0f0f0" stroke="#ddd" stroke-width="2"/>
+      <text x="50%" y="40%" text-anchor="middle" font-family="Arial" font-size="16" fill="#666">
+        Screenshot Unavailable
+      </text>
+      <text x="50%" y="55%" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">
+        ${nodeName}
+      </text>
+      <text x="50%" y="70%" text-anchor="middle" font-family="Arial" font-size="10" fill="#999">
+        Backend API not available
+      </text>
+    </svg>
+  `.trim();
+  
+  // For Figma plugin environment, we need to encode the SVG properly
+  const base64Content = figma.base64Encode(new TextEncoder().encode(svgContent));
+  const placeholderUrl = `data:image/svg+xml;base64,${base64Content}`;
+  
+  return {
+    imageUrl: placeholderUrl,
+    metadata: {
+      nodeId,
+      nodeName,
+      fallback: true,
+      source: 'placeholder',
+      fileKey: 'unknown',
+      captureTime: new Date().toISOString()
+    }
+  };
+}
+
 // Plugin main logic
 figma.ui.onmessage = async (msg: any) => {
   console.log('🔌 Plugin received message:', msg.type);
@@ -94,9 +220,9 @@ async function handleGetContext() {
   }
 }
 
-// Capture screenshot of current selection or page
+// Capture screenshot using backend API proxy
 async function handleCaptureScreenshot() {
-  console.log('📸 Capturing screenshot...');
+  console.log('📸 Capturing screenshot via backend API...');
 
   try {
     const selection = figma.currentPage.selection;
@@ -141,55 +267,44 @@ async function handleCaptureScreenshot() {
       console.log(`📸 Multiple selections, capturing: ${targetNode.name} (${targetNode.type})`);
     }
 
-    // Enhanced export settings for better quality
-    const exportSettings = {
-      format: 'PNG' as const,
-      constraint: {
-        type: 'SCALE' as const,
-        value: 2 // 2x scale for high-quality screenshots
-      },
-      // Add contentsOnly for better cropping on frames
-      ...(targetNode.type === 'FRAME' && { contentsOnly: false })
-    };
+    // Get file context for API call
+    const fileKey = figma.fileKey || 'dev-file';
+    const nodeId = targetNode.id;
 
-    console.log(`📸 Exporting ${targetNode.name} with settings:`, exportSettings);
-    const screenshot = await targetNode.exportAsync(exportSettings);
+    console.log(`📸 Fetching screenshot from backend API: ${nodeId} in ${fileKey}`);
 
-    if (!screenshot || screenshot.length === 0) {
-      throw new Error('Export returned empty data');
-    }
+    // Call backend screenshot API
+    const screenshotUrl = await fetchScreenshot(fileKey, nodeId);
 
-    // Convert to base64
-    const base64 = figma.base64Encode(screenshot);
-    const dataUrl = `data:image/png;base64,${base64}`;
-
-    // Validate the base64 data
-    if (!base64 || base64.length < 100) {
-      throw new Error('Generated base64 data is too small or empty');
+    if (!screenshotUrl) {
+      throw new Error('No screenshot URL returned from backend API');
     }
 
     figma.ui.postMessage({
       type: 'screenshot-captured',
-      screenshot: dataUrl,
+      screenshotUrl: screenshotUrl,
       metadata: {
         nodeName: targetNode.name,
         nodeType: targetNode.type,
         nodeId: targetNode.id,
-        size: screenshot.length,
-        base64Length: base64.length,
-        captureTime: new Date().toISOString()
+        fileKey: fileKey,
+        captureTime: new Date().toISOString(),
+        source: 'backend-api'
       }
     });
 
-    console.log(`✅ Screenshot captured successfully: ${screenshot.length} bytes, base64: ${base64.length} chars`);
+    console.log(`✅ Screenshot captured successfully from backend API: ${screenshotUrl.substring(0, 50)}...`);
 
   } catch (error) {
     console.error('❌ Screenshot capture failed:', error);
 
-    // Send detailed error information
+    // Fallback to placeholder
+    const targetNode = figma.currentPage.selection[0] || { id: 'unknown', name: 'Unknown' };
+    const fallback = getFallbackScreenshot(targetNode.id, targetNode.name);
+
     figma.ui.postMessage({
       type: 'screenshot-captured',
-      screenshot: null,
+      screenshotUrl: fallback.imageUrl,
       error: {
         message: error instanceof Error ? error.message : 'Screenshot capture failed',
         stack: error instanceof Error ? error.stack : undefined,

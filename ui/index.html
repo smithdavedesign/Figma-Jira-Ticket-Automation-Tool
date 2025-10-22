@@ -1454,7 +1454,7 @@ Examples:
               case 'screenshot-captured':
                 // Enhanced screenshot handling with detailed logging
                 console.log('📸 Screenshot message received:', msg);
-                let screenshotData = msg.screenshot;
+                let screenshotData;
                 
                 // Check for errors first
                 if (msg.error) {
@@ -1464,24 +1464,44 @@ Examples:
                   screenshotData.fallback = true;
                   screenshotData.errorMessage = typeof msg.error === 'string' ? msg.error : msg.error.message;
                 }
-                // Handle both object format {dataUrl: "..."} and direct string format "data:image/png;base64,..."
-                else if (typeof screenshotData === 'string' && screenshotData.startsWith('data:image/')) {
-                  console.log('✅ Valid screenshot string received, using LIVE FIGMA IMAGE');
-                  const base64Data = screenshotData.split(',')[1];
-                  const sizeKB = Math.round((base64Data.length * 0.75) / 1024);
+                // Handle new backend API format with screenshotUrl
+                else if (msg.screenshotUrl) {
+                  console.log('✅ Screenshot URL received from backend API:', msg.screenshotUrl.substring(0, 50) + '...');
                   screenshotData = { 
-                    dataUrl: screenshotData, 
+                    dataUrl: msg.screenshotUrl, 
                     fallback: false,
-                    size: `${sizeKB} KB`,
                     metadata: msg.metadata || {},
-                    source: 'figma-export'
+                    source: msg.metadata?.source || 'backend-api'
                   };
-                } else if (screenshotData && screenshotData.dataUrl) {
-                  console.log('✅ Valid screenshot object received, using LIVE FIGMA IMAGE');
-                  screenshotData.fallback = false;
-                  screenshotData.source = 'figma-export';
+                }
+                // Handle legacy format for backward compatibility
+                else if (msg.screenshot) {
+                  let legacyScreenshot = msg.screenshot;
+                  // Handle both object format {dataUrl: "..."} and direct string format "data:image/png;base64,..."
+                  if (typeof legacyScreenshot === 'string' && legacyScreenshot.startsWith('data:image/')) {
+                    console.log('✅ Valid screenshot string received (legacy format), using LIVE FIGMA IMAGE');
+                    const base64Data = legacyScreenshot.split(',')[1];
+                    const sizeKB = Math.round((base64Data.length * 0.75) / 1024);
+                    screenshotData = { 
+                      dataUrl: legacyScreenshot, 
+                      fallback: false,
+                      size: `${sizeKB} KB`,
+                      metadata: msg.metadata || {},
+                      source: 'figma-export'
+                    };
+                  } else if (legacyScreenshot && legacyScreenshot.dataUrl) {
+                    console.log('✅ Valid screenshot object received (legacy format), using LIVE FIGMA IMAGE');
+                    screenshotData = legacyScreenshot;
+                    screenshotData.fallback = false;
+                    screenshotData.source = 'figma-export';
+                  } else {
+                    console.log('⚠️ Invalid legacy screenshot format, using mock');
+                    screenshotData = createMockScreenshot();
+                    screenshotData.fallback = true;
+                    screenshotData.reason = 'Invalid legacy screenshot format';
+                  }
                 } else {
-                  console.log('⚠️ No valid screenshot data received, using mock');
+                  console.log('⚠️ No screenshot data received, using mock');
                   screenshotData = createMockScreenshot();
                   screenshotData.fallback = true;
                   screenshotData.reason = 'No screenshot data in message';
