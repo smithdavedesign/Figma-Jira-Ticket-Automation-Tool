@@ -502,8 +502,7 @@ export class AdvancedTemplateEngine implements TemplateEngine {
       'notion': '📝',
       'azure-devops': '🔷',
       'trello': '📋',
-      'asana': '✅',
-      'AEM': '🏗️'
+      'asana': '✅'
     };
     return emojiMap[platform] || '📄';
   }
@@ -519,8 +518,7 @@ export class AdvancedTemplateEngine implements TemplateEngine {
       'notion': 'Page',
       'azure-devops': 'Work Item',
       'trello': 'Card',
-      'asana': 'Task',
-      'AEM': 'AEM Component'
+      'asana': 'Task'
     };
     return prefixMap[platform] || 'Document';
   }

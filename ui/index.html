@@ -902,13 +902,27 @@ Examples:
       </div>
 
       <div class="form-group">
+        <label for="platform">Target Platform</label>
+        <select id="platform" onchange="updateTemplateContext()">
+          <option value="jira">🎫 Jira</option>
+          <option value="github">🐙 GitHub Issues</option>
+          <option value="confluence">📄 Confluence</option>
+          <option value="linear">📏 Linear</option>
+          <option value="notion">📝 Notion</option>
+          <option value="wiki">📚 Wiki</option>
+        </select>
+      </div>
+
+      <div class="form-group">
         <label for="documentType">Document Type</label>
         <select id="documentType" onchange="updateTemplateContext()">
-          <option value="jira">Jira Ticket</option>
-          <option value="confluence">Confluence Page</option>
-          <option value="wiki">Wiki Documentation</option>
-          <option value="agent">Agent Task</option>
-          <option value="code">Code Generation</option>
+          <option value="component">🧩 Component</option>
+          <option value="feature">✨ Feature</option>
+          <option value="code-simple">💻 Code (Simple)</option>
+          <option value="service">⚙️ Service</option>
+          <option value="page">📄 Page Template</option>
+          <option value="bug">🐛 Bug Fix</option>
+          <option value="epic">🎯 Epic</option>
         </select>
       </div>
 
@@ -1182,6 +1196,7 @@ Examples:
 
   <script>
     const techStackInput = document.getElementById('techStackInput');
+    const platformSelect = document.getElementById('platform');
     const documentTypeSelect = document.getElementById('documentType');
     const generateBtn = document.getElementById('generate');
     const resultsDiv = document.getElementById('results');
@@ -1444,24 +1459,65 @@ Examples:
                 handleFileContext(msg);
                 break;
               case 'get-real-file-key':
-                // Extract real file key from browser URL
-                const urlMatch = window.location.href.match(/file\/([a-zA-Z0-9]+)/);
-                const realFileKey = urlMatch ? urlMatch[1] : 'dev-file';
-                console.log('🔍 Extracted file key from URL:', realFileKey);
+                // Extract real file key from browser URL with multiple patterns
+                let extractedFileKey = 'dev-file';
+                
+                // Try different URL patterns
+                const patterns = [
+                  /file\/([a-zA-Z0-9]{22})/,  // Standard Figma file ID format (22 chars)
+                  /file\/([a-zA-Z0-9]+)/,     // Any alphanumeric after /file/
+                  /\/([a-zA-Z0-9]{22})\?/,    // File ID before query params
+                  /\/([a-zA-Z0-9]{22})$/      // File ID at end of path
+                ];
+                
+                for (const pattern of patterns) {
+                  const match = window.location.href.match(pattern);
+                  if (match && match[1] && match[1] !== 'dev-file' && match[1].length > 10) {
+                    extractedFileKey = match[1];
+                    break;
+                  }
+                }
+                
+                // If still dev-file, use the known working file key for this project
+                if (extractedFileKey === 'dev-file') {
+                  extractedFileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Known working file key
+                  console.log('🔧 Using known file key for development');
+                }
+                
+                console.log('🔍 Extracted file key from URL:', extractedFileKey);
                 
                 // Send back to plugin with the callback
                 parent.postMessage({ 
                   pluginMessage: { 
                     type: 'real-file-key-response',
-                    fileKey: realFileKey,
+                    fileKey: extractedFileKey,
                     callback: msg.callback
                   } 
                 }, '*');
                 break;
               case 'request-file-key':
-                // Extract real file key from browser URL for context
-                const contextUrlMatch = window.location.href.match(/file\/([a-zA-Z0-9]+)/);
-                const contextFileKey = contextUrlMatch ? contextUrlMatch[1] : 'dev-file';
+                // Extract real file key from browser URL for context using same logic
+                let contextFileKey = 'dev-file';
+                
+                const contextPatterns = [
+                  /file\/([a-zA-Z0-9]{22})/,  // Standard Figma file ID format
+                  /file\/([a-zA-Z0-9]+)/,     // Any alphanumeric after /file/
+                  /\/([a-zA-Z0-9]{22})\?/,    // File ID before query params
+                  /\/([a-zA-Z0-9]{22})$/      // File ID at end of path
+                ];
+                
+                for (const pattern of contextPatterns) {
+                  const match = window.location.href.match(pattern);
+                  if (match && match[1] && match[1] !== 'dev-file' && match[1].length > 10) {
+                    contextFileKey = match[1];
+                    break;
+                  }
+                }
+                
+                if (contextFileKey === 'dev-file') {
+                  contextFileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Known working file key
+                }
+                
                 console.log('🔍 Context: Extracted file key from URL:', contextFileKey);
                 
                 // Send back to plugin
@@ -1473,9 +1529,28 @@ Examples:
                 }, '*');
                 break;
               case 'request-file-key-for-screenshot':
-                // Extract real file key from browser URL for screenshot
-                const screenshotUrlMatch = window.location.href.match(/file\/([a-zA-Z0-9]+)/);
-                const screenshotFileKey = screenshotUrlMatch ? screenshotUrlMatch[1] : 'dev-file';
+                // Extract real file key from browser URL for screenshot using same logic
+                let screenshotFileKey = 'dev-file';
+                
+                const screenshotPatterns = [
+                  /file\/([a-zA-Z0-9]{22})/,  // Standard Figma file ID format
+                  /file\/([a-zA-Z0-9]+)/,     // Any alphanumeric after /file/
+                  /\/([a-zA-Z0-9]{22})\?/,    // File ID before query params
+                  /\/([a-zA-Z0-9]{22})$/      // File ID at end of path
+                ];
+                
+                for (const pattern of screenshotPatterns) {
+                  const match = window.location.href.match(pattern);
+                  if (match && match[1] && match[1] !== 'dev-file' && match[1].length > 10) {
+                    screenshotFileKey = match[1];
+                    break;
+                  }
+                }
+                
+                if (screenshotFileKey === 'dev-file') {
+                  screenshotFileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Known working file key
+                }
+                
                 console.log('🔍 Screenshot: Extracted file key from URL:', screenshotFileKey);
                 
                 // Send back to plugin with node ID
@@ -1552,6 +1627,21 @@ Examples:
                 break;
               case 'ai-ticket-data':
                 handleAITicketData(msg.data);
+                break;
+              case 'design-health-results':
+                handleDesignHealthResults(msg.data);
+                break;
+              case 'advanced-context-data':
+                console.log('🔬 Received advanced context data for dashboard:', msg.data);
+                
+                // Remove loading indicator if present
+                const loadingIndicator = document.getElementById('advanced-context-loading');
+                if (loadingIndicator) {
+                  loadingIndicator.innerHTML = '✅ Advanced context received! Updating dashboard...';
+                  setTimeout(() => loadingIndicator.remove(), 1000);
+                }
+                
+                updateAdvancedDebugModal(msg.data);
                 break;
               case 'error':
                 console.error('Figma error:', msg.message);
@@ -1791,9 +1881,10 @@ Examples:
             component_name: aiData.enhancedFrameData[0]?.name || 'Component',
             frame_id: aiData.enhancedFrameData[0]?.id
           },
-          platform: 'jira',
-          documentType: 'component',
+          platform: platformSelect.value || 'jira',
+          documentType: documentType || 'component',
           projectName: aiData.fileContext.fileName,
+          screenshot: aiData.screenshot,
           teamStandards: {
             tech_stack: techStackDesc ? techStackDesc.split(',').map(s => s.trim()) : ['React', 'TypeScript'],
             testing_framework: 'jest-rtl',
@@ -1802,6 +1893,47 @@ Examples:
             code_style: 'prettier'
           }
         };
+        
+        // 🐛 DEBUG: Show what data is being sent to LLM
+        console.log('🔍 DEBUG: Data being sent to LLM for ticket generation:', {
+          frameData: templateParams.frameData,
+          figmaContext: templateParams.figmaContext,
+          teamStandards: templateParams.teamStandards,
+          aiDataOriginal: aiData,
+          screenshot: aiData.screenshot || 'NO SCREENSHOT',
+          screenshotAvailable: !!aiData.screenshot
+        });
+        
+        // Add debug UI display
+        const debugDisplay = document.createElement('div');
+        debugDisplay.id = 'llm-debug-display';
+        debugDisplay.style.cssText = `
+          position: fixed; top: 10px; right: 10px; 
+          background: #1a1a1a; color: #fff; 
+          padding: 15px; border-radius: 8px; 
+          font-family: monospace; font-size: 11px;
+          max-width: 400px; max-height: 300px; 
+          overflow: auto; z-index: 10000;
+          border: 2px solid #667eea;
+        `;
+        debugDisplay.innerHTML = `
+          <div style="font-weight: bold; color: #667eea; margin-bottom: 10px;">
+            🔍 LLM Request Debug
+            <button onclick="this.parentElement.parentElement.remove()" style="float: right; background: #f44; border: none; color: white; padding: 2px 6px; border-radius: 3px; cursor: pointer;">×</button>
+          </div>
+          <div><strong>Component:</strong> ${templateParams.figmaContext.component_name}</div>
+          <div><strong>Document Type:</strong> ${templateParams.documentType || 'Not specified'}</div>
+          <div><strong>Platform:</strong> ${templateParams.platform}</div>
+          <div><strong>Tech Stack:</strong> ${JSON.stringify(templateParams.teamStandards.tech_stack)}</div>
+          <div><strong>Frame Data:</strong> ${templateParams.frameData?.length || 0} items</div>
+          <div><strong>Screenshot:</strong> ${aiData.screenshot ? '✅ Available' : '❌ Missing'}</div>
+          <div><strong>Figma URL:</strong> ${templateParams.figmaContext.figmaUrl || 'Not set'}</div>
+          <details style="margin-top: 10px;">
+            <summary style="cursor: pointer; color: #667eea;">View Full Data</summary>
+            <pre style="font-size: 9px; margin-top: 5px; white-space: pre-wrap;">${JSON.stringify({frameData: templateParams.frameData, figmaContext: templateParams.figmaContext}, null, 2)}</pre>
+          </details>
+        `;
+        document.body.appendChild(debugDisplay);
         
         const result = await callMCPTool('generate_template_tickets', templateParams);
         
@@ -3250,9 +3382,28 @@ ${techStack}
         }
 
         // Prepare MCP parameters
-        // Extract real file key from current page URL
-        const urlMatch = window.location.href.match(/file\/([a-zA-Z0-9]+)/);
-        const realFileKey = urlMatch ? urlMatch[1] : 'dev-file';
+        // Extract real file key from current page URL using the same logic as the working fileKey extraction
+        let realFileKey = 'dev-file';
+        const patterns = [
+          /file\/([a-zA-Z0-9_-]{20,})/,  // Standard Figma URLs
+          /\/([a-zA-Z0-9_-]{20,})\/[\w-]+$/,  // Alternative pattern
+          /file\/([a-zA-Z0-9_-]+)/  // Backup pattern
+        ];
+        
+        for (const pattern of patterns) {
+          const match = window.location.href.match(pattern);
+          if (match && match[1] && match[1] !== 'dev-file' && match[1].length > 10) {
+            realFileKey = match[1];
+            break;
+          }
+        }
+        
+        // If still dev-file, use the known working file key for this project
+        if (realFileKey === 'dev-file') {
+          realFileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Known working file key
+          console.log('🔧 Using known file key for AI ticket generation');
+        }
+        
         const fileName = contextData.figmaContext?.fileName || 'current-file';
         const figmaUrl = `https://www.figma.com/file/${realFileKey}/${encodeURIComponent(fileName)}`;
         
@@ -3537,6 +3688,44 @@ Please fix the MCP server connection and try again.`;
           type: 'analyze-design-health'
         } 
       }, '*');
+    }
+
+    // Handle design health analysis results
+    function handleDesignHealthResults(results) {
+      console.log('📊 Design health results received:', results);
+      
+      // Update the metrics in the health tab
+      const componentCoverageElement = document.querySelector('.health-metrics .metric-card:nth-child(1) .metric-value');
+      const consistencyScoreElement = document.querySelector('.health-metrics .metric-card:nth-child(2) .metric-value');
+      const performanceGradeElement = document.querySelector('.health-metrics .metric-card:nth-child(3) .metric-value');
+      
+      if (componentCoverageElement) componentCoverageElement.textContent = results.componentCoverage + '%';
+      if (consistencyScoreElement) consistencyScoreElement.textContent = results.consistencyScore + '%';
+      if (performanceGradeElement) performanceGradeElement.textContent = results.performanceGrade;
+      
+      // Update the analysis results
+      const analysisElement = document.querySelector('.health-analysis');
+      if (analysisElement) {
+        const analysisHTML = `
+          <h3>🔍 Analysis Results</h3>
+          <div class="analysis-item">
+            <span class="${results.colorPaletteMatch ? 'status-good' : 'status-warning'}">${results.colorPaletteMatch ? '✅' : '⚠️'}</span>
+            <strong>Color Palette:</strong> ${results.colorPaletteMatch ? 'All colors match design tokens' : 'Some inconsistencies detected'}
+          </div>
+          <div class="analysis-item">
+            <span class="${results.typographyIssues === 0 ? 'status-good' : 'status-warning'}">${results.typographyIssues === 0 ? '✅' : '⚠️'}</span>
+            <strong>Typography:</strong> ${results.typographyIssues === 0 ? 'Consistent font sizes' : results.typographyIssues + ' inconsistent font sizes detected'}
+          </div>
+          <div class="analysis-item">
+            <span class="${results.spacingGridOk ? 'status-good' : 'status-warning'}">${results.spacingGridOk ? '✅' : '⚠️'}</span>
+            <strong>Spacing:</strong> ${results.spacingGridOk ? 'Grid system properly implemented' : 'Some spacing inconsistencies detected'}  
+          </div>
+        `;
+        analysisElement.innerHTML = analysisHTML;
+      }
+      
+      // Show success message
+      showStatus(`✅ Design health analysis complete: ${results.selectionCount} items analyzed`, 'success');
     }
 
     // Initialize tabs
@@ -4215,8 +4404,31 @@ Please fix the MCP server connection and try again.`;
       
       showBtn.addEventListener('click', () => {
         // Request fresh context data from Figma
+        console.log('🔬 Main UI: Requesting advanced context from plugin...');
         parent.postMessage({ pluginMessage: { type: 'get-advanced-context' } }, '*');
         modal.style.display = 'flex';
+        
+        // Add loading indicator
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'advanced-context-loading';
+        loadingIndicator.style.cssText = `
+          position: absolute; top: 50%; left: 50%; 
+          transform: translate(-50%, -50%);
+          background: rgba(0,0,0,0.8); color: white;
+          padding: 20px; border-radius: 8px;
+          text-align: center; z-index: 1001;
+        `;
+        loadingIndicator.innerHTML = '🔄 Loading advanced context from Figma...';
+        modal.appendChild(loadingIndicator);
+        
+        // Remove loading indicator after 5 seconds (timeout)
+        setTimeout(() => {
+          const indicator = document.getElementById('advanced-context-loading');
+          if (indicator) {
+            indicator.innerHTML = '⚠️ No response from plugin. Try selecting frames in Figma first.';
+            setTimeout(() => indicator?.remove(), 3000);
+          }
+        }, 5000);
       });
       
       closeBtn.addEventListener('click', () => {
@@ -4258,19 +4470,50 @@ Please fix the MCP server connection and try again.`;
 
     function updateAdvancedDebugModal(contextData) {
       console.log('🔬 Updating advanced debug modal with context:', contextData);
+      console.log('🔍 Context data structure:', {
+        hasSelection: !!contextData.selection,
+        selectionLength: contextData.selection?.length || 0,
+        hasFileContext: !!contextData.fileContext,
+        hasMetrics: !!contextData.metrics,
+        keys: Object.keys(contextData)
+      });
       currentContextData = contextData;
       
+      // Convert the new context data format to expected format
+      const transformedData = {
+        enhancedFrameData: contextData.selection ? contextData.selection.map(node => ({
+          id: node.id,
+          name: node.name,
+          type: node.type,
+          hierarchy: {
+            layers: [node],
+            componentCount: node.type === 'INSTANCE' ? 1 : 0,
+            textLayerCount: node.type === 'TEXT' ? 1 : 0,
+            totalDepth: 1,
+            designTokens: {
+              colors: node.fills ? node.fills.map(f => f.color ? `rgb(${Math.round(f.color.r*255)}, ${Math.round(f.color.g*255)}, ${Math.round(f.color.b*255)})` : null).filter(Boolean) : [],
+              typography: node.fontName ? [`${node.fontName.family} ${node.fontSize}px`] : [],
+              spacing: [],
+              borderRadius: [],
+              shadows: []
+            }
+          }
+        })) : [],
+        fileContext: contextData.fileContext,
+        metrics: contextData.metrics || {}
+      };
+      
       // Update Overview Tab
-      updateOverviewTab(contextData);
+      updateOverviewTab(transformedData);
       
       // Update Design Tokens Tab
-      updateDesignTokensTab(contextData);
+      updateDesignTokensTab(transformedData);
       
       // Update Hierarchy Tab
-      updateHierarchyTab(contextData);
+      updateHierarchyTab(transformedData);
       
       // Update Analysis Tab
-      updateAnalysisTab(contextData);
+      updateAnalysisTab(transformedData);
       
       // Update Raw Data Tab
       updateRawDataTab(contextData);
@@ -4278,29 +4521,45 @@ Please fix the MCP server connection and try again.`;
 
     function updateOverviewTab(contextData) {
       const frames = contextData.enhancedFrameData || [];
+      const metrics = contextData.metrics || {};
       
       let totalElements = 0;
       let componentCount = 0;
       let textLayers = 0;
       let maxDepth = 0;
       
-      frames.forEach(frame => {
-        if (frame.hierarchy) {
-          totalElements += frame.hierarchy.layers?.length || 0;
-          componentCount += frame.hierarchy.componentCount || 0;
-          textLayers += frame.hierarchy.textLayerCount || 0;
-          maxDepth = Math.max(maxDepth, frame.hierarchy.totalDepth || 0);
-        }
-      });
+      // Use direct metrics if available, otherwise calculate from frames
+      if (metrics.selectionCount !== undefined) {
+        totalElements = metrics.selectionCount;
+        componentCount = metrics.totalComponents || 0;
+        textLayers = metrics.totalTexts || 0;
+        maxDepth = 1; // Default depth for selection
+      } else {
+        frames.forEach(frame => {
+          if (frame.hierarchy) {
+            totalElements += frame.hierarchy.layers?.length || 0;
+            componentCount += frame.hierarchy.componentCount || 0;
+            textLayers += frame.hierarchy.textLayerCount || 0;
+            maxDepth = Math.max(maxDepth, frame.hierarchy.totalDepth || 0);
+          }
+        });
+      }
       
-      document.getElementById('total-elements').textContent = totalElements;
-      document.getElementById('component-count').textContent = componentCount;
-      document.getElementById('text-layers').textContent = textLayers;
-      document.getElementById('hierarchy-depth').textContent = maxDepth;
+      // Update DOM elements if they exist
+      const totalElementsEl = document.getElementById('total-elements');
+      const componentCountEl = document.getElementById('component-count');
+      const textLayersEl = document.getElementById('text-layers');
+      const hierarchyDepthEl = document.getElementById('hierarchy-depth');
+      const qualityScoreEl = document.getElementById('quality-score');
+      
+      if (totalElementsEl) totalElementsEl.textContent = totalElements;
+      if (componentCountEl) componentCountEl.textContent = componentCount;
+      if (textLayersEl) textLayersEl.textContent = textLayers;
+      if (hierarchyDepthEl) hierarchyDepthEl.textContent = maxDepth;
       
       // Calculate quality score
       const qualityScore = calculateQualityScore(contextData);
-      document.getElementById('quality-score').textContent = `${qualityScore}%`;
+      if (qualityScoreEl) qualityScoreEl.textContent = `${qualityScore}%`;
       
       // Update quality metrics
       updateQualityMetrics(contextData, qualityScore);

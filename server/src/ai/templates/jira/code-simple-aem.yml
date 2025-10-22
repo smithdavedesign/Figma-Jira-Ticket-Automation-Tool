@@ -1,22 +1,62 @@
-name: "AEM Component Implementation"
-description: "Template for Adobe Experience Manager component development with HTL"
-platform: "AEM"
-type: "code-simple"
+template_id: "jira_code_simple_aem"
+version: "2.1.0"
+organization: "default"
+platform: "jira"
+description: "Simple Jira ticket template for AEM component development with HTL, OSGi, and Touch UI"
 
 variables:
-  component_name: "{{frameData.name}}"
-  tech_stack: "AEM 6.5, HTL, Apache Sling, OSGi"
-  complexity: "simple"
+  project_name: "{{ project.name }}"
+  component_name: "{{ figma.component_name }}"
+  issue_type: "Task"
+  component_type: "{{ project.component_type }}"
+  priority: "{{ calculated.priority }}"
+  assignee: "{{ team.assignee }}"
+  reporter: "{{ user.name }}"
+  labels: "{{ project.labels }}"
+  technologies: "{{ project.tech_stack }}"
+  story_points: "{{ calculated.story_points }}"
+  figma_url: "{{ figma.live_link }}"
+  design_status: "{{ figma.design_status }}"
+
+team_standards:
+  testing_framework: "junit-mockito"
+  accessibility_level: "wcag-aa"
+  documentation_format: "markdown"
+  code_style: "aem-coding-standards"
+  review_process: "adobe-standards"
+
+output_format:
+  ticket_type: "Story"
+  sections: ["header", "description", "technical_requirements", "implementation_notes", "testing_strategy", "design_reference", "estimation"]
+  formatting:
+    use_emojis: true
+    include_diagrams: false
+    code_highlighting: true
+    table_formatting: true
+    link_formatting: true
+  ai_context_markers: true
+  include_metadata: true
+
+customization:
+  include_ai_context_markers: true
+  generate_test_files: true
+  create_storybook_stories: false
+  add_accessibility_checklist: true
+  include_performance_metrics: false
+  enable_automated_testing: true
+  include_design_tokens: true
+  add_similar_components: true
+  include_risk_assessment: true
+content: |
+  # 🏗️ AEM Component: {{ component_name }}
   
-template: |
-  # 🏗️ AEM Component: {{component_name}}
+  **Priority**: {{ priority }} | **Story Points**: {{ story_points }}
   
-  **Priority**: Medium | **Story Points**: 5
-  
-  **🔗 Figma Design**: [View Component]({{figmaContext.figmaUrl}})
+  **🔗 Figma Design**: [View Component]({{ figma_url }})
+  **🎯 AEM Implementation**: {{ technologies }}
   
   ## 🎯 Objective
-  Implement the **{{component_name}}** AEM component from the design specifications.
+  Implement the **{{ component_name }}** AEM component from the design specifications using HTL, OSGi, and Touch UI components.
   
   ## 🛠️ Technical Requirements
   - **Platform**: Adobe Experience Manager 6.5

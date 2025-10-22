@@ -69,12 +69,12 @@ export class TemplateIntegrationService {
     }
 
     try {
-      // Detect AEM tech stack and adjust platform
-      const detectedPlatform = this.detectPlatformFromTechStack((teamStandards as any).tech_stack, platform);
-      console.log(`🔍 Original platform: ${platform}, Detected platform: ${detectedPlatform}`);
+      // Smart template selection based on tech stack
+      const templateType = this.selectTemplateType(documentType, (teamStandards as any).tech_stack);
+      console.log(`🔍 Using platform: ${platform} with template type: ${templateType}`);
       
       // Load the appropriate template
-      const template = await templateEngine.loadTemplate(detectedPlatform, documentType);
+      const template = await templateEngine.loadTemplate(platform, templateType);
       
       // Build template context from available data
       const context = this.buildTemplateContext(
@@ -374,8 +374,7 @@ Implement the **${name}** component from the design specifications.
       'notion': '📝',
       'azure-devops': '🔷',
       'trello': '📋',
-      'asana': '✅',
-      'AEM': '🏗️'
+      'asana': '✅'
     };
     
     return icons[platform] || '📄';
@@ -406,7 +405,35 @@ Implement the **${name}** component from the design specifications.
   }
 
   /**
-   * Detect the appropriate platform based on tech stack
+   * Select the appropriate template type based on document type and tech stack
+   */
+  private selectTemplateType(documentType: DocumentType, techStack: string | string[]): DocumentType {
+    const techStackString = Array.isArray(techStack) 
+      ? techStack.join(' ').toLowerCase()
+      : (techStack || '').toLowerCase();
+    
+    // Check for AEM tech stack and modify template selection
+    if (techStackString.includes('aem') || 
+        techStackString.includes('htl') ||
+        techStackString.includes('sling') ||
+        techStackString.includes('osgi') ||
+        techStackString.includes('jcr')) {
+      
+      console.log('🏗️ AEM tech stack detected - selecting AEM-specific template');
+      
+      // Map document types to AEM-specific templates
+      if ((documentType as string) === 'component') return 'component-aem' as DocumentType;
+      if ((documentType as string) === 'page') return 'page-aem' as DocumentType;
+      if ((documentType as string) === 'service') return 'service-aem' as DocumentType;
+      if ((documentType as string) === 'code-simple') return 'code-simple-aem' as DocumentType;
+    }
+    
+    // Return original document type for non-AEM stacks
+    return documentType;
+  }
+
+  /**
+   * Detect the appropriate platform based on tech stack (deprecated - keeping for compatibility)
    */
   private detectPlatformFromTechStack(techStack: string, defaultPlatform: DocumentPlatform = 'jira'): DocumentPlatform {
     // Always use the specified platform (like 'jira') instead of overriding based on tech stack

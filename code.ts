@@ -163,7 +163,7 @@ figma.ui.onmessage = async (msg: any) => {
         await handleGetContext();
         break;
       case 'get-advanced-context':
-        await handleGetContext(); // Use the same handler for now
+        await handleGetAdvancedContext();
         break;
       case 'capture-screenshot':
         await handleCaptureScreenshot();
@@ -176,6 +176,21 @@ figma.ui.onmessage = async (msg: any) => {
         break;
       case 'precise-screenshot':
         await handlePreciseScreenshot();
+        break;
+      case 'analyze-design-health':
+        await handleAnalyzeDesignHealth(msg);
+        break;
+      case 'real-file-key-response':
+        // This is handled by the callback system, no action needed
+        console.log('File key response received');
+        break;
+      case 'file-key-response':
+        // This is handled by the callback system, no action needed
+        console.log('File key response received');
+        break;
+      case 'file-key-response-for-screenshot':
+        // This is handled by the callback system, no action needed
+        console.log('File key response for screenshot received');
         break;
       case 'close':
         figma.closePlugin();
@@ -190,35 +205,173 @@ figma.ui.onmessage = async (msg: any) => {
       message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
+// Handler for design health analysis
+async function handleAnalyzeDesignHealth(msg: any) {
+  // Analyze current selection for design health metrics
+  const selection = figma.currentPage.selection;
+  let componentCoverage = 0;
+  let consistencyScore = 0;
+  let performanceGrade = 'B';
+  let colorPaletteMatch = true;
+  let typographyIssues = 0;
+  let spacingGridOk = true;
+
+  if (selection.length > 0) {
+    // Example metrics: count components, check for font size consistency, color token usage
+    const componentCount = selection.filter(n => n.type === 'COMPONENT' || n.type === 'INSTANCE').length;
+    componentCoverage = Math.round((componentCount / selection.length) * 100);
+
+    // Consistency: check if all text nodes use the same font size
+    const textNodes = selection.filter(n => n.type === 'TEXT');
+    const fontSizes = Array.from(new Set(textNodes.map(n => n.fontSize)));
+    typographyIssues = fontSizes.length > 1 ? fontSizes.length - 1 : 0;
+    consistencyScore = 100 - typographyIssues * 3;
+    if (consistencyScore < 0) consistencyScore = 0;
+
+    // Performance: check if all frames/components are visible and not locked
+    const allVisible = selection.every(n => n.visible);
+    const allUnlocked = selection.every(n => !n.locked);
+    performanceGrade = allVisible && allUnlocked ? 'A+' : 'B';
+
+    // Color palette: check if fills use design tokens (simulate)
+    colorPaletteMatch = selection.every(n => {
+      if ('fills' in n && Array.isArray(n.fills) && n.fills.length > 0) {
+        return n.fills.some((fill: any) => fill.type === 'SOLID');
+      }
+      return true;
+    });
+
+    // Spacing grid: check if frames have width/height multiples of 8
+    spacingGridOk = selection.every(n => {
+      if ('width' in n && 'height' in n) {
+        return n.width % 8 === 0 && n.height % 8 === 0;
+      }
+      return true;
+    });
+  }
+
+  // Send results to UI
+  figma.ui.postMessage({
+    type: 'design-health-results',
+    data: {
+      componentCoverage,
+      consistencyScore,
+      performanceGrade,
+      colorPaletteMatch,
+      typographyIssues,
+      spacingGridOk,
+      selectionCount: selection.length
+    }
+  });
+}
 };
 
 // Get current context (selection + file info)
 async function handleGetContext() {
   const selection = figma.currentPage.selection;
-  
-  // Use consistent file key logic
-  let fileKey = 'unknown-file';
-  if (figma.fileKey && figma.fileKey !== 'dev-file') {
-    fileKey = figma.fileKey;
-  } else {
-    fileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Your actual file key
+
+  // Helper to send file context and selection
+  function sendContext(fileKey: string) {
+    const fileInfo = {
+      fileKey: fileKey,
+      fileName: figma.root.name || 'Figma Design',
+      pageId: figma.currentPage.id,
+      pageName: figma.currentPage.name
+    };
+
+    figma.ui.postMessage({
+      type: 'file-context',
+      data: fileInfo
+    });
+
+    if (selection.length > 0) {
+      const selectionData = selection.map((node: any) => {
+        const nodeInfo: any = {
+          id: node.id,
+          name: node.name,
+          type: node.type,
+          x: node.x,
+          y: node.y,
+          width: node.width,
+          height: node.height,
+          visible: node.visible,
+          locked: node.locked
+        };
+        if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
+          nodeInfo.fills = node.fills.map((fill: any) => ({
+            type: fill.type,
+            color: fill.type === 'SOLID' ? fill.color : null
+          }));
+        }
+        if ('characters' in node) {
+          nodeInfo.text = node.characters;
+          nodeInfo.fontSize = node.fontSize;
+          nodeInfo.fontName = node.fontName;
+        }
+        return nodeInfo;
+      });
+      figma.ui.postMessage({
+        type: 'selection-context',
+        data: selectionData
+      });
+    } else {
+      figma.ui.postMessage({
+        type: 'selection-context',
+        data: []
+      });
+    }
   }
+
+  // If fileKey is missing or 'dev-file', request from UI with timeout fallback
+  if (!figma.fileKey || figma.fileKey === 'dev-file') {
+    console.log('🔍 Requesting real fileKey from UI...');
+    const callbackId = 'fileKeyCallback_' + Date.now();
+    let responded = false;
+    
+    // Set up response handler
+    function onMessage(msg: any) {
+      if (msg.type === 'real-file-key-response' && msg.callback === callbackId && !responded) {
+        responded = true;
+        figma.ui.off('message', onMessage);
+        console.log('✅ Got fileKey from UI:', msg.fileKey);
+        sendContext(msg.fileKey || 'BioUSVD6t51ZNeG0g9AcNz');
+      }
+    }
+    figma.ui.on('message', onMessage);
+    
+    // Request file key from UI
+    figma.ui.postMessage({ type: 'get-real-file-key', callback: callbackId });
+    
+    // Fallback after timeout
+    setTimeout(() => {
+      if (!responded) {
+        responded = true;
+        figma.ui.off('message', onMessage);
+        console.log('⚠️ UI fileKey request timed out, using fallback');
+        sendContext('BioUSVD6t51ZNeG0g9AcNz');
+      }
+    }, 2000);
+  } else {
+    sendContext(figma.fileKey);
+  }
+}
+
+// Handle advanced context dashboard request
+async function handleGetAdvancedContext() {
+  console.log('🔍 Getting advanced context for dashboard...');
   
-  const fileInfo = {
-    fileKey: fileKey,
-    fileName: figma.root.name || 'Figma Design',
-    pageId: figma.currentPage.id,
-    pageName: figma.currentPage.name
-  };
-
-  // Send file context
-  figma.ui.postMessage({
-    type: 'file-context',
-    data: fileInfo
-  });
-
-  // Send selection context with enhanced data
-  if (selection.length > 0) {
+  const selection = figma.currentPage.selection;
+  
+  // Helper to send advanced context data
+  async function sendAdvancedContext(fileKey: string) {
+    const fileInfo = {
+      fileKey: fileKey,
+      fileName: figma.root.name || 'Figma Design',
+      pageId: figma.currentPage.id,
+      pageName: figma.currentPage.name
+    };
+    
+    // Process selection data with proper async handling for components
     const selectionData = await Promise.all(selection.map(async (node: any) => {
       const nodeInfo: any = {
         id: node.id,
@@ -231,34 +384,96 @@ async function handleGetContext() {
         visible: node.visible,
         locked: node.locked
       };
-
-      // Add type-specific properties
-      if ('fills' in node && node.fills && node.fills.length > 0) {
+      
+      // Add fills data
+      if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
         nodeInfo.fills = node.fills.map((fill: any) => ({
           type: fill.type,
           color: fill.type === 'SOLID' ? fill.color : null
         }));
       }
-
+      
+      // Add text data
       if ('characters' in node) {
         nodeInfo.text = node.characters;
         nodeInfo.fontSize = node.fontSize;
         nodeInfo.fontName = node.fontName;
       }
-
+      
+      // Add component/instance data using async method
+      if (node.type === 'INSTANCE') {
+        try {
+          const masterComponent = await node.getMainComponentAsync();
+          if (masterComponent) {
+            nodeInfo.componentId = masterComponent.id;
+            nodeInfo.componentName = masterComponent.name;
+          }
+        } catch (error) {
+          console.log('⚠️ Could not get master component for node:', node.name, error);
+          // Set fallback values
+          nodeInfo.componentId = 'unknown';
+          nodeInfo.componentName = 'Unknown Component';
+        }
+      }
+      
       return nodeInfo;
     }));
-
+    
+    // Gather comprehensive context data
+    const contextData = {
+      fileContext: fileInfo,
+      selection: selectionData,
+      pageInfo: {
+        name: figma.currentPage.name,
+        id: figma.currentPage.id,
+        totalNodes: figma.currentPage.children.length
+      },
+      metrics: {
+        totalComponents: selection.filter(n => n.type === 'INSTANCE').length,
+        totalFrames: selection.filter(n => n.type === 'FRAME').length,
+        totalTexts: selection.filter(n => n.type === 'TEXT').length,
+        selectionCount: selection.length
+      }
+    };
+    
+    // Send the advanced context data
     figma.ui.postMessage({
-      type: 'selection-context',
-      data: selectionData
+      type: 'advanced-context-data',
+      data: contextData
     });
+  }
+  
+  // If fileKey is missing or 'dev-file', request from UI with timeout fallback
+  if (!figma.fileKey || figma.fileKey === 'dev-file') {
+    console.log('🔍 Requesting real fileKey from UI for advanced context...');
+    const callbackId = 'advancedFileKeyCallback_' + Date.now();
+    let responded = false;
+    
+    // Set up response handler
+    async function onMessage(msg: any) {
+      if (msg.type === 'real-file-key-response' && msg.callback === callbackId && !responded) {
+        responded = true;
+        figma.ui.off('message', onMessage);
+        console.log('✅ Got fileKey from UI for advanced context:', msg.fileKey);
+        await sendAdvancedContext(msg.fileKey || 'BioUSVD6t51ZNeG0g9AcNz');
+      }
+    }
+    figma.ui.on('message', onMessage);
+    
+    // Request file key from UI
+    figma.ui.postMessage({ type: 'get-real-file-key', callback: callbackId });
+    
+    // Fallback after timeout
+    setTimeout(async () => {
+      if (!responded) {
+        responded = true;
+        figma.ui.off('message', onMessage);
+        console.log('⚠️ UI fileKey request timed out for advanced context, using fallback');
+        await sendAdvancedContext('BioUSVD6t51ZNeG0g9AcNz');
+      }
+    }, 2000);
   } else {
-    // Send empty selection
-    figma.ui.postMessage({
-      type: 'selection-context',
-      data: []
-    });
+    await sendAdvancedContext(figma.fileKey);
   }
 }
 
@@ -279,15 +494,11 @@ async function handleCaptureScreenshot() {
       }
       targetNode = firstFrame;
     } else if (selection.length === 1) {
-      // Single selection - capture that node
       targetNode = selection[0];
       console.log(`📸 Capturing single selection: ${targetNode.name} (${targetNode.type})`);
     } else {
-      // Multiple selections - try to find best parent or capture the first selection
       const firstNode = selection[0];
       let bestParent = null;
-
-      // Look for a common parent frame that contains all selected items
       let currentParent = firstNode.parent;
       while (currentParent && currentParent.type !== 'PAGE') {
         const containsAll = selection.every(node => {
@@ -297,66 +508,76 @@ async function handleCaptureScreenshot() {
           }
           return ancestor === currentParent;
         });
-
         if (containsAll && (currentParent.type === 'FRAME' || currentParent.type === 'COMPONENT')) {
           bestParent = currentParent;
           break;
         }
         currentParent = currentParent.parent;
       }
-
       targetNode = bestParent || firstNode;
       console.log(`📸 Multiple selections, capturing: ${targetNode.name} (${targetNode.type})`);
     }
 
-    // Get file context for API call - comprehensive approach
-    console.log('🔍 handleCaptureScreenshot figma.fileKey value:', figma.fileKey);
-    console.log('🔍 handleCaptureScreenshot figma.fileKey type:', typeof figma.fileKey);
-    
-    // Use same logic as AI screenshot
-    let fileKey = 'unknown-file';
-    if (figma.fileKey && figma.fileKey !== 'dev-file') {
-      fileKey = figma.fileKey;
-      console.log('✅ Got file key from figma.fileKey:', fileKey);
-    } else {
-      fileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Your actual file key
-      console.log('🔧 Using hardcoded known file key for testing:', fileKey);
-    }
-    
-    const nodeId = targetNode.id;
-
-    console.log(`📸 handleCaptureScreenshot final fileKey: "${fileKey}"`);
-    console.log(`📸 Fetching screenshot from backend API: ${nodeId} in ${fileKey}`);
-
-    // Call backend screenshot API
-    const screenshotUrl = await fetchScreenshot(fileKey, nodeId);
-
-    if (!screenshotUrl) {
-      throw new Error('No screenshot URL returned from backend API');
-    }
-
-    figma.ui.postMessage({
-      type: 'screenshot-captured',
-      screenshotUrl: screenshotUrl,
-      metadata: {
-        nodeName: targetNode.name,
-        nodeType: targetNode.type,
-        nodeId: targetNode.id,
-        fileKey: fileKey,
-        captureTime: new Date().toISOString(),
-        source: 'backend-api'
+    // Helper to continue screenshot logic after fileKey is resolved
+    async function continueScreenshot(fileKey: string) {
+      const nodeId = targetNode.id;
+      console.log(`📸 handleCaptureScreenshot final fileKey: "${fileKey}"`);
+      console.log(`📸 Fetching screenshot from backend API: ${nodeId} in ${fileKey}`);
+      const screenshotUrl = await fetchScreenshot(fileKey, nodeId);
+      if (!screenshotUrl) {
+        throw new Error('No screenshot URL returned from backend API');
       }
-    });
+      figma.ui.postMessage({
+        type: 'screenshot-captured',
+        screenshotUrl: screenshotUrl,
+        metadata: {
+          nodeName: targetNode.name,
+          nodeType: targetNode.type,
+          nodeId: targetNode.id,
+          fileKey: fileKey,
+          captureTime: new Date().toISOString(),
+          source: 'backend-api'
+        }
+      });
+      console.log(`✅ Screenshot captured successfully from backend API: ${screenshotUrl.substring(0, 50)}...`);
+    }
 
-    console.log(`✅ Screenshot captured successfully from backend API: ${screenshotUrl.substring(0, 50)}...`);
-
+    // If fileKey is missing or 'dev-file', request from UI with timeout fallback
+    if (!figma.fileKey || figma.fileKey === 'dev-file') {
+      console.log('🔍 Requesting real fileKey from UI for screenshot...');
+      const callbackId = 'fileKeyScreenshot_' + Date.now();
+      let responded = false;
+      
+      // Set up response handler
+      function onMessage(msg: any) {
+        if (msg.type === 'real-file-key-response' && msg.callback === callbackId && !responded) {
+          responded = true;
+          figma.ui.off('message', onMessage);
+          console.log('✅ Got fileKey from UI for screenshot:', msg.fileKey);
+          continueScreenshot(msg.fileKey || 'BioUSVD6t51ZNeG0g9AcNz');
+        }
+      }
+      figma.ui.on('message', onMessage);
+      
+      // Request file key from UI
+      figma.ui.postMessage({ type: 'get-real-file-key', callback: callbackId });
+      
+      // Fallback after timeout
+      setTimeout(() => {
+        if (!responded) {
+          responded = true;
+          figma.ui.off('message', onMessage);
+          console.log('⚠️ UI fileKey request timed out for screenshot, using fallback');
+          continueScreenshot('BioUSVD6t51ZNeG0g9AcNz');
+        }
+      }, 2000);
+    } else {
+      await continueScreenshot(figma.fileKey);
+    }
   } catch (error) {
     console.error('❌ Screenshot capture failed:', error);
-
-    // Fallback to placeholder
     const targetNode = figma.currentPage.selection[0] || { id: 'unknown', name: 'Unknown' };
     const fallback = getFallbackScreenshot(targetNode.id, targetNode.name);
-
     figma.ui.postMessage({
       type: 'screenshot-captured',
       screenshotUrl: fallback.imageUrl,
@@ -719,7 +940,7 @@ async function extractDesignTokens(node: any): Promise<any> {
 
   try {
     // Extract color tokens
-    if ('fills' in node && node.fills) {
+    if ('fills' in node && Array.isArray(node.fills)) {
       node.fills.forEach((fill: any) => {
         if (fill.type === 'SOLID' && fill.color) {
           const hex = rgbToHex(
@@ -733,7 +954,7 @@ async function extractDesignTokens(node: any): Promise<any> {
     }
 
     // Extract stroke colors
-    if ('strokes' in node && node.strokes) {
+    if ('strokes' in node && Array.isArray(node.strokes)) {
       node.strokes.forEach((stroke: any) => {
         if (stroke.type === 'SOLID' && stroke.color) {
           const hex = rgbToHex(

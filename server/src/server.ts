@@ -827,14 +827,15 @@ class TicketGenerator {
     
     console.log(`🔍 Analyzing tech stack: ${techStackString}`);
     
-    // AEM detection patterns
+    // AEM tech stack detection (but keep platform as-is)
     if (techStackString.includes('aem') || 
         techStackString.includes('htl') ||
         techStackString.includes('sling') ||
         techStackString.includes('osgi') ||
         techStackString.includes('jcr')) {
-      console.log('✅ AEM tech stack detected!');
-      return 'AEM';
+      console.log('✅ AEM tech stack detected! (keeping platform: ' + defaultPlatform + ')');
+      // AEM is a tech stack, not a platform - keep the original platform
+      return defaultPlatform;
     }
     
     // React/Next.js detection
@@ -1451,14 +1452,15 @@ class ComplianceChecker {
     
     console.log(`🔍 Analyzing tech stack: ${techStackString}`);
     
-    // AEM detection patterns
+    // AEM tech stack detection (but keep platform as-is)
     if (techStackString.includes('aem') || 
         techStackString.includes('htl') ||
         techStackString.includes('sling') ||
         techStackString.includes('osgi') ||
         techStackString.includes('jcr')) {
-      console.log('✅ AEM tech stack detected!');
-      return 'AEM';
+      console.log('✅ AEM tech stack detected! (keeping platform: ' + defaultPlatform + ')');
+      // AEM is a tech stack, not a platform - keep the original platform
+      return defaultPlatform;
     }
     
     // Could add more platform detection here

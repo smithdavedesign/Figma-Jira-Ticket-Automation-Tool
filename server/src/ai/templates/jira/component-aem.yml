@@ -1,16 +1,24 @@
-template_id: "aem-htl-component-v1"
-version: "1.0.0"
-organization: "adobe"
-platform: "AEM"
-description: "AEM 6.5 HTL component implementation template with OSGi bundle structure"
+template_id: "jira_component_aem"
+version: "2.1.0"
+organization: "default"
+platform: "jira"
+description: "Jira ticket template for AEM component implementation with HTL, OSGi, and Touch UI"
 
 variables:
+  project_name: "{{ project.name }}"
   component_name: "{{ figma.component_name }}"
-  component_group: "project-components"
+  issue_type: "Task"
+  component_type: "{{ project.component_type }}"
+  priority: "{{ calculated.priority }}"
+  assignee: "{{ team.assignee }}"
+  reporter: "{{ user.name }}"
+  labels: "{{ project.labels }}"
+  technologies: "{{ project.tech_stack }}"
+  story_points: "{{ calculated.story_points }}"
+  figma_url: "{{ figma.live_link }}"
+  design_status: "{{ figma.design_status }}"
   resource_type: "project/components/{{ figma.component_name | lowercase }}"
-  technologies: ["HTL", "Sling", "OSGi", "JCR", "Touch UI"]
-  design_ref: "{{ figma.frame_id }}"
-  complexity_level: "medium"
+  component_group: "project-components"
 
 team_standards:
   testing_framework: "junit-mockito"
@@ -20,17 +28,8 @@ team_standards:
   review_process: "adobe-standards"
 
 output_format:
-  ticket_type: "story"
-  sections: 
-    - "title"
-    - "summary"
-    - "requirements"
-    - "design_context"
-    - "acceptance_criteria"
-    - "technical_implementation"
-    - "aem_structure"
-    - "testing_strategy"
-    - "deployment_notes"
+  ticket_type: "Story"
+  sections: ["header", "description", "technical_requirements", "implementation_notes", "testing_strategy", "design_reference", "estimation", "aem_structure"]
   formatting:
     use_emojis: true
     include_diagrams: false
