@@ -767,8 +767,8 @@ class MCPPerformanceMonitor implements PerformanceMonitor {
    * Get current memory usage
    */
   private getMemoryUsage(): { heapUsed: number; heapTotal: number; external: number; rss: number } {
-    if (typeof process !== 'undefined' && process.memoryUsage) {
-      return process.memoryUsage();
+    if (typeof globalThis !== 'undefined' && 'process' in globalThis && (globalThis as any).process?.memoryUsage) {
+      return (globalThis as any).process.memoryUsage();
     }
     
     // Fallback for browser environments
