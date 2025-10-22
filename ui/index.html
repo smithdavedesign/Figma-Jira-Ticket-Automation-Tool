@@ -1452,22 +1452,43 @@ Examples:
                 }, '*');
                 break;
               case 'screenshot-captured':
-                // Use real screenshot if available, fallback to mock
+                // Enhanced screenshot handling with detailed logging
                 console.log('📸 Screenshot message received:', msg);
                 let screenshotData = msg.screenshot;
                 
-                // Handle both object format {dataUrl: "..."} and direct string format "data:image/png;base64,..."
-                if (typeof screenshotData === 'string' && screenshotData.startsWith('data:image/')) {
-                  console.log('✅ Valid screenshot string received, using LIVE');
-                  screenshotData = { dataUrl: screenshotData, fallback: false };
-                } else if (screenshotData && screenshotData.dataUrl) {
-                  console.log('✅ Valid screenshot object received, using LIVE');
-                  screenshotData.fallback = false;
-                } else {
-                  console.log('⚠️ No valid screenshot data, using mock');
+                // Check for errors first
+                if (msg.error) {
+                  console.error('❌ Screenshot capture error:', msg.error);
+                  console.log('⚠️ Falling back to mock screenshot due to error');
                   screenshotData = createMockScreenshot();
                   screenshotData.fallback = true;
+                  screenshotData.errorMessage = typeof msg.error === 'string' ? msg.error : msg.error.message;
                 }
+                // Handle both object format {dataUrl: "..."} and direct string format "data:image/png;base64,..."
+                else if (typeof screenshotData === 'string' && screenshotData.startsWith('data:image/')) {
+                  console.log('✅ Valid screenshot string received, using LIVE FIGMA IMAGE');
+                  const base64Data = screenshotData.split(',')[1];
+                  const sizeKB = Math.round((base64Data.length * 0.75) / 1024);
+                  screenshotData = { 
+                    dataUrl: screenshotData, 
+                    fallback: false,
+                    size: `${sizeKB} KB`,
+                    metadata: msg.metadata || {},
+                    source: 'figma-export'
+                  };
+                } else if (screenshotData && screenshotData.dataUrl) {
+                  console.log('✅ Valid screenshot object received, using LIVE FIGMA IMAGE');
+                  screenshotData.fallback = false;
+                  screenshotData.source = 'figma-export';
+                } else {
+                  console.log('⚠️ No valid screenshot data received, using mock');
+                  screenshotData = createMockScreenshot();
+                  screenshotData.fallback = true;
+                  screenshotData.reason = 'No screenshot data in message';
+                }
+                
+                // Store the screenshot globally for AI ticket generation
+                window.currentScreenshot = screenshotData;
                 updateScreenshotSection(screenshotData);
                 break;
               case 'enhanced-frame-data':
@@ -1703,11 +1724,30 @@ Examples:
           useAI: true
         };
 
-        console.log('📤 Calling MCP generate_ai_ticket with enhanced data...');
-        showStatus('🔮 AI analyzing design and generating intelligent ticket...', 'loading');
+        console.log('📤 Calling MCP generate_template_tickets with enhanced data...');
+        showStatus('🎯 Generating contextual template-based ticket...', 'loading');
         
-        // Call MCP server generate_ai_ticket tool
-        const result = await callMCPTool('generate_ai_ticket', mcpParams);
+        // Call MCP server generate_template_tickets tool with proper template parameters
+        const templateParams = {
+          frameData: aiData.enhancedFrameData,
+          figmaContext: {
+            figmaUrl: aiData.figmaUrl,
+            component_name: aiData.enhancedFrameData[0]?.name || 'Component',
+            frame_id: aiData.enhancedFrameData[0]?.id
+          },
+          platform: 'jira',
+          documentType: 'component',
+          projectName: aiData.fileContext.fileName,
+          teamStandards: {
+            tech_stack: techStackDesc ? techStackDesc.split(',').map(s => s.trim()) : ['React', 'TypeScript'],
+            testing_framework: 'jest-rtl',
+            accessibility_level: 'wcag-aa',
+            documentation_format: 'markdown',
+            code_style: 'prettier'
+          }
+        };
+        
+        const result = await callMCPTool('generate_template_tickets', templateParams);
         
         // Process the AI-generated result
         let generatedContent = '';
@@ -1727,7 +1767,7 @@ Examples:
         document.getElementById('results').classList.remove('hidden');
         document.getElementById('copyBtn').disabled = false;
         
-        showStatus('✅ AI-powered ticket generated successfully!', 'success');
+        showStatus('✅ Template-based ticket generated successfully!', 'success');
         console.log('✅ AI ticket generation completed');
         
       } catch (error) {
@@ -2609,15 +2649,36 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
 
     // Tech stack parsing and confidence calculation
     function parseTechStack(description) {
-      const frameworks = ['react', 'vue', 'angular', 'svelte', 'next.js', 'nuxt', 'gatsby'];
-      const languages = ['typescript', 'javascript', 'python', 'java', 'c#', 'go', 'rust'];
-      const tools = ['webpack', 'vite', 'parcel', 'rollup', 'esbuild'];
-      
       const lowerDesc = description.toLowerCase();
       
+      // Enhanced framework detection with keywords
+      const frameworkDetection = [
+        { name: 'aem', keywords: ['aem', 'adobe experience manager', 'htl', 'html template language', 'sling', 'osgi', 'touch ui', 'jcr'] },
+        { name: 'react', keywords: ['react', 'jsx', 'create-react-app'] },
+        { name: 'vue', keywords: ['vue', 'vuejs', 'vue.js'] },
+        { name: 'angular', keywords: ['angular', 'ng', 'ngrx'] },
+        { name: 'svelte', keywords: ['svelte', 'sveltekit'] },
+        { name: 'next.js', keywords: ['next.js', 'nextjs', 'next'] },
+        { name: 'nuxt', keywords: ['nuxt.js', 'nuxtjs', 'nuxt'] },
+        { name: 'gatsby', keywords: ['gatsby', 'gatsbyjs'] }
+      ];
+      
+      const languageDetection = [
+        { name: 'htl', keywords: ['htl', 'html template language', 'sightly'] },
+        { name: 'typescript', keywords: ['typescript', 'ts', '.tsx', '.ts'] },
+        { name: 'javascript', keywords: ['javascript', 'js', '.jsx', '.js'] },
+        { name: 'python', keywords: ['python', 'py', 'django', 'flask'] },
+        { name: 'java', keywords: ['java', 'spring', 'maven', 'gradle'] },
+        { name: 'c#', keywords: ['c#', 'csharp', '.net', 'dotnet'] },
+        { name: 'go', keywords: ['go', 'golang'] },
+        { name: 'rust', keywords: ['rust', 'cargo'] }
+      ];
+      
+      const tools = ['webpack', 'vite', 'parcel', 'rollup', 'esbuild'];
+      
       const detected = {
-        frameworks: frameworks.filter(f => lowerDesc.includes(f)),
-        languages: languages.filter(l => lowerDesc.includes(l)),
+        frameworks: frameworkDetection.filter(f => f.keywords.some(k => lowerDesc.includes(k))).map(f => f.name),
+        languages: languageDetection.filter(l => l.keywords.some(k => lowerDesc.includes(k))).map(l => l.name),
         tools: tools.filter(t => lowerDesc.includes(t))
       };
       
@@ -2768,19 +2829,42 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
 
       section.classList.add('has-content');
       
+      // Enhanced status with detailed feedback
+      const isLive = !screenshotData.fallback;
+      const statusBadge = isLive 
+        ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px;">LIVE FIGMA</span>'
+        : '<span style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px;">MOCK</span>';
+      
       status.innerHTML = `
         <span class="status-indicator">📸</span>
         <span class="status-text">Captured (${screenshotData.size || 'Unknown size'})</span>
-        ${screenshotData.fallback ? '<span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px;">MOCK</span>' : '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px;">LIVE</span>'}
+        ${statusBadge}
       `;
+
+      // Enhanced content with source information
+      const sourceInfo = screenshotData.metadata ? 
+        `Captured: ${screenshotData.metadata.nodeName || 'Unknown'} (${screenshotData.metadata.nodeType || 'Node'})` :
+        `${screenshotData.nodeName || 'Design'} (${screenshotData.nodeType || 'Element'})`;
+      
+      const technicalDetails = isLive && screenshotData.metadata ? 
+        `<br><small style="color: #6b7280;">Node ID: ${screenshotData.metadata.nodeId || 'N/A'} • Captured: ${new Date(screenshotData.metadata.captureTime || Date.now()).toLocaleTimeString()}</small>` : '';
+      
+      const errorInfo = screenshotData.errorMessage ? 
+        `<br><small style="color: #ef4444;">Error: ${screenshotData.errorMessage}</small>` : '';
+      
+      const fallbackReason = screenshotData.reason ? 
+        `<br><small style="color: #94a3b8;">Reason: ${screenshotData.reason}</small>` : '';
 
       content.innerHTML = `
         <div style="text-align: center;">
-          <img src="${screenshotData.dataUrl}" alt="Design Screenshot" style="max-width: 100%; max-height: 200px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px;">
+          <img src="${screenshotData.dataUrl}" alt="Design Screenshot" style="max-width: 100%; max-height: 200px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
           <div style="font-size: 12px; color: #6b7280;">
-            ${screenshotData.width}×${screenshotData.height}px • ${screenshotData.size || 'Unknown size'}
-            ${screenshotData.nodeName ? `<br><strong style="color: #4b5563;">${screenshotData.nodeName}</strong> (${screenshotData.nodeType || 'Node'})` : ''}
-            ${screenshotData.fallback ? '<br><small style="color: #94a3b8;">Mock context for testing</small>' : '<br><small style="color: #10b981;">Live Figma capture with enhanced export</small>'}
+            <strong style="color: #4b5563;">${sourceInfo}</strong><br>
+            ${screenshotData.width || 400}×${screenshotData.height || 200}px • ${screenshotData.size || 'Unknown size'}
+            ${isLive ? 
+              `<br><small style="color: #10b981; font-weight: 500;">✅ Real Figma Screenshot via exportAsync()</small>${technicalDetails}` : 
+              `<br><small style="color: #f59e0b; font-weight: 500;">⚠️ Mock Screenshot (Figma export failed)</small>${errorInfo}${fallbackReason}`
+            }
           </div>
         </div>
       `;

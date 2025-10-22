@@ -69,8 +69,12 @@ export class TemplateIntegrationService {
     }
 
     try {
+      // Detect AEM tech stack and adjust platform
+      const detectedPlatform = this.detectPlatformFromTechStack((teamStandards as any).tech_stack, platform);
+      console.log(`🔍 Original platform: ${platform}, Detected platform: ${detectedPlatform}`);
+      
       // Load the appropriate template
-      const template = await templateEngine.loadTemplate(platform, documentType);
+      const template = await templateEngine.loadTemplate(detectedPlatform, documentType);
       
       // Build template context from available data
       const context = this.buildTemplateContext(
@@ -370,7 +374,8 @@ Implement the **${name}** component from the design specifications.
       'notion': '📝',
       'azure-devops': '🔷',
       'trello': '📋',
-      'asana': '✅'
+      'asana': '✅',
+      'AEM': '🏗️'
     };
     
     return icons[platform] || '📄';
@@ -398,6 +403,16 @@ Implement the **${name}** component from the design specifications.
    */
   async getAvailableTemplates() {
     return await templateEngine.listAvailableTemplates();
+  }
+
+  /**
+   * Detect the appropriate platform based on tech stack
+   */
+  private detectPlatformFromTechStack(techStack: string, defaultPlatform: DocumentPlatform = 'jira'): DocumentPlatform {
+    // Always use the specified platform (like 'jira') instead of overriding based on tech stack
+    // The tech stack information will be injected into the template dynamically
+    console.log(`🔍 Using platform: ${defaultPlatform} with tech stack: ${techStack}`);
+    return defaultPlatform;
   }
 }
 

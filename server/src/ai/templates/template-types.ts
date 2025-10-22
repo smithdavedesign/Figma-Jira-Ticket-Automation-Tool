@@ -28,7 +28,8 @@ export type DocumentPlatform =
   | 'notion'
   | 'azure-devops'
   | 'trello'
-  | 'asana';
+  | 'asana'
+  | 'AEM';
 
 export type DocumentType = 
   | 'component' 

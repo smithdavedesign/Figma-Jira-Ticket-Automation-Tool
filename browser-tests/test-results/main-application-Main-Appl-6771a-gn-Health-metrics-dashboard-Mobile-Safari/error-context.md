@@ -3,42 +3,64 @@
 ```yaml
 - generic [ref=e2]:
   - generic [ref=e3]:
-    - heading "🎨 Enhanced Figma Plugin" [level=1] [ref=e4]
-    - generic [ref=e5]: AI-powered ticket generation with design intelligence preview
-  - generic [ref=e6]:
-    - generic [ref=e7]:
-      - button "🎫 Smart Generator" [ref=e8] [cursor=pointer]
-      - button "📊 Design Health" [ref=e9] [cursor=pointer]
-    - generic [ref=e10]:
-      - generic [ref=e11]:
-        - heading "📊 Design System Health" [level=2] [ref=e12]
-        - paragraph [ref=e13]: Analyze design consistency and component usage patterns
-      - generic [ref=e14]:
-        - generic [ref=e15]:
-          - heading "🎨 Component Coverage" [level=3] [ref=e16]
-          - generic [ref=e17]: 85%
-          - paragraph [ref=e18]: Design system adoption rate
-        - generic [ref=e19]:
-          - heading "🔄 Consistency Score" [level=3] [ref=e20]
-          - generic [ref=e21]: 92%
-          - paragraph [ref=e22]: Cross-platform alignment
-        - generic [ref=e23]:
-          - heading "🚀 Performance" [level=3] [ref=e24]
-          - generic [ref=e25]: A+
-          - paragraph [ref=e26]: Asset optimization grade
-      - generic [ref=e27]:
-        - heading "🔍 Analysis Results" [level=3] [ref=e28]
-        - generic [ref=e29]:
-          - generic [ref=e30]: ✅
-          - strong [ref=e31]: "Color Palette:"
-          - text: All colors match design tokens
-        - generic [ref=e32]:
-          - generic [ref=e33]: ⚠️
-          - strong [ref=e34]: "Typography:"
-          - text: 3 inconsistent font sizes detected
-        - generic [ref=e35]:
-          - generic [ref=e36]: ✅
-          - strong [ref=e37]: "Spacing:"
-          - text: Grid system properly implemented
-      - button "🔍 Analyze Current Selection" [ref=e38] [cursor=pointer]
+    - heading "Enhanced Figma Plugin" [level=1] [ref=e4]
+    - generic [ref=e5]: AI-powered ticket generation with design health insights
+  - generic [ref=e7]:
+    - button "🎫 Ticket Generator" [ref=e8] [cursor=pointer]
+    - button "📊 Design Health" [ref=e9] [cursor=pointer]
+  - generic [ref=e11]:
+    - heading "📊 Design System Health" [level=2] [ref=e12]
+    - paragraph [ref=e13]: Monitor and improve your design system consistency
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: 87%
+        - generic [ref=e17]: Overall Score
+      - generic [ref=e18]:
+        - generic [ref=e19]: 92%
+        - generic [ref=e20]: Compliance Rate
+      - generic [ref=e21]:
+        - generic [ref=e22]: 78%
+        - generic [ref=e23]: Component Usage
+      - generic [ref=e24]:
+        - generic [ref=e25]: 85%
+        - generic [ref=e26]: Token Adoption
+    - generic [ref=e27]:
+      - heading "Component Analysis" [level=3] [ref=e28]
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: Standard Components
+          - generic [ref=e32]: 85%
+        - generic [ref=e33]:
+          - generic [ref=e34]: Custom Components
+          - generic [ref=e35]: 68%
+        - generic [ref=e36]:
+          - generic [ref=e37]: Most Used Component
+          - generic [ref=e38]: Button
+    - generic [ref=e39]:
+      - heading "Token Adoption" [level=3] [ref=e40]
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: Color Tokens
+          - generic [ref=e44]: 92%
+        - generic [ref=e45]:
+          - generic [ref=e46]: Typography Tokens
+          - generic [ref=e47]: 76%
+        - generic [ref=e48]:
+          - generic [ref=e49]: Spacing Tokens
+          - generic [ref=e50]: 64%
+    - generic [ref=e51]:
+      - heading "Recommendations" [level=3] [ref=e52]
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - text: ✅
+          - strong [ref=e55]: "Good:"
+          - text: High token adoption rate
+        - generic [ref=e56]:
+          - text: ⚠️
+          - strong [ref=e57]: "Improve:"
+          - text: Increase component reuse in navigation areas
+        - generic [ref=e58]:
+          - text: 💡
+          - strong [ref=e59]: "Suggestion:"
+          - text: Consider standardizing button variants
 ```

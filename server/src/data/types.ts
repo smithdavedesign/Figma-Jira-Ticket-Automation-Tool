@@ -492,6 +492,15 @@ export interface OptimizationImplementation {
 }
 
 export interface PerformanceMetrics {
+  timing: Record<string, number>;
+  memory: { heapUsed: number; heapTotal: number; external: number; rss: number };
+  throughput: number;
+  cacheHitRate: number;
+  errorRate: number;
+  apiCallCount: number;
+  lastUpdated: number;
+  
+  // Legacy properties for backward compatibility
   loadTime?: number;
   bundleSize?: number;
   renderTime?: number;

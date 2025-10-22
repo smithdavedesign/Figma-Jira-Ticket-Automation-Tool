@@ -1,0 +1,206 @@
+template_id: "aem-htl-page-v1"
+version: "1.0.0"
+organization: "adobe"
+platform: "AEM"
+description: "AEM 6.5 HTL page template implementation with Touch UI policies"
+
+variables:
+  component_name: "{{ figma.component_name }}"
+  template_type: "editable-template"
+  resource_type: "project/templates/{{ figma.component_name | lowercase }}"
+  technologies: ["HTL", "Sling", "OSGi", "JCR", "Touch UI", "Editable Templates"]
+  design_ref: "{{ figma.frame_id }}"
+  complexity_level: "high"
+
+team_standards:
+  testing_framework: "junit-mockito"
+  accessibility_level: "wcag-aa"
+  documentation_format: "markdown"
+  code_style: "aem-coding-standards"
+  review_process: "adobe-standards"
+
+output_format:
+  ticket_type: "story"
+  sections: ["title", "summary", "requirements", "design_context", "acceptance_criteria", "technical_implementation", "template_structure", "testing_strategy", "deployment_notes"]
+  formatting:
+    use_emojis: true
+    include_diagrams: false
+    code_highlighting: true
+    table_formatting: true
+    link_formatting: true
+  ai_context_markers: true
+  include_metadata: true
+
+customization:
+  include_ai_context_markers: true
+  generate_test_files: true
+  create_storybook_stories: false
+  add_accessibility_checklist: true
+  include_performance_metrics: true
+  enable_automated_testing: true
+  include_design_tokens: true
+  add_similar_components: true
+  include_risk_assessment: true
+  generate_aem_code: true
+  include_osgi_config: true
+  add_jcr_structure: true
+
+content: |
+  # 📄 AEM Page Template: {{ component_name }}
+
+  ## 📋 Summary
+  
+  **Priority**: {{ calculated.priority }} | **Story Points**: {{ calculated.story_points }}
+  
+  **🔗 Figma Design**: [View Template]({{ figma.url }})
+  **🎯 Template Type**: {{ template_type }}
+  **📦 Resource Type**: {{ resource_type }}
+  
+  ## 🎯 Objective
+  
+  Create an AEM 6.5 editable page template for **{{ component_name }}** with proper structure policies, initial content, and Touch UI authoring experience.
+  
+  ## 🎨 Design Context
+  
+  - **Template Name**: {{ component_name }}
+  - **Layout Structure**: Based on Figma design specifications
+  - **Content Areas**: Parsys containers with component policies
+  - **Responsive Behavior**: Mobile-first approach with breakpoint definitions
+  
+  ## ✅ Acceptance Criteria
+  
+  ### 🏗️ Template Structure
+  - ✅ **Editable Template**: Properly configured in `/conf/project/settings/wcm/templates/`
+  - ✅ **Structure Policies**: Component placement rules and restrictions
+  - ✅ **Initial Content**: Default page structure with placeholder content
+  - ✅ **Layout Container**: Responsive grid system with breakpoint definitions
+  
+  ### 📝 Content Authoring
+  - ✅ **Touch UI Experience**: Intuitive page authoring with template editor
+  - ✅ **Component Policies**: Proper component allowlist and styling options
+  - ✅ **Thumbnail & Icon**: Clear template identification in page creation wizard
+  
+  ## 🔧 Technical Implementation
+  
+  ### 📁 Template Structure
+  ```
+  /conf/project/settings/wcm/templates/{{ component_name | lowercase }}/
+  ├── .content.xml                           # Template definition
+  ├── initial/
+  │   └── .content.xml                       # Initial content structure
+  ├── policies/
+  │   └── .content.xml                       # Component policies
+  ├── structure/
+  │   └── .content.xml                       # Template structure
+  └── thumbnail.png                          # Template thumbnail
+  ```
+  
+  ### 🎯 Template Definition
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <jcr:root xmlns:cq="http://www.day.com/jcr/cq/1.0"
+            xmlns:jcr="http://www.jcp.org/jcr/1.0"
+            xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+            jcr:primaryType="cq:Template"
+            jcr:title="{{ component_name }}"
+            jcr:description="{{ component_name }} page template"
+            allowedPaths="[/content/project(/.*)?]"
+            ranking="{Long}100">
+      <jcr:content
+          jcr:primaryType="cq:PageContent"
+          sling:resourceType="{{ resource_type }}"/>
+  </jcr:root>
+  ```
+  
+  ### 🏗️ HTL Page Component
+  ```html
+  <!--/* {{ component_name }} Page Template */-->
+  <html data-sly-use.page="com.adobe.cq.wcm.core.components.models.Page"
+        lang="${page.language}"
+        data-sly-use.head="core/wcm/components/commons/v1/templates/page/head.html"
+        data-sly-use.footer="core/wcm/components/commons/v1/templates/page/footer.html"
+        data-sly-use.redirect="core/wcm/components/commons/v1/templates/page/redirect.html">
+  <head data-sly-call="${head.head @ page = page}"></head>
+  <body class="page page--{{ component_name | lowercase }}">
+      <div class="root responsivegrid">
+          <div data-sly-resource="${'main' @ resourceType='wcm/foundation/components/responsivegrid'}"></div>
+      </div>
+      <data-sly-call="${footer.footer @ page = page}"/>
+  </body>
+  </html>
+  ```
+  
+  ### 🎛️ Layout Container Policies
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0"
+            xmlns:cq="http://www.day.com/jcr/cq/1.0"
+            xmlns:jcr="http://www.jcp.org/jcr/1.0"
+            xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+            jcr:primaryType="nt:unstructured"
+            jcr:title="{{ component_name }} Container Policy"
+            sling:resourceType="wcm/core/components/policy/policy"
+            components="[
+                /apps/project/components/content,
+                /apps/project/components/{{ component_name | lowercase }},
+                group:Project Components
+            ]">
+      <cq:responsive jcr:primaryType="nt:unstructured">
+          <breakpoints jcr:primaryType="nt:unstructured">
+              <phone
+                  jcr:primaryType="nt:unstructured"
+                  title="Smallest"
+                  width="{Long}768"/>
+              <tablet
+                  jcr:primaryType="nt:unstructured"
+                  title="Small"
+                  width="{Long}1024"/>
+              <desktop
+                  jcr:primaryType="nt:unstructured"
+                  title="Medium"
+                  width="{Long}1200"/>
+          </breakpoints>
+      </cq:responsive>
+  </jcr:root>
+  ```
+  
+  ## 🧪 Testing Strategy
+  
+  ### Template Testing
+  ```java
+  @ExtendWith(AemContextExtension.class)
+  class {{ component_name }}TemplateTest {
+      
+      private final AemContext context = new AemContext();
+      
+      @Test
+      void testTemplateCreation() {
+          // Test template instantiation
+          Page page = context.pageManager()
+              .create("/content/project", "test-page", 
+                      "/conf/project/settings/wcm/templates/{{ component_name | lowercase }}");
+          
+          assertNotNull(page);
+          assertEquals("{{ component_name }}", page.getTemplate().getTitle());
+      }
+      
+      @Test
+      void testComponentPolicies() {
+          // Test component allowlist and policies
+      }
+  }
+  ```
+  
+  ## 📋 Subtasks
+  
+  - [ ] 🏗️ Create editable template structure in `/conf/project/settings/wcm/templates/`
+  - [ ] 📝 Implement HTL page component with proper resource types
+  - [ ] 🎛️ Configure component policies and allowlists
+  - [ ] 📱 Set up responsive grid breakpoints
+  - [ ] 🎨 Create template thumbnail and metadata
+  - [ ] 🧪 Write template and policy unit tests
+  - [ ] 📚 Document template usage and authoring guidelines
+  
+  ---
+  
+  **🔍 Complexity Analysis**: {{ calculated.complexity }} | **⏱️ Estimated Hours**: {{ calculated.hours }} | **🎯 Confidence**: {{ calculated.confidence }}%

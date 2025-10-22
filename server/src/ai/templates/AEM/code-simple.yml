@@ -1,0 +1,87 @@
+name: "AEM Component Implementation"
+description: "Template for Adobe Experience Manager component development with HTL"
+platform: "AEM"
+type: "code-simple"
+
+variables:
+  component_name: "{{frameData.name}}"
+  tech_stack: "AEM 6.5, HTL, Apache Sling, OSGi"
+  complexity: "simple"
+  
+template: |
+  # 🏗️ AEM Component: {{component_name}}
+  
+  **Priority**: Medium | **Story Points**: 5
+  
+  **🔗 Figma Design**: [View Component]({{figmaContext.figmaUrl}})
+  
+  ## 🎯 Objective
+  Implement the **{{component_name}}** AEM component from the design specifications.
+  
+  ## 🛠️ Technical Requirements
+  - **Platform**: Adobe Experience Manager 6.5
+  - **Template Engine**: HTL (HTML Template Language)
+  - **Framework**: Apache Sling
+  - **Architecture**: OSGi bundles
+  - **Repository**: JCR (Java Content Repository)
+  - **UI**: Touch UI components
+  
+  ## 📐 AEM Component Structure
+  ```
+  /apps/project/components/{{component_name}}/
+  ├── .content.xml              # Component definition
+  ├── {{component_name}}.html   # HTL template
+  ├── dialog.xml               # Author dialog
+  ├── clientlibs/              # CSS/JS resources
+  └── README.md                # Component documentation
+  ```
+  
+  ## ✅ Acceptance Criteria
+  
+  ✅ **HTL Template**: Clean HTL markup following best practices
+  
+  ✅ **Touch UI Dialog**: Intuitive authoring experience
+  
+  ✅ **OSGi Service**: Backend logic if required
+  
+  ✅ **Client Libraries**: Optimized CSS/JS delivery
+  
+  ✅ **Responsive**: Works across all breakpoints
+  
+  ✅ **Accessibility**: WCAG 2.1 AA compliance
+  
+  ## 🧪 Testing Strategy
+  
+  **Framework**: AEM Testing Framework + JUnit
+  **Test Types**: Unit tests, integration tests, UI tests
+  **Coverage**: HTL rendering, dialog functionality, responsive behavior
+  
+  **Example Test Structure**:
+  ```java
+  @Test
+  public void testComponentRendering() {
+      // Test HTL template rendering
+  }
+  
+  @Test
+  public void testDialogFunctionality() {
+      // Test author dialog
+  }
+  
+  @Test
+  public void testResponsiveDesign() {
+      // Test breakpoint behavior
+  }
+  ```
+  
+  ## 📋 Implementation Checklist
+  - [ ] Create component structure in `/apps/project/components/`
+  - [ ] Implement HTL template with proper data-sly-* attributes
+  - [ ] Configure Touch UI dialog with required fields
+  - [ ] Add client library category and dependencies
+  - [ ] Implement responsive CSS using AEM Grid
+  - [ ] Add proper caching headers and OSGi configuration
+  - [ ] Write unit tests for component logic
+  - [ ] Test in AEM author and publish environments
+  - [ ] Validate accessibility with axe-core
+  - [ ] Document component usage and properties

@@ -21,18 +21,22 @@ import type {
 // Simple YAML parser for template files
 class SimpleYAMLParser {
   static parse(yamlString: string): any {
-    const lines = yamlString.split('\n');
-    const result: any = {};
-    let currentKey = '';
-    let currentValue = '';
-    let inMultilineString = false;
-    let multilineKey = '';
-    
-    for (let line of lines) {
-      line = line.trim();
+    try {
+      const lines = yamlString.split('\n');
+      const result: any = {};
+      let currentKey = '';
+      let currentValue = '';
+      let inMultilineString = false;
+      let multilineKey = '';
       
-      // Skip comments and empty lines
-      if (line.startsWith('#') || line === '') continue;
+      for (let line of lines) {
+        line = line.trim();
+        
+        // Skip comments and empty lines
+        if (line.startsWith('#') || line === '') continue;
+        
+        // Skip invalid YAML structures like code fences
+        if (line.startsWith('```') || line.startsWith('````')) continue;
       
       // Handle multiline strings
       if (inMultilineString) {
@@ -78,6 +82,10 @@ class SimpleYAMLParser {
     }
     
     return result;
+    } catch (error) {
+      console.error('YAML parsing error:', error);
+      throw new Error(`Failed to parse YAML: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 }
 
@@ -105,8 +113,11 @@ export class AdvancedTemplateEngine implements TemplateEngine {
 
     try {
       const templatePath = join(this.templatesDir, platform, `${type}.yml`);
+      console.log(`Loading template from: ${templatePath}`);
       const templateContent = await readFile(templatePath, 'utf-8');
+      console.log(`Template content loaded, length: ${templateContent.length}`);
       const template = SimpleYAMLParser.parse(templateContent) as TemplateConfig;
+      console.log(`Template parsed successfully: ${template.template_id}`);
       
       // Validate template
       const validation = this.validateTemplate(template);
@@ -117,7 +128,8 @@ export class AdvancedTemplateEngine implements TemplateEngine {
       this.templateCache.set(cacheKey, template);
       return template;
     } catch (error) {
-      console.warn(`Failed to load template ${cacheKey}, using default:`, error);
+      console.error(`Failed to load template ${cacheKey}:`, error);
+      console.warn(`Using default template for ${cacheKey}`);
       return this.getDefaultTemplate(platform, type);
     }
   }
@@ -490,7 +502,8 @@ export class AdvancedTemplateEngine implements TemplateEngine {
       'notion': '📝',
       'azure-devops': '🔷',
       'trello': '📋',
-      'asana': '✅'
+      'asana': '✅',
+      'AEM': '🏗️'
     };
     return emojiMap[platform] || '📄';
   }
@@ -506,7 +519,8 @@ export class AdvancedTemplateEngine implements TemplateEngine {
       'notion': 'Page',
       'azure-devops': 'Work Item',
       'trello': 'Card',
-      'asana': 'Task'
+      'asana': 'Task',
+      'AEM': 'AEM Component'
     };
     return prefixMap[platform] || 'Document';
   }
@@ -530,6 +544,8 @@ export class AdvancedTemplateEngine implements TemplateEngine {
   validateTemplate(template: TemplateConfig): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
+
+    console.log('🔍 Validating template:', JSON.stringify(template, null, 2));
 
     // Required fields validation
     if (!template.template_id) errors.push('template_id is required');

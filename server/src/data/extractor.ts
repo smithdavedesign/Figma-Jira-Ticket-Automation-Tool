@@ -749,7 +749,18 @@ export class FigmaDataExtractor implements FigmaExtractor {
         designTokens: {},
         codeGeneration: [],
         validation: { valid: true, errors: [], warnings: [] },
-        performance: { loadTime: 0, bundleSize: 0, renderTime: 0 },
+        performance: {
+          timing: {},
+          memory: { heapUsed: 0, heapTotal: 0, external: 0, rss: 0 },
+          throughput: 0,
+          cacheHitRate: 0,
+          errorRate: 0,
+          apiCallCount: 0,
+          lastUpdated: Date.now(),
+          loadTime: 0,
+          bundleSize: 0,
+          renderTime: 0
+        },
         extractedAt: new Date().toISOString(),
         version: '1.0.0'
       };

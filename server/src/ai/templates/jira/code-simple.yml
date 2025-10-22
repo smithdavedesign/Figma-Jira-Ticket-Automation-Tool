@@ -1,0 +1,298 @@
+template_id: "universal-code-simple-v1"
+version: "1.0.0"
+organization: "default"
+platform: "jira"
+description: "Universal code generation template - simplified version"
+
+variables:
+  component_name: "{{ figma.component_name }}"
+  tech_stack: "{{ team.tech_stack }}"
+  design_ref: "{{ figma.frame_id }}"
+  complexity_level: "{{ calculated.complexity }}"
+
+team_standards:
+  testing_framework: "framework-specific"
+  accessibility_level: "wcag-aa"
+  documentation_format: "markdown"
+  code_style: "prettier"
+  review_process: "standard"
+
+output_format:
+  ticket_type: "story"
+  sections: 
+    - "title"
+    - "summary" 
+    - "requirements"
+    - "acceptance_criteria"
+    - "technical_implementation"
+    - "testing_strategy"
+  formatting:
+    use_emojis: true
+    include_diagrams: false
+    code_highlighting: true
+    table_formatting: true
+    link_formatting: true
+  ai_context_markers: true
+  include_metadata: true
+
+customization:
+  include_ai_context_markers: true
+  generate_test_files: true
+  create_storybook_stories: true
+  add_accessibility_checklist: true
+  include_performance_metrics: true
+  enable_automated_testing: true
+  include_design_tokens: true
+  add_similar_components: true
+  include_risk_assessment: true
+
+content: |
+  # 💻 Code Implementation: {{ component_name }}
+
+  ## 📋 Summary
+  
+  **Priority**: High | **Story Points**: 5
+  
+  **🔗 Figma Design**: [View Component]({{ figma.url }})
+  **🎯 Tech Stack**: {{ tech_stack }}
+  **🏗️ Implementation**: Component Development
+  
+  ## 🎯 Objective
+  
+  Implement the **{{ component_name }}** component based on Figma design specifications using the detected tech stack and following modern development best practices.
+  
+  ## 🎨 Design Context
+  
+  - **Component Name**: {{ component_name }}
+  - **Complexity**: {{ calculated.complexity }}
+  - **Tech Stack**: {{ tech_stack }}
+  - **Design System Integration**: Required
+  
+  ## ✅ Acceptance Criteria
+  
+  ### Implementation Notes
+  {% if tech_stack == 'AEM' or tech_stack == 'HTL' %}
+  - Follow AEM best practices and Touch UI guidelines
+  - Use HTL (Sightly) for templating with proper escaping
+  - Implement AEM authoring dialogs for content management
+  - Follow OSGi service patterns for backend logic
+  - Use AEM Core Components as base where possible
+  - Ensure proper caching and performance optimization
+  {% elif tech_stack == 'React' or tech_stack == 'Next.js' %}
+  - Use functional components with hooks
+  - Implement proper prop validation with TypeScript
+  - Follow React performance best practices (memoization)
+  - Use Next.js features like SSR/SSG where appropriate
+  - Implement proper error boundaries
+  {% elif tech_stack == 'Vue' or tech_stack == 'Nuxt' %}
+  - Use Composition API for better TypeScript support
+  - Implement proper reactivity patterns
+  - Follow Vue 3 best practices
+  - Use Nuxt features like SSR/SSG where appropriate
+  - Implement proper error handling with error boundaries
+  {% elif tech_stack == 'Angular' %}
+  - Use reactive forms for complex interactions
+  - Implement proper dependency injection
+  - Follow Angular style guide conventions
+  - Use OnPush change detection for performance
+  - Implement proper error handling with interceptors
+  {% elif tech_stack == 'Svelte' %}
+  - Use Svelte's reactive declarations effectively
+  - Implement proper component communication patterns
+  - Follow Svelte best practices for performance
+  - Use SvelteKit features where appropriate
+  {% else %}
+  - Use semantic HTML elements
+  - Follow accessibility guidelines (WCAG 2.1)
+  - Implement responsive design patterns
+  - Add proper error handling
+  - Include loading states where appropriate
+  {% endif %}
+  
+  **Universal Guidelines:**
+  - Follow accessibility guidelines (WCAG 2.1)
+  - Implement responsive design patterns
+  - Add proper error handling and loading states
+  - Use semantic HTML elements
+  - Optimize for performance and SEO  ## 🔧 Technical Implementation
+  
+  ### Code Structure
+  {% if tech_stack == 'AEM' or tech_stack == 'HTL' %}
+  ```
+  {{ component_name }}/
+  ├── {{ component_name }}.html          # HTL template
+  ├── _cq_dialog/.content.xml           # AEM dialog definition
+  ├── clientlib/
+  │   ├── js/{{ component_name }}.js    # Client-side JavaScript
+  │   └── css/{{ component_name }}.css  # Component styles
+  ├── .content.xml                     # Component metadata
+  └── {{ component_name }}.model.java   # Sling Model (if needed)
+  ```
+  {% elif tech_stack == 'React' or tech_stack == 'Next.js' %}
+  ```
+  {{ component_name }}/
+  ├── index.tsx                        # Main component file
+  ├── {{ component_name }}.module.css   # CSS modules
+  ├── __tests__/
+  │   └── {{ component_name }}.test.tsx
+  └── {{ component_name }}.types.ts     # TypeScript types
+  ```
+  {% elif tech_stack == 'Vue' or tech_stack == 'Nuxt' %}
+  ```
+  {{ component_name }}/
+  ├── {{ component_name }}.vue          # Single File Component
+  ├── __tests__/
+  │   └── {{ component_name }}.spec.ts
+  └── types.ts                         # TypeScript types
+  ```
+  {% elif tech_stack == 'Angular' %}
+  ```
+  {{ component_name }}/
+  ├── {{ component_name }}.component.ts  # Component logic
+  ├── {{ component_name }}.component.html # Template
+  ├── {{ component_name }}.component.scss # Styles
+  ├── {{ component_name }}.component.spec.ts # Tests
+  └── {{ component_name }}.module.ts     # Module definition
+  ```
+  {% elif tech_stack == 'Svelte' %}
+  ```
+  {{ component_name }}/
+  ├── {{ component_name }}.svelte       # Main component
+  ├── __tests__/
+  │   └── {{ component_name }}.test.js
+  └── {{ component_name }}.types.ts     # TypeScript types
+  ```
+  {% else %}
+  ```
+  {{ component_name }}/
+  ├── index.js                         # Main component file
+  ├── {{ component_name }}.css          # Styles
+  ├── __tests__/
+  │   └── {{ component_name }}.test.js
+  └── README.md
+  ```
+  {% endif %}
+  
+  ### 🎯 Implementation Guidelines
+  
+  **For React/Next.js:**
+  - Use functional components with hooks
+  - Implement proper TypeScript interfaces
+  - Follow React best practices for state management
+  - Use appropriate styling solution for your project
+  
+  **For Vue/Nuxt:**
+  - Use Composition API for complex components
+  - Implement proper prop validation
+  - Follow Vue 3+ best practices
+  - Use scoped styles or CSS Modules
+  
+  **For Angular:**
+  - Create standalone components where appropriate
+  - Use proper lifecycle hooks and change detection
+  - Follow Angular style guide conventions
+  
+  **For AEM/HTL:**
+  - Create HTL template with semantic markup
+  - Implement Sling Model for business logic
+  - Configure Touch UI dialog for content authoring
+  - Follow AEM component development patterns
+  - Implement OSGi services if needed
+  - Use JCR repository patterns
+  
+  **For Svelte/SvelteKit:**
+  - Use Svelte component syntax with proper reactivity
+  - Implement stores for state management
+  - Follow SvelteKit routing conventions
+  - Use proper TypeScript integration
+  
+  **For Flutter/Dart:**
+  - Create StatelessWidget or StatefulWidget
+  - Implement proper state management (Provider, Bloc, Riverpod)
+  - Follow Material Design or Cupertino patterns
+  - Use proper widget composition
+  
+  **For Other Frameworks:**
+  - Follow framework-specific conventions
+  - Implement proper component lifecycle
+  - Use framework's recommended patterns
+  - Apply appropriate state management solutions
+  
+  ### 🎨 Styling Implementation
+  
+  **General Styling Guidelines:**
+  - Follow your project's styling approach
+  - Use design system tokens where available
+  - Implement responsive design patterns
+  - Ensure accessibility through styling choices
+  
+  ## 🧪 Testing Strategy
+  
+  ### Unit Testing Framework
+  Choose based on your tech stack:
+  - **React**: Jest + React Testing Library
+  - **Vue**: Vitest + Vue Test Utils
+  - **Angular**: Jasmine + Karma
+  - **AEM**: JUnit + Mockito for Java, Jest for clientlibs
+  - **Svelte**: Vitest + Svelte Testing Library
+  - **Flutter**: Flutter Test framework + Mockito
+  - **Next.js**: Jest + React Testing Library + Playwright for E2E
+  - **Nuxt**: Vitest + Vue Test Utils + Playwright for E2E
+  
+  ### Test Coverage Areas
+  ```javascript
+  describe('{{ component_name }}', () => {
+    it('renders with default props', () => {
+      // Test component rendering
+    });
+    
+    it('handles user interactions correctly', () => {
+      // Test event handlers and state changes
+    });
+    
+    it('meets accessibility requirements', () => {
+      // Test ARIA labels, keyboard navigation
+    });
+    
+    it('applies correct styling', () => {
+      // Test CSS classes and visual states
+    });
+  });
+  ```
+  
+  ## 📚 Documentation Requirements
+  
+  ### Component Documentation
+  - Document all props and their types
+  - Provide clear usage examples
+  - Include accessibility implementation notes
+  - Document any framework-specific considerations
+  
+  ### Code Examples
+  Provide implementation examples for:
+  - Basic component usage
+  - Advanced prop configurations
+  - Integration with your design system
+  - Accessibility features demonstration
+  
+  ## 📋 Implementation Subtasks
+  
+  - [ ] 🏗️ Set up component file structure
+  - [ ] 📝 Implement core component logic based on framework
+  - [ ] 🎨 Apply styling following Figma design specifications
+  - [ ] 🔧 Create component interface and prop definitions
+  - [ ] 🧪 Write comprehensive unit and integration tests
+  - [ ] 📚 Create documentation and usage examples
+  - [ ] ♿ Validate WCAG 2.1 AA accessibility compliance
+  - [ ] 🚀 Test integration within target application
+  - [ ] 📦 Verify build process and deployment compatibility
+  
+  ## 🤖 AI Assistant Integration
+  
+  **GitHub Copilot Prompt**: "Generate a complete {{ component_name }} component implementation for {{ tech_stack }} with TypeScript interfaces, comprehensive testing, and accessibility features. Follow project conventions and best practices."
+  
+  **Claude/Cursor Prompt**: "Review this {{ component_name }} component implementation ticket. Suggest improvements for architecture, testing coverage, accessibility, and integration with {{ tech_stack }} ecosystem."
+  
+  ---
+  
+  **🔍 Complexity**: {{ calculated.complexity }} | **⏱️ Estimated Hours**: {{ calculated.hours }} | **🎯 Confidence**: {{ calculated.confidence }}%

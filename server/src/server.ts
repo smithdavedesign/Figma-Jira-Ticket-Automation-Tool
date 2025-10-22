@@ -199,33 +199,40 @@ class TicketGenerator {
    * Generate tickets using the template system for multiple frames
    */
   async generateWithTemplates(args: any): Promise<ToolResult> {
-    const { 
-      frameData = [], 
-      projectName = 'Design Implementation',
-      figmaContext = {},
-      platform = 'jira',
-      documentType = 'component',
-      organizationId = 'default',
-      teamStandards = {}
-    } = args;
-
-    console.log('📝 Generating template-based tickets for:', frameData.length, 'frames');
-    console.log('🏢 Platform:', platform, 'Type:', documentType);
-    
-    if (!frameData || frameData.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: '# No Components Selected\n\nPlease select components from Figma to generate tickets.',
-          },
-        ],
-      };
-    }
-
+    console.log('🚨 ENTERED generateWithTemplates - method called successfully');
     try {
+      console.log('🔍 Starting generateWithTemplates with args:', JSON.stringify(args, null, 2));
+      
+      const { 
+        frameData = [], 
+        projectName = 'Design Implementation',
+        figmaContext = {},
+        platform = 'jira',
+        documentType = 'component',
+        organizationId = 'default',
+        teamStandards = {}
+      } = args;
+
+      // Detect AEM tech stack and adjust platform
+      const detectedPlatform = this.detectTechStackPlatform((teamStandards as any).tech_stack, platform);
+      console.log(`🔍 Original platform: ${platform}, Detected platform: ${detectedPlatform}`);
+      
+      console.log('📝 Generating template-based tickets for:', frameData.length, 'frames');
+      console.log('🏢 Platform:', detectedPlatform, 'Type:', documentType);
+      
+      if (!frameData || frameData.length === 0) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: '# No Components Selected\n\nPlease select components from Figma to generate tickets.',
+            },
+          ],
+        };
+      }
+
       const templateOptions: TicketGenerationOptions = {
-        platform: platform as any,
+        platform: detectedPlatform as any,
         documentType: documentType as any,
         organizationId,
         projectName,
@@ -807,6 +814,50 @@ class TicketGenerator {
       .map(([priority, count]) => `${priority}: ${count}`)
       .join(', ');
   }
+
+  /**
+   * Detect the appropriate platform based on tech stack
+   */
+  private detectTechStackPlatform(techStack: string[] | string | undefined, defaultPlatform: string): string {
+    if (!techStack) return defaultPlatform;
+    
+    const techStackString = Array.isArray(techStack) 
+      ? techStack.join(' ').toLowerCase()
+      : techStack.toLowerCase();
+    
+    console.log(`🔍 Analyzing tech stack: ${techStackString}`);
+    
+    // AEM detection patterns
+    if (techStackString.includes('aem') || 
+        techStackString.includes('htl') ||
+        techStackString.includes('sling') ||
+        techStackString.includes('osgi') ||
+        techStackString.includes('jcr')) {
+      console.log('✅ AEM tech stack detected!');
+      return 'AEM';
+    }
+    
+    // React/Next.js detection
+    if (techStackString.includes('react') || techStackString.includes('next')) {
+      console.log('⚛️ React/Next.js tech stack detected!');
+      return 'jira'; // Could be 'react' if we had React-specific templates
+    }
+    
+    // Vue detection
+    if (techStackString.includes('vue')) {
+      console.log('💚 Vue tech stack detected!');
+      return 'jira'; // Could be 'vue' if we had Vue-specific templates
+    }
+    
+    // Angular detection
+    if (techStackString.includes('angular')) {
+      console.log('🅰️ Angular tech stack detected!');
+      return 'jira'; // Could be 'angular' if we had Angular-specific templates
+    }
+    
+    console.log(`🔄 Using default platform: ${defaultPlatform}`);
+    return defaultPlatform;
+  }
 }
 
 /**
@@ -1387,6 +1438,35 @@ class ComplianceChecker {
     const match = url.match(/file\/([a-zA-Z0-9]+)/);
     return match ? match[1] || null : null;
   }
+
+  /**
+   * Detect the appropriate platform based on tech stack
+   */
+  private detectTechStackPlatform(techStack: string[] | string | undefined, defaultPlatform: string): string {
+    if (!techStack) return defaultPlatform;
+    
+    const techStackString = Array.isArray(techStack) 
+      ? techStack.join(' ').toLowerCase()
+      : techStack.toLowerCase();
+    
+    console.log(`🔍 Analyzing tech stack: ${techStackString}`);
+    
+    // AEM detection patterns
+    if (techStackString.includes('aem') || 
+        techStackString.includes('htl') ||
+        techStackString.includes('sling') ||
+        techStackString.includes('osgi') ||
+        techStackString.includes('jcr')) {
+      console.log('✅ AEM tech stack detected!');
+      return 'AEM';
+    }
+    
+    // Could add more platform detection here
+    // if (techStackString.includes('react') || techStackString.includes('next')) return 'react';
+    // if (techStackString.includes('vue') || techStackString.includes('nuxt')) return 'vue';
+    
+    return defaultPlatform;
+  }
 }
 
 /**
@@ -1493,7 +1573,12 @@ class FigmaAITestServer {
           return await this.analyzeDesignHealth(body);
 
         case 'generate_template_tickets':
-          return await this.ticketGenerator.generateWithTemplates(body);
+          console.log('🎯 About to call generateWithTemplates with body:', JSON.stringify(body, null, 2));
+          console.log('🔍 this.ticketGenerator exists:', !!this.ticketGenerator);
+          console.log('🔍 generateWithTemplates method exists:', typeof this.ticketGenerator.generateWithTemplates);
+          const result = await this.ticketGenerator.generateWithTemplates(body);
+          console.log('✅ generateWithTemplates completed successfully');
+          return result;
 
         default:
           // Don't catch unknown method errors - let them bubble up for proper HTTP error handling
@@ -3048,8 +3133,11 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
 
         req.on('end', async () => {
           try {
+            console.log('📥 Received request body:', body);
             const { method, params } = JSON.parse(body);
+            console.log('🎯 Parsed method:', method, 'params:', JSON.stringify(params, null, 2));
             const result = await this.handleRequest(method, params);
+            console.log('✅ Request completed successfully');
             
             res.writeHead(200);
             res.end(JSON.stringify(result));
@@ -3087,6 +3175,18 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
     });
   }
 }
+
+// Add global error handlers
+process.on('uncaughtException', (error) => {
+  console.error('🚨 Uncaught Exception:', error);
+  console.error('Stack trace:', error.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
 
 // Start the server if this file is run directly
 if (import.meta.url === `file://${process.argv[1]}`) {

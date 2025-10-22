@@ -800,6 +800,15 @@ class MCPPerformanceMonitor implements PerformanceMonitor {
     
     return totalOperations > 0 ? errors / totalOperations : 0;
   }
+
+  /**
+   * Reset all performance data and clear caches
+   */
+  reset(): void {
+    this.timers.clear();
+    this.metrics = [];
+    this.memorySnapshots = [];
+  }
 }
 
 /**
@@ -829,6 +838,7 @@ interface PerformanceMonitor {
   getMetrics(): PerformanceMetrics;
   recordOperationStart(operation: string, metadata?: Record<string, any>): string;
   recordOperationEnd(timerId: string, resultSize?: number): number;
+  reset(): void;
 }
 
 export { ExtractionPerformanceOptimizer, MCPPerformanceMonitor, PerformanceMonitorFactory };
