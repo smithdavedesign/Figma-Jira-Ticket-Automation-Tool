@@ -121,7 +121,7 @@ cd ui && python3 -m http.server 8080
 ## 📁 File Changes Summary
 
 ### 🆕 New Files
-- `utils/fetchScreenshot.ts` - TypeScript screenshot utilities
+- `src/shared/fetchScreenshot.ts` - TypeScript screenshot utilities
 - `server/routes/figma.js` - Express routes for Figma API proxy
 
 ### 📝 Modified Files
