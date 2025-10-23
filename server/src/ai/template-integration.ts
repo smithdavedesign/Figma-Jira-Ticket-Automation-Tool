@@ -70,11 +70,14 @@ export class TemplateIntegrationService {
 
     try {
       // Smart template selection based on tech stack
+      console.log(`🔍 Template selection inputs - documentType: ${documentType}, teamStandards.tech_stack: ${JSON.stringify((teamStandards as any).tech_stack)}`);
       const templateType = this.selectTemplateType(documentType, (teamStandards as any).tech_stack);
       console.log(`🔍 Using platform: ${platform} with template type: ${templateType}`);
       
       // Load the appropriate template
+      console.log(`🔍 Loading template - platform: ${platform}, templateType: ${templateType}`);
       const template = await templateEngine.loadTemplate(platform, templateType);
+      console.log(`✅ Template loaded successfully`);
       
       // Build template context from available data
       const context = this.buildTemplateContext(
@@ -105,9 +108,33 @@ export class TemplateIntegrationService {
     teamStandards: any,
     organizationId: string
   ): TemplateContext {
-    // Extract Figma context
-    const figmaUrl = figmaContext.figmaUrl || figmaContext.frameUrls?.[0] || '';
+    // Extract Figma context with better URL handling
+    const figmaUrl = figmaContext.figmaUrl || 
+                    figmaContext.frameUrls?.[0] || 
+                    figmaContext.url ||
+                    `https://figma.com/file/${figmaContext.fileKey || 'unknown'}`;
     const fileId = this.extractFileId(figmaUrl);
+    
+    // Use enhanced frame data if provided, otherwise fall back to legacy data
+    // Enhanced frame data extraction (frameData is already the enhanced data from UI)
+    const enhancedData = (frameData as any).hierarchy || {};
+    const designTokens = (frameData as any).design_tokens || enhancedData.designTokens || {};
+    const layers = enhancedData.layers || [];
+    
+    // Extract semantic information
+    const semanticElements = layers.filter((layer: any) => 
+      layer.semanticRole && layer.semanticRole !== 'unknown'
+    );
+    
+    // Extract component instances
+    const componentInstances = layers.filter((layer: any) => 
+      layer.type === 'INSTANCE' && layer.masterComponent
+    );
+    
+    // Extract text content for context
+    const textElements = layers.filter((layer: any) => 
+      layer.type === 'TEXT' && layer.name
+    ).map((layer: any) => layer.name);
     
     return {
       figma: {
@@ -115,8 +142,31 @@ export class TemplateIntegrationService {
         file_id: fileId,
         file_name: figmaContext.fileName || 'Design File',
         frame_id: frameData.id,
+        url: figmaUrl,
+        live_link: figmaUrl,
         dimensions: frameData.dimensions || { width: 0, height: 0 },
-        dependencies: frameData.dependencies || []
+        dependencies: frameData.dependencies || [],
+        // Enhanced design context
+        design_tokens: {
+          colors: this.convertArrayToTokenMap(designTokens.colors || []),
+          typography: this.convertArrayToTokenMap(designTokens.typography || []),
+          spacing: this.convertArrayToTokenMap(designTokens.spacing || []),
+          borders: this.convertArrayToTokenMap(designTokens.borderRadius || []),
+          shadows: this.convertArrayToTokenMap(designTokens.shadows || [])
+        },
+        semantic_elements: (frameData as any).semantic_elements || semanticElements.map((el: any) => ({
+          type: el.type || 'element',
+          name: el.name || 'Unknown',
+          content: el.content || ''
+        })),
+        component_instances: (frameData as any).component_instances || componentInstances.map((comp: any) => ({
+          name: comp.name || 'Component',
+          type: comp.type || 'instance',
+          variant: comp.variant || 'default'
+        })),
+        text_content: (frameData as any).text_content || textElements,
+        hierarchy_depth: (frameData as any).hierarchy_depth || enhancedData.totalDepth || 1,
+        layer_count: (frameData as any).layer_count || layers.length || 1
       },
       project: {
         name: projectName,
@@ -381,6 +431,34 @@ Implement the **${name}** component from the design specifications.
   }
 
   /**
+   * Convert array of tokens to Record format expected by DesignTokens interface
+   */
+  private convertArrayToTokenMap(tokenArray: any[]): Record<string, string> {
+    const tokenMap: Record<string, string> = {};
+    tokenArray.forEach((token, index) => {
+      // Ensure token is a string
+      const tokenStr = String(token);
+      
+      if (tokenStr.includes('-')) {
+        // For typography tokens like "Sora-14px-SemiBold"
+        const parts = tokenStr.split('-');
+        const key = parts.length > 1 ? `${parts[0].toLowerCase()}_${parts[1]}` : tokenStr;
+        tokenMap[key] = tokenStr;
+      } else if (tokenStr.startsWith('#')) {
+        // For color tokens
+        tokenMap[`color_${index + 1}`] = tokenStr;
+      } else if (!isNaN(Number(tokenStr))) {
+        // For spacing tokens (numbers)
+        tokenMap[`spacing_${tokenStr}`] = `${tokenStr}px`;
+      } else {
+        // Generic case
+        tokenMap[tokenStr.toLowerCase().replace(/\s+/g, '_')] = tokenStr;
+      }
+    });
+    return tokenMap;
+  }
+
+  /**
    * Generate tickets for multiple frames with template support
    */
   async generateMultipleTickets(
@@ -412,6 +490,8 @@ Implement the **${name}** component from the design specifications.
       ? techStack.join(' ').toLowerCase()
       : (techStack || '').toLowerCase();
     
+    console.log(`🔍 Template selection - documentType: ${documentType}, techStack: ${JSON.stringify(techStack)}, techStackString: "${techStackString}"`);
+    
     // Check for AEM tech stack and modify template selection
     if (techStackString.includes('aem') || 
         techStackString.includes('htl') ||
@@ -423,6 +503,7 @@ Implement the **${name}** component from the design specifications.
       
       // Map document types to AEM-specific templates
       if ((documentType as string) === 'component') return 'component-aem' as DocumentType;
+      if ((documentType as string) === 'wiki') return 'wiki-aem' as DocumentType;
       if ((documentType as string) === 'page') return 'page-aem' as DocumentType;
       if ((documentType as string) === 'service') return 'service-aem' as DocumentType;
       if ((documentType as string) === 'code-simple') return 'code-simple-aem' as DocumentType;

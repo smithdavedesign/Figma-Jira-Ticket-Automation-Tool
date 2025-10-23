@@ -1195,6 +1195,24 @@ Examples:
   </div>
 
   <script>
+    // Suppress browser permission policy violation warnings
+    (function() {
+      const originalWarn = console.warn;
+      console.warn = function(...args) {
+        const message = args.join(' ');
+        if (message.includes('[Violation] Potential permissions policy violation') ||
+            message.includes('permissions policy violation') ||
+            message.includes('camera is not allowed') ||
+            message.includes('microphone is not allowed') ||
+            message.includes('clipboard-write is not allowed') ||
+            message.includes('display-capture is not allowed')) {
+          // Suppress these warnings
+          return;
+        }
+        originalWarn.apply(console, args);
+      };
+    })();
+
     const techStackInput = document.getElementById('techStackInput');
     const platformSelect = document.getElementById('platform');
     const documentTypeSelect = document.getElementById('documentType');
@@ -1727,11 +1745,23 @@ Examples:
         const avgWidth = Math.round(selectionData.reduce((sum, item) => sum + (item.dimensions?.width || 0), 0) / selectionData.length);
         const avgHeight = Math.round(selectionData.reduce((sum, item) => sum + (item.dimensions?.height || 0), 0) / selectionData.length);
         
-        // Simulate design token extraction
-        const mockTokens = {
-          colors: Math.min(12, Math.max(3, selectionData.length * 2)),
-          typography: Math.min(8, Math.max(2, componentCount * 2)),
-          spacing: Math.min(15, Math.max(4, totalElements))
+        // Extract real design tokens from enhanced data
+        let actualTokens = { colors: [], typography: [], spacing: [], borderRadius: [], shadows: [] };
+        
+        // Extract tokens from the enhanced frame data
+        if (window.enhancedFrameData && window.enhancedFrameData.length > 0) {
+          const firstFrame = window.enhancedFrameData[0];
+          if (firstFrame.hierarchy && firstFrame.hierarchy.designTokens) {
+            actualTokens = firstFrame.hierarchy.designTokens;
+          }
+        }
+        
+        const tokenCounts = {
+          colors: actualTokens.colors ? actualTokens.colors.length : Math.min(12, Math.max(3, selectionData.length * 2)),
+          typography: actualTokens.typography ? actualTokens.typography.length : Math.min(8, Math.max(2, componentCount * 2)),
+          spacing: actualTokens.spacing ? actualTokens.spacing.length : Math.min(15, Math.max(4, totalElements)),
+          borderRadius: actualTokens.borderRadius ? actualTokens.borderRadius.length : 0,
+          shadows: actualTokens.shadows ? actualTokens.shadows.length : 0
         };
         
         // Simulate quality metrics
@@ -1761,10 +1791,33 @@ Examples:
             <div style="margin-bottom: 12px;">
               <div style="font-weight: 600; margin-bottom: 4px;">🎨 Design Tokens Extracted:</div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${mockTokens.colors} colors</span>
-                <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${mockTokens.typography} typography</span>
-                <span style="background: #e8f5e8; color: #1e7e34; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${mockTokens.spacing} spacing</span>
+                <span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${tokenCounts.colors} colors</span>
+                <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${tokenCounts.typography} typography</span>
+                <span style="background: #e8f5e8; color: #1e7e34; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${tokenCounts.spacing} spacing</span>
+                ${tokenCounts.borderRadius > 0 ? `<span style="background: #f3e8ff; color: #7c3aed; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${tokenCounts.borderRadius} border-radius</span>` : ''}
+                ${tokenCounts.shadows > 0 ? `<span style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${tokenCounts.shadows} shadows</span>` : ''}
               </div>
+              
+              <!-- Show actual token values if available -->
+              ${actualTokens.colors && actualTokens.colors.length > 0 ? `
+                <div style="margin-top: 8px;">
+                  <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Colors:</div>
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    ${actualTokens.colors.slice(0, 8).map(color => `<div style="width: 16px; height: 16px; background: ${color}; border: 1px solid #e5e7eb; border-radius: 2px;" title="${color}"></div>`).join('')}
+                    ${actualTokens.colors.length > 8 ? `<span style="font-size: 10px; color: #9ca3af; align-self: center;">+${actualTokens.colors.length - 8} more</span>` : ''}
+                  </div>
+                </div>
+              ` : ''}
+              
+              ${actualTokens.typography && actualTokens.typography.length > 0 ? `
+                <div style="margin-top: 8px;">
+                  <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Typography:</div>
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    ${actualTokens.typography.slice(0, 4).map(font => `<span style="background: #f9fafb; border: 1px solid #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 9px;" title="${font}">${font.split('-')[0] || font}</span>`).join('')}
+                    ${actualTokens.typography.length > 4 ? `<span style="font-size: 10px; color: #9ca3af; align-self: center;">+${actualTokens.typography.length - 4} more</span>` : ''}
+                  </div>
+                </div>
+              ` : ''}
             </div>
             
             <!-- Performance Metrics -->
@@ -1877,21 +1930,15 @@ Examples:
         const templateParams = {
           frameData: aiData.enhancedFrameData,
           figmaContext: {
-            figmaUrl: aiData.figmaUrl,
+            figmaUrl: `https://www.figma.com/file/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}`,
             component_name: aiData.enhancedFrameData[0]?.name || 'Component',
             frame_id: aiData.enhancedFrameData[0]?.id
           },
-          platform: platformSelect.value || 'jira',
-          documentType: documentType || 'component',
+          platform: platformSelect.value,
+          documentType: documentType,
           projectName: aiData.fileContext.fileName,
           screenshot: aiData.screenshot,
-          teamStandards: {
-            tech_stack: techStackDesc ? techStackDesc.split(',').map(s => s.trim()) : ['React', 'TypeScript'],
-            testing_framework: 'jest-rtl',
-            accessibility_level: 'wcag-aa',
-            documentation_format: 'markdown',
-            code_style: 'prettier'
-          }
+          teamStandards: generateDynamicTeamStandards(techStackDesc, documentType)
         };
         
         // 🐛 DEBUG: Show what data is being sent to LLM
@@ -3078,6 +3125,92 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
       document.getElementById('selection-count').textContent = selectionCount;
     }
 
+    // Generate dynamic team standards based on tech stack and document type
+    function generateDynamicTeamStandards(techStackDesc, documentType) {
+      const standards = {
+        tech_stack: ['Generic'],
+        testing_framework: 'generic',
+        accessibility_level: 'wcag-aa',
+        documentation_format: 'markdown',
+        code_style: 'prettier'
+      };
+
+      if (!techStackDesc) {
+        return standards;
+      }
+
+      const techLower = techStackDesc.toLowerCase();
+
+      // AEM Tech Stack Detection
+      if (techLower.includes('aem') || techLower.includes('adobe experience manager') || 
+          techLower.includes('htl') || techLower.includes('html template language') ||
+          techLower.includes('sling') || techLower.includes('osgi') || 
+          techLower.includes('touch ui') || techLower.includes('jcr')) {
+        
+        standards.tech_stack = ['AEM 6.5', 'HTL', 'Sling Models', 'OSGi', 'Touch UI', 'JCR'];
+        standards.testing_framework = 'aem-mocks';
+        standards.build_tool = 'Maven';
+        standards.deployment = 'AEM Package Manager';
+        standards.component_structure = 'Touch UI Components';
+        standards.data_binding = 'Sling Models';
+        
+        if (documentType === 'wiki') {
+          standards.template_focus = 'implementation-guide';
+          standards.content_sections = ['HTL Implementation', 'Sling Model', 'Touch UI Dialog', 'Testing Strategy', 'Deployment'];
+        }
+      }
+      // React Tech Stack Detection  
+      else if (techLower.includes('react')) {
+        standards.tech_stack = ['React', 'TypeScript', 'Vite'];
+        standards.testing_framework = 'jest-rtl';
+        standards.build_tool = techLower.includes('vite') ? 'Vite' : 'Create React App';
+        standards.state_management = techLower.includes('redux') ? 'Redux' : 'React State';
+        
+        if (techLower.includes('next')) {
+          standards.tech_stack.push('Next.js');
+          standards.build_tool = 'Next.js';
+        }
+      }
+      // Vue Tech Stack Detection
+      else if (techLower.includes('vue')) {
+        standards.tech_stack = ['Vue 3', 'TypeScript', 'Vite'];
+        standards.testing_framework = 'vitest';
+        standards.build_tool = 'Vite';
+        standards.composition_api = true;
+        
+        if (techLower.includes('pinia')) {
+          standards.state_management = 'Pinia';
+        }
+      }
+      // Angular Tech Stack Detection
+      else if (techLower.includes('angular')) {
+        standards.tech_stack = ['Angular', 'TypeScript', 'Angular CLI'];
+        standards.testing_framework = 'jasmine-karma';
+        standards.build_tool = 'Angular CLI';
+        standards.dependency_injection = true;
+      }
+      // Node.js/Express Backend Detection
+      else if (techLower.includes('node') || techLower.includes('express')) {
+        standards.tech_stack = ['Node.js', 'Express', 'TypeScript'];
+        standards.testing_framework = 'jest';
+        standards.build_tool = 'npm/yarn';
+        standards.api_framework = 'Express';
+      }
+
+      // Document type specific adjustments
+      if (documentType === 'wiki') {
+        standards.documentation_style = 'comprehensive-guide';
+        standards.include_code_examples = true;
+        standards.include_architecture_diagrams = true;
+      } else if (documentType === 'component') {
+        standards.documentation_style = 'technical-specification';
+        standards.include_props_api = true;
+        standards.include_usage_examples = true;
+      }
+
+      return standards;
+    }
+
     // Generate AI-powered ticket using MCP data layer + Gemini
     async function generateAITicket() {
       const techStackDesc = techStackInput.value.trim();
@@ -3198,11 +3331,22 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
         // Parse tech stack for confidence
         const parsed = parseTechStack(techStackDesc);
         
+        // Fix: Map UI documentType to proper platform/documentType split
+        const platformMap = {
+          'jira': { platform: 'jira', documentType: 'component' },
+          'confluence': { platform: 'confluence', documentType: 'component' },
+          'wiki': { platform: 'jira', documentType: 'wiki' },
+          'agent': { platform: 'jira', documentType: 'component' }
+        };
+        
+        const mappedParams = platformMap[documentType] || { platform: 'jira', documentType: 'component' };
+        
         // Prepare MCP parameters for standalone mode
         const mcpParams = {
           figmaUrl: 'https://www.figma.com/file/standalone/Test-Design',
           techStack: techStackDesc,
-          documentType: documentType,
+          platform: mappedParams.platform,
+          documentType: mappedParams.documentType,
           visualContext: null,
           selectionCount: 0,
           standaloneMode: true
@@ -3410,10 +3554,21 @@ ${techStack}
         console.log('🔗 Real file key extracted:', realFileKey);
         console.log('🔗 Generated Figma URL:', figmaUrl);
         
+        // Fix: Map UI documentType to proper platform/documentType split
+        const platformMap = {
+          'jira': { platform: 'jira', documentType: 'component' },
+          'confluence': { platform: 'confluence', documentType: 'component' },
+          'wiki': { platform: 'jira', documentType: 'wiki' },
+          'agent': { platform: 'jira', documentType: 'component' }
+        };
+        
+        const mappedParams = platformMap[documentType] || { platform: 'jira', documentType: 'component' };
+        
         const mcpParams = {
           figmaUrl: figmaUrl,
           techStack: contextData.techStack.description,
-          documentType: documentType,
+          platform: mappedParams.platform,
+          documentType: mappedParams.documentType,
           visualContext: contextData.screenshot ? {
             hasScreenshot: true,
             description: `Screenshot of ${contextData.figmaContext?.selectionCount || 0} selected elements`
@@ -3740,30 +3895,30 @@ Please fix the MCP server connection and try again.`;
     // Debug & Screenshot Functions
     function debugSelectionContext() {
       console.log('🔍 Debug: Requesting selection context...');
-      addStatusMessage('🔍 Debugging selection context...', 'info');
+      showStatus('🔍 Debugging selection context...', 'info');
       parent.postMessage({ pluginMessage: { type: 'debug-selection' } }, '*');
     }
 
     function takePreciseScreenshot() {
       console.log('📸 Debug: Taking precise screenshot...');
-      addStatusMessage('📸 Taking precise screenshot of selection...', 'info');
+      showStatus('📸 Taking precise screenshot of selection...', 'info');
       parent.postMessage({ pluginMessage: { type: 'precise-screenshot' } }, '*');
     }
 
     function testScreenshotAPIConnection() {
       console.log('🔗 Testing screenshot API connection...');
-      addStatusMessage('🔗 Testing screenshot API connection...', 'info');
+      showStatus('🔗 Testing screenshot API connection...', 'info');
       
       // Test the health endpoint first
       fetch('http://localhost:3000/api/figma/health')
         .then(response => response.json())
         .then(data => {
           console.log('✅ Screenshot API health check:', data);
-          addStatusMessage(`✅ Screenshot API is healthy: ${data.status}`, 'success');
+          showStatus(`✅ Screenshot API is healthy: ${data.status}`, 'success');
         })
         .catch(error => {
           console.error('❌ Screenshot API connection failed:', error);
-          addStatusMessage('❌ Screenshot API connection failed', 'error');
+          showStatus('❌ Screenshot API connection failed', 'error');
         });
     }
 
@@ -4879,7 +5034,7 @@ Please fix the MCP server connection and try again.`;
 
       if (msg.type === 'debug-complete') {
         console.log('🔍 Debug Data:', msg.debug);
-        addStatusMessage(`🔍 Debug Complete: ${msg.debug.selection.count} items selected`, 'info');
+        showStatus(`🔍 Debug Complete: ${msg.debug.selection.count} items selected`, 'info');
         
         // Display debug info in console and UI
         const debugInfo = `
@@ -4896,7 +5051,7 @@ ${msg.debug.apiUrls ? `\nAPI URLs:\nSingle: ${msg.debug.apiUrls.single}\nMultipl
       
       if (msg.type === 'precise-screenshot-success') {
         console.log('✅ Precise Screenshot Success:', msg.data);
-        addStatusMessage(`✅ Screenshot captured: ${msg.data.capturedNodes.length} items`, 'success');
+        showStatus(`✅ Screenshot captured: ${msg.data.capturedNodes.length} items`, 'success');
         
         // Display the screenshot URL
         console.log('🖼️ Screenshot URL:', msg.data.screenshotUrl);
@@ -4904,7 +5059,7 @@ ${msg.debug.apiUrls ? `\nAPI URLs:\nSingle: ${msg.debug.apiUrls.single}\nMultipl
       
       if (msg.type === 'precise-screenshot-error') {
         console.error('❌ Precise Screenshot Error:', msg.error);
-        addStatusMessage(`❌ Screenshot Error: ${msg.error.message}`, 'error');
+        showStatus(`❌ Screenshot Error: ${msg.error.message}`, 'error');
       }
     });
 

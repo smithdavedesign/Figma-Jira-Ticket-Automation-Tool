@@ -180,6 +180,8 @@ export interface FigmaContext {
   frame_id: string;
   file_id: string;
   file_name: string;
+  url?: string;
+  live_link?: string;
   component_variant?: string;
   dimensions: { width: number; height: number };
   screenshot?: string;
@@ -187,6 +189,20 @@ export interface FigmaContext {
   dependencies?: string[];
   last_modified?: string;
   version?: string;
+  // Enhanced context from detailed frame analysis
+  semantic_elements?: Array<{
+    type: string;
+    name: string;
+    count: number;
+  }>;
+  component_instances?: Array<{
+    name: string;
+    id: string;
+    variant_properties?: Record<string, any>;
+  }>;
+  text_content?: string[];
+  hierarchy_depth?: number;
+  layer_count?: number;
 }
 
 export interface ProjectContext {

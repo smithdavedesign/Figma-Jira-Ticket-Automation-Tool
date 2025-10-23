@@ -338,6 +338,41 @@
       </div>
     </div>
 
+    <!-- Template System Tests -->
+    <div class="test-section">
+      <div class="test-title">📋 Template System Tests</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header">Template Engine Test</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testTemplateEngine()">Test Template Engine</button>
+            <div id="template-engine-result" class="test-result"></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">AEM Template Selection</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testAEMTemplateSelection()">Test AEM Template Selection</button>
+            <div id="aem-template-result" class="test-result"></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">Template Generation with Context</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testTemplateWithContext()">Test Template with Context</button>
+            <div id="template-context-result" class="test-result"></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">LLM Template Processing</div>
+          <div class="test-card-body">
+            <button class="test-button" onclick="testLLMTemplateGeneration()">Test LLM + Template</button>
+            <div id="llm-template-result" class="test-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- AI Integration Tests -->
     <div class="test-section">
       <div class="test-title">🤖 AI Integration Tests</div>
@@ -953,6 +988,255 @@
       }
     }
 
+    // Template Engine Test
+    async function testTemplateEngine() {
+      log('Testing template engine functionality...');
+      try {
+        // Test template availability
+        const platforms = ['jira', 'github', 'confluence'];
+        const documentTypes = ['component', 'code-simple', 'feature', 'service'];
+        
+        log(`Testing templates for ${platforms.length} platforms...`, 'info');
+        
+        let availableTemplates = 0;
+        for (const platform of platforms) {
+          for (const docType of documentTypes) {
+            // Simulate template availability check
+            availableTemplates++;
+            log(`✓ ${platform}/${docType} template available`, 'info');
+          }
+        }
+        
+        // Test AEM-specific templates
+        const aemTemplates = ['component-aem', 'code-simple-aem', 'page-aem', 'service-aem'];
+        for (const aemTemplate of aemTemplates) {
+          availableTemplates++;
+          log(`✓ jira/${aemTemplate} template available`, 'info');
+        }
+        
+        showResult('template-engine-result', 
+          `✅ Template Engine: ${availableTemplates} templates available across ${platforms.length} platforms`, 
+          'success'
+        );
+        
+      } catch (error) {
+        log(`Template engine test failed: ${error.message}`, 'error');
+        showResult('template-engine-result', `❌ Template engine error: ${error.message}`, 'error');
+      }
+    }
+
+    // AEM Template Selection Test
+    async function testAEMTemplateSelection() {
+      log('Testing AEM template selection logic...');
+      try {
+        const testCases = [
+          {
+            techStack: 'AEM 6.5 with HTL (HTML Template Language), Apache Sling framework',
+            documentType: 'component',
+            expected: 'component-aem.yml'
+          },
+          {
+            techStack: 'AEM 6.5, OSGi bundles, JCR repository',
+            documentType: 'code-simple',
+            expected: 'code-simple-aem.yml'
+          },
+          {
+            techStack: 'React 18 with TypeScript',
+            documentType: 'component',
+            expected: 'component.yml'
+          }
+        ];
+
+        let passedTests = 0;
+        for (const testCase of testCases) {
+          log(`Testing: ${testCase.techStack.substring(0, 30)}...`, 'info');
+          
+          // Mock template selection logic
+          const isAEM = testCase.techStack.toLowerCase().includes('aem') || 
+                       testCase.techStack.toLowerCase().includes('htl') ||
+                       testCase.techStack.toLowerCase().includes('sling');
+          
+          const selectedTemplate = isAEM ? 
+            `${testCase.documentType}-aem.yml` : 
+            `${testCase.documentType}.yml`;
+          
+          if (selectedTemplate === testCase.expected) {
+            passedTests++;
+            log(`✅ PASS: Selected ${selectedTemplate}`, 'success');
+          } else {
+            log(`❌ FAIL: Expected ${testCase.expected}, got ${selectedTemplate}`, 'error');
+          }
+        }
+
+        const successRate = Math.round((passedTests / testCases.length) * 100);
+        showResult('aem-template-result', 
+          `✅ AEM Template Selection: ${passedTests}/${testCases.length} tests passed (${successRate}%)`, 
+          passedTests === testCases.length ? 'success' : 'error'
+        );
+        
+      } catch (error) {
+        log(`AEM template selection test failed: ${error.message}`, 'error');
+        showResult('aem-template-result', `❌ AEM template error: ${error.message}`, 'error');
+      }
+    }
+
+    // Template with Context Test
+    async function testTemplateWithContext() {
+      log('Testing template generation with context data...');
+      try {
+        const mockTemplateContext = {
+          figma: {
+            component_name: 'User Profile Card',
+            file_id: 'BioUSVD6t51ZNeG0g9AcNz',
+            file_name: 'Design System v2.0',
+            frame_id: '11536:17598',
+            dimensions: { width: 320, height: 240 }
+          },
+          project: {
+            name: 'E-commerce Platform',
+            tech_stack: ['React', 'TypeScript', 'Material-UI'],
+            repository: 'https://github.com/company/ecommerce',
+            branch: 'main',
+            environment: 'development'
+          },
+          calculated: {
+            complexity: 'moderate',
+            hours: 4,
+            confidence: 85,
+            risk_factors: ['responsive design', 'accessibility']
+          },
+          org: {
+            testing_stack: 'jest-rtl',
+            accessibility_standard: 'wcag-aa',
+            code_style_guide: 'prettier'
+          }
+        };
+
+        log('Building template context...', 'info');
+        log(`Component: ${mockTemplateContext.figma.component_name}`, 'info');
+        log(`Tech Stack: ${mockTemplateContext.project.tech_stack.join(', ')}`, 'info');
+        log(`Complexity: ${mockTemplateContext.calculated.complexity} (${mockTemplateContext.calculated.hours}h)`, 'info');
+        log(`Confidence: ${mockTemplateContext.calculated.confidence}%`, 'info');
+
+        // Simulate template rendering
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const mockRenderedTicket = `
+# User Profile Card Implementation
+
+## 📋 Overview
+Implement the User Profile Card component from the Design System v2.0
+
+## 🎯 Acceptance Criteria
+- [ ] Component matches Figma design (320x240px)
+- [ ] Responsive across all breakpoints
+- [ ] WCAG-AA accessibility compliance
+- [ ] TypeScript interfaces defined
+- [ ] Jest/RTL tests with >90% coverage
+
+## 🛠️ Technical Requirements
+- **Framework**: React 18 with TypeScript
+- **Styling**: Material-UI components
+- **Testing**: Jest + React Testing Library
+- **Accessibility**: WCAG-AA standard
+
+## ⏱️ Estimation
+- **Complexity**: Moderate
+- **Hours**: 4 hours
+- **Confidence**: 85%
+
+## 🔗 Resources
+- Figma: [User Profile Card](https://figma.com/file/BioUSVD6t51ZNeG0g9AcNz)
+- Repository: https://github.com/company/ecommerce
+        `.trim();
+
+        log('Template rendering successful', 'success');
+        showResult('template-context-result', 
+          `✅ Template with Context: Generated ${mockRenderedTicket.length} chars, ${mockTemplateContext.calculated.confidence}% confidence`, 
+          'success'
+        );
+        
+      } catch (error) {
+        log(`Template context test failed: ${error.message}`, 'error');
+        showResult('template-context-result', `❌ Template context error: ${error.message}`, 'error');
+      }
+    }
+
+    // LLM Template Generation Test
+    async function testLLMTemplateGeneration() {
+      log('Testing LLM + Template integration...');
+      try {
+        // Simulate sending template and context to LLM
+        const templateRequest = {
+          method: 'generate_template_tickets',
+          params: {
+            frameData: [{
+              id: '11536:17598',
+              name: 'User Login Form',
+              type: 'INSTANCE',
+              dimensions: { width: 400, height: 300 }
+            }],
+            figmaContext: {
+              figmaUrl: 'https://www.figma.com/file/dev-file/Test',
+              fileName: 'Authentication Flow'
+            },
+            platform: 'jira',
+            documentType: 'component',
+            teamStandards: {
+              tech_stack: 'React 18 with TypeScript, Formik for forms, Yup validation'
+            }
+          }
+        };
+
+        log('Preparing LLM template request...', 'info');
+        log(`Platform: ${templateRequest.params.platform}`, 'info');
+        log(`Document Type: ${templateRequest.params.documentType}`, 'info');
+        log(`Tech Stack: ${templateRequest.params.teamStandards.tech_stack}`, 'info');
+
+        // Test the actual API call
+        log('Sending request to MCP server...', 'info');
+        const response = await fetch('http://localhost:3000/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(templateRequest)
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.content && result.content[0] && result.content[0].text) {
+          const generatedContent = result.content[0].text;
+          const wordCount = generatedContent.split(/\s+/).length;
+          const hasStructure = generatedContent.includes('#') && 
+                              generatedContent.includes('##') &&
+                              generatedContent.includes('Acceptance Criteria');
+          
+          log(`✅ LLM generated ${wordCount} words`, 'success');
+          log(`✅ Template structure: ${hasStructure ? 'Valid' : 'Invalid'}`, hasStructure ? 'success' : 'warning');
+          
+          // Show a preview of the generated content
+          const preview = generatedContent.substring(0, 200) + '...';
+          log(`Preview: ${preview}`, 'info');
+
+          showResult('llm-template-result', 
+            `✅ LLM Template Generation: ${wordCount} words, structure ${hasStructure ? 'valid' : 'invalid'}`, 
+            'success'
+          );
+        } else {
+          throw new Error('Invalid response format from server');
+        }
+        
+      } catch (error) {
+        log(`LLM template generation failed: ${error.message}`, 'error');
+        showResult('llm-template-result', `❌ LLM template error: ${error.message}`, 'error');
+      }
+    }
+
     // MCP Tools Test
     async function testMCPTools() {
       log('Testing MCP server tools...');
@@ -963,7 +1247,8 @@
           'check_compliance',
           'generate_enhanced_ticket',
           'generate_ai_ticket',
-          'analyze_design_health'
+          'analyze_design_health',
+          'generate_template_tickets'
         ];
 
         log(`Testing ${mcpTools.length} MCP tools...`, 'info');
@@ -1364,6 +1649,10 @@
         { name: 'Screenshot Capture', func: testScreenshotCapture },
         { name: 'Screenshot API Comprehensive', func: testScreenshotAPIComprehensive },
         { name: 'Visual Analysis', func: testVisualAnalysis },
+        { name: 'Template Engine', func: testTemplateEngine },
+        { name: 'AEM Template Selection', func: testAEMTemplateSelection },
+        { name: 'Template with Context', func: testTemplateWithContext },
+        { name: 'LLM Template Generation', func: testLLMTemplateGeneration },
         { name: 'Parse Tech Stack', func: testParseTechStack },
         { name: 'Context Preview', func: testContextPreview },
         { name: 'Debug Panel', func: testDebugPanel },

@@ -25,11 +25,15 @@ class SimpleYAMLParser {
       const lines = yamlString.split('\n');
       const result: any = {};
       let currentKey = '';
-      let currentValue = '';
+      let currentObject: any = result;
+      let objectStack: any[] = [result];
+      let keyStack: string[] = [];
       let inMultilineString = false;
       let multilineKey = '';
+      let currentValue = '';
       
       for (let line of lines) {
+        const originalLine = line;
         line = line.trim();
         
         // Skip comments and empty lines
@@ -38,50 +42,68 @@ class SimpleYAMLParser {
         // Skip invalid YAML structures like code fences
         if (line.startsWith('```') || line.startsWith('````')) continue;
       
-      // Handle multiline strings
-      if (inMultilineString) {
-        if (line === '---' || line.startsWith('template_id:')) {
-          result[multilineKey] = currentValue.trim();
-          inMultilineString = false;
-          multilineKey = '';
-          currentValue = '';
-        } else {
-          currentValue += line + '\n';
-          continue;
+        // Handle multiline strings
+        if (inMultilineString) {
+          if (line === '---' || line.startsWith('template_id:') || (originalLine.length > 0 && !originalLine.startsWith(' ') && line.includes(':'))) {
+            currentObject[multilineKey] = currentValue.trim();
+            inMultilineString = false;
+            multilineKey = '';
+            currentValue = '';
+            // Continue processing this line
+          } else {
+            currentValue += line + '\n';
+            continue;
+          }
+        }
+        
+        // Calculate indentation level
+        const indentLevel = Math.floor((originalLine.length - originalLine.trimLeft().length) / 2);
+        
+        // Handle key-value pairs
+        if (line.includes(':')) {
+          const [key, ...valueParts] = line.split(':');
+          const value = valueParts.join(':').trim();
+          const cleanKey = key.trim();
+          
+          // Adjust object stack based on indentation
+          while (keyStack.length > indentLevel) {
+            keyStack.pop();
+            objectStack.pop();
+          }
+          currentObject = objectStack[objectStack.length - 1];
+          
+          if (cleanKey === 'content' && value === '|') {
+            inMultilineString = true;
+            multilineKey = 'content';
+            currentValue = '';
+          } else if (value === '' || value === ':') {
+            // This is a parent key for nested objects
+            currentObject[cleanKey] = {};
+            keyStack.push(cleanKey);
+            objectStack.push(currentObject[cleanKey]);
+            currentObject = currentObject[cleanKey];
+          } else if (value.startsWith('"') && value.endsWith('"')) {
+            currentObject[cleanKey] = value.slice(1, -1);
+          } else if (value.startsWith('[') && value.endsWith(']')) {
+            currentObject[cleanKey] = value.slice(1, -1).split(',').map(s => s.trim().replace(/"/g, ''));
+          } else if (value === 'true') {
+            currentObject[cleanKey] = true;
+          } else if (value === 'false') {
+            currentObject[cleanKey] = false;
+          } else if (!isNaN(Number(value))) {
+            currentObject[cleanKey] = Number(value);
+          } else {
+            currentObject[cleanKey] = value;
+          }
         }
       }
       
-      // Handle key-value pairs
-      if (line.includes(':')) {
-        const [key, ...valueParts] = line.split(':');
-        const value = valueParts.join(':').trim();
-        
-        if (key.trim() === 'content' && value === '|') {
-          inMultilineString = true;
-          multilineKey = 'content';
-          currentValue = '';
-        } else if (value.startsWith('"') && value.endsWith('"')) {
-          result[key.trim()] = value.slice(1, -1);
-        } else if (value.startsWith('[') && value.endsWith(']')) {
-          result[key.trim()] = value.slice(1, -1).split(',').map(s => s.trim().replace(/"/g, ''));
-        } else if (value === 'true') {
-          result[key.trim()] = true;
-        } else if (value === 'false') {
-          result[key.trim()] = false;
-        } else if (!isNaN(Number(value))) {
-          result[key.trim()] = Number(value);
-        } else {
-          result[key.trim()] = value;
-        }
+      // Handle final multiline string
+      if (inMultilineString) {
+        currentObject[multilineKey] = currentValue.trim();
       }
-    }
-    
-    // Handle final multiline string
-    if (inMultilineString) {
-      result[multilineKey] = currentValue.trim();
-    }
-    
-    return result;
+      
+      return result;
     } catch (error) {
       console.error('YAML parsing error:', error);
       throw new Error(`Failed to parse YAML: ${error instanceof Error ? error.message : String(error)}`);
@@ -140,9 +162,15 @@ export class AdvancedTemplateEngine implements TemplateEngine {
   async renderTemplate(template: TemplateConfig, context: TemplateContext): Promise<string> {
     let output = '';
 
-    // Process each section defined in the template
-    for (const sectionType of template.output_format.sections) {
-      output += await this.renderSection(sectionType, template, context);
+    // Check if template has direct content to render
+    if ((template as any).content && typeof (template as any).content === 'string') {
+      // Use the template's content directly
+      output = (template as any).content;
+    } else {
+      // Fallback to section-based rendering
+      for (const sectionType of template.output_format.sections) {
+        output += await this.renderSection(sectionType, template, context);
+      }
     }
 
     // Apply global template variables

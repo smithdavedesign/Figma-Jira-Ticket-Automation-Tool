@@ -210,40 +210,95 @@ content: |
   </jcr:root>
   ```
   
+  {{#if figma.design_tokens}}
+  ## 🎨 Design Tokens & Assets
+  
+  ### Extracted Design Tokens
+  {{#if figma.design_tokens.colors}}
+  **Colors:**
+  {{#each figma.design_tokens.colors}}
+  - `{{@key}}`: {{this}}
+  {{/each}}
+  {{/if}}
+  
+  {{#if figma.design_tokens.typography}}
+  **Typography:**
+  {{#each figma.design_tokens.typography}}
+  - `{{@key}}`: {{this}}
+  {{/each}}
+  {{/if}}
+  
+  {{#if figma.design_tokens.spacing}}
+  **Spacing:**
+  {{#each figma.design_tokens.spacing}}
+  - `{{@key}}`: {{this}}
+  {{/each}}
+  {{/if}}
+  
+  ### CSS Variables Implementation
+  ```css
+  .cmp-{{ component_name | lowercase }} {
+    {{#each figma.design_tokens.colors}}
+    --color-{{@key}}: {{this}};
+    {{/each}}
+    {{#each figma.design_tokens.spacing}}
+    --spacing-{{@key}}: {{this}};
+    {{/each}}
+  }
+  ```
+  {{/if}}
+  
+  {{#if figma.text_content}}
+  ## 📝 Content Structure
+  
+  **Text Elements from Design:**
+  {{#each figma.text_content}}
+  - {{this}}
+  {{/each}}
+  {{/if}}
+  
+  {{#if figma.component_instances}}
+  ## 🧩 Component Dependencies
+  
+  **Referenced Components:**
+  {{#each figma.component_instances}}
+  - **{{name}}** ({{id}})
+    {{#if variant_properties}}
+    Variants: {{#each variant_properties}}{{@key}}: {{this}}{{#unless @last}}, {{/unless}}{{/each}}
+    {{/if}}
+  {{/each}}
+  {{/if}}
+
   ## 🧪 Testing Strategy
   
   ### Unit Testing (JUnit + Mockito)
   ```java
-  @ExtendWith(AemContextExtension.class)
+  @ExtendWith({AemContextExtension.class, MockitoExtension.class})
   class {{ component_name }}Test {
       
-      private final AemContext context = new AemContext();
-      
       @Test
-      void testComponentRendering() {
-          // Test component initialization and rendering
-          context.load().json("/{{ component_name | lowercase }}.json", "/content/test");
-          {{ component_name }} component = context.resourceResolver()
-              .getResource("/content/test")
-              .adaptTo({{ component_name }}.class);
-              
-          assertNotNull(component);
-          assertEquals("Expected Title", component.getTitle());
+      void shouldRenderComponentCorrectly() {
+          // Test HTL rendering
       }
       
       @Test
-      void testAccessibilityCompliance() {
-          // Test WCAG compliance
+      void shouldHandleInvalidInputGracefully() {
+          // Test error handling
       }
   }
   ```
   
   ### Integration Testing
-  - **Selenium WebDriver**: End-to-end authoring workflow testing
-  - **AEM Testing Client**: Component behavior in AEM environment
-  - **Performance Testing**: Core Web Vitals and page load metrics
+  - Touch UI dialog functionality testing
+  - Content authoring workflow validation
+  - Cross-browser compatibility testing
+  - Performance benchmarking
   
-  ## 🚀 Deployment Notes
+  ### Accessibility Testing
+  - Automated a11y scanning with axe-core
+  - Screen reader testing (NVDA, JAWS, VoiceOver)
+  - Keyboard navigation validation
+  - Color contrast verification  ## 🚀 Deployment Notes
   
   ### Content Package Structure
   ```xml

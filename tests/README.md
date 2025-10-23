@@ -1,97 +1,45 @@
-# Tests Directory
+# 🧪 Test Directory
 
-This directory contains all test files organized by test type and purpose.
+This directory contains all test files for the Figma AI Ticket Generator project. **All test files have been organized and moved from the root directory to maintain a clean project structure.**
 
-## Structure
+## 📁 Test Structure
 
-### 📁 `integration/`
-Integration tests that verify component interactions:
-- `compliance-integration-tests.js` - Design system compliance integration
-- `design-system-compliance-tests.mjs` - Design system testing suite
-- `test-figma-integration.js` - Figma API integration tests
-- `test-ui-integration.js` - UI component integration tests
+### 🔧 Unit Tests (`unit/`)
+- `core-tests.js` - Basic functionality tests
+- `simple-test.js` - Simple unit test cases
+- `test-tech-stack-parsing.js` - Tech stack parsing logic tests  
+- `test-enhanced-figma-mcp.mjs` - MCP integration unit tests
+- `test-ai-final.mjs` - AI processing unit tests
+- `test-visual-context-validation.mjs` - Visual context validation tests
+- `react-mcp-adapter.test.js` - React MCP adapter tests
 
-### 📁 `unit/`
-Unit tests for individual components:
-- `test-tech-stack-parsing.js` - Tech stack parsing logic tests
-- `test-ai-final.mjs` - AI service unit tests
-- `test-enhanced-figma-mcp.mjs` - MCP server unit tests
+### 🔗 Integration Tests (`integration/`)
+- `test-figma-integration.html` - **Main Figma integration test interface** (moved from root)
+- `test-screenshot-fix.html` - Screenshot functionality tests (moved from root)
+- `test-template-fix-validation.html` - Template system validation (moved from root)  
+- `test-template-selection-debug.html` - Template selection debugging (moved from root)
+- `test-parse-tech-stack.html` - Tech stack parsing tests (moved from /tests/)
+- `test-mcp-data-layer.html` - MCP data layer integration
+- `test-standalone.html` - Standalone UI tests
+- `ai-orchestrator-integration.test.js` - AI orchestration tests
+- `compliance-integration-tests.js` - Design system compliance
+- `phase3-functional-test.js` - Phase 3 functionality tests (moved from /tests/)
+- `phase3-integration-test.js` - Phase 3 integration tests (moved from /tests/)
 
-### 📁 `system/`
-System integration tests for full pipeline validation:
-- `comprehensive-e2e-test.mjs` - Complete system integration testing
-- `test-results/` - System test execution results
-
-### 📁 `../browser-tests/` (Playwright)
-Browser automation and UI testing (separate from this directory):
-- Cross-browser compatibility testing
-- Accessibility testing with screen readers
-- Visual regression testing
-- UI interaction testing
-
-### 📁 `live/`
-Live system tests with real services:
-- `live-figma-test.js` - Live Figma plugin testing
-- `live-system-test.js` - Live system validation
-- `test-plugin-connectivity.html` - Plugin connectivity testing
-
-### 📁 `performance/`
-Performance and stress testing:
-- `stress-test-suite.mjs` - System stress testing
+### 🚀 Performance Tests (`performance/`)
+- `stress-test-suite.mjs` - Load and stress testing
 - `test-enhanced-generation.mjs` - Generation performance tests
+- `test-performance-benchmarking.mjs` - Performance benchmarks
 
-## Running Tests
+### 🔴 Live Tests (`live/`)
+- `live-figma-test.js` - Live Figma plugin tests
+- `live-system-test.js` - Live system integration
+- `test-plugin-connectivity.html` - Plugin connectivity tests
 
-### All Tests
-```bash
-# Run all test categories
-npm test
-```
+### 🏗️ System Tests (`system/`)
+- `comprehensive-e2e-test.mjs` - End-to-end workflow tests
+- `end-to-end-pipeline.test.js` - Full pipeline integration
+- `phase4-production-integration.test.js` - Production environment tests
 
-### Specific Test Categories
-```bash
-# Integration tests
-node tests/integration/compliance-integration-tests.js
-
-# Unit tests
-node tests/unit/test-tech-stack-parsing.js
-
-# System integration tests
-node tests/system/comprehensive-e2e-test.mjs
-
-# Live tests (requires running servers)
-node tests/live/live-system-test.js
-
-# Performance tests
-node tests/performance/stress-test-suite.mjs
-```
-
-### Playwright Browser Tests
-```bash
-cd browser-tests
-npm test
-```
-
-## Test Requirements
-
-- **Unit Tests**: No external dependencies
-- **Integration Tests**: May require MCP server
-- **System Tests**: Require full system running (MCP + Web servers)
-- **Live Tests**: Require MCP server (port 3000) and web server
-- **Performance Tests**: Require full system under load
-- **Browser Tests**: Require browsers installed, separate Playwright setup
-
-## Test Coverage
-
-The test suite covers:
-- ✅ Core functionality
-- ✅ AI integration
-- ✅ Design system compliance
-- ✅ Tech stack validation  
-- ✅ UI/UX components
-- ✅ MCP server integration
-- ✅ Figma plugin functionality
-- ✅ Performance under load
-- ✅ Cross-browser compatibility (Playwright)
-- ✅ Accessibility standards (Playwright)
-- ✅ System integration and workflows
+### 📚 Legacy Phase Tests (`phase1/`)
+- Historical test files from development phases

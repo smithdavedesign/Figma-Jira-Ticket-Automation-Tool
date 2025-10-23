@@ -57,6 +57,10 @@ async function fetchScreenshot(fileKey: string, nodeId: string, options: any = {
           if (errorData.message) {
             errorMessage += `. ${errorData.message}`;
           }
+          // Check for API key configuration issues
+          if (errorData.message && errorData.message.includes('Figma API key')) {
+            errorMessage = 'Figma API key not configured properly on server';
+          }
         } catch {
           // Ignore JSON parse errors for error responses
         }

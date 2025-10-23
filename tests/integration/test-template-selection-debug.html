@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Selection Debug Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .problem-section {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        .solution-section {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .test-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .control-group {
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: white;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .debug-output {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .expected-vs-actual {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .expected, .actual {
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .expected {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+        .actual {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        .issue-highlight {
+            background-color: yellow;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 Template Selection Debug Test</h1>
+    
+    <div class="debug-section problem-section">
+        <h2>❌ Current Problem</h2>
+        <p>The system is not respecting user template selections:</p>
+        <ul>
+            <li><strong>User Selected</strong>: AEM tech stack + Wiki document type</li>
+            <li><strong>System Generated</strong>: Generic React/Jest template with wrong content</li>
+            <li><strong>Root Cause</strong>: Hardcoded template parameters in UI code</li>
+        </ul>
+        
+        <div class="expected-vs-actual">
+            <div class="expected">
+                <h4>🎯 Expected (AEM Wiki)</h4>
+                <pre>
+# 📚 AEM Component Guide: Why Solidigm?
+
+## HTL Implementation
+- Sling Model for data binding
+- Touch UI component dialog
+- OSGi service integration
+
+## Development Guidelines  
+- JCR node structure
+- AEM 6.5 best practices
+- Component testing with AEM mocks
+                </pre>
+            </div>
+            <div class="actual">
+                <h4>❌ Current Output (Wrong Template)</h4>
+                <pre>
+# 📚 Guide: Why Solidigm?
+
+## ✅ Acceptance Criteria
+- Visual Accuracy
+- Responsive Design  
+- Testing: Unit tests with jest-rtl
+
+(Generic React template instead of AEM)
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>🧪 Test Template Selection Logic</h2>
+        
+        <div class="test-controls">
+            <div class="control-group">
+                <label for="techStack"><strong>Tech Stack</strong></label>
+                <select id="techStack">
+                    <option value="">-- Select Tech Stack --</option>
+                    <option value="AEM 6.5 with HTL (HTML Template Language), Apache Sling framework, OSGi bundles, JCR repository, Touch UI components">AEM 6.5</option>
+                    <option value="React 18 with TypeScript, Vite build system, Tailwind CSS, React Router">React + TypeScript</option>
+                    <option value="Vue 3 with Composition API, TypeScript, Vite, Vue Router, Pinia state management">Vue 3</option>
+                    <option value="Angular 17 with TypeScript, Angular CLI, RxJS, Angular Material">Angular 17</option>
+                    <option value="Next.js 14 with TypeScript, App Router, Tailwind CSS, Prisma ORM">Next.js 14</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="documentType"><strong>Document Type</strong></label>
+                <select id="documentType">
+                    <option value="">-- Select Document Type --</option>
+                    <option value="wiki">📚 Wiki/Guide</option>
+                    <option value="component">🧩 Component Spec</option>
+                    <option value="jira">🎫 JIRA Ticket</option>
+                    <option value="confluence">📄 Confluence Page</option>
+                    <option value="github">📋 GitHub Issue</option>
+                    <option value="spec">📋 Technical Spec</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="platform"><strong>Platform</strong></label>
+                <select id="platform">
+                    <option value="">-- Select Platform --</option>
+                    <option value="jira">JIRA</option>
+                    <option value="confluence">Confluence</option>
+                    <option value="github">GitHub</option>
+                    <option value="notion">Notion</option>
+                    <option value="linear">Linear</option>
+                </select>
+            </div>
+        </div>
+        
+        <button onclick="debugTemplateSelection()">🔍 Debug Template Selection</button>
+        <button onclick="testMCPParameters()">🧪 Test MCP Parameters</button>
+        <button onclick="compareTemplates()">📊 Compare Templates</button>
+        
+        <div id="debugOutput" class="debug-output"></div>
+    </div>
+
+    <div class="debug-section solution-section">
+        <h2>✅ Solution Implementation</h2>
+        <p>Here's what needs to be fixed in the main UI code:</p>
+        
+        <h3>🔧 Code Issues Found</h3>
+        <pre class="debug-output">
+// ❌ PROBLEM: Hardcoded values in ui/index.html around line 1940
+const templateParams = {
+  platform: platformSelect.value || <span class="issue-highlight">'jira'</span>, // Falls back to hardcoded 'jira'
+  documentType: documentType || <span class="issue-highlight">'component'</span>, // Falls back to hardcoded 'component' 
+  teamStandards: {
+    tech_stack: techStackDesc ? techStackDesc.split(',').map(s => s.trim()) : <span class="issue-highlight">['React', 'TypeScript']</span>, // Hardcoded React fallback
+    testing_framework: <span class="issue-highlight">'jest-rtl'</span>, // Always jest-rtl regardless of tech stack
+    accessibility_level: 'wcag-aa',
+    documentation_format: 'markdown',
+    code_style: 'prettier'
+  }
+};
+
+// ✅ SOLUTION: Proper dynamic selection
+const templateParams = {
+  platform: platformSelect.value || 'jira',
+  documentType: documentType, // Don't provide fallback, let server handle
+  teamStandards: generateTeamStandardsFromTechStack(techStackDesc, documentType)
+};
+        </pre>
+        
+        <h3>🛠️ Required Changes</h3>
+        <ol>
+            <li><strong>Remove hardcoded fallbacks</strong> in templateParams</li>
+            <li><strong>Create dynamic tech stack parser</strong> that maps AEM → AEM templates</li>
+            <li><strong>Fix document type selection</strong> to use actual dropdown values</li>
+            <li><strong>Add template validation</strong> before sending to MCP server</li>
+        </ol>
+    </div>
+
+    <div class="debug-section">
+        <h2>📋 Mock MCP Server Response</h2>
+        <p>This simulates what the server should return based on your selections:</p>
+        <div id="mockResponse" class="debug-output"></div>
+        <button onclick="generateMockTicket()">🎫 Generate Mock Ticket</button>
+    </div>
+
+    <script>
+        // Suppress console warnings like in main UI
+        (function() {
+            const originalWarn = console.warn;
+            console.warn = function(...args) {
+                const message = args.join(' ');
+                if (message.includes('[Violation] Potential permissions policy violation') ||
+                    message.includes('permissions policy violation')) {
+                    return;
+                }
+                originalWarn.apply(console, args);
+            };
+        })();
+
+        function debugTemplateSelection() {
+            const techStack = document.getElementById('techStack').value;
+            const docType = document.getElementById('documentType').value;
+            const platform = document.getElementById('platform').value;
+            
+            const output = document.getElementById('debugOutput');
+            
+            const analysis = analyzeTemplateSelection(techStack, docType, platform);
+            
+            output.innerHTML = `
+<span style="color: #00ff00;">🔍 TEMPLATE SELECTION DEBUG</span>
+<span style="color: #ffff00;">═══════════════════════════</span>
+
+<span style="color: #00ffff;">📋 USER SELECTIONS:</span>
+├── Tech Stack: ${techStack || '<span style="color: #ff0000;">❌ NOT SELECTED</span>'}
+├── Document Type: ${docType || '<span style="color: #ff0000;">❌ NOT SELECTED</span>'}
+└── Platform: ${platform || '<span style="color: #ff0000;">❌ NOT SELECTED</span>'}
+
+<span style="color: #00ffff;">🎯 TEMPLATE ANALYSIS:</span>
+├── Detected Framework: <span style="color: ${analysis.framework === 'Unknown' ? '#ff0000' : '#00ff00'}">${analysis.framework}</span>
+├── Template Category: <span style="color: #00ff00;">${analysis.category}</span>
+├── Expected Template: <span style="color: #00ff00;">${analysis.expectedTemplate}</span>
+└── Confidence Level: <span style="color: ${analysis.confidence > 80 ? '#00ff00' : '#ffff00'}">${analysis.confidence}%</span>
+
+<span style="color: #00ffff;">⚙️ MCP PARAMETERS THAT SHOULD BE SENT:</span>
+<pre style="color: #ffffff; margin-left: 10px;">${JSON.stringify(analysis.mcpParams, null, 2)}</pre>
+
+<span style="color: #00ffff;">🐛 CURRENT ISSUES:</span>
+${analysis.issues.map(issue => `<span style="color: #ff6666;">❌ ${issue}</span>`).join('\n')}
+
+<span style="color: #00ffff;">✅ RECOMMENDED FIXES:</span>
+${analysis.fixes.map(fix => `<span style="color: #66ff66;">✓ ${fix}</span>`).join('\n')}
+            `;
+        }
+
+        function analyzeTemplateSelection(techStack, docType, platform) {
+            const analysis = {
+                framework: 'Unknown',
+                category: 'generic',
+                expectedTemplate: 'generic-component',
+                confidence: 0,
+                mcpParams: {},
+                issues: [],
+                fixes: []
+            };
+
+            // Analyze tech stack
+            if (techStack.includes('AEM') || techStack.includes('HTL') || techStack.includes('Sling')) {
+                analysis.framework = 'AEM';
+                analysis.category = 'enterprise-cms';
+                analysis.confidence = 95;
+            } else if (techStack.includes('React')) {
+                analysis.framework = 'React';
+                analysis.category = 'spa-framework';
+                analysis.confidence = 90;
+            } else if (techStack.includes('Vue')) {
+                analysis.framework = 'Vue';
+                analysis.category = 'spa-framework'; 
+                analysis.confidence = 90;
+            } else if (techStack.includes('Angular')) {
+                analysis.framework = 'Angular';
+                analysis.category = 'spa-framework';
+                analysis.confidence = 90;
+            } else if (!techStack) {
+                analysis.issues.push('No tech stack selected - will default to React fallback');
+                analysis.fixes.push('Select a tech stack from the dropdown');
+            }
+
+            // Analyze document type
+            if (!docType) {
+                analysis.issues.push('No document type selected - will default to component spec');
+                analysis.fixes.push('Select a document type (wiki, component, jira, etc.)');
+            } else {
+                analysis.expectedTemplate = `${analysis.framework.toLowerCase()}-${docType}`;
+            }
+
+            // Build expected MCP parameters
+            analysis.mcpParams = {
+                platform: platform || 'jira',
+                documentType: docType || 'component',
+                teamStandards: generateTeamStandards(analysis.framework, docType)
+            };
+
+            // Check for hardcoding issues
+            if (!platform) {
+                analysis.issues.push('Platform defaults to hardcoded "jira"');
+                analysis.fixes.push('Fix platform selection logic in UI');
+            }
+
+            if (analysis.framework === 'AEM' && analysis.mcpParams.teamStandards.testing_framework === 'jest-rtl') {
+                analysis.issues.push('AEM tech stack using React testing framework (jest-rtl)');
+                analysis.fixes.push('Map AEM to AEM-specific testing tools (aem-mocks, wcm.io)');
+            }
+
+            return analysis;
+        }
+
+        function generateTeamStandards(framework, docType) {
+            const standards = {
+                tech_stack: ['Generic'],
+                testing_framework: 'generic',
+                accessibility_level: 'wcag-aa',
+                documentation_format: 'markdown',
+                code_style: 'prettier'
+            };
+
+            switch (framework) {
+                case 'AEM':
+                    standards.tech_stack = ['AEM 6.5', 'HTL', 'Sling Models', 'OSGi', 'Touch UI'];
+                    standards.testing_framework = 'aem-mocks';
+                    standards.build_tool = 'Maven';
+                    standards.deployment = 'AEM Package Manager';
+                    break;
+                case 'React':
+                    standards.tech_stack = ['React', 'TypeScript', 'Vite'];
+                    standards.testing_framework = 'jest-rtl';
+                    standards.build_tool = 'Vite';
+                    break;
+                case 'Vue':
+                    standards.tech_stack = ['Vue 3', 'TypeScript', 'Vite'];
+                    standards.testing_framework = 'vitest';
+                    standards.build_tool = 'Vite';
+                    break;
+                case 'Angular':
+                    standards.tech_stack = ['Angular', 'TypeScript', 'Angular CLI'];
+                    standards.testing_framework = 'jasmine-karma';
+                    standards.build_tool = 'Angular CLI';
+                    break;
+            }
+
+            return standards;
+        }
+
+        function testMCPParameters() {
+            const techStack = document.getElementById('techStack').value;
+            const docType = document.getElementById('documentType').value;
+            const platform = document.getElementById('platform').value;
+
+            const currentParams = {
+                // This simulates the BROKEN current implementation
+                platform: platform || 'jira', // ❌ Hardcoded fallback
+                documentType: docType || 'component', // ❌ Hardcoded fallback
+                teamStandards: {
+                    tech_stack: techStack ? techStack.split(',').map(s => s.trim()) : ['React', 'TypeScript'], // ❌ React fallback
+                    testing_framework: 'jest-rtl', // ❌ Always React testing
+                    accessibility_level: 'wcag-aa',
+                    documentation_format: 'markdown',
+                    code_style: 'prettier'
+                }
+            };
+
+            const fixedParams = {
+                // This is how it SHOULD work
+                platform: platform,
+                documentType: docType,
+                teamStandards: generateTeamStandards(
+                    techStack.includes('AEM') ? 'AEM' : 
+                    techStack.includes('React') ? 'React' :
+                    techStack.includes('Vue') ? 'Vue' :
+                    techStack.includes('Angular') ? 'Angular' : 'Generic',
+                    docType
+                )
+            };
+
+            const output = document.getElementById('debugOutput');
+            output.innerHTML = `
+<span style="color: #ffff00;">🧪 MCP PARAMETER COMPARISON</span>
+<span style="color: #ffff00;">════════════════════════════</span>
+
+<span style="color: #ff6666;">❌ CURRENT (BROKEN) PARAMETERS:</span>
+<pre style="color: #ff6666; margin-left: 10px;">${JSON.stringify(currentParams, null, 2)}</pre>
+
+<span style="color: #66ff66;">✅ FIXED PARAMETERS:</span>  
+<pre style="color: #66ff66; margin-left: 10px;">${JSON.stringify(fixedParams, null, 2)}</pre>
+
+<span style="color: #00ffff;">🔄 KEY DIFFERENCES:</span>
+${JSON.stringify(currentParams) === JSON.stringify(fixedParams) ? 
+    '<span style="color: #66ff66;">✅ No differences - parameters are correct!</span>' :
+    `
+├── Platform: ${currentParams.platform === fixedParams.platform ? '✅ Same' : '❌ Different'}
+├── Document Type: ${currentParams.documentType === fixedParams.documentType ? '✅ Same' : '❌ Different'}  
+├── Tech Stack: ${JSON.stringify(currentParams.teamStandards.tech_stack) === JSON.stringify(fixedParams.teamStandards.tech_stack) ? '✅ Same' : '❌ Different'}
+└── Testing Framework: ${currentParams.teamStandards.testing_framework === fixedParams.teamStandards.testing_framework ? '✅ Same' : '❌ Different'}
+`}
+            `;
+        }
+
+        function compareTemplates() {
+            const output = document.getElementById('debugOutput');
+            output.innerHTML = `
+<span style="color: #ffff00;">📊 TEMPLATE COMPARISON</span>
+<span style="color: #ffff00;">═══════════════════════</span>
+
+<span style="color: #00ffff;">🎯 AEM + WIKI SELECTION SHOULD GENERATE:</span>
+<pre style="color: #66ff66;">
+# 📚 AEM Component Guide: Why Solidigm?
+
+## 🏗️ HTL Implementation
+- Create Sling Model for data binding
+- Define Touch UI component dialog
+- Configure OSGi service integration
+
+## 📐 Component Structure
+\`\`\`
+/apps/solidigm/components/content/why-solidigm/
+├── .content.xml
+├── _cq_dialog.xml
+├── why-solidigm.html (HTL template)
+└── WyySoldigmModel.java (Sling Model)
+\`\`\`
+
+## 🧪 Testing Strategy
+- AEM Mocks for unit testing
+- wcm.io testing framework
+- Component validation with AEM Rules
+
+## 🚀 Deployment
+- Build with Maven
+- Deploy via AEM Package Manager
+- Test in AEM author/publish instances
+</pre>
+
+<span style="color: #ff6666;">❌ CURRENT OUTPUT (WRONG TEMPLATE):</span>
+<pre style="color: #ff6666;">
+# 📚 Guide: Why Solidigm?
+
+## ✅ Acceptance Criteria
+✅ Visual Accuracy: Component matches design specifications exactly
+📱 Responsive Design: Works across all supported breakpoints
+♿ Accessibility: Meets WCAG-AA standards
+🎨 Design System Compliance: Uses approved design tokens
+🧪 Testing: Unit tests with jest-rtl
+
+## 🧪 Testing Strategy
+Framework: Jest + React Testing Library
+Test Types: Unit tests, integration tests, snapshot tests
+Coverage: Component behavior, props validation, accessibility
+</pre>
+
+<span style="color: #00ffff;">🔍 ANALYSIS:</span>
+├── <span style="color: #ff6666;">❌ Wrong framework detected (React instead of AEM)</span>
+├── <span style="color: #ff6666;">❌ Wrong testing tools (Jest instead of AEM Mocks)</span>
+├── <span style="color: #ff6666;">❌ Wrong file structure (JSX instead of HTL)</span>
+└── <span style="color: #ff6666;">❌ Wrong deployment method (NPM instead of Maven)</span>
+            `;
+        }
+
+        function generateMockTicket() {
+            const techStack = document.getElementById('techStack').value;
+            const docType = document.getElementById('documentType').value;
+            const platform = document.getElementById('platform').value;
+
+            if (!techStack || !docType) {
+                document.getElementById('mockResponse').innerHTML = `
+<span style="color: #ff6666;">❌ Please select both Tech Stack and Document Type first!</span>
+                `;
+                return;
+            }
+
+            const isAEM = techStack.includes('AEM');
+            const isWiki = docType === 'wiki';
+
+            let mockTicket = '';
+
+            if (isAEM && isWiki) {
+                mockTicket = `
+<span style="color: #66ff66;">✅ CORRECT AEM WIKI TEMPLATE:</span>
+
+# 📚 AEM Component Guide: Why Solidigm?
+
+**Component Type**: Touch UI Component | **AEM Version**: 6.5
+
+## 🏗️ HTL Implementation
+
+### Sling Model
+\`\`\`java
+@Model(adaptables = Resource.class, defaultInjectionStrategy = DefaultInjectionStrategy.OPTIONAL)
+public class WhySolidgmModel {
+    
+    @ValueMapValue
+    private String title;
+    
+    @ValueMapValue
+    private String description;
+    
+    // Getters and business logic
+}
+\`\`\`
+
+### HTL Template (\`why-solidigm.html\`)
+\`\`\`html
+<div data-sly-use.model="com.solidigm.core.models.WhySolidgmModel" class="why-solidigm">
+    <h2>\${model.title}</h2>
+    <p>\${model.description}</p>
+</div>
+\`\`\`
+
+## 🎛️ Touch UI Dialog Configuration
+- Title field (textfield)
+- Description field (textarea)
+- Image selection (pathfield)
+
+## 🧪 Testing Strategy
+- **Unit Tests**: AEM Mocks + JUnit 5
+- **Integration Tests**: wcm.io testing framework
+- **Component Validation**: AEM Rules Engine
+
+## 🚀 Build & Deployment
+- **Build Tool**: Maven
+- **Package**: AEM Content Package
+- **Deployment**: Package Manager or AEM CLI
+                `;
+            } else if (techStack.includes('React') && docType === 'component') {
+                mockTicket = `
+<span style="color: #66ff66;">✅ CORRECT REACT COMPONENT TEMPLATE:</span>
+
+# 🧩 React Component: Why Solidigm?
+
+**Framework**: React 18 + TypeScript | **Build**: Vite
+
+## 🏗️ Component Implementation
+
+\`\`\`typescript
+interface WhySolidgmProps {
+  title: string;
+  description: string;
+  imageUrl?: string;
+}
+
+export const WhySolidgm: React.FC<WhySolidgmProps> = ({ 
+  title, 
+  description, 
+  imageUrl 
+}) => {
+  return (
+    <div className="why-solidgm">
+      <h2>{title}</h2>
+      <p>{description}</p>
+      {imageUrl && <img src={imageUrl} alt={title} />}
+    </div>
+  );
+};
+\`\`\`
+
+## 🧪 Testing Strategy
+- **Framework**: Jest + React Testing Library
+- **Coverage**: Component render, props, interactions
+- **Accessibility**: @testing-library/jest-dom a11y tests
+
+## ✅ Acceptance Criteria
+- TypeScript strict mode compliance
+- 100% test coverage
+- Responsive design implementation
+- WCAG-AA accessibility standards
+                `;
+            } else {
+                mockTicket = `
+<span style="color: #ffff00;">⚠️ GENERIC TEMPLATE (FALLBACK):</span>
+
+# 📋 Component: Why Solidigm?
+
+**Tech Stack**: ${techStack}
+**Document Type**: ${docType}
+**Platform**: ${platform}
+
+This would be a generic template since no specific template
+mapping exists for this combination.
+
+<span style="color: #00ffff;">💡 To get specific templates, try:</span>
+- AEM + Wiki = AEM-specific guide with HTL/Sling
+- React + Component = React TypeScript component spec
+- Vue + Component = Vue 3 Composition API spec
+- Angular + Component = Angular component specification
+                `;
+            }
+
+            document.getElementById('mockResponse').innerHTML = mockTicket;
+        }
+
+        // Auto-populate for demonstration
+        window.addEventListener('load', () => {
+            document.getElementById('techStack').value = 'AEM 6.5 with HTL (HTML Template Language), Apache Sling framework, OSGi bundles, JCR repository, Touch UI components';
+            document.getElementById('documentType').value = 'wiki';
+            document.getElementById('platform').value = 'jira';
+            
+            setTimeout(() => {
+                debugTemplateSelection();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
