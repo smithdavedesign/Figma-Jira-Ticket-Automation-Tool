@@ -236,9 +236,15 @@ export class AdvancedTemplateEngine implements TemplateEngine {
   ): string {
     let result = content;
 
-    // Substitute figma context variables
-    result = result.replace(/\{\{\s*figma\.(\w+)\s*\}\}/g, (match, key) => {
-      return (context.figma as any)[key] || match;
+    // Process Handlebars-style conditionals first
+    result = this.processConditionals(result, context);
+    
+    // Process Handlebars-style loops
+    result = this.processLoops(result, context);
+
+    // Substitute figma context variables (including nested properties)
+    result = result.replace(/\{\{\s*figma\.([a-zA-Z_.][\w.]*)\s*\}\}/g, (match, key) => {
+      return this.getNestedProperty(context.figma, key) || match;
     });
 
     // Substitute project context variables
@@ -268,6 +274,102 @@ export class AdvancedTemplateEngine implements TemplateEngine {
     }
 
     return result;
+  }
+
+  /**
+   * Process Handlebars-style conditionals {{#if}} {{/if}}
+   */
+  private processConditionals(content: string, context: TemplateContext): string {
+    let result = content;
+    
+    // Handle {{#if figma.design_tokens}} ... {{/if}}
+    const ifPattern = /\{\{#if\s+([^}]+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
+    
+    result = result.replace(ifPattern, (match, condition, innerContent) => {
+      const value = this.evaluateCondition(condition, context);
+      if (value && this.isTruthy(value)) {
+        return innerContent;
+      }
+      return '';
+    });
+
+    return result;
+  }
+
+  /**
+   * Process Handlebars-style loops {{#each}} {{/each}}
+   */
+  private processLoops(content: string, context: TemplateContext): string {
+    let result = content;
+    
+    // Handle {{#each figma.design_tokens.colors}} ... {{/each}}
+    const eachPattern = /\{\{#each\s+([^}]+)\}\}([\s\S]*?)\{\{\/each\}\}/g;
+    
+    result = result.replace(eachPattern, (match, arrayPath, innerContent) => {
+      const arrayValue = this.evaluateCondition(arrayPath, context);
+      
+      if (Array.isArray(arrayValue)) {
+        return arrayValue.map((item, index) => {
+          let itemContent = innerContent;
+          // Replace {{this}} with the current item
+          itemContent = itemContent.replace(/\{\{this\}\}/g, String(item));
+          // Replace {{@index}} with the current index
+          itemContent = itemContent.replace(/\{\{@index\}\}/g, String(index));
+          return itemContent;
+        }).join('');
+      } else if (typeof arrayValue === 'object' && arrayValue) {
+        // Handle object iteration
+        return Object.entries(arrayValue).map(([key, value]) => {
+          let itemContent = innerContent;
+          // Replace {{@key}} with the current key
+          itemContent = itemContent.replace(/\{\{@key\}\}/g, key);
+          // Replace {{this}} with the current value
+          itemContent = itemContent.replace(/\{\{this\}\}/g, String(value));
+          return itemContent;
+        }).join('');
+      }
+      
+      return '';
+    });
+
+    return result;
+  }
+
+  /**
+   * Evaluate a condition like "figma.design_tokens" or "figma.design_tokens.colors"
+   */
+  private evaluateCondition(condition: string, context: TemplateContext): any {
+    const trimmed = condition.trim();
+    
+    if (trimmed.startsWith('figma.')) {
+      const path = trimmed.substring(6); // Remove 'figma.'
+      return this.getNestedProperty(context.figma, path);
+    } else if (trimmed.startsWith('project.')) {
+      const path = trimmed.substring(8); // Remove 'project.'
+      return this.getNestedProperty(context.project, path);
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get nested property from object using dot notation
+   */
+  private getNestedProperty(obj: any, path: string): any {
+    return path.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : null;
+    }, obj);
+  }
+
+  /**
+   * Check if a value is truthy (has content)
+   */
+  private isTruthy(value: any): boolean {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'object') return Object.keys(value).length > 0;
+    return Boolean(value);
   }
 
   /**

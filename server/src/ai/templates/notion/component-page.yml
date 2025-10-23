@@ -68,7 +68,8 @@ content: |
   ## 🎨 Design Specifications
 
   ### Visual Design
-  **Figma Reference:** [{{ component_name }} Component]({{ figma.live_link }})
+  **Figma Reference:** [{{ component_name }} Component]({{ figma.live_link }})  
+  **📸 Design Screenshot:** ![{{ component_name }} Design]({{ figma.screenshot_filename }})
 
   **Design Tokens:**
   | Property | Token | Value |

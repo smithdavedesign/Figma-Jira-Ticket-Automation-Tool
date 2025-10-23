@@ -56,7 +56,8 @@ content: |
   ### 📋 Description
   Implement the {{ component_name }} component as specified in the Figma design to enhance our component library with consistent, accessible UI elements.
 
-  **Related Design:** [Figma Link]({{ figma.live_link }})
+  **Related Design:** [Figma Link]({{ figma.live_link }})  
+  **📸 Design Screenshot:** ![Screenshot]({{ figma.screenshot_filename }})
 
   ---
 

@@ -1108,6 +1108,7 @@ Examples:
           <button id="testMockAI" class="button button-success">🤖 Test Mock AI Generation</button>
           <button id="testMockData" class="button button-success">📊 Test Mock Data Extraction</button>
           <button id="testMCPDirect" class="button button-success">🔧 Test MCP Server Direct</button>
+          <button id="testAllCombinations" class="button button-success">🧪 Test All Template Combinations</button>
         </div>
         
         <!-- Debug & Screenshot Testing -->
@@ -2882,6 +2883,181 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
       }
     }
 
+    async function testAllTemplateCombinations() {
+      showStatus('🧪 Testing all template combinations...', 'loading');
+      console.log('🧪 Starting comprehensive template combination test');
+      
+      const btn = document.getElementById('testAllCombinations');
+      btn.innerHTML = '<div class="spinner"></div> Testing All Combinations...';
+      btn.disabled = true;
+      
+      try {
+        const platforms = ['jira', 'linear', 'github', 'notion', 'ui'];
+        const documentTypes = ['component', 'feature', 'code-simple'];
+        const techStacks = ['react', 'vue', 'aem'];
+        
+        const totalCombinations = platforms.length * documentTypes.length * techStacks.length;
+        let completedTests = 0;
+        let successfulTests = 0;
+        let failedTests = 0;
+        const results = [];
+        
+        console.log(`🎯 Testing ${totalCombinations} combinations (${platforms.length} platforms × ${documentTypes.length} doc types × ${techStacks.length} tech stacks)`);
+        
+        // Test each combination
+        for (const platform of platforms) {
+          for (const documentType of documentTypes) {
+            for (const techStack of techStacks) {
+              try {
+                completedTests++;
+                
+                // Update progress
+                btn.innerHTML = `<div class="spinner"></div> Testing ${completedTests}/${totalCombinations}...`;
+                
+                console.log(`🔄 Testing combination ${completedTests}/${totalCombinations}: ${platform} + ${documentType} + ${techStack}`);
+                
+                // Prepare test data
+                const testParams = {
+                  frameData: [{
+                    id: "test-frame-" + completedTests,
+                    name: `Test ${documentType} Component`,
+                    type: "FRAME",
+                    width: 320,
+                    height: 240
+                  }],
+                  figmaContext: {
+                    figmaUrl: "https://www.figma.com/file/test-file/Test-Template-Combinations",
+                    component_name: `Test ${documentType} Component`
+                  },
+                  platform: platform,
+                  documentType: documentType,
+                  teamStandards: {
+                    tech_stack: getTechStackDescription(techStack)
+                  }
+                };
+                
+                // Call the template generation endpoint
+                const startTime = Date.now();
+                const response = await fetch('http://localhost:3000/api/generate-ticket', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(testParams)
+                });
+                
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  successfulTests++;
+                  
+                  results.push({
+                    combination: `${platform}-${documentType}-${techStack}`,
+                    status: 'SUCCESS',
+                    duration: duration + 'ms',
+                    contentLength: (result.content?.[0]?.text?.length || 0) + ' chars'
+                  });
+                  
+                  console.log(`✅ SUCCESS: ${platform}-${documentType}-${techStack} (${duration}ms)`);
+                } else {
+                  throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+              } catch (error) {
+                failedTests++;
+                results.push({
+                  combination: `${platform}-${documentType}-${techStack}`,
+                  status: 'FAILED',
+                  error: error.message,
+                  duration: 'N/A'
+                });
+                
+                console.error(`❌ FAILED: ${platform}-${documentType}-${techStack} - ${error.message}`);
+              }
+              
+              // Small delay to prevent overwhelming the server
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }
+        }
+        
+        // Generate comprehensive report
+        const successRate = Math.round((successfulTests / totalCombinations) * 100);
+        const reportText = `🧪 Template Combination Test Results
+        
+📊 Summary:
+• Total Combinations: ${totalCombinations}
+• Successful: ${successfulTests} (${successRate}%)
+• Failed: ${failedTests}
+• Test Date: ${new Date().toLocaleString()}
+
+🔍 Detailed Results:
+${results.map((result, index) => 
+  `${index + 1}. ${result.combination}: ${result.status}${result.status === 'SUCCESS' ? ` (${result.duration}, ${result.contentLength})` : ` - ${result.error}`}`
+).join('\n')}
+
+🎯 Platform Breakdown:
+${platforms.map(platform => {
+  const platformTests = results.filter(r => r.combination.startsWith(platform));
+  const platformSuccess = platformTests.filter(r => r.status === 'SUCCESS').length;
+  return `• ${platform}: ${platformSuccess}/${platformTests.length} successful`;
+}).join('\n')}
+
+📝 Document Type Breakdown:  
+${documentTypes.map(docType => {
+  const docTests = results.filter(r => r.combination.includes(`-${docType}-`));
+  const docSuccess = docTests.filter(r => r.status === 'SUCCESS').length;
+  return `• ${docType}: ${docSuccess}/${docTests.length} successful`;
+}).join('\n')}
+
+🛠️ Tech Stack Breakdown:
+${techStacks.map(tech => {
+  const techTests = results.filter(r => r.combination.endsWith(`-${tech}`));
+  const techSuccess = techTests.filter(r => r.status === 'SUCCESS').length;
+  return `• ${tech}: ${techSuccess}/${techTests.length} successful`;
+}).join('\n')}
+
+${successRate === 100 ? '🎉 All template combinations working perfectly!' : 
+  successRate >= 80 ? '✅ Most template combinations working well!' :
+  successRate >= 50 ? '⚠️ Some template combinations need attention!' :
+  '❌ Significant issues with template combinations detected!'}`;
+        
+        // Display results
+        document.getElementById('generatedContent').value = reportText;
+        document.getElementById('results').classList.remove('hidden');
+        document.getElementById('copyBtn').disabled = false;
+        
+        if (successRate === 100) {
+          showStatus('🎉 All template combinations tested successfully!', 'success');
+        } else if (successRate >= 80) {
+          showStatus(`✅ Template combinations tested: ${successRate}% success rate`, 'success');
+        } else {
+          showStatus(`⚠️ Template combinations tested: ${successRate}% success rate`, 'warning');
+        }
+        
+        console.log(`🏁 Template combination testing complete: ${successfulTests}/${totalCombinations} successful (${successRate}%)`);
+        
+      } catch (error) {
+        console.error('❌ Template combination testing failed:', error);
+        showError(`Template combination testing failed: ${error.message}`);
+      } finally {
+        btn.innerHTML = '🧪 Test All Template Combinations';
+        btn.disabled = false;
+      }
+    }
+
+    // Helper function to get tech stack descriptions
+    function getTechStackDescription(techStack) {
+      const techStackDescriptions = {
+        react: "React 18 with TypeScript, Material-UI v5, React Query for state management, Jest for testing",
+        vue: "Vue 3 with Composition API, Pinia for state management, Vite build tool, Vitest for unit testing",
+        aem: "AEM 6.5 with HTL (HTML Template Language), Apache Sling framework, OSGi bundles, JCR repository"
+      };
+      return techStackDescriptions[techStack] || techStack;
+    }
+
     // Tech stack parsing and confidence calculation
     function parseTechStack(description) {
       const lowerDesc = description.toLowerCase();
@@ -3779,6 +3955,7 @@ Please fix the MCP server connection and try again.`;
     document.getElementById('testMockAI').addEventListener('click', testMockAIGeneration);
     document.getElementById('testMockData').addEventListener('click', testMockEnhancedData);
     document.getElementById('testMCPDirect').addEventListener('click', testMCPServerDirect);
+    document.getElementById('testAllCombinations').addEventListener('click', testAllTemplateCombinations);
     
     // Debug & Screenshot testing event listeners
     document.getElementById('debugSelection').addEventListener('click', debugSelectionContext);

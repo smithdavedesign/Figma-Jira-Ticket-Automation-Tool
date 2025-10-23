@@ -185,6 +185,7 @@ export interface FigmaContext {
   component_variant?: string;
   dimensions: { width: number; height: number };
   screenshot?: string;
+  screenshot_filename?: string;
   design_tokens?: DesignTokens;
   dependencies?: string[];
   last_modified?: string;

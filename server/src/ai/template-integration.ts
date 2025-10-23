@@ -36,6 +36,8 @@ export interface FigmaFrameData {
     height: number;
   };
   dependencies?: string[];
+  screenshot?: string; // URL or data for screenshot
+  screenshotFileName?: string; // For file naming in tickets
 }
 
 export interface ProjectContext {
@@ -108,17 +110,28 @@ export class TemplateIntegrationService {
     teamStandards: any,
     organizationId: string
   ): TemplateContext {
-    // Extract Figma context with better URL handling
-    const figmaUrl = figmaContext.figmaUrl || 
-                    figmaContext.frameUrls?.[0] || 
-                    figmaContext.url ||
-                    `https://figma.com/file/${figmaContext.fileKey || 'unknown'}`;
-    const fileId = this.extractFileId(figmaUrl);
+    // Extract Figma context with better URL handling including frame ID
+    const baseUrl = figmaContext.figmaUrl || 
+                   figmaContext.frameUrls?.[0] || 
+                   figmaContext.url ||
+                   `https://figma.com/file/${figmaContext.fileKey || 'unknown'}`;
+    
+    // Create frame-specific URL if we have a frame ID
+    const figmaUrl = frameData.id && baseUrl.includes('figma.com') 
+      ? `${baseUrl}?node-id=${encodeURIComponent(frameData.id)}`
+      : baseUrl;
+    
+    const fileId = this.extractFileId(baseUrl);
     
     // Use enhanced frame data if provided, otherwise fall back to legacy data
     // Enhanced frame data extraction (frameData is already the enhanced data from UI)
     const enhancedData = (frameData as any).hierarchy || {};
-    const designTokens = (frameData as any).design_tokens || enhancedData.designTokens || {};
+    
+    // Extract design tokens from multiple possible sources
+    const designTokens = (frameData as any).design_tokens || 
+                        enhancedData.designTokens || 
+                        (frameData as any).designTokens || 
+                        {};
     const layers = enhancedData.layers || [];
     
     // Extract semantic information
@@ -146,14 +159,10 @@ export class TemplateIntegrationService {
         live_link: figmaUrl,
         dimensions: frameData.dimensions || { width: 0, height: 0 },
         dependencies: frameData.dependencies || [],
-        // Enhanced design context
-        design_tokens: {
-          colors: this.convertArrayToTokenMap(designTokens.colors || []),
-          typography: this.convertArrayToTokenMap(designTokens.typography || []),
-          spacing: this.convertArrayToTokenMap(designTokens.spacing || []),
-          borders: this.convertArrayToTokenMap(designTokens.borderRadius || []),
-          shadows: this.convertArrayToTokenMap(designTokens.shadows || [])
-        },
+        screenshot: frameData.screenshot || undefined,
+        screenshot_filename: frameData.screenshotFileName || `${(frameData.name || 'component').toLowerCase().replace(/\s+/g, '-')}-design.png`,
+        // Enhanced design context - ensure tokens are always available
+        design_tokens: this.extractDesignTokens(designTokens, frameData),
         semantic_elements: (frameData as any).semantic_elements || semanticElements.map((el: any) => ({
           type: el.type || 'element',
           name: el.name || 'Unknown',
@@ -433,6 +442,38 @@ Implement the **${name}** component from the design specifications.
   /**
    * Convert array of tokens to Record format expected by DesignTokens interface
    */
+  /**
+   * Extract and process design tokens from frame data
+   */
+  private extractDesignTokens(designTokens: any, frameData: any): any {
+    // Start with structured tokens
+    const tokens = {
+      colors: this.convertArrayToTokenMap(designTokens.colors || []),
+      typography: this.convertArrayToTokenMap(designTokens.typography || []),
+      spacing: this.convertArrayToTokenMap(designTokens.spacing || []),
+      borders: this.convertArrayToTokenMap(designTokens.borderRadius || []),
+      shadows: this.convertArrayToTokenMap(designTokens.shadows || [])
+    };
+
+    // Also extract from text content if available for typography tokens
+    if ((frameData as any).text_content && Array.isArray((frameData as any).text_content)) {
+      const textTokens: Record<string, string> = {};
+      (frameData as any).text_content.forEach((text: string, index: number) => {
+        // Extract font information if available in format like "Sora 14px SemiBold"
+        const fontMatch = text.match(/([A-Za-z]+)\s+(\d+)px\s+([A-Za-z]+)/);
+        if (fontMatch) {
+          const [, family, size, weight] = fontMatch;
+          textTokens[`text_${index + 1}`] = `${family} ${size}px ${weight}`;
+        }
+      });
+      
+      // Merge with existing typography tokens
+      tokens.typography = { ...tokens.typography, ...textTokens };
+    }
+
+    return tokens;
+  }
+
   private convertArrayToTokenMap(tokenArray: any[]): Record<string, string> {
     const tokenMap: Record<string, string> = {};
     tokenArray.forEach((token, index) => {

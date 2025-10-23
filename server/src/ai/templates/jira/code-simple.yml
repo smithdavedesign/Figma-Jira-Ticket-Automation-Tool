@@ -14,6 +14,9 @@ template: |
   **Priority**: Medium | **Story Points**: 5
   
   **🔗 Figma Design**: [View Component]({{figmaContext.figmaUrl}})
+  {{#if figmaContext.screenshot_filename}}
+  **📸 Design Reference**: !{{figmaContext.screenshot_filename}}|thumbnail!
+  {{/if}}
   
   ## 🎯 Objective
   Implement the **{{component_name}}** AEM component from the design specifications.

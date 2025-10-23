@@ -3353,6 +3353,54 @@ Use the standard \`generate_enhanced_ticket\` method for reliable ticket generat
         return;
       }
 
+      // REST API endpoint for test suite
+      if (req.method === 'POST' && req.url === '/api/generate-ticket') {
+        let body = '';
+        req.on('data', chunk => {
+          body += chunk.toString();
+        });
+
+        req.on('end', async () => {
+          try {
+            console.log('📥 REST API Request - Generate Ticket:', body);
+            const requestData = JSON.parse(body);
+            
+            // Convert REST request to MCP format
+            const mcpParams = {
+              figmaUrl: requestData.figmaUrl,
+              platform: requestData.platform,
+              documentType: requestData.documentType,
+              techStack: requestData.techStack,
+              projectConfig: requestData.projectConfig
+            };
+            
+            console.log('🔄 Converting to MCP format:', JSON.stringify(mcpParams, null, 2));
+            
+            // Use the existing MCP handler
+            const result = await this.handleRequest('generate_template_tickets', mcpParams);
+            console.log('✅ REST API Request completed successfully');
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(result));
+          } catch (error) {
+            console.error('❌ REST API Error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              error: errorMessage,
+              content: [
+                {
+                  type: 'text',
+                  text: errorMessage
+                }
+              ],
+              isError: true
+            }));
+          }
+        });
+        return;
+      }
+
       if (req.method === 'POST') {
         let body = '';
         req.on('data', chunk => {

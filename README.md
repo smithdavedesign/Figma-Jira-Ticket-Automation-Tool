@@ -27,12 +27,15 @@ An intelligent enterprise tool that transforms Figma designs into comprehensive 
 - 🤖 **AI-Enhanced Analysis**: FREE Google Gemini 2.5 Flash with multi-modal visual processing
 - 📋 **Context-Aware Tickets**: Generate specific tickets based on visual + structural data
 - 🎯 **Design System Intelligence**: Understands component complexity and relationships
-- 🔄 **Multi-Format Output**: Support for JIRA, GitHub Issues, and custom formats
+- 🔄 **Multi-Format Output**: Support for JIRA, GitHub Issues, Linear, Notion, and UI formats
 - 🛡️ **Enterprise-Grade**: Fallback system ensures 100% reliability
 - ⚡ **Popular Tech Stacks**: 10 pre-configured combinations with color-coded confidence
 - 🔍 **Parse Tech Button**: Intelligent tech stack detection and validation
-- 🧪 **Comprehensive Testing**: 15-function test suite covering all features
+- 🧪 **Comprehensive Testing**: 15-function test suite covering all features + Template combination testing
 - 📊 **Real-time Validation**: Enhanced data compliance and error handling
+- 🎯 **Template System**: Advanced Handlebars-style template processing with conditionals and loops
+- 🔗 **Frame ID URLs**: Automatic generation of Figma URLs with proper node-id parameters
+- 🧪 **Test All Combinations**: Comprehensive testing of all platform/document type/tech stack combinations
 
 ## 🎨 Visual-Enhanced Context System
 
@@ -378,6 +381,13 @@ npm run test:unit                 # Core tech stack parsing (2 seconds)
 npm run test:integration          # UI integration tests (5 seconds)
 npm run test:integration:mcp      # MCP data layer testing (10 seconds)
 
+# Template System Testing (NEW)
+npm run test:templates            # Template combination testing (60 combinations)
+npm run test:ui                   # Launch enhanced test UI with template testing
+# Or use built-in UI test features:
+# - Visit http://localhost:8080/test-template-combinations.html
+# - Click "🧪 Test All Template Combinations" in the main UI
+
 # Browser Testing (With Pre-Validation)
 npm run test:browser:quick        # Single UI test with endpoint check (~30s)
 npm run test:browser:smoke        # Essential functionality (~2 minutes)
@@ -390,6 +400,20 @@ npm run test:browser:headed       # Visual debugging (see tests run)
 npm run test:browser:ui           # Interactive test runner
 npm run validate:quick            # Fast complete validation (~3 minutes)
 ```
+
+### 🧪 **NEW: Template Combination Testing**
+Our enhanced testing framework now includes comprehensive template system validation:
+
+- **🎯 60 Total Combinations**: 5 platforms × 3 document types × 4 tech stacks
+- **🚀 Automated Testing**: One-click testing of all template combinations
+- **📊 Detailed Reports**: Success rates, timing, and error analysis
+- **🔍 Real-time Progress**: Live updates during test execution
+- **✅ Quality Assurance**: Ensures all templates work across all scenarios
+
+**Access Template Testing**:
+1. **Main UI**: Click "🧪 Test All Template Combinations" button in the testing panel
+2. **Dedicated Page**: Visit `http://localhost:8080/test-template-combinations.html`
+3. **Command Line**: Use `npm run test:templates` for automated testing
 
 **🚀 Pro Tip**: All browser tests now include automatic endpoint validation to prevent wasting time on broken tests!
 
@@ -460,14 +484,30 @@ figma-ticket-generator/
 
 **Key Enhancement**: Our visual-enhanced system provides **significantly richer context** to LLMs by combining Figma screenshots with comprehensive design analysis, resulting in more accurate and detailed development guidance.
 
-## 📋 Document Types Supported
+## 📋 Document Types & Platforms Supported
 
-1. **🎯 JIRA Tickets** - User stories with detailed acceptance criteria
-2. **📖 Confluence Pages** - Comprehensive design documentation
-3. **🔧 Technical Specs** - Architecture and implementation details
-4. **📝 GitHub Issues** - Development tasks with checklists
-5. **📚 Wiki Documentation** - Component catalogs and guidelines
-6. **🤖 Agent Tasks** - AI agent instruction sets
+### 🎯 **Platforms** (5 supported)
+1. **� JIRA** - Complete user stories with acceptance criteria
+2. **� Linear** - Modern project management tickets
+3. **🐙 GitHub Issues** - Development tasks with checklists
+4. **📝 Notion** - Database entries with rich formatting
+5. **🎨 UI Documentation** - Component documentation and guidelines
+
+### 📄 **Document Types** (3 core types)
+1. **🧩 Component** - Individual component specifications
+2. **✨ Feature** - Feature-level requirements and implementation
+3. **💻 Code (Simple)** - Direct development tasks and technical specs
+
+### 🛠️ **Tech Stacks** (4+ supported)
+1. **⚛️ React** - React 18 with TypeScript, Material-UI, Jest testing
+2. **💚 Vue** - Vue 3 with Composition API, Pinia, Vite build system
+3. **🔴 AEM** - AEM 6.5 with HTL, Apache Sling, OSGi bundles
+4. **� Generic** - Framework-agnostic implementations
+
+### 📊 **Template Combinations**
+- **Total**: 60 possible combinations (5 platforms × 3 document types × 4 tech stacks)
+- **� Test Coverage**: Complete automated testing of all combinations
+- **🎯 Quality**: Enhanced Handlebars-style template processing with conditionals and loops
 
 ## 🚀 Quick Start
 

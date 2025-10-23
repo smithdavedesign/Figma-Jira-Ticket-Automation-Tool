@@ -53,6 +53,7 @@ content: |
   **Priority**: {{ priority }} | **Story Points**: {{ story_points }}
   
   **🔗 Figma Design**: [View Component]({{ figma_url }})
+  **📸 Design Reference**: !{{ screenshot_filename }}|thumbnail!
   **🎯 AEM Implementation**: {{ technologies }}
   
   ## 🎯 Objective

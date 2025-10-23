@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Combinations Test Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-card h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .combo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .combo-list li {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .test-button:hover {
+            background: #2980b9;
+        }
+        .test-button.running {
+            background: #f39c12;
+        }
+        .test-button.success {
+            background: #27ae60;
+        }
+        .test-button.error {
+            background: #e74c3c;
+        }
+        .results {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .result-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+        }
+        .result-success {
+            background: #d4edda;
+            border-left: 4px solid #27ae60;
+        }
+        .result-error {
+            background: #f8d7da;
+            border-left: 4px solid #e74c3c;
+        }
+        .result-pending {
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Template Combinations Test Suite</h1>
+        <p>Comprehensive testing of all platform/document type/tech stack combinations with screenshot references</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div id="progressText">Ready to test</div>
+    </div>
+
+    <div class="controls">
+        <button class="test-button" onclick="testAllCombinations()">🚀 Test All Combinations</button>
+        <button class="test-button" onclick="testPlatforms()">📋 Test All Platforms</button>
+        <button class="test-button" onclick="testDocumentTypes()">📄 Test Document Types</button>
+        <button class="test-button" onclick="testTechStacks()">⚙️ Test Tech Stacks</button>
+        <button class="test-button" onclick="clearResults()">🗑️ Clear Results</button>
+    </div>
+
+    <div class="test-grid">
+        <div class="test-card">
+            <h3>🏗️ Platforms</h3>
+            <ul class="combo-list" id="platformsList">
+                <li>jira - Jira Software</li>
+                <li>linear - Linear Issues</li>
+                <li>github - GitHub Issues</li>
+                <li>notion - Notion Pages</li>
+            </ul>
+        </div>
+
+        <div class="test-card">
+            <h3>📄 Document Types</h3>
+            <ul class="combo-list" id="documentTypesList">
+                <li>code-simple - Simple Implementation</li>
+                <li>component - Component Development</li>
+                <li>feature - Feature Implementation</li>
+            </ul>
+        </div>
+
+        <div class="test-card">
+            <h3>⚙️ Tech Stacks</h3>
+            <ul class="combo-list" id="techStacksList">
+                <li>AEM - Adobe Experience Manager</li>
+                <li>React - React.js Framework</li>
+                <li>Vue - Vue.js Framework</li>
+                <li>generic - Generic/Other</li>
+            </ul>
+        </div>
+
+        <div class="test-card">
+            <h3>📊 Test Statistics</h3>
+            <div id="testStats">
+                <div>Total Combinations: <strong id="totalCombos">36</strong></div>
+                <div>Completed: <strong id="completedTests">0</strong></div>
+                <div>Success: <strong id="successTests">0</strong></div>
+                <div>Errors: <strong id="errorTests">0</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="results" id="results" style="display: none;">
+        <h3>🔍 Test Results</h3>
+        <div id="resultsList"></div>
+    </div>
+
+    <script>
+        const platforms = ['jira', 'linear', 'github', 'notion', 'ui'];
+        const documentTypes = ['code-simple', 'component', 'feature'];
+        const techStacks = ['AEM', 'React', 'Vue', 'generic'];
+        
+        let testResults = [];
+        let currentTestIndex = 0;
+        let totalTests = 0;
+
+        // Mock Figma data for testing
+        const mockFigmaData = {
+            frameData: {
+                name: "Test Component",
+                id: "test-frame-123",
+                dimensions: { width: 320, height: 240 },
+                dependencies: [],
+                screenshot: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+                screenshotFileName: "test-component-design.png"
+            },
+            figmaContext: {
+                fileName: "Test Design File",
+                figmaUrl: "https://figma.com/test"
+            }
+        };
+
+        function updateProgress() {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const progress = totalTests > 0 ? (currentTestIndex / totalTests) * 100 : 0;
+            
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = totalTests > 0 ? 
+                `Testing ${currentTestIndex}/${totalTests} combinations (${Math.round(progress)}%)` : 
+                'Ready to test';
+        }
+
+        function updateStats() {
+            document.getElementById('completedTests').textContent = testResults.length;
+            document.getElementById('successTests').textContent = testResults.filter(r => r.success).length;
+            document.getElementById('errorTests').textContent = testResults.filter(r => !r.success).length;
+        }
+
+        function addResult(platform, documentType, techStack, success, message, screenshotFound = false) {
+            const resultItem = {
+                platform,
+                documentType,
+                techStack,
+                success,
+                message,
+                screenshotFound,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            testResults.push(resultItem);
+            
+            const resultsList = document.getElementById('resultsList');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result-item ${success ? 'result-success' : 'result-error'}`;
+            
+            const screenshotIcon = screenshotFound ? '📸' : '❌';
+            resultDiv.innerHTML = `
+                <strong>${platform}/${documentType}/${techStack}</strong> - ${resultItem.timestamp}<br>
+                ${screenshotIcon} Screenshot: ${screenshotFound ? 'Found' : 'Missing'}<br>
+                ${message}
+            `;
+            
+            resultsList.appendChild(resultDiv);
+            document.getElementById('results').style.display = 'block';
+            
+            updateStats();
+        }
+
+        async function testTemplateCombination(platform, documentType, techStack) {
+            currentTestIndex++;
+            updateProgress();
+            
+            try {
+                console.log(`Testing: ${platform}/${documentType}/${techStack}`);
+                
+                const testData = {
+                    ...mockFigmaData,
+                    platform,
+                    documentType,
+                    techStack,
+                    fileId: 'test-file-123'
+                };
+
+                const response = await fetch('http://localhost:3000/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        method: "generate_template_tickets",
+                        params: testData
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                // Check if the result contains screenshot reference
+                const content = result.content || result.ticket || '';
+                const hasScreenshotRef = content.includes('screenshot') || 
+                                       content.includes('!test-component-design.png|thumbnail!') ||
+                                       content.includes('![') ||
+                                       content.includes('📸');
+                
+                addResult(
+                    platform, 
+                    documentType, 
+                    techStack, 
+                    true, 
+                    `✅ Template generated successfully (${content.length} chars)`,
+                    hasScreenshotRef
+                );
+                
+                return { success: true, screenshotFound: hasScreenshotRef };
+                
+            } catch (error) {
+                console.error(`Error testing ${platform}/${documentType}/${techStack}:`, error);
+                addResult(
+                    platform, 
+                    documentType, 
+                    techStack, 
+                    false, 
+                    `❌ Error: ${error.message}`,
+                    false
+                );
+                return { success: false, screenshotFound: false };
+            }
+        }
+
+        async function testAllCombinations() {
+            testResults = [];
+            currentTestIndex = 0;
+            totalTests = platforms.length * documentTypes.length * techStacks.length;
+            document.getElementById('resultsList').innerHTML = '';
+            
+            console.log(`Starting comprehensive test of ${totalTests} combinations...`);
+            
+            for (const platform of platforms) {
+                for (const documentType of documentTypes) {
+                    for (const techStack of techStacks) {
+                        await testTemplateCombination(platform, documentType, techStack);
+                        // Small delay to prevent overwhelming the server
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+            }
+            
+            updateProgress();
+            console.log('All combinations tested!');
+            
+            // Summary
+            const successCount = testResults.filter(r => r.success).length;
+            const screenshotCount = testResults.filter(r => r.screenshotFound).length;
+            
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'result-item result-success';
+            summaryDiv.innerHTML = `
+                <strong>🎉 Test Summary</strong><br>
+                Total Tests: ${totalTests}<br>
+                Successful: ${successCount}/${totalTests} (${Math.round(successCount/totalTests*100)}%)<br>
+                With Screenshots: ${screenshotCount}/${totalTests} (${Math.round(screenshotCount/totalTests*100)}%)
+            `;
+            document.getElementById('resultsList').insertBefore(summaryDiv, document.getElementById('resultsList').firstChild);
+        }
+
+        async function testPlatforms() {
+            testResults = [];
+            currentTestIndex = 0;
+            totalTests = platforms.length;
+            document.getElementById('resultsList').innerHTML = '';
+            
+            for (const platform of platforms) {
+                await testTemplateCombination(platform, 'component', 'React');
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            updateProgress();
+        }
+
+        async function testDocumentTypes() {
+            testResults = [];
+            currentTestIndex = 0;
+            totalTests = documentTypes.length;
+            document.getElementById('resultsList').innerHTML = '';
+            
+            for (const documentType of documentTypes) {
+                await testTemplateCombination('jira', documentType, 'React');
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            updateProgress();
+        }
+
+        async function testTechStacks() {
+            testResults = [];
+            currentTestIndex = 0;
+            totalTests = techStacks.length;
+            document.getElementById('resultsList').innerHTML = '';
+            
+            for (const techStack of techStacks) {
+                await testTemplateCombination('jira', 'component', techStack);
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            updateProgress();
+        }
+
+        function clearResults() {
+            testResults = [];
+            currentTestIndex = 0;
+            totalTests = 0;
+            document.getElementById('resultsList').innerHTML = '';
+            document.getElementById('results').style.display = 'none';
+            updateProgress();
+            updateStats();
+        }
+
+        // Initialize
+        updateStats();
+    </script>
+</body>
+</html>

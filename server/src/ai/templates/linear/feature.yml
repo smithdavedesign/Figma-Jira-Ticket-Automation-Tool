@@ -57,7 +57,8 @@ content: |
   ## 📝 Overview
   Build the {{ component_name }} component to provide consistent user interface elements across our application, following design system standards and accessibility best practices.
 
-  **Design Reference:** [Figma Component]({{ figma.live_link }})
+  **Design Reference:** [Figma Component]({{ figma.live_link }})  
+  **📸 Design Screenshot:** !{{ figma.screenshot_filename }}|thumbnail!
 
   ---
 
