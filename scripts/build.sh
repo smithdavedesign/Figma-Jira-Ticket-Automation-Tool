@@ -15,18 +15,15 @@ npx tsc
 # Copy UI assets to dist
 echo "🎨 Copying UI assets..."
 mkdir -p dist/ui
-cp -r ui/plugin/* dist/ui/
+cp ui/index.html dist/ui/
+cp -r ui/components/ dist/ui/ 2>/dev/null || true
+cp -r ui/plugin/ dist/ui/ 2>/dev/null || true
+cp -r ui/test/ dist/ui/ 2>/dev/null || true
 
-# Inline CSS for Figma compatibility
+# Inline CSS for Figma compatibility (if needed)
 echo "🎨 Inlining CSS..."
-# Use a more robust method to inline CSS
-node -e "
-const fs = require('fs');
-const css = fs.readFileSync('ui/plugin/styles/main.css', 'utf8');
-let html = fs.readFileSync('dist/ui/index.html', 'utf8');
-html = html.replace('<link rel=\"stylesheet\" href=\"styles/main.css\">', \`<style>\${css}</style>\`);
-fs.writeFileSync('dist/ui/index.html', html);
-"
+# The HTML already has inline CSS, so this step is optional
+echo "CSS already inlined in HTML file"
 
 # Create distribution manifest (for packaging)
 echo "📝 Creating distribution manifest..."

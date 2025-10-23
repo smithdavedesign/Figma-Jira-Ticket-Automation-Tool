@@ -1,0 +1,157 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "🎨 Enhanced Figma Plugin" [level=1] [ref=e4]
+      - generic [ref=e5]: AI-powered ticket generation with design intelligence preview
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - button "🎫 Smart Generator" [ref=e8] [cursor=pointer]
+        - button "📊 Design Health" [ref=e9] [cursor=pointer]
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - heading "🎫 Enhanced Document Generator" [level=2] [ref=e12]
+          - paragraph [ref=e13]: See exactly what context is sent to AI before generation
+        - generic [ref=e14]:
+          - generic [ref=e15]: Tech Stack Description
+          - textbox "Tech Stack Description" [ref=e16]:
+            - /placeholder: "Describe your tech stack, frameworks, libraries, and architecture. Be specific about versions, patterns, and tools you're using.\n\nExamples:\n• React 18 with TypeScript, Material-UI v5, React Query for state management\n• Vue 3 with Composition API, Pinia for state, Vite build tool\n• Next.js 13 with App Router, TailwindCSS, Prisma ORM, PostgreSQL\n• Angular 15 with NgRx, Angular Material, RxJS patterns"
+          - button "🔍 Parse Tech Stack" [ref=e17]
+        - generic [ref=e18]:
+          - generic [ref=e19]: 💡 Popular Tech Stack Combinations
+          - generic [ref=e20]:
+            - generic [ref=e21] [cursor=pointer]: React + TypeScript + Material-UI
+            - generic [ref=e22] [cursor=pointer]: Vue 3 + Composition API + Pinia
+            - generic [ref=e23] [cursor=pointer]: Angular 15 + NgRx + Material
+            - generic [ref=e24] [cursor=pointer]: Next.js + TailwindCSS + Prisma
+            - generic [ref=e25] [cursor=pointer]: AEM 6.5 + HTL + Sling + OSGi
+            - generic [ref=e26] [cursor=pointer]: Figma + Design System + Tokens
+        - generic [ref=e27]:
+          - generic [ref=e28]: Target Platform
+          - combobox "Target Platform" [ref=e29]:
+            - option "🎫 Jira" [selected]
+            - option "🐙 GitHub Issues"
+            - option "📄 Confluence"
+            - option "📏 Linear"
+            - option "📝 Notion"
+            - option "📚 Wiki"
+        - generic [ref=e30]:
+          - generic [ref=e31]: Document Type
+          - combobox "Document Type" [ref=e32]:
+            - option "🧩 Component" [selected]
+            - option "✨ Feature"
+            - option "💻 Code (Simple)"
+            - option "⚙️ Service"
+            - option "📄 Page Template"
+            - option "🐛 Bug Fix"
+            - option "🎯 Epic"
+        - heading "📝 LLM Context Template" [level=4] [ref=e34]
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - heading "🔌 MCP Server Status Connected" [level=3] [ref=e37]:
+              - text: 🔌 MCP Server Status
+              - generic [ref=e38]: Connected
+            - paragraph [ref=e39]: Model Context Protocol server connection
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - heading "🚀 Server Connection" [level=4] [ref=e43]
+              - generic [ref=e44]:
+                - generic [ref=e45]: ✅
+                - generic [ref=e46]: Connected (v1.0.0)
+            - generic [ref=e48]:
+              - generic [ref=e49]:
+                - strong [ref=e50]: "Server URL:"
+                - text: http://localhost:3000
+              - generic [ref=e51]:
+                - strong [ref=e52]: "Available Tools:"
+                - text: "7"
+              - generic [ref=e53]:
+                - generic [ref=e54]: analyze_project
+                - generic [ref=e55]: generate_tickets
+                - generic [ref=e56]: check_compliance
+                - generic [ref=e57]: generate_enhanced_ticket
+                - generic [ref=e58]: generate_ai_ticket
+                - generic [ref=e59]: analyze_design_health
+                - generic [ref=e60]: generate_template_tickets
+              - generic [ref=e61]: 🚀 MCP Server Ready - AI-powered design analysis available
+        - generic [ref=e62]:
+          - button "🔍 Preview Context & Generate" [ref=e63] [cursor=pointer]
+          - button "🤖 Generate AI Ticket" [ref=e64] [cursor=pointer]
+        - generic [ref=e65]:
+          - button "🔬 Advanced Context Dashboard" [ref=e66] [cursor=pointer]
+          - button "🔍 Hide MCP Data Debug" [ref=e67] [cursor=pointer]
+        - generic [ref=e68]:
+          - heading "🧪 Standalone Testing (No Figma Required)" [level=3] [ref=e69]
+          - generic [ref=e70]:
+            - button "🤖 Test Mock AI Generation" [ref=e71] [cursor=pointer]
+            - button "📊 Test Mock Data Extraction" [ref=e72] [cursor=pointer]
+            - button "🔧 Test MCP Server Direct" [ref=e73] [cursor=pointer]
+            - button "🧪 Test All Template Combinations" [ref=e74] [cursor=pointer]
+          - generic [ref=e75]:
+            - button "🔍 Debug Selection Context" [ref=e76] [cursor=pointer]
+            - button "📸 Precise Screenshot" [ref=e77] [cursor=pointer]
+            - button "🧪 Test Screenshot API" [ref=e78] [cursor=pointer]
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - heading "🔍 MCP Data Layer Debug" [level=3] [ref=e81]
+            - button "📊 Advanced Dashboard" [ref=e82] [cursor=pointer]
+            - button "Hide Debug" [ref=e83] [cursor=pointer]
+          - generic [ref=e84]:
+            - heading "📊 Extracted Data Schema" [level=4] [ref=e86]
+            - heading "✅ Validation Results" [level=4] [ref=e89]
+            - heading "📡 MCP Server Communication" [level=4] [ref=e91]
+  - generic [ref=e93]:
+    - generic [ref=e94]:
+      - heading "🔬 Advanced Context Dashboard" [level=2] [ref=e95]
+      - button "✕" [ref=e96] [cursor=pointer]
+    - generic [ref=e97]:
+      - generic [ref=e98]:
+        - button "📊 Overview" [ref=e99] [cursor=pointer]
+        - button "🎨 Design Tokens" [ref=e100] [cursor=pointer]
+        - button "🌳 Component Hierarchy" [ref=e101] [cursor=pointer]
+        - button "🧠 AI Analysis" [ref=e102] [cursor=pointer]
+        - button "📄 Raw Data" [ref=e103] [cursor=pointer]
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - heading "🎯 Selection Summary" [level=3] [ref=e107]
+          - generic [ref=e108]:
+            - generic [ref=e109]:
+              - generic [ref=e110]: 🎨
+              - generic [ref=e111]:
+                - generic [ref=e112]: "0"
+                - generic [ref=e113]: Total Elements
+            - generic [ref=e114]:
+              - generic [ref=e115]: 🧩
+              - generic [ref=e116]:
+                - generic [ref=e117]: "0"
+                - generic [ref=e118]: Components
+            - generic [ref=e119]:
+              - generic [ref=e120]: 📝
+              - generic [ref=e121]:
+                - generic [ref=e122]: "0"
+                - generic [ref=e123]: Text Layers
+            - generic [ref=e124]:
+              - generic [ref=e125]: 📏
+              - generic [ref=e126]:
+                - generic [ref=e127]: "0"
+                - generic [ref=e128]: Max Depth
+        - generic [ref=e129]:
+          - heading "🔍 Context Quality Score" [level=3] [ref=e130]
+          - generic [ref=e131]:
+            - generic [ref=e133]: 85%
+            - generic [ref=e134]:
+              - generic [ref=e135]:
+                - generic [ref=e136]: "Design Tokens:"
+                - generic [ref=e137]: ✅ Rich
+              - generic [ref=e138]:
+                - generic [ref=e139]: "Semantic Analysis:"
+                - generic [ref=e140]: ✅ Complete
+              - generic [ref=e141]:
+                - generic [ref=e142]: "Component Structure:"
+                - generic [ref=e143]: ✅ Clear
+              - generic [ref=e144]:
+                - generic [ref=e145]: "AI Readiness:"
+                - generic [ref=e146]: ✅ Optimal
+```

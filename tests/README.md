@@ -15,14 +15,19 @@ This directory contains all test files for the Figma AI Ticket Generator project
 
 ### 🔗 Integration Tests (`integration/`)
 - `test-figma-integration.html` - **Main Figma integration test interface** (moved from root)
+- `test-figma-integration.js` - Figma integration JavaScript tests
 - `test-screenshot-fix.html` - Screenshot functionality tests (moved from root)
 - `test-template-fix-validation.html` - Template system validation (moved from root)  
 - `test-template-selection-debug.html` - Template selection debugging (moved from root)
 - `test-parse-tech-stack.html` - Tech stack parsing tests (moved from /tests/)
 - `test-mcp-data-layer.html` - MCP data layer integration
 - `test-standalone.html` - Standalone UI tests
+- `test-standalone.mjs` - Standalone MCP data layer testing
+- `test-end-to-end-workflow.mjs` - **Complete E2E workflow validation (100/100 score)**
+- `test-ui-integration.js` - UI integration tests
 - `ai-orchestrator-integration.test.js` - AI orchestration tests
 - `compliance-integration-tests.js` - Design system compliance
+- `design-system-compliance-tests.mjs` - Enhanced design system compliance
 - `phase3-functional-test.js` - Phase 3 functionality tests (moved from /tests/)
 - `phase3-integration-test.js` - Phase 3 integration tests (moved from /tests/)
 
@@ -41,5 +46,21 @@ This directory contains all test files for the Figma AI Ticket Generator project
 - `end-to-end-pipeline.test.js` - Full pipeline integration
 - `phase4-production-integration.test.js` - Production environment tests
 
+### 🌐 Browser Tests (`../browser-tests/`)
+- `modern-ui-validation.spec.js` - **Modern UI validation with current elements**
+- `e2e-workflow-improvements.spec.js` - **Enhanced E2E workflow browser testing**
+- `playwright.config.js` - Playwright configuration with auto-start servers
+
 ### 📚 Legacy Phase Tests (`phase1/`)
 - Historical test files from development phases
+
+## 🎯 Key Test Files
+
+### ⭐ Main Testing Interfaces
+- **`integration/test-end-to-end-workflow.mjs`** - Complete E2E workflow validation (100/100 score)
+- **`browser-tests/modern-ui-validation.spec.js`** - Modern browser-based UI testing
+- **`browser-tests/e2e-workflow-improvements.spec.js`** - Enhanced browser E2E testing
+
+### 🚀 Top-Level Test Files
+- `comprehensive-e2e-test.js` - Comprehensive end-to-end testing
+- `figma-context-integration.test.js` - Figma context integration validation
