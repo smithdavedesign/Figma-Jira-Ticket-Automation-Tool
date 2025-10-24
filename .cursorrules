@@ -1,12 +1,13 @@
 # Figma AI Ticket Generator - AI Assistant Rules
 
 ## MANDATORY CONTEXT FILES TO READ FIRST:
-1. .ai-context-rules.md - File placement and behavior rules
+1. .ai-context-rules.md - AI behavioral rules and file placement protocol
 2. docs/MASTER_PROJECT_CONTEXT.md - Current project status (Phase 6 Complete)
-3. docs/MASTER_FUTURE_PLAN.md - Strategic roadmap (Phases 7-10)
+3. docs/project-phases/MASTER_FUTURE_PLAN.md - Strategic roadmap (Phases 7-10)
 
 ## PROJECT CONTEXT:
 - Phase 6 Complete: Advanced Template System with 7 platforms
+- Documentation: 75% consolidation complete across all docs/ subdirectories  
 - Architecture: MCP Server + Plugin UI (localhost:3000) - NEVER direct Figma API
 - Next Focus: Phase 7 Live Integration & Market Validation
 - Key Differentiator: Deep Design Intelligence extraction
@@ -25,4 +26,4 @@
 5. Ask user if uncertain
 
 ## CURRENT STATUS:
-Production-ready Figma plugin with comprehensive template system, ready for live market testing and design intelligence enhancement.
+Production-ready Figma plugin with comprehensive template system, consolidated documentation structure, ready for live market testing and design intelligence enhancement.
