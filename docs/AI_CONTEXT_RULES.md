@@ -1,90 +1,47 @@
-# 🤖 AI Assistant Context Rules# 🤖 AI Assistant Context Rules
+# 🤖 AI Assistant Context Rules
 
+## 🚨 **CRITICAL DOCUMENTATION RULE**
 
+**ALL documentation files (.md, README, guides, instructions) MUST be placed in the `docs/` directory.**
 
-## 🚨 **CRITICAL STARTUP PROTOCOL**## 🚨 **CRITICAL DOCUMENTATION RULE**
+## ⚡ **USER ENFORCEMENT COMMANDS**
 
-
-
-**AI ASSISTANT MUST SAY:** "I'm reading the context rules first..." then read:**ALL documentation files (.md, README, guides, instructions) MUST be placed in the `docs/` directory.**
-
-1. **`docs/MASTER_PROJECT_CONTEXT.md`** - Complete project status (MANDATORY)
-
-2. **`docs/AI_CONTEXT_RULES.md`** - Detailed behavioral rules (moved from root)## ⚡ **USER ENFORCEMENT COMMANDS**
-
-
-
-## ⚡ **ESSENTIAL RULES****If AI doesn't read context rules first, say:**
-
+**If AI doesn't read context rules first, say:**
 - `"Read context rules first!"`
-
-### 🎯 **Documentation Rules**- `"Follow .ai-context-rules.md protocol!"`
-
-- **ALL .md files MUST go in `docs/` subdirectories** (never project root)- `"Check session start protocol!"`
-
-- **Use consolidated structure**: architecture/, implementation/, guides/, troubleshooting/, etc.- `"Stop! Read MASTER_PROJECT_CONTEXT.md first!"`
-
-- **Check existing docs first** before creating new ones
+- `"Follow AI context rules protocol!"`
+- `"Check session start protocol!"`
+- `"Stop! Read MASTER_PROJECT_CONTEXT.md first!"`
 
 ## 🧠 **MANDATORY SESSION STARTUP RULE**
 
-### 🏗️ **Architecture Rules**
-
-- **MCP SERVER ONLY** - Never implement direct Figma API, always use localhost:3000### 🚨 **CRITICAL: SESSION START PROTOCOL**
-
-- **MVC Structure** - Controllers (`app/`), Models (`core/`), Views (`ui/`)**AI ASSISTANT MUST SAY:** "I'm reading the context rules first..." then actually read them!
-
-- **Follow existing patterns** - Check project structure before creating files
+### 🚨 **CRITICAL: SESSION START PROTOCOL**
+**AI ASSISTANT MUST SAY:** "I'm reading the context rules first..." then actually read them!
 
 **USER ENFORCEMENT:** If I don't mention reading context rules in my first response, please say:
+- "Read the context rules first!"
+- "Follow the .ai-context-rules.md protocol!"
+- "Check MASTER_PROJECT_CONTEXT.md before proceeding!"
 
-### 📋 **Pre-Work Checklist**- "Read the context rules first!"
+### ⚡ **ESSENTIAL DOCUMENTATION REVIEW - ALWAYS READ FIRST:**
 
-Before ANY file creation:- "Follow the .ai-context-rules.md protocol!"
-
-- [ ] Read `docs/MASTER_PROJECT_CONTEXT.md`- "Check MASTER_PROJECT_CONTEXT.md before proceeding!"
-
-- [ ] Check current working directory with `pwd`
-
-- [ ] Understand project structure### ⚡ **ESSENTIAL DOCUMENTATION REVIEW - ALWAYS READ FIRST:**
-
-- [ ] Determine correct file placement
-
-- [ ] Ask user if unsure#### **🎯 CORE PROJECT UNDERSTANDING (MANDATORY)**
-
+#### **🎯 CORE PROJECT UNDERSTANDING (MANDATORY)**
 1. **`docs/MASTER_PROJECT_CONTEXT.md`** - Complete project context and current status
-
-## 🚨 **ENFORCEMENT**2. **`docs/MASTER_FUTURE_PLAN.md`** - Strategic roadmap and next phases (Phases 7-10)
-
+2. **`docs/MASTER_FUTURE_PLAN.md`** - Strategic roadmap and next phases (Phases 7-10)
 3. **`docs/architecture/MCP_ARCHITECTURE.md`** - MCP server integration (NEVER implement direct Figma API)
+4. **`docs/project-phases/PHASE_6_TEMPLATE_SYSTEM_COMPLETE.md`** - Current phase completion status
 
-**If user says "You violated the context rules":**4. **`docs/project-phases/PHASE_6_TEMPLATE_SYSTEM_COMPLETE.md`** - Current phase completion status
-
-1. **STOP ALL WORK** immediately
-
-2. **Fix violations** first (move misplaced files)#### **🔧 TECHNICAL IMPLEMENTATION (REQUIRED)**
-
-3. **Re-read context rules**5. **`docs/api/MCP_API_REFERENCE.md`** - MCP server endpoints and data structures
-
-4. **Ask for confirmation** before proceeding6. **`docs/implementation/TEMPLATE_SYSTEM_CONFIG.md`** - Template system architecture
-
+#### **🔧 TECHNICAL IMPLEMENTATION (REQUIRED)**
+5. **`docs/api/MCP_API_REFERENCE.md`** - MCP server endpoints and data structures
+6. **`docs/implementation/TEMPLATE_SYSTEM_CONFIG.md`** - Template system architecture
 7. **`docs/deployment/PRODUCTION_DEPLOYMENT.md`** - Production deployment status and process
+8. **`docs/testing/COMPREHENSIVE_TEST_STRATEGY.md`** - Testing approach and validation
 
-**Zero tolerance for:**8. **`docs/testing/COMPREHENSIVE_TEST_STRATEGY.md`** - Testing approach and validation
+#### **🎨 DESIGN INTELLIGENCE FOCUS (KEY DIFFERENTIATOR)**
+9. **`docs/guides/DESIGN_INTELLIGENCE_VISION.md`** - AI-powered design analysis capabilities
+10. **`docs/implementation/AI_ORCHESTRATION_GUIDE.md`** - Multi-modal AI integration patterns
 
-- Files in wrong locations
-
-- Skipping context rules#### **🎨 DESIGN INTELLIGENCE FOCUS (KEY DIFFERENTIATOR)**
-
-- Random file creation9. **`docs/guides/DESIGN_INTELLIGENCE_VISION.md`** - AI-powered design analysis capabilities
-
-- Architecture violations10. **`docs/implementation/AI_ORCHESTRATION_GUIDE.md`** - Multi-modal AI integration patterns
-
-
-
----#### **📋 QUICK REFERENCE (AS NEEDED)**
-
-**📚 Complete rules in:** `docs/AI_CONTEXT_RULES.md`- **`docs/troubleshooting/COMMON_ISSUES.md`** - Known issues and solutions
+#### **📋 QUICK REFERENCE (AS NEEDED)**
+- **`docs/troubleshooting/COMMON_ISSUES.md`** - Known issues and solutions
 - **`docs/guides/PLUGIN_SETUP_GUIDE.md`** - Setup and configuration
 - **`docs/testing/LIVE_TESTING_GUIDE.md`** - Live Figma integration testing
 - **`docs/api/FIGMA_API_INTEGRATION.md`** - Figma API usage patterns via MCP
@@ -519,14 +476,14 @@ ls -la src/           # For source code
 
 ### **🆚 KEY CONTEXT FILE DIFFERENCES**
 
-#### **MASTER_PROJECT_CONTEXT.md vs .ai-context-rules.md:**
-- **MASTER_PROJECT_CONTEXT.md** - Shows Phase 5 status (October 22) - PROJECT STATUS REFERENCE
-- **.ai-context-rules.md** - Shows Phase 6 Complete status - AI ASSISTANT RULES (THIS FILE)
-- **Discrepancy Alert** ⚠️ - Project status may need synchronization
+#### **File Structure & Usage:**
+- **MASTER_PROJECT_CONTEXT.md** - Complete project status and current context (PRIMARY)
+- **AI_CONTEXT_RULES.md** (THIS FILE) - Detailed AI assistant behavior rules
+- **Simple version at project root** - `/.ai-context-rules.md` for quick reference
 
 #### **Usage Priority:**
-1. **.ai-context-rules.md** (THIS FILE) - For AI assistant behavior and file creation rules
-2. **MASTER_PROJECT_CONTEXT.md** - For overall project understanding and context
+1. **MASTER_PROJECT_CONTEXT.md** - For overall project understanding and current status
+2. **AI_CONTEXT_RULES.md** (THIS FILE) - For detailed AI assistant behavior and file creation rules
 
 ### **🚨 ENHANCED ENFORCEMENT MECHANISM**
 

@@ -175,7 +175,7 @@ figma-ticket-generator/
 ```
 docs/                           # Root documentation directory
 ├── README.md                   # Main documentation index and overview
-├── .ai-context-rules.md       # AI assistant behavioral rules and protocols
+├── AI_CONTEXT_RULES.md        # AI assistant behavioral rules and protocols
 ├── MASTER_PROJECT_CONTEXT.md  # This file - complete project status
 ├── 
 ├── architecture/               # System Architecture (3 guides + README + archive)
