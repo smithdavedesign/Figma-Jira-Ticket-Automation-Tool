@@ -645,6 +645,7 @@
       <button class="tab-btn" onclick="showTab('e2e')">🔄 E2E</button>
       <button class="tab-btn" onclick="showTab('performance')">🚀 Performance</button>
       <button class="tab-btn" onclick="showTab('vitest')">🧪 Vitest</button>
+      <button class="tab-btn" onclick="showTab('playwright')">🎭 Playwright</button>
     </div>
 
     <!-- System Tab -->
@@ -1241,6 +1242,92 @@
               <div id="vitest-results-json" style="display: none; background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.85em; white-space: pre-wrap;"></div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Playwright Tab -->
+    <div class="tab-content" id="playwright">
+      <div class="test-section">
+        <div class="section-header">
+          <div class="test-title">🎭 Playwright Browser Tests</div>
+          <button class="test-button" style="width: auto;" onclick="runPlaywrightTests()">Run All Browser Tests</button>
+        </div>
+        
+        <div class="test-grid">
+          <!-- Test Execution Card -->
+          <div class="test-card">
+            <div class="test-card-header">Test Execution</div>
+            <div class="test-card-body">
+              <div style="margin-bottom: 10px;">
+                <span class="status-badge" id="playwright-status-badge">Ready</span>
+              </div>
+              <button class="test-button" onclick="runPlaywrightTests()">🧪 Run Tests</button>
+              <button class="test-button" onclick="runPlaywrightSmoke()">💨 Smoke Tests</button>
+              <button class="test-button" onclick="runPlaywrightCritical()">⚡ Critical Tests</button>
+            </div>
+            <div class="test-result" id="playwright-execution-result"></div>
+          </div>
+
+          <!-- Test Summary Card -->
+          <div class="test-card">
+            <div class="test-card-header">Test Results Summary</div>
+            <div class="test-card-body">
+              <div id="playwright-summary" style="font-family: monospace; font-size: 0.9em;">
+                <div>Total: <span id="playwright-total">-</span></div>
+                <div>Passed: <span id="playwright-passed" style="color: #10b981;">-</span></div>
+                <div>Failed: <span id="playwright-failed" style="color: #ef4444;">-</span></div>
+                <div>Skipped: <span id="playwright-skipped" style="color: #f59e0b;">-</span></div>
+                <div>Duration: <span id="playwright-duration">-</span></div>
+              </div>
+              <button class="test-button" onclick="loadPlaywrightResults()">📄 Load Results</button>
+              <button class="test-button" onclick="openPlaywrightReport()">📊 View Report</button>
+            </div>
+            <div class="test-result" id="playwright-summary-result"></div>
+          </div>
+
+          <!-- Browser Coverage Card -->
+          <div class="test-card">
+            <div class="test-card-header">Browser Coverage</div>
+            <div class="test-card-body">
+              <div id="playwright-browsers" style="font-family: monospace; font-size: 0.9em;">
+                <div>Chrome: <span id="browser-chrome">-</span></div>
+                <div>Firefox: <span id="browser-firefox">-</span></div>
+                <div>Safari: <span id="browser-safari">-</span></div>
+                <div>Mobile: <span id="browser-mobile">-</span></div>
+              </div>
+              <button class="test-button" onclick="runPlaywrightUI()">🖥️ UI Mode</button>
+            </div>
+            <div class="test-result" id="playwright-browsers-result"></div>
+          </div>
+
+          <!-- Test Actions Card -->
+          <div class="test-card">
+            <div class="test-card-header">Test Management</div>
+            <div class="test-card-body">
+              Test categories and management
+              <button class="test-button" onclick="togglePlaywrightIframe()">🖼️ Toggle Report</button>
+              <button class="test-button" onclick="clearPlaywrightResults()">🧹 Clear Results</button>
+              <button class="test-button" onclick="refreshPlaywrightData()">🔄 Refresh</button>
+            </div>
+            <div class="test-result" id="playwright-actions-result"></div>
+          </div>
+        </div>
+
+        <!-- Embedded Report Section -->
+        <div id="playwright-iframe-container" style="display: none; margin-top: 20px;">
+          <div style="margin-bottom: 10px;">
+            <strong>Playwright Test Report:</strong>
+          </div>
+          <iframe id="playwright-iframe" src="about:blank" style="width: 100%; height: 600px; border: 1px solid #ddd; border-radius: 8px;"></iframe>
+        </div>
+
+        <!-- JSON Results Display -->  
+        <div id="playwright-results-json" style="display: none; margin-top: 20px;">
+          <details>
+            <summary style="cursor: pointer; font-weight: bold;">Raw JSON Results</summary>
+            <pre id="playwright-json-content" style="background: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto; max-height: 400px;"></pre>
+          </details>
         </div>
       </div>
     </div>
@@ -2744,6 +2831,215 @@ Generated by Ultimate Figma AI Test Suite
         document.getElementById('coverage-functions').textContent = coverage.functions ? `${coverage.functions.pct}%` : '-';
         document.getElementById('coverage-branches').textContent = coverage.branches ? `${coverage.branches.pct}%` : '-';
         document.getElementById('coverage-statements').textContent = coverage.statements ? `${coverage.statements.pct}%` : '-';
+      }
+    }
+
+    // ===== PLAYWRIGHT FUNCTIONS =====
+
+    async function runPlaywrightTests() {
+      logToConsole('🎭 Running all Playwright browser tests...');
+      updatePlaywrightStatus('Running all tests...', 'running');
+      
+      alert('Starting Playwright test execution...\n\nPlease run in terminal:\ncd tests/playwright-browser-tests && npm test\n\nThen use "Load Results" to view results.');
+      logToConsole('💡 Run: cd tests/playwright-browser-tests && npm test');
+    }
+
+    async function runPlaywrightSmoke() {
+      logToConsole('💨 Running Playwright smoke tests...');
+      updatePlaywrightStatus('Running smoke tests...', 'running');
+      
+      alert('Starting smoke tests...\n\nPlease run in terminal:\ncd tests/playwright-browser-tests && npm test -- --grep @smoke\n\nThen use "Load Results" to view results.');
+      logToConsole('💡 Run: cd tests/playwright-browser-tests && npm test -- --grep @smoke');
+    }
+
+    async function runPlaywrightCritical() {
+      logToConsole('⚡ Running Playwright critical tests...');
+      updatePlaywrightStatus('Running critical tests...', 'running');
+      
+      alert('Starting critical path tests...\n\nPlease run in terminal:\ncd tests/playwright-browser-tests && npm test -- --grep @critical\n\nThen use "Load Results" to view results.');
+      logToConsole('💡 Run: cd tests/playwright-browser-tests && npm test -- --grep @critical');
+    }
+
+    async function runPlaywrightUI() {
+      logToConsole('🖥️ Opening Playwright UI mode...');
+      
+      alert('Opening Playwright UI...\n\nPlease run in terminal:\ncd tests/playwright-browser-tests && npm run test:ui\n\nThis will open the interactive test runner.');
+      logToConsole('💡 Run: cd tests/playwright-browser-tests && npm run test:ui');
+    }
+
+    function openPlaywrightReport() {
+      logToConsole('📊 Opening Playwright HTML report...');
+      const reportUrl = '../playwright-browser-tests/playwright-report/index.html';
+      
+      // Check if report exists first
+      fetch(reportUrl, { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            window.open(reportUrl, '_blank');
+          } else {
+            alert('Playwright report not found. Run tests first:\ncd tests/playwright-browser-tests && npm test');
+            logToConsole('❌ Playwright report not found. Run tests first.');
+          }
+        })
+        .catch(() => {
+          alert('Playwright report not found. Run tests first:\ncd tests/playwright-browser-tests && npm test');
+          logToConsole('❌ Playwright report not found. Run tests first.');
+        });
+    }
+
+    async function loadPlaywrightResults() {
+      logToConsole('📄 Loading Playwright test results...');
+      
+      try {
+        const response = await fetch('../playwright-browser-tests/test-results.json');
+        if (response.ok) {
+          const results = await response.json();
+          updatePlaywrightSummary(results);
+          updatePlaywrightBrowsers(results);
+          
+          // Display JSON results
+          const jsonContainer = document.getElementById('playwright-json-content');
+          jsonContainer.textContent = JSON.stringify(results, null, 2);
+          document.getElementById('playwright-results-json').style.display = 'block';
+          
+          logToConsole('✅ Playwright results loaded successfully');
+          return results;
+        } else {
+          throw new Error(`HTTP ${response.status}: Could not load test results`);
+        }
+      } catch (error) {
+        document.getElementById('playwright-summary-result').innerHTML = `<div class="error">Failed to load results: ${error.message}</div>`;
+        logToConsole(`❌ Failed to load Playwright results: ${error.message}`);
+        
+        // Show fallback data
+        updatePlaywrightSummary({
+          stats: { total: 0, passed: 0, failed: 0, skipped: 0 },
+          duration: 0
+        });
+      }
+    }
+
+    function togglePlaywrightIframe() {
+      const container = document.getElementById('playwright-iframe-container');
+      const iframe = document.getElementById('playwright-iframe');
+      
+      if (container.style.display === 'none') {
+        container.style.display = 'block';
+        iframe.src = '../playwright-browser-tests/playwright-report/index.html';
+        logToConsole('📊 Playwright report iframe opened');
+      } else {
+        container.style.display = 'none';
+        iframe.src = 'about:blank';
+        logToConsole('📊 Playwright report iframe closed');
+      }
+    }
+
+    function clearPlaywrightResults() {
+      logToConsole('🧹 Clearing Playwright results...');
+      
+      // Reset summary
+      updatePlaywrightSummary({
+        stats: { total: 0, passed: 0, failed: 0, skipped: 0 },
+        duration: 0
+      });
+      
+      // Reset browser status
+      ['chrome', 'firefox', 'safari', 'mobile'].forEach(browser => {
+        document.getElementById(`browser-${browser}`).textContent = '-';
+      });
+      
+      // Clear JSON display
+      document.getElementById('playwright-results-json').style.display = 'none';
+      
+      // Clear result areas
+      ['execution', 'summary', 'browsers', 'actions'].forEach(area => {
+        document.getElementById(`playwright-${area}-result`).innerHTML = '';
+      });
+      
+      updatePlaywrightStatus('Ready', 'idle');
+    }
+
+    function refreshPlaywrightData() {
+      logToConsole('🔄 Refreshing Playwright data...');
+      loadPlaywrightResults();
+    }
+
+    function updatePlaywrightStatus(message, type) {
+      const badge = document.getElementById('playwright-status-badge');
+      badge.textContent = message;
+      badge.className = 'status-badge';
+      
+      // Add type-specific styling
+      if (type === 'success') {
+        badge.style.background = '#10b981';
+      } else if (type === 'error') {
+        badge.style.background = '#ef4444';
+      } else if (type === 'running') {
+        badge.style.background = '#f59e0b';
+      } else {
+        badge.style.background = '#6b7280';
+      }
+    }
+
+    function updatePlaywrightSummary(results) {
+      if (results && results.stats) {
+        document.getElementById('playwright-total').textContent = results.stats.total || 0;
+        document.getElementById('playwright-passed').textContent = results.stats.passed || 0;
+        document.getElementById('playwright-failed').textContent = results.stats.failed || 0;
+        document.getElementById('playwright-skipped').textContent = results.stats.skipped || 0;
+        
+        // Format duration
+        if (results.duration) {
+          const duration = Math.round(results.duration / 1000); // Convert to seconds
+          document.getElementById('playwright-duration').textContent = `${duration}s`;
+        }
+        
+        // Update overall status
+        if (results.stats.failed > 0) {
+          updatePlaywrightStatus(`${results.stats.failed} failed`, 'error');
+        } else if (results.stats.passed > 0) {
+          updatePlaywrightStatus(`${results.stats.passed} passed`, 'success');
+        }
+      }
+    }
+
+    function updatePlaywrightBrowsers(results) {
+      if (results && results.suites) {
+        // Parse browser results from suites
+        const browserStats = {
+          chrome: { passed: 0, failed: 0 },
+          firefox: { passed: 0, failed: 0 },
+          safari: { passed: 0, failed: 0 },
+          mobile: { passed: 0, failed: 0 }
+        };
+        
+        results.suites.forEach(suite => {
+          if (suite.title.includes('chromium')) {
+            browserStats.chrome.passed += suite.stats?.passed || 0;
+            browserStats.chrome.failed += suite.stats?.failed || 0;
+          } else if (suite.title.includes('firefox')) {
+            browserStats.firefox.passed += suite.stats?.passed || 0;
+            browserStats.firefox.failed += suite.stats?.failed || 0;
+          } else if (suite.title.includes('webkit') || suite.title.includes('safari')) {
+            browserStats.safari.passed += suite.stats?.passed || 0;
+            browserStats.safari.failed += suite.stats?.failed || 0;
+          } else if (suite.title.includes('mobile') || suite.title.includes('Mobile')) {
+            browserStats.mobile.passed += suite.stats?.passed || 0;
+            browserStats.mobile.failed += suite.stats?.failed || 0;
+          }
+        });
+        
+        // Update browser display
+        Object.keys(browserStats).forEach(browser => {
+          const stats = browserStats[browser];
+          const total = stats.passed + stats.failed;
+          const status = total === 0 ? '-' : `${stats.passed}/${total}`;
+          const color = stats.failed > 0 ? '#ef4444' : (stats.passed > 0 ? '#10b981' : '#6b7280');
+          
+          const element = document.getElementById(`browser-${browser}`);
+          element.textContent = status;
+          element.style.color = color;
+        });
       }
     }
 
