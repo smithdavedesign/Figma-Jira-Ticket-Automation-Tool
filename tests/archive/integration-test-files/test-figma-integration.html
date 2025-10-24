@@ -211,42 +211,71 @@
       <p>Complete testing of plugin functionality, enhanced context, AI integration, screenshot capture, and all supported features</p>
     </div>
 
+    <!-- NEW CONSOLIDATED SUITE NOTICE -->
+    <div class="test-section" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left-color: #0284c7;">
+      <div class="test-title">🚀 NEW: Ultimate Consolidated Test Suite</div>
+      <div style="text-align: center; padding: 20px;">
+        <div style="margin-bottom: 16px; font-size: 16px; color: #1e40af;">
+          ✨ <strong>All tests have been consolidated into a single, powerful tabbed interface!</strong>
+        </div>
+        <a href="./test-consolidated-suite.html" 
+           style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; font-size: 18px; margin: 10px;">
+          🎯 Launch Ultimate Test Suite
+        </a>
+        <div style="margin-top: 12px; font-size: 14px; color: #64748b;">
+          Features: System Health • Screenshots • Templates • AI • UI • E2E • Performance • Global Reporting
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Access URLs -->
     <div class="test-section">
       <div class="test-title">🔗 Quick Access URLs & Test Files</div>
       <div class="url-grid">
         <div class="url-card">
-          <a href="../index.html" target="_blank" class="url-link">
-            🎨 Main Plugin UI
+          <a href="http://localhost:3000/ui/index.html" target="_blank" class="url-link">
+            🎨 Main UI Test Suite
           </a>
-          <div class="url-description">Enhanced UI with context preview, AI integration</div>
+          <div class="url-description">Full web UI with all testing capabilities</div>
         </div>
         <div class="url-card">
-          <a href="enhanced-data-layer-demo.html" target="_blank" class="url-link">
-            � Enhanced Data Layer Demo
+          <a href="http://localhost:3000/ui/plugin/index.html" target="_blank" class="url-link">
+            🎭 Figma Plugin UI
+          </a>
+          <div class="url-description">Inlined CSS/JS plugin UI for Figma compatibility</div>
+        </div>
+        <div class="url-card">
+          <a href="http://localhost:3000/ui/test/enhanced-data-layer-demo.html" target="_blank" class="url-link">
+            📊 Enhanced Data Layer Demo
           </a>
           <div class="url-description">Visual demo of enhanced frame data</div>
         </div>
         <div class="url-card">
-          <a href="figma-plugin-simulator.html" target="_blank" class="url-link">
+          <a href="http://localhost:3000/ui/test/figma-plugin-simulator.html" target="_blank" class="url-link">
             🎭 Plugin Simulator
           </a>
           <div class="url-description">Simulates Figma plugin environment</div>
         </div>
         <div class="url-card">
-          <a href="test-ui-functionality.html" target="_blank" class="url-link">
+          <a href="http://localhost:3000/ui/test/test-ui-functionality.html" target="_blank" class="url-link">
             🧪 UI Functionality Tests
           </a>
           <div class="url-description">Comprehensive UI component tests</div>
         </div>
-        <div class="url-card">
-          <a href="http://localhost:3000" target="_blank" class="url-link">
-            🤖 MCP Server
+        <div class="url-card" style="border: 2px solid #10b981; background: #ecfdf5;">
+          <a href="./test-consolidated-suite.html" target="_blank" class="url-link" style="color: #059669; font-weight: 700;">
+            🚀 NEW: Ultimate Test Suite
           </a>
-          <div class="url-description">Model Context Protocol server</div>
+          <div class="url-description" style="color: #065f46;">All-in-one tabbed test interface</div>
         </div>
         <div class="url-card">
-          <a href="../../test-parse-tech-stack.html" target="_blank" class="url-link">
+          <a href="http://localhost:3000" target="_blank" class="url-link">
+            🤖 MCP Server Health
+          </a>
+          <div class="url-description">Model Context Protocol server status</div>
+        </div>
+        <div class="url-card">
+          <a href="http://localhost:3000/ui/test/test-parse-tech-stack.html" target="_blank" class="url-link">
             🔍 Parse Tech Stack Test
           </a>
           <div class="url-description">Standalone parse function test</div>
@@ -259,7 +288,7 @@
       <div class="test-title">🖥️ Server Status Tests</div>
       <div class="test-grid">
         <div class="test-card">
-          <div class="test-card-header">Web Server (Port 8083)</div>
+          <div class="test-card-header">Web Server (Port 3000)</div>
           <div class="test-card-body">
             <button class="test-button" onclick="testWebServer()">Test Web Server</button>
             <div id="web-server-result" class="test-result"></div>
@@ -521,9 +550,9 @@
 
     // Test Web Server
     async function testWebServer() {
-      log('Testing web server on port 8102...');
+      log('Testing web server on port 3000...');
       try {
-        const response = await fetch('http://localhost:8102/ui/index.html');
+        const response = await fetch('http://localhost:3000/ui/index.html');
         if (response.ok) {
           log('Web server responding successfully', 'success');
           showResult('web-server-result', '✅ Web server is running and serving UI files', 'success');

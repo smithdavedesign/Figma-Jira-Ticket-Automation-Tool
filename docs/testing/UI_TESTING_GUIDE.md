@@ -1,16 +1,63 @@
-# UI Test Directory
+# UI Testing Guide - Updated October 2025
 
-This directory contains comprehensive test files for the Figma AI Ticket Generator UI components and functionality.
+**🚀 MAJOR UPDATE:** All UI tests have been consolidated into a single, comprehensive test suite for better organization and maintainability.
 
-## Test Files
+## 🎯 **NEW: Primary Test Interface (RECOMMENDED)**
 
-### 🧪 **test-figma-integration.html** - Main Test Suite
-- **Enhanced Frame Data Tests**: Validation compliance, hierarchy analysis, semantic role detection
-- **Screenshot & Visual Context Tests**: Screenshot capture simulation, visual analysis
-- **AI Integration Tests**: AI ticket generation, enhanced vs fallback modes, MCP tool integration  
-- **UI Component Tests**: Context preview, parse tech stack, debug panel, Figma message handling
-- **End-to-End Flow Tests**: Complete generation workflow, plugin lifecycle testing
-- **Server Status Tests**: Web server and MCP server connectivity
+### **🚀 Ultimate Consolidated Test Suite**
+**Location:** `tests/integration/test-consolidated-suite.html`  
+**URL:** `http://localhost:3000/tests/integration/test-consolidated-suite.html`
+
+**Features:**
+- **Tabbed Interface:** 7 organized test categories
+- **Global Test Runner:** Run all tests with one button  
+- **Real-time Metrics:** Live success/failure tracking
+- **Unified Console:** Single output for all test results
+- **Professional UI:** Modern, responsive design
+
+### **🗂️ Test Categories Available:**
+
+#### **🖥️ System Tab**
+- MCP Server status and health
+- Web server validation  
+- API endpoint testing (/api/figma/health, /api/figma/screenshot, /api/generate-ticket)
+- Tech stack detection validation
+
+#### **📸 Screenshots Tab** 
+- Screenshot API testing (replaces test-screenshot-api.html)
+- Visual context processing
+- Context preview functionality (replaces context-preview-test.html)
+- Base64 encoding validation
+
+#### **📋 Templates Tab**
+- Template engine testing (replaces template-system-test.html)
+- Platform template validation (Jira, GitHub, Linear, etc.)
+- Variable substitution testing
+- All 45 template combinations validation (replaces test-template-combinations.html)
+
+#### **🤖 AI Tab**
+- AI orchestrator testing
+- Enhanced data layer validation (replaces enhanced-data-layer-demo.html)
+- Gemini integration testing
+- AI-powered ticket generation
+
+#### **🧩 UI Tab**
+- UI functionality and navigation (replaces test-ui-functionality.html)
+- Message handling (analyze-design-health)
+- Loading states and animations
+- Responsive design validation
+
+#### **🔄 E2E Tab**
+- Complete workflow testing (Selection → Analysis → Screenshot → Ticket)
+- MCP integration flow validation
+- Error recovery and graceful handling
+- Data flow integrity testing
+
+#### **🚀 Performance Tab**
+- Load testing and stress testing
+- Response time measurement
+- Memory usage monitoring
+- Performance benchmarks
 
 ### 📊 **enhanced-data-layer-demo.html** - Data Layer Demo
 - Visual demonstration of enhanced frame data extraction

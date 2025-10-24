@@ -269,7 +269,7 @@
 
     function testStandaloneUI() {
       updateStatus('standalone-status', 'Opening standalone UI...', 'pending');
-      window.open('http://localhost:8081/ui/standalone/index.html', '_blank');
+      window.open('http://localhost:3000/ui/index.html', '_blank');
       setTimeout(() => {
         updateStatus('standalone-status', '✅ Standalone UI opened successfully', 'success');
       }, 1000);
@@ -277,7 +277,7 @@
 
     function testFigmaPlugin() {
       updateStatus('plugin-status', 'Opening Figma plugin UI...', 'pending');
-      window.open('http://localhost:8081/ui/plugin/index.html', '_blank');
+      window.open('http://localhost:3000/ui/plugin/index.html', '_blank');
       setTimeout(() => {
         updateStatus('plugin-status', '✅ Plugin UI opened successfully', 'success');
       }, 1000);
@@ -285,7 +285,7 @@
 
     function testContextPreview() {
       updateStatus('preview-status', 'Opening context preview test...', 'pending');
-      window.open('http://localhost:8081/ui/test/context-preview-test.html', '_blank');
+      window.open('http://localhost:3000/ui/test/context-preview-test.html', '_blank');
       setTimeout(() => {
         updateStatus('preview-status', '✅ Context preview test opened successfully', 'success');
       }, 1000);
@@ -295,7 +295,7 @@
       updateStatus('mcp-status', 'Testing MCP server connection...', 'pending');
       
       try {
-        const response = await fetch('http://localhost:3000/health');
+        const response = await fetch('http://localhost:3000/');
         if (response.ok) {
           updateStatus('mcp-status', '✅ MCP server is running and responsive', 'success');
         } else {

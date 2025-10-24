@@ -1,6 +1,21 @@
-# 🧪 NPM Test Commands Reference
+# 🧪 NPM Test Commands Reference - Updated October 2025
 
-## Quick Commands for Development
+## 🎯 **PRIMARY TESTING METHOD (RECOMMENDED)**
+
+### **Ultimate Consolidated Test Suite**
+```bash
+# 🚀 Single interface for all testing needs:
+open http://localhost:3000/tests/integration/test-consolidated-suite.html
+
+# Or from file system:
+open tests/integration/test-consolidated-suite.html
+```
+
+**Features:** 7 tabbed categories, real-time status displays, comprehensive reporting, mock Figma environment
+
+---
+
+## 🔧 **NPM Commands for Development**
 
 ```bash
 # Health & System Checks

@@ -69,8 +69,451 @@
     }
   </style>
   
-  <!-- Load Main Styles -->
-  <link rel="stylesheet" href="styles/main.css">
+  <!-- Inline Main Styles (Required for Figma Plugin) -->
+  <style>
+    /**
+     * Main CSS Styles for Figma AI Ticket Generator
+     */
+
+    /* Main Layout - 50/50 Split */
+    .main-container {
+      display: flex;
+      gap: 20px;
+      min-height: calc(100vh - 40px);
+    }
+
+    .panel {
+      flex: 1;
+      min-width: 0; /* Prevents flex items from overflowing */
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--figma-color-border);
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--figma-color-text);
+      margin: 0;
+    }
+
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      margin: 4px 0 0 0;
+    }
+
+    /* Health Metrics Panel Styles */
+    .health-panel {
+      background: var(--figma-color-bg);
+      border-right: 1px solid var(--figma-color-border);
+      padding-right: 20px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .metric-card {
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .metric-value.excellent { color: #0d9f3c; }
+    .metric-value.good { color: #f4a113; }
+    .metric-value.needs-attention { color: #e34f47; }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detailed-metrics {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--figma-color-text);
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--figma-color-border-subtle);
+    }
+
+    .metric-name {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+    }
+
+    .metric-score {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .metric-score.high {
+      background: var(--figma-color-bg-success-tertiary);
+      color: var(--figma-color-text-success);
+    }
+
+    .metric-score.medium {
+      background: var(--figma-color-bg-warning-tertiary);
+      color: var(--figma-color-text-warning);
+    }
+
+    .metric-score.low {
+      background: var(--figma-color-bg-danger-tertiary);
+      color: var(--figma-color-text-danger);
+    }
+
+    /* Ticket Panel Styles */
+    .ticket-panel {
+      background: var(--figma-color-bg);
+      padding-left: 20px;
+    }
+
+    /* Compliance Analysis Styles */
+    .analysis-summary {
+      margin-bottom: 12px;
+      padding: 8px;
+      background: var(--figma-color-bg-secondary);
+      border-radius: 4px;
+    }
+
+    .summary-stat {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .stat-label {
+      color: var(--figma-color-text-secondary);
+      font-size: 11px;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: var(--figma-color-text);
+    }
+
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .breakdown-item {
+      padding: 8px;
+      background: var(--figma-color-bg-secondary);
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .breakdown-label {
+      font-size: 10px;
+      color: var(--figma-color-text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .breakdown-score {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .breakdown-score.excellent {
+      color: var(--figma-color-text-success);
+    }
+
+    .breakdown-score.good {
+      color: var(--figma-color-text-success);
+    }
+
+    .breakdown-score.medium {
+      color: var(--figma-color-text-warning);
+    }
+
+    .breakdown-score.needs-attention {
+      color: var(--figma-color-text-warning);
+    }
+
+    .breakdown-score.poor {
+      color: var(--figma-color-text-danger);
+    }
+
+    .breakdown-details {
+      font-size: 10px;
+      color: var(--figma-color-text-tertiary);
+    }
+
+    /* Recommendation Styles */
+    .recommendation-item {
+      padding: 8px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      border-left: 3px solid;
+    }
+
+    .recommendation-item.high {
+      background: var(--figma-color-bg-danger-tertiary);
+      border-color: var(--figma-color-border-danger);
+    }
+
+    .recommendation-item.medium {
+      background: var(--figma-color-bg-warning-tertiary);
+      border-color: var(--figma-color-border-warning);
+    }
+
+    .recommendation-item.low {
+      background: var(--figma-color-bg-secondary);
+      border-color: var(--figma-color-border);
+    }
+
+    .rec-priority {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--figma-color-text-secondary);
+      margin-bottom: 2px;
+    }
+
+    .rec-category {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--figma-color-text);
+      margin-bottom: 4px;
+    }
+
+    .rec-description {
+      font-size: 10px;
+      color: var(--figma-color-text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .rec-action {
+      font-size: 10px;
+      color: var(--figma-color-text);
+      font-style: italic;
+    }
+
+    .placeholder-text.error {
+      color: var(--figma-color-text-danger);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .header {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+      color: var(--figma-color-text);
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--figma-color-text-secondary);
+      margin: 0;
+    }
+
+    .config-section {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--figma-color-bg-secondary);
+      border-radius: 6px;
+    }
+
+    .config-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--figma-color-text);
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: var(--figma-color-text);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: 4px;
+      font-size: 11px;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--figma-color-border-selected);
+      box-shadow: 0 0 0 1px var(--figma-color-border-selected);
+    }
+
+    input[type="password"] {
+      font-family: monospace;
+    }
+
+    .button {
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--figma-color-bg-brand);
+      color: var(--figma-color-text-onbrand);
+      transition: background-color 0.2s ease;
+    }
+
+    .button:hover:not(:disabled) {
+      background: var(--figma-color-bg-brand-hover);
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .button.button-secondary {
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      border: 1px solid var(--figma-color-border);
+    }
+
+    .button.button-secondary:hover:not(:disabled) {
+      background: var(--figma-color-bg-hover);
+    }
+
+    .output-section {
+      margin-top: 16px;
+    }
+
+    .output-section textarea {
+      min-height: 200px;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .status.loading {
+      background: var(--figma-color-bg-secondary);
+      color: var(--figma-color-text-secondary);
+    }
+
+    .status.success {
+      background: var(--figma-color-bg-success);
+      color: var(--figma-color-text-onsuccess);
+    }
+
+    .status.error {
+      background: var(--figma-color-bg-danger);
+      color: var(--figma-color-text-ondanger);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .template-select {
+      border-bottom: 1px solid var(--figma-color-border);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+
+    /* Frame info display */
+    .frame-info {
+      background: var(--figma-color-bg-secondary);
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 12px;
+      font-size: 10px;
+    }
+
+    .frame-item {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--figma-color-border);
+    }
+
+    .frame-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .frame-name {
+      font-weight: 600;
+      color: var(--figma-color-text);
+      margin-bottom: 4px;
+    }
+
+    .frame-details {
+      color: var(--figma-color-text-secondary);
+      line-height: 1.3;
+    }
+  </style>
 </head>
 <body>
   <!-- Header -->
@@ -290,14 +733,979 @@
     </div>
   </div>
 
-  <!-- Load JavaScript Modules -->
-  <script src="js/utils.js"></script>
-  <script src="js/health-metrics.js"></script>
-  <script src="js/ticket-generator.js"></script>
-  <script src="js/main.js"></script>
-
-  <!-- Message Handler -->
+  <!-- Inline JavaScript (Required for Figma Plugin) -->
   <script>
+    /**
+     * Utility functions for the Figma AI Ticket Generator UI
+     */
+
+    // UI Elements - Cached for performance
+    let elements = {};
+
+    /**
+     * Initialize UI element references
+     */
+    function initializeElements() {
+      elements = {
+        // Health Metrics Panel
+        overallScore: document.getElementById('overallScore'),
+        complianceRate: document.getElementById('complianceRate'),
+        componentUsage: document.getElementById('componentUsage'),
+        tokenAdoption: document.getElementById('tokenAdoption'),
+        standardComponents: document.getElementById('standardComponents'),
+        customComponents: document.getElementById('customComponents'),
+        topComponent: document.getElementById('topComponent'),
+        colorTokens: document.getElementById('colorTokens'),
+        typographyTokens: document.getElementById('typographyTokens'),
+        spacingTokens: document.getElementById('spacingTokens'),
+        healthRecommendations: document.getElementById('healthRecommendations'),
+        
+        // Ticket Panel
+        generateBtn: document.getElementById('generate'),
+        output: document.getElementById('output'),
+        copyBtn: document.getElementById('copy'),
+        apiKeyInput: document.getElementById('apiKey'),
+        modelSelect: document.getElementById('model'),
+        templateSelect: document.getElementById('template'),
+        customPromptInput: document.getElementById('customPrompt'),
+        statusDiv: document.getElementById('status'),
+        frameInfoDiv: document.getElementById('frameInfo'),
+        
+        // Design System Integration
+        designSystemSection: document.getElementById('designSystemSection'),
+        dsName: document.getElementById('dsName'),
+        dsConfidence: document.getElementById('dsConfidence'),
+        dsColors: document.getElementById('dsColors'),
+        dsTypography: document.getElementById('dsTypography'),
+        dsComponents: document.getElementById('dsComponents'),
+        complianceInfo: document.getElementById('complianceInfo'),
+        complianceScore: document.getElementById('complianceScore'),
+        colorScore: document.getElementById('colorScore'),
+        typographyScore: document.getElementById('typographyScore'),
+        componentScore: document.getElementById('componentScore'),
+        recommendations: document.getElementById('recommendations'),
+        recList: document.getElementById('recList')
+      };
+    }
+
+    /**
+     * Show status message to user
+     * @param {string} message - Message to display
+     * @param {string} type - Status type: 'loading', 'success', 'error'
+     */
+    function showStatus(message, type) {
+      if (!elements.statusDiv) return;
+      
+      elements.statusDiv.textContent = message;
+      elements.statusDiv.className = `status ${type}`;
+      elements.statusDiv.classList.remove('hidden');
+      
+      if (type === 'success') {
+        setTimeout(() => {
+          elements.statusDiv.classList.add('hidden');
+        }, 3000);
+      }
+    }
+
+    /**
+     * Set generating state for UI
+     * @param {boolean} generating - Whether currently generating
+     */
+    function setGenerating(generating) {
+      if (!elements.generateBtn) return;
+      
+      elements.generateBtn.disabled = generating;
+      elements.generateBtn.style.background = ''; // Reset background to default
+      elements.generateBtn.textContent = generating 
+        ? '⏳ Generating...' 
+        : '📋 Generate Ticket from Selection';
+    }
+
+    /**
+     * Get score class for color coding
+     * @param {number} score - Score from 0-100
+     * @returns {string} CSS class name
+     */
+    function getScoreClass(score) {
+      if (score >= 90) return 'excellent';
+      if (score >= 80) return 'good';
+      if (score >= 70) return 'medium';
+      if (score >= 60) return 'needs-attention';
+      return 'poor';
+    }
+
+    /**
+     * Get background color for score
+     * @param {number} score - Score from 0-100
+     * @returns {string} CSS color value
+     */
+    function getScoreColor(score) {
+      if (score >= 90) return 'var(--figma-color-bg-success)';
+      if (score >= 70) return 'var(--figma-color-bg-warning)';
+      return 'var(--figma-color-bg-danger)';
+    }
+
+    /**
+     * Check if localStorage is available
+     * @returns {boolean} Whether localStorage can be used
+     */
+    function isLocalStorageAvailable() {
+      try {
+        // Figma plugins run in a sandboxed environment where localStorage may be disabled
+        if (typeof localStorage === 'undefined') return false;
+        
+        const test = '__localStorage_test__';
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
+      } catch(e) {
+        // Expected in Figma plugin environment - silently return false
+        return false;
+      }
+    }
+
+    /**
+     * Save settings to storage
+     */
+    function saveSettings() {
+      if (!elements.apiKeyInput || !elements.modelSelect || !elements.templateSelect) return;
+      
+      const settings = {
+        apiKey: elements.apiKeyInput.value,
+        model: elements.modelSelect.value,
+        template: elements.templateSelect.value
+      };
+      
+      if (isLocalStorageAvailable()) {
+        try {
+          localStorage.setItem('aiTicketGenerator', JSON.stringify(settings));
+        } catch (error) {
+          // Fallback to session storage
+          window.tempSettings = settings;
+        }
+      } else {
+        // Store in memory for session
+        window.tempSettings = settings;
+      }
+    }
+
+    /**
+     * Load settings from storage
+     */
+    function loadSettings() {
+      if (!elements.apiKeyInput || !elements.modelSelect || !elements.templateSelect) return;
+      
+      if (isLocalStorageAvailable()) {
+        try {
+          const settings = JSON.parse(localStorage.getItem('aiTicketGenerator') || '{}');
+          if (settings.apiKey) elements.apiKeyInput.value = settings.apiKey;
+          if (settings.model) elements.modelSelect.value = settings.model;
+          if (settings.template) elements.templateSelect.value = settings.template;
+          return; // Exit early if localStorage worked
+        } catch (error) {
+          // Continue to fallback
+        }
+      }
+      
+      // Fallback: try session storage
+      if (window.tempSettings) {
+        const settings = window.tempSettings;
+        if (settings.apiKey) elements.apiKeyInput.value = settings.apiKey;
+        if (settings.model) elements.modelSelect.value = settings.model;
+        if (settings.template) elements.templateSelect.value = settings.template;
+      }
+    }
+
+    /**
+     * Copy text to clipboard with fallback methods
+     * @param {string} text - Text to copy
+     * @param {Function} onSuccess - Success callback
+     * @param {Function} onError - Error callback
+     */
+    function copyToClipboard(text, onSuccess, onError) {
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => onSuccess && onSuccess())
+          .catch(() => fallbackCopyToClipboard(text, onSuccess, onError));
+      } else {
+        // Use fallback method
+        fallbackCopyToClipboard(text, onSuccess, onError);
+      }
+    }
+
+    /**
+     * Fallback clipboard copy method
+     * @param {string} text - Text to copy
+     * @param {Function} onSuccess - Success callback
+     * @param {Function} onError - Error callback
+     */
+    function fallbackCopyToClipboard(text, onSuccess, onError) {
+      try {
+        // Create a temporary textarea element
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        
+        // Select and copy the text
+        textArea.focus();
+        textArea.select();
+        
+        // Try the legacy execCommand
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+          onSuccess && onSuccess();
+        } else {
+          // If all else fails, select the text for manual copying
+          if (elements.output) {
+            elements.output.select();
+            elements.output.setSelectionRange(0, 99999); // For mobile devices
+          }
+          onError && onError('Text selected - press Ctrl+C (or Cmd+C) to copy');
+        }
+      } catch (error) {
+        // Final fallback - just select the text
+        if (elements.output) {
+          elements.output.select();
+          elements.output.setSelectionRange(0, 99999);
+        }
+        onError && onError('Text selected - press Ctrl+C (or Cmd+C) to copy');
+      }
+    }
+
+    /**
+     * Send message to Figma plugin
+     * @param {Object} message - Message to send
+     */
+    function sendToPlugin(message) {
+      parent.postMessage({ pluginMessage: message }, '*');
+    }
+
+    /**
+     * Throttle function calls
+     * @param {Function} func - Function to throttle
+     * @param {number} limit - Time limit in milliseconds
+     * @returns {Function} Throttled function
+     */
+    function throttle(func, limit) {
+      let inThrottle;
+      return function() {
+        const args = arguments;
+        const context = this;
+        if (!inThrottle) {
+          func.apply(context, args);
+          inThrottle = true;
+          setTimeout(() => inThrottle = false, limit);
+        }
+      }
+    }
+
+    // Health Metrics functionality
+    let lastComplianceCheck = 0;
+
+    /**
+     * Initialize health metrics panel
+     */
+    function initializeHealthMetrics() {
+      console.log('🔍 Starting health metrics initialization...');
+      
+      // Auto-trigger compliance analysis on load
+      setTimeout(() => {
+        console.log('🔄 Triggering compliance calculation...');
+        triggerComplianceCalculation();
+      }, 1000);
+      
+      // Auto-trigger compliance analysis on user interaction
+      document.addEventListener('click', throttle(() => {
+        setTimeout(() => {
+          triggerComplianceCalculation();
+        }, 500);
+      }, 2000));
+      
+      // Periodic refresh every 30 seconds
+      setInterval(() => {
+        triggerComplianceCalculation();
+      }, 30000);
+      
+      console.log('📊 Health Metrics initialized');
+    }
+
+    /**
+     * Trigger compliance calculation with throttling
+     */
+    function triggerComplianceCalculation() {
+      // Throttle compliance checks to avoid spam
+      const now = Date.now();
+      if (now - lastComplianceCheck < 2000) return; // Max once per 2 seconds
+      
+      lastComplianceCheck = now;
+      
+      // Request compliance analysis
+      sendToPlugin({ type: 'calculate-compliance' });
+    }
+
+    /**
+     * Update health metrics display
+     * @param {Object|null} compliance - Compliance data or null to reset
+     */
+    function updateHealthMetrics(compliance) {
+      if (!elements.overallScore) return;
+      
+      if (compliance) {
+        // Update metric values with animation
+        if (elements.overallScore) {
+          elements.overallScore.textContent = `${compliance.overall}%`;
+          elements.overallScore.className = `metric-value ${getScoreClass(compliance.overall)}`;
+        }
+        
+        if (elements.complianceRate) {
+          elements.complianceRate.textContent = `${compliance.overall}%`;
+          elements.complianceRate.className = `metric-value ${getScoreClass(compliance.overall)}`;
+        }
+        
+        if (elements.componentUsage) {
+          elements.componentUsage.textContent = `${compliance.breakdown.components.score}%`;
+          elements.componentUsage.className = `metric-value ${getScoreClass(compliance.breakdown.components.score)}`;
+        }
+        
+        if (elements.tokenAdoption) {
+          const tokenScore = Math.round((compliance.breakdown.colors.score + compliance.breakdown.typography.score) / 2);
+          elements.tokenAdoption.textContent = `${tokenScore}%`;
+          elements.tokenAdoption.className = `metric-value ${getScoreClass(tokenScore)}`;
+        }
+      } else {
+        // Reset to placeholder state
+        [elements.overallScore, elements.complianceRate, elements.componentUsage, elements.tokenAdoption].forEach(el => {
+          if (el) {
+            el.textContent = '--';
+            el.className = 'metric-value';
+          }
+        });
+      }
+    }
+
+    /**
+     * Update detailed component analysis
+     * @param {Object} compliance - Compliance data
+     * @param {number} selectionCount - Number of selected elements
+     */
+    function updateComponentAnalysis(compliance, selectionCount) {
+      const componentAnalysis = document.getElementById('componentAnalysis');
+      if (!componentAnalysis) return;
+      
+      const breakdown = compliance.breakdown;
+      const html = `
+        <div class="analysis-summary">
+          <div class="summary-stat">
+            <span class="stat-label">Elements analyzed:</span>
+            <span class="stat-value">${selectionCount}</span>
+          </div>
+        </div>
+        
+        <div class="breakdown-grid">
+          <div class="breakdown-item">
+            <div class="breakdown-label">Colors</div>
+            <div class="breakdown-score ${getScoreClass(breakdown.colors.score)}">${breakdown.colors.score}%</div>
+            <div class="breakdown-details">${breakdown.colors.compliantCount}/${breakdown.colors.totalCount} compliant</div>
+          </div>
+          
+          <div class="breakdown-item">
+            <div class="breakdown-label">Typography</div>
+            <div class="breakdown-score ${getScoreClass(breakdown.typography.score)}">${breakdown.typography.score}%</div>
+            <div class="breakdown-details">${breakdown.typography.compliantCount}/${breakdown.typography.totalCount} compliant</div>
+          </div>
+          
+          <div class="breakdown-item">
+            <div class="breakdown-label">Components</div>
+            <div class="breakdown-score ${getScoreClass(breakdown.components.score)}">${breakdown.components.score}%</div>
+            <div class="breakdown-details">${breakdown.components.compliantCount}/${breakdown.components.totalCount} compliant</div>
+          </div>
+          
+          <div class="breakdown-item">
+            <div class="breakdown-label">Spacing</div>
+            <div class="breakdown-score ${getScoreClass(breakdown.spacing.score)}">${breakdown.spacing.score}%</div>
+            <div class="breakdown-details">${breakdown.spacing.compliantCount}/${breakdown.spacing.totalCount} compliant</div>
+          </div>
+        </div>
+      `;
+      
+      componentAnalysis.innerHTML = html;
+    }
+
+    /**
+     * Update health recommendations
+     * @param {Array} recommendations - Array of recommendation objects
+     */
+    function updateRecommendations(recommendations) {
+      if (!elements.healthRecommendations) return;
+      
+      if (recommendations && recommendations.length > 0) {
+        const html = recommendations.slice(0, 3).map(rec => `
+          <div class="recommendation-item ${rec.priority}">
+            <div class="rec-priority">${rec.priority.toUpperCase()}</div>
+            <div class="rec-category">${rec.category}</div>
+            <div class="rec-description">${rec.description}</div>
+            <div class="rec-action">${rec.action}</div>
+          </div>
+        `).join('');
+        
+        elements.healthRecommendations.innerHTML = html;
+      } else {
+        elements.healthRecommendations.innerHTML = `
+          <div class="metric-row">
+            <span class="metric-name">No recommendations at this time</span>
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * Display compliance results
+     * @param {Object} compliance - Compliance data
+     * @param {number} selectionCount - Number of selected elements
+     */
+    function displayComplianceResults(compliance, selectionCount) {
+      console.log('📊 Displaying compliance results:', compliance);
+      
+      // Update overall score
+      updateHealthMetrics(compliance);
+      
+      // Show detailed analysis if there's selection
+      if (selectionCount > 0) {
+        updateComponentAnalysis(compliance, selectionCount);
+        updateRecommendations(compliance.recommendations);
+      }
+      
+      // Update detailed metrics
+      updateDetailedMetrics(compliance);
+      
+      // Update last updated timestamp
+      const lastUpdated = document.getElementById('lastUpdated');
+      if (lastUpdated) {
+        lastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+      }
+    }
+
+    /**
+     * Update detailed metrics sections
+     * @param {Object} compliance - Compliance data
+     */
+    function updateDetailedMetrics(compliance) {
+      if (!compliance) return;
+      
+      const breakdown = compliance.breakdown;
+      
+      // Update component metrics
+      if (elements.standardComponents) {
+        elements.standardComponents.textContent = breakdown.components.compliantCount;
+        elements.standardComponents.className = `metric-score ${getMetricScoreClass(breakdown.components.score)}`;
+      }
+      
+      if (elements.customComponents) {
+        const customCount = breakdown.components.totalCount - breakdown.components.compliantCount;
+        elements.customComponents.textContent = customCount;
+        elements.customComponents.className = `metric-score ${customCount > 0 ? 'medium' : 'high'}`;
+      }
+      
+      if (elements.topComponent) {
+        elements.topComponent.textContent = compliance.topComponents?.[0]?.name || 'Button';
+        elements.topComponent.className = 'metric-score high';
+      }
+      
+      // Update token metrics
+      if (elements.colorTokens) {
+        elements.colorTokens.textContent = `${breakdown.colors.score}%`;
+        elements.colorTokens.className = `metric-score ${getMetricScoreClass(breakdown.colors.score)}`;
+      }
+      
+      if (elements.typographyTokens) {
+        elements.typographyTokens.textContent = `${breakdown.typography.score}%`;
+        elements.typographyTokens.className = `metric-score ${getMetricScoreClass(breakdown.typography.score)}`;
+      }
+      
+      if (elements.spacingTokens) {
+        elements.spacingTokens.textContent = `${breakdown.spacing.score}%`;
+        elements.spacingTokens.className = `metric-score ${getMetricScoreClass(breakdown.spacing.score)}`;
+      }
+    }
+
+    /**
+     * Get metric score class for styling
+     * @param {number} score - Score from 0-100
+     * @returns {string} CSS class name
+     */
+    function getMetricScoreClass(score) {
+      if (score >= 90) return 'high';
+      if (score >= 70) return 'medium';
+      return 'low';
+    }
+
+    /**
+     * Show compliance error
+     * @param {string} message - Error message
+     */
+    function showComplianceError(message) {
+      const componentAnalysis = document.getElementById('componentAnalysis');
+      if (componentAnalysis) {
+        componentAnalysis.innerHTML = `
+          <div class="placeholder-text error">
+            <span>⚠️ ${message}</span>
+          </div>
+        `;
+      }
+      
+      if (elements.healthRecommendations) {
+        elements.healthRecommendations.innerHTML = `
+          <div class="placeholder-text">
+            Select frames or components to get recommendations
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * Handle no design system detected
+     */
+    function handleNoDesignSystem() {
+      updateHealthMetrics(null);
+      
+      if (elements.healthRecommendations) {
+        elements.healthRecommendations.innerHTML = `
+          <div class="metric-row">
+            <span class="metric-name">No design system detected</span>
+          </div>
+        `;
+      }
+    }
+
+    // Ticket Generator functionality
+    let frameDataList = [];
+    let isGenerating = false;
+    let hasGeneratedTicket = false; // Track if ticket was generated for current selection
+    let currentSelectionHash = ''; // Hash of current selection to detect changes
+    let globalFileKey = '';
+    let globalFileName = '';
+
+    /**
+     * Initialize ticket generator
+     */
+    function initializeTicketGenerator() {
+      if (!elements.generateBtn) return;
+      
+      // Event listeners
+      elements.generateBtn.onclick = generateTicket;
+      elements.copyBtn.onclick = handleCopyToClipboard;
+      elements.apiKeyInput.onchange = saveSettings;
+      elements.modelSelect.onchange = saveSettings;
+      elements.templateSelect.onchange = saveSettings;
+      
+      // Load saved settings
+      loadSettings();
+      
+      console.log('🎫 Ticket Generator initialized');
+    }
+
+    /**
+     * Generate ticket from selected frames
+     */
+    function generateTicket() {
+      if (isGenerating) return;
+      
+      // Check if ticket was already generated for current selection
+      if (hasGeneratedTicket && currentSelectionHash) {
+        showStatus('Ticket already generated for this selection. Change selection to generate a new ticket.', 'error');
+        return;
+      }
+
+      setGenerating(true);
+      showStatus('Reading selected frames...', 'loading');
+      
+      // Request frame data from Figma
+      sendToPlugin({ type: 'generate-ticket' });
+    }
+
+    /**
+     * Handle frame data received from plugin
+     * @param {Array} data - Frame data array
+     */
+    function handleFrameData(data) {
+      frameDataList = data;
+      
+      // Create hash of current selection to detect changes
+      const newSelectionHash = createSelectionHash(data);
+      
+      // Check if selection changed - reset ticket generation state
+      if (newSelectionHash !== currentSelectionHash) {
+        currentSelectionHash = newSelectionHash;
+        hasGeneratedTicket = false;
+        resetGenerateButton();
+        elements.output.value = ''; // Clear previous output
+        elements.copyBtn.disabled = true;
+      }
+      
+      displayFrameInfo(frameDataList);
+      displayComplianceInfo(frameDataList);
+      generateAITicket();
+    }
+
+    /**
+     * Generate AI ticket using MCP server with fallback
+     */
+    async function generateAITicket() {
+      if (!frameDataList.length) {
+        showStatus('No frame data received', 'error');
+        setGenerating(false);
+        return;
+      }
+
+      console.log('🚀 Starting enhanced ticket generation...');
+
+      try {
+        showStatus('🔍 Analyzing project with MCP...', 'loading');
+        
+        // Try MCP server first
+        const mcpTickets = await callMCPServer('generate_tickets', {
+          frameData: frameDataList,
+          template: elements.templateSelect.value,
+          projectName: globalFileName || 'Figma Design'
+        });
+        
+        showStatus('🎫 Processing MCP results...', 'loading');
+        console.log('📦 MCP response received:', mcpTickets);
+        
+        // If MCP server is available, use the enhanced tickets
+        if (mcpTickets && mcpTickets.content && mcpTickets.content.length > 0) {
+          const ticketText = mcpTickets.content[0].text;
+          
+          elements.output.value = ticketText;
+          elements.copyBtn.disabled = false;
+          hasGeneratedTicket = true;
+          setGeneratingComplete();
+          showStatus('✅ Enhanced tickets generated with MCP!', 'success');
+          return;
+        }
+        
+        // Fallback ticket generation (no API key required)
+        console.log('🔄 MCP failed, generating fallback ticket');
+        
+        const fallbackTicket = `# Generated Ticket (Fallback)
+
+## ${frameDataList[0]?.name || 'Component'} Implementation
+
+### Description
+Implement the ${frameDataList[0]?.name || 'selected component'} based on Figma design specifications.
+
+### Acceptance Criteria
+- [ ] Component matches design specifications
+- [ ] Component is responsive across all devices  
+- [ ] Component passes accessibility testing
+- [ ] Unit tests provide adequate coverage
+
+### Technical Notes
+- Based on ${frameDataList.length} selected frame(s)
+- Generated with local fallback (MCP server unavailable)
+- Node count: ${frameDataList[0]?.nodeCount || 'Unknown'}
+- Dimensions: ${frameDataList[0]?.dimensions?.width || 0}x${frameDataList[0]?.dimensions?.height || 0}px
+
+### Priority
+Medium
+
+### Story Points
+${Math.max(3, Math.min(8, Math.ceil((frameDataList[0]?.nodeCount || 0) / 5)))}
+
+---
+*Generated at ${new Date().toISOString()}*`;
+        
+        elements.output.value = fallbackTicket;
+        elements.copyBtn.disabled = false;
+        hasGeneratedTicket = true;
+        setGeneratingComplete();
+        showStatus('⚠️ Fallback ticket generated (MCP server unavailable)', 'error');
+        
+      } catch (error) {
+        console.error('❌ Error in ticket generation:', error);
+        
+        // Final fallback
+        const simpleTicket = `# Simple Ticket
+
+## Component Implementation
+
+### Description  
+Implement the selected component based on Figma design.
+
+### Acceptance Criteria
+- [ ] Match design specifications
+- [ ] Ensure responsiveness
+- [ ] Pass accessibility tests
+
+---
+*Generated at ${new Date().toISOString()}*`;
+        
+        elements.output.value = simpleTicket;
+        elements.copyBtn.disabled = false;
+        hasGeneratedTicket = true;
+        setGeneratingComplete();
+        showStatus('⚠️ Simple ticket generated (errors occurred)', 'error');
+      } finally {
+        setGenerating(false);
+      }
+    }
+
+    /**
+     * Call MCP Server for enhanced ticket generation
+     */
+    async function callMCPServer(method, params) {
+      try {
+        console.log('🔍 Calling MCP server:', method, params);
+        
+        const response = await fetch('http://localhost:3000', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: method,
+            params: params
+          }),
+        });
+        
+        console.log('📡 MCP response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`MCP Server error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 MCP response data:', data);
+        return data.result || data;
+      } catch (error) {
+        console.warn('MCP Server not available:', error);
+        return null;
+      }
+    }
+
+    /**
+     * Display frame information
+     * @param {Array} frameDataList - Array of frame data
+     */
+    function displayFrameInfo(frameDataList) {
+      if (!frameDataList.length) {
+        elements.frameInfoDiv.classList.add('hidden');
+        return;
+      }
+
+      let html = '';
+      frameDataList.forEach((frame, index) => {
+        html += `
+          <div class="frame-info">
+            <div class="frame-name">${frame.name}</div>
+            <div class="frame-details">
+              ${frame.type} • ${frame.dimensions.width}x${frame.dimensions.height}px • ${frame.nodeCount} elements
+            </div>
+          </div>
+        `;
+      });
+
+      elements.frameInfoDiv.innerHTML = html;
+      elements.frameInfoDiv.classList.remove('hidden');
+    }
+
+    /**
+     * Display compliance information for ticket panel
+     * @param {Array} frameDataList - Array of frame data
+     */
+    function displayComplianceInfo(frameDataList) {
+      if (!elements.complianceInfo) return;
+      
+      // Find frames with design system context
+      const framesWithContext = frameDataList.filter(frame => 
+        frame.designSystemContext && frame.designSystemContext.complianceReport
+      );
+
+      if (framesWithContext.length === 0) {
+        elements.complianceInfo.classList.add('hidden');
+        return;
+      }
+
+      // Calculate average scores
+      let totalOverall = 0;
+      let totalColor = 0;
+      let totalTypography = 0;
+      let totalComponent = 0;
+      let allRecommendations = [];
+
+      framesWithContext.forEach(frame => {
+        const report = frame.designSystemContext.complianceReport;
+        totalOverall += report.overallScore;
+        totalColor += report.colorCompliance.score;
+        totalTypography += report.typographyCompliance.score;
+        totalComponent += report.componentCompliance.score;
+        allRecommendations = allRecommendations.concat(report.recommendations);
+      });
+
+      const count = framesWithContext.length;
+      const avgOverall = Math.round(totalOverall / count);
+      const avgColor = Math.round(totalColor / count);
+      const avgTypography = Math.round(totalTypography / count);
+      const avgComponent = Math.round(totalComponent / count);
+
+      if (elements.complianceScore) {
+        elements.complianceScore.textContent = `${avgOverall}%`;
+        elements.complianceScore.style.background = getScoreColor(avgOverall);
+      }
+      
+      if (elements.colorScore) {
+        elements.colorScore.textContent = `${avgColor}%`;
+        elements.colorScore.style.background = getScoreColor(avgColor);
+      }
+      
+      if (elements.typographyScore) {
+        elements.typographyScore.textContent = `${avgTypography}%`;
+        elements.typographyScore.style.background = getScoreColor(avgTypography);
+      }
+      
+      if (elements.componentScore) {
+        elements.componentScore.textContent = `${avgComponent}%`;
+        elements.componentScore.style.background = getScoreColor(avgComponent);
+      }
+
+      // Display recommendations
+      if (allRecommendations.length > 0 && elements.recList) {
+        let recHtml = '';
+        allRecommendations.slice(0, 3).forEach(rec => { // Show max 3 recommendations
+          recHtml += `
+            <div class="rec-item ${rec.severity}">
+              <div class="rec-message">${rec.message}</div>
+              <div class="rec-suggestion">${rec.suggestion}</div>
+            </div>
+          `;
+        });
+        elements.recList.innerHTML = recHtml;
+        elements.recommendations.classList.remove('hidden');
+      } else if (elements.recommendations) {
+        elements.recommendations.classList.add('hidden');
+      }
+
+      elements.complianceInfo.classList.remove('hidden');
+    }
+
+    /**
+     * Handle copy to clipboard button click
+     */
+    function handleCopyToClipboard() {
+      if (elements.output.value.trim()) {
+        copyToClipboard(
+          elements.output.value,
+          () => showStatus('Copied to clipboard!', 'success'),
+          (error) => showStatus(error, 'error')
+        );
+      }
+    }
+
+    /**
+     * Handle file context from plugin
+     * @param {string} fileKey - Figma file key
+     * @param {string} fileName - Figma file name
+     */
+    function handleFileContext(fileKey, fileName) {
+      globalFileKey = fileKey || '';
+      globalFileName = fileName || '';
+      console.log('📁 File context received:', { fileKey: globalFileKey, fileName: globalFileName });
+    }
+
+    /**
+     * Display design system information
+     * @param {Object} designSystem - Design system data
+     */
+    function displayDesignSystemInfo(designSystem) {
+      if (!elements.designSystemSection) return;
+
+      if (elements.dsName) elements.dsName.textContent = designSystem.name;
+      if (elements.dsConfidence) elements.dsConfidence.textContent = `${Math.round(designSystem.detectionConfidence * 100)}%`;
+      if (elements.dsColors) elements.dsColors.textContent = `${designSystem.colors.length} colors`;
+      if (elements.dsTypography) elements.dsTypography.textContent = `${designSystem.typography.length} text styles`;
+      if (elements.dsComponents) elements.dsComponents.textContent = `${designSystem.components.components.length} components`;
+
+      elements.designSystemSection.classList.remove('hidden');
+    }
+
+    /**
+     * Hide design system section
+     */
+    function hideDesignSystemSection() {
+      if (elements.designSystemSection) {
+        elements.designSystemSection.classList.add('hidden');
+      }
+    }
+
+    /**
+     * Create a hash of the current selection to detect changes
+     * @param {Array} frameDataList - Array of frame data
+     * @returns {string} Hash representing the selection
+     */
+    function createSelectionHash(frameDataList) {
+      if (!frameDataList || frameDataList.length === 0) return '';
+      
+      // Create a simple hash based on frame IDs and names
+      const selectionData = frameDataList.map(frame => `${frame.id}:${frame.name}`).join('|');
+      return btoa(selectionData).substr(0, 16); // Simple hash using base64
+    }
+
+    /**
+     * Reset generate button to initial state
+     */
+    function resetGenerateButton() {
+      if (!elements.generateBtn) return;
+      
+      elements.generateBtn.disabled = false;
+      elements.generateBtn.textContent = '📋 Generate Ticket from Selection';
+      elements.generateBtn.style.background = ''; // Reset to default
+    }
+
+    /**
+     * Set button to "generated" state
+     */
+    function setGeneratingComplete() {
+      if (!elements.generateBtn) return;
+      
+      elements.generateBtn.disabled = true;
+      elements.generateBtn.textContent = '✅ Ticket Generated (Change selection for new ticket)';
+      elements.generateBtn.style.background = 'var(--figma-color-bg-success)';
+    }
+
+    // Main app initialization
+    console.log('🔧 main.js execution started');
+
+    /**
+     * Initialize the application
+     */
+    function initializeApp() {
+      console.log('🚀 Figma AI Ticket Generator UI starting...');
+      
+      // Initialize elements
+      initializeElements();
+      
+      // Initialize modules
+      initializeHealthMetrics();
+      initializeTicketGenerator();
+      
+      // Auto-trigger compliance analysis on load
+      setTimeout(() => {
+        console.log('🔄 Triggering compliance calculation...');
+        // Send compliance calculation request to plugin
+        if (window.parent && window.parent.postMessage) {
+          window.parent.postMessage({ pluginMessage: { type: 'calculate-compliance' } }, '*');
+        }
+      }, 2000);
+      
+      console.log('✅ UI initialized successfully');
+    }
+
     // Handle messages from Figma plugin
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
@@ -339,6 +1747,13 @@
           console.log('⚠️ Unknown message type:', msg.type);
       }
     };
+
+    // Initialize when DOM is loaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+      initializeApp();
+    }
 
     console.log('🚀 Design Intelligence Platform UI loaded successfully');
   </script>

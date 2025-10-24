@@ -699,6 +699,32 @@
       color: #f59e0b;
     }
 
+    .loading-state {
+      text-align: center;
+      padding: 30px 20px;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e2e8f0;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px auto;
+    }
+
+    .loading-detail {
+      color: #6b7280;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .status-error {
       color: #ef4444;
     }
@@ -1101,21 +1127,16 @@ Examples:
         <button id="showDebug" class="button-debug">🔍 Show MCP Data Debug</button>
       </div>
 
-      <!-- Standalone Testing Panel -->
+      <!-- Comprehensive Test Suite -->
       <div class="test-panel">
-        <h3>🧪 Standalone Testing (No Figma Required)</h3>
-        <div class="test-buttons">
-          <button id="testMockAI" class="button button-success">🤖 Test Mock AI Generation</button>
-          <button id="testMockData" class="button button-success">📊 Test Mock Data Extraction</button>
-          <button id="testMCPDirect" class="button button-success">🔧 Test MCP Server Direct</button>
-          <button id="testAllCombinations" class="button button-success">🧪 Test All Template Combinations</button>
+        <h3>🧪 Comprehensive Test Suite</h3>
+        <div style="text-align: center; margin: 20px 0;">
+          <button id="launchTestSuite" class="button" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; font-size: 16px; padding: 16px 32px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); transition: all 0.2s ease;">
+            🚀 Launch Ultimate Test Suite
+          </button>
         </div>
-        
-        <!-- Debug & Screenshot Testing -->
-        <div class="test-buttons">
-          <button id="debugSelection" class="button button-debug">🔍 Debug Selection Context</button>
-          <button id="preciseScreenshot" class="button button-debug">📸 Precise Screenshot</button>
-          <button id="testScreenshotAPI" class="button button-debug">🧪 Test Screenshot API</button>
+        <div style="text-align: center; color: #64748b; font-size: 14px; margin-top: 8px;">
+          All-in-one testing: System • Screenshots • Templates • AI • UI • E2E • Performance
         </div>
       </div>
 
@@ -1649,6 +1670,9 @@ Examples:
                 break;
               case 'design-health-results':
                 handleDesignHealthResults(msg.data);
+                break;
+              case 'analyze-design-health':
+                handleAnalyzeDesignHealth(msg);
                 break;
               case 'advanced-context-data':
                 console.log('🔬 Received advanced context data for dashboard:', msg.data);
@@ -2753,6 +2777,15 @@ ${Math.max(3, Math.min(8, Math.ceil((frameData.hierarchy?.componentCount || 1) *
       };
     }
 
+    // ============================================================================
+    // LEGACY TEST FUNCTIONS 
+    // ============================================================================
+    // The following test functions are legacy from when individual test buttons 
+    // existed in the main UI. All functionality has been consolidated into the
+    // "Ultimate Figma AI Test Suite" accessible via the single test button.
+    // These functions are preserved for reference and potential future use.
+    // ============================================================================
+    
     // Test functions for standalone testing
     async function testMockAIGeneration() {
       const mockData = generateMockAITicketData();
@@ -3951,16 +3984,10 @@ Please fix the MCP server connection and try again.`;
     document.getElementById('toggleDebug').addEventListener('click', toggleDebugPanel);
     document.getElementById('openAdvancedDashboard').addEventListener('click', openAdvancedContextDashboard);
     
-    // Standalone testing event listeners
-    document.getElementById('testMockAI').addEventListener('click', testMockAIGeneration);
-    document.getElementById('testMockData').addEventListener('click', testMockEnhancedData);
-    document.getElementById('testMCPDirect').addEventListener('click', testMCPServerDirect);
-    document.getElementById('testAllCombinations').addEventListener('click', testAllTemplateCombinations);
-    
-    // Debug & Screenshot testing event listeners
-    document.getElementById('debugSelection').addEventListener('click', debugSelectionContext);
-    document.getElementById('preciseScreenshot').addEventListener('click', takePreciseScreenshot);
-    document.getElementById('testScreenshotAPI').addEventListener('click', testScreenshotAPIConnection);
+    // Consolidated testing event listener
+    document.getElementById('launchTestSuite').addEventListener('click', function() {
+        window.open('http://localhost:3000/tests/integration/test-consolidated-suite.html', '_blank');
+    });
 
     // Context preview event listeners
     submitContextBtn.addEventListener('click', () => {
@@ -4056,8 +4083,54 @@ Please fix the MCP server connection and try again.`;
         analysisElement.innerHTML = analysisHTML;
       }
       
+      // Re-enable the analyze button
+      const analyzeBtn = document.getElementById('analyzeHealthBtn');
+      if (analyzeBtn) {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '🔍 Analyze Current Selection';
+      }
+      
       // Show success message
       showStatus(`✅ Design health analysis complete: ${results.selectionCount} items analyzed`, 'success');
+    }
+
+    // Handle analyze design health message (for status updates)
+    function handleAnalyzeDesignHealth(msg) {
+      console.log('🔄 Design health analysis in progress:', msg);
+      
+      // Show loading state
+      const analyzeBtn = document.getElementById('analyzeHealthBtn');
+      if (analyzeBtn) {
+        analyzeBtn.disabled = true;
+        analyzeBtn.textContent = '🔄 Analyzing...';
+      }
+      
+      // Show status message
+      if (msg.message) {
+        showStatus(msg.message, 'info');
+      } else {
+        showStatus('🔄 Analyzing design health...', 'info');
+      }
+      
+      // Update analysis area with loading state
+      const analysisElement = document.querySelector('.health-analysis');
+      if (analysisElement) {
+        analysisElement.innerHTML = `
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>🔍 Analyzing selection for design system compliance...</p>
+            <p class="loading-detail">This may take a few moments while we examine colors, typography, spacing, and components.</p>
+          </div>
+        `;
+      }
+      
+      // Reset button after timeout (fallback)
+      setTimeout(() => {
+        if (analyzeBtn && analyzeBtn.disabled) {
+          analyzeBtn.disabled = false;
+          analyzeBtn.textContent = '🔍 Analyze Current Selection';
+        }
+      }, 10000); // 10 second timeout
     }
 
     // Initialize tabs
