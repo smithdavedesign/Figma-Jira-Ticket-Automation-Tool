@@ -969,30 +969,46 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 ## 📚 Documentation
 
-### 📖 **Quick Start**
-- **[Documentation Standards](./docs/DOCUMENTATION_STANDARDS.md)** - File organization and placement rules
-- **[Getting Started](./docs/guides/)** - Setup and basic usage guides
-- **[API Reference](./docs/api/)** - Technical API documentation
+**🎯 Start Here:** [MASTER_PROJECT_CONTEXT.md](./docs/MASTER_PROJECT_CONTEXT.md) - Complete project overview and AI assistant rules
 
-### 🚀 **Project Status** 
-- **[Phase 3 Complete](./docs/project-phases/PHASE_3_COMPLETE.md)** - Design Intelligence Layer
-- **[Phase 4 Plan](./docs/project-phases/PHASE_4_PLAN.md)** - Production deployment roadmap
-- **[Foundation Complete](./docs/project-phases/DESIGN_INTELLIGENCE_FOUNDATION_COMPLETE.md)** - Core system
+### 📋 **Documentation Table of Contents**
 
-### 🧪 **Testing & Validation**
-- **[Test Organization Rules](./docs/testing/TEST_ORGANIZATION_RULES.md)** - File placement and structure rules
-- **[Testing Options](./docs/testing/TESTING_OPTIONS.md)** - MCP data layer testing guide
-- **[Figma Testing Instructions](./docs/testing/FIGMA_TESTING_INSTRUCTIONS.md)** - How to test plugin
-- **[Testing Guide](./docs/testing/FIGMA_TESTING_GUIDE.md)** - Comprehensive procedures  
-- **[Test Results](./docs/testing/FIGMA_INTEGRATION_TEST_RESULTS.md)** - Latest outcomes
+| **Category** | **Description** | **Key Content** |
+|--------------|-----------------|-----------------|
+| **🏗️ [Architecture](./docs/architecture/README.md)** | System design and architectural patterns | System architecture, AI integration, migration history |
+| **🛠️ [Implementation](./docs/implementation/README.md)** | Technical implementation details | MCP integration, visual context, production deployment |
+| **� [Guides](./docs/guides/README.md)** | User and feature documentation | User guide, Figma integration, advanced features |
+| **🛠️ [Troubleshooting](./docs/troubleshooting/README.md)** | Issue resolution and debugging | User troubleshooting, technical debugging |
+| **🔌 [API](./docs/api/README.md)** | API specifications and interfaces | Design intelligence API, MCP server API |
+| **🚀 [Deployment](./docs/deployment/README.md)** | Deployment procedures and status | Deployment guide, production status, monitoring |
+| **🔗 [Integration](./docs/integration/README.md)** | System integrations and roadmap | Data layer integration, strategic planning |
+| **📅 [Project Phases](./docs/project-phases/README.md)** | Development phases and milestones | Phase completion, project roadmap, metrics |
+| **🧪 [Testing](./docs/testing/README.md)** | Testing strategies and reports | Testing methodology, comprehensive reports |
 
-### 🚀 **Deployment**
-- **[Production Launch](./docs/deployment/PRODUCTION_LAUNCH.md)** - Deployment instructions
-- **[Production Complete](./docs/deployment/PRODUCTION_DEPLOYMENT_COMPLETE.md)** - Status
+### 🎯 **Quick Navigation**
 
-### 🛠️ **Troubleshooting**
-- **[Plugin Fixes](./docs/troubleshooting/PLUGIN_FIXES_APPLIED.md)** - Bug fixes and solutions
-- **[Architecture Guide](./docs/troubleshooting/ARCHITECTURE_CLARIFICATION.md)** - MCP vs Figma API
+#### **👤 For Users**
+- **[User Guide](./docs/guides/USER_GUIDE.md)** - Complete user documentation and setup
+- **[Figma Integration Guide](./docs/guides/FIGMA_INTEGRATION_GUIDE.md)** - Figma-specific features
+- **[Troubleshooting Guide](./docs/troubleshooting/TROUBLESHOOTING_GUIDE.md)** - Common issues and solutions
+
+#### **🔧 For Developers**
+- **[System Architecture](./docs/architecture/SYSTEM_ARCHITECTURE.md)** - Complete system design
+- **[MCP Integration Guide](./docs/implementation/MCP_INTEGRATION_GUIDE.md)** - Technical implementation
+- **[Technical Troubleshooting](./docs/troubleshooting/TECHNICAL_TROUBLESHOOTING_GUIDE.md)** - Advanced debugging
+
+#### **📊 For Project Managers**
+- **[Deployment Status](./docs/deployment/CURRENT_DEPLOYMENT_STATUS.md)** - Live production status
+- **[Project Phases](./docs/project-phases/README.md)** - Development progress and milestones
+- **[Testing Reports](./docs/testing/COMPREHENSIVE_TEST_REPORT_2025-10-23.md)** - Latest test results
+
+### 📁 **Documentation Structure**
+
+The documentation is organized into focused categories with:
+- **Comprehensive guides** consolidating related information
+- **README files** in every subdirectory explaining contents
+- **Archive directories** preserving historical documentation
+- **Consistent structure** across all documentation areas
 
 ## 🆘 Support
 
