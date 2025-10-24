@@ -1,5 +1,5 @@
-import type { FigmaExtractor, ExtractionParams, MetadataOptions, TokenExtractionOptions, AssetExtractionOptions, CodeGenerationOptions, PerformanceMonitor, DataCache, DataValidator } from './interfaces.js';
-import type { FigmaNodeMetadata, AssetMetadata, DesignTokens, CodeGenerationHints, ValidationResult, PerformanceMetrics, ExtractionResult } from './types.js';
+import type { FigmaExtractor, ExtractionParams, MetadataOptions, TokenExtractionOptions, AssetExtractionOptions, CodeGenerationOptions, PerformanceMonitor, DataCache, DataValidator } from '../../src/data/interfaces.js';
+import type { FigmaNodeMetadata, AssetMetadata, DesignTokens, CodeGenerationHints, ValidationResult, PerformanceMetrics, ExtractionResult } from '../../src/data/types.js';
 export declare class FigmaDataExtractor implements FigmaExtractor {
     private performanceMonitor;
     private cache;

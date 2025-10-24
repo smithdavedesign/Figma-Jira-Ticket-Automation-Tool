@@ -1,5 +1,5 @@
-import { FigmaDataExtractor } from './extractor.js';
-import type { DesignSystem, ComponentInstance, DesignSystemLinks, HierarchicalData } from './types.js';
+import { FigmaDataExtractor } from '../../src/data/extractor.js';
+import type { DesignSystem, ComponentInstance, DesignSystemLinks, HierarchicalData } from '../../src/data/types.js';
 interface BaseDesignSystemScanner {
     scanDesignSystem(): Promise<DesignSystem | null>;
 }

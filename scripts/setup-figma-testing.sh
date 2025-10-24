@@ -77,10 +77,10 @@ else
     MCP_STATUS="not_running"
 fi
 
-# 2. Setup HTTP Request Logger
+# 2. Setup HTTP Request Logger (optional - using core logging instead)
 echo ""
-echo -e "${BLUE}2️⃣  Setting up HTTP Request Logger...${NC}"
-start_service "HTTP-Logger" "node scripts/http-request-logger.js" 3001 "http-logger.log"
+echo -e "${BLUE}2️⃣  HTTP Request Logging handled by core/logging system...${NC}"
+echo -e "${GREEN}✅ Requests logged to logs/system.log${NC}"
 
 # 3. Setup UI Server
 echo ""

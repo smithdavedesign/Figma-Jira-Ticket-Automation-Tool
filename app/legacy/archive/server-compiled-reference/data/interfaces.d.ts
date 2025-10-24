@@ -1,4 +1,4 @@
-import type { FigmaNodeMetadata, AssetMetadata, DesignTokens, CodeGenerationHints, ValidationResult, PerformanceMetrics, ExtractionResult, ValidationError as ValidationErrorType } from './types.js';
+import type { FigmaNodeMetadata, AssetMetadata, DesignTokens, CodeGenerationHints, ValidationResult, PerformanceMetrics, ExtractionResult, ValidationError as ValidationErrorType } from '../../src/data/types.js';
 export interface FigmaExtractor {
     extract(params: ExtractionParams): Promise<ExtractionResult>;
     extractMetadata(nodeIds: string[], options?: MetadataOptions): Promise<FigmaNodeMetadata[]>;
@@ -32,9 +32,9 @@ export interface ExtractionOptions {
     metadata?: MetadataOptions;
     tokens?: TokenExtractionOptions;
     assets?: AssetExtractionOptions;
-    projectContext?: import('./types.js').ProjectContext;
-    userContext?: import('./types.js').UserContext;
-    technicalContext?: import('./types.js').TechnicalContext;
+    projectContext?: import('../../src/data/types.js').ProjectContext;
+    userContext?: import('../../src/data/types.js').UserContext;
+    technicalContext?: import('../../src/data/types.js').TechnicalContext;
 }
 export type OptimizationLevel = 'none' | 'basic' | 'standard' | 'aggressive';
 export type ValidationLevel = 'none' | 'basic' | 'standard' | 'strict';

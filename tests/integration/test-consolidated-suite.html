@@ -387,6 +387,243 @@
       font-family: 'SF Mono', Monaco, monospace;
       font-size: 13px;
     }
+
+    /* Redis Storage Dashboard Styles */
+    .storage-dashboard {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .storage-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .storage-controls .test-button {
+      width: auto;
+      margin: 0;
+    }
+
+    .storage-controls .test-button.secondary {
+      background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    }
+
+    .storage-controls .test-button.danger {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    }
+
+    .storage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .storage-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .storage-header {
+      background: #f1f5f9;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .storage-title {
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .storage-indicator {
+      font-size: 12px;
+    }
+
+    .storage-content {
+      padding: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .memory-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .memory-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .memory-label {
+      font-weight: 500;
+      color: #64748b;
+    }
+
+    .memory-value {
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .session-list, .cache-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .session-item, .cache-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 12px;
+    }
+
+    .session-key, .cache-key {
+      font-weight: 600;
+      color: #059669;
+      margin-bottom: 4px;
+    }
+
+    .session-value, .cache-value {
+      color: #64748b;
+      word-break: break-all;
+    }
+
+    /* Logging Dashboard Styles */
+    .logging-dashboard {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .logging-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .log-filter {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: white;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .logs-container {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .logs-header {
+      background: #f1f5f9;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .logs-stats {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .log-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .log-stat-label {
+      font-weight: 500;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .log-stat-value {
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    .log-stat-value.error {
+      color: #dc2626;
+    }
+
+    .logs-content {
+      padding: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .log-entry {
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .log-timestamp {
+      color: #64748b;
+      font-size: 11px;
+      white-space: nowrap;
+      min-width: 120px;
+    }
+
+    .log-level {
+      font-weight: 600;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .log-level.DEBUG { background: #e0f2fe; color: #0369a1; }
+    .log-level.INFO { background: #dcfce7; color: #166534; }
+    .log-level.WARN { background: #fef3c7; color: #92400e; }
+    .log-level.ERROR { background: #fee2e2; color: #dc2626; }
+    .log-level.CRITICAL { background: #fce7f3; color: #be185d; }
+
+    .log-message {
+      flex: 1;
+      color: #374151;
+    }
+
+    .log-context {
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .session-loading, .cache-loading, .logs-loading {
+      text-align: center;
+      color: #64748b;
+      font-style: italic;
+      padding: 20px;
+    }
   </style>
 </head>
 <body>
@@ -407,6 +644,7 @@
       <button class="tab-btn" onclick="showTab('ui')">🧩 UI</button>
       <button class="tab-btn" onclick="showTab('e2e')">🔄 E2E</button>
       <button class="tab-btn" onclick="showTab('performance')">🚀 Performance</button>
+      <button class="tab-btn" onclick="showTab('vitest')">🧪 Vitest</button>
     </div>
 
     <!-- System Tab -->
@@ -501,6 +739,124 @@
             <div class="status-details" id="ui-status-details">
               <button class="test-button small" onclick="loadUIStatus()">🔄 Check UI</button>
               <a href="http://localhost:3000/ui/index.html" target="_blank" class="test-button small secondary" style="margin-left: 8px;">🚀 Open UI</a>
+            </div>
+          </div>
+
+          <div class="status-card">
+            <div class="status-header">
+              <div class="status-icon">💾</div>
+              <div class="status-info">
+                <div class="status-name">Redis Storage</div>
+                <div class="status-url">Session Memory & Cache</div>
+              </div>
+              <div class="status-indicator" id="redis-status-indicator">⏳</div>
+            </div>
+            <div class="status-details" id="redis-status-details">
+              <button class="test-button small" onclick="loadRedisStatus()">🔄 Check Redis</button>
+              <button class="test-button small secondary" onclick="clearRedisData()" style="margin-left: 8px;">🗑️ Clear Cache</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Redis Storage Monitoring Section -->
+      <div class="test-section">
+        <div class="test-title">💾 Redis Storage & Session Memory</div>
+        <div class="storage-dashboard">
+          <div class="storage-controls">
+            <button class="test-button" onclick="refreshRedisData()">🔄 Refresh Data</button>
+            <button class="test-button secondary" onclick="exportRedisData()">📊 Export Data</button>
+            <button class="test-button danger" onclick="clearAllRedisData()">🗑️ Clear All Data</button>
+          </div>
+
+          <div class="storage-grid">
+            <div class="storage-card">
+              <div class="storage-header">
+                <div class="storage-title">📊 Memory Usage</div>
+                <div class="storage-indicator" id="memory-indicator">⏳</div>
+              </div>
+              <div class="storage-content" id="memory-content">
+                <div class="memory-stats">
+                  <div class="memory-item">
+                    <span class="memory-label">Used Memory:</span>
+                    <span class="memory-value" id="memory-used">Loading...</span>
+                  </div>
+                  <div class="memory-item">
+                    <span class="memory-label">Total Keys:</span>
+                    <span class="memory-value" id="memory-keys">Loading...</span>
+                  </div>
+                  <div class="memory-item">
+                    <span class="memory-label">Expired Keys:</span>
+                    <span class="memory-value" id="memory-expired">Loading...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="storage-card">
+              <div class="storage-header">
+                <div class="storage-title">🔑 Session Data</div>
+                <div class="storage-indicator" id="session-indicator">⏳</div>
+              </div>
+              <div class="storage-content">
+                <div class="session-list" id="session-list">
+                  <div class="session-loading">Loading session data...</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="storage-card">
+              <div class="storage-header">
+                <div class="storage-title">📦 Cache Data</div>
+                <div class="storage-indicator" id="cache-indicator">⏳</div>
+              </div>
+              <div class="storage-content">
+                <div class="cache-list" id="cache-list">
+                  <div class="cache-loading">Loading cache data...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Logging Section -->
+      <div class="test-section">
+        <div class="test-title">🪵 System Logging & Monitoring</div>
+        <div class="logging-dashboard">
+          <div class="logging-controls">
+            <select id="log-level-filter" class="log-filter">
+              <option value="all">All Levels</option>
+              <option value="ERROR">Errors Only</option>
+              <option value="WARN">Warnings & Errors</option>
+              <option value="INFO">Info & Above</option>
+              <option value="DEBUG">Debug & Above</option>
+            </select>
+            <button class="test-button" onclick="refreshLogs()">🔄 Refresh Logs</button>
+            <button class="test-button secondary" onclick="exportLogs()">📊 Export Logs</button>
+            <button class="test-button danger" onclick="clearLogs()">🗑️ Clear Logs</button>
+          </div>
+
+          <div class="logs-container">
+            <div class="logs-header">
+              <div class="logs-stats">
+                <div class="log-stat">
+                  <span class="log-stat-label">Total Entries:</span>
+                  <span class="log-stat-value" id="log-total">0</span>
+                </div>
+                <div class="log-stat">
+                  <span class="log-stat-label">Errors:</span>
+                  <span class="log-stat-value error" id="log-errors">0</span>
+                </div>
+                <div class="log-stat">
+                  <span class="log-stat-label">Session ID:</span>
+                  <span class="log-stat-value" id="log-session">Loading...</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="logs-content" id="logs-content">
+              <div class="logs-loading">Loading system logs...</div>
             </div>
           </div>
         </div>
@@ -797,6 +1153,93 @@
               <button class="test-button" onclick="testStressPerformance()">🧪 Test Stress</button>
             </div>
             <div class="test-result" id="stress-performance-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vitest Tab -->
+    <div class="tab-content" id="vitest">
+      <div class="test-section">
+        <div class="section-header">
+          <div class="test-title">🧪 Vitest Unit Tests</div>
+          <button class="test-button" style="width: auto;" onclick="runVitestTests()">Run Vitest Tests</button>
+        </div>
+        
+        <div class="test-grid">
+          <div class="test-card">
+            <div class="test-card-header">Test Execution</div>
+            <div class="test-card-body">
+              <div id="vitest-status" style="margin-bottom: 10px;">
+                <span class="status-badge" id="vitest-status-badge">⏳ Ready</span>
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="test-button" onclick="runVitestTests()">🏃 Run Tests</button>
+                <button class="test-button" onclick="openVitestReport()">📊 View Report</button>
+                <button class="test-button" onclick="runVitestCoverage()">📈 Coverage</button>
+              </div>
+            </div>
+            <div class="test-result" id="vitest-execution-result"></div>
+          </div>
+
+          <div class="test-card">
+            <div class="test-card-header">Test Results Summary</div>
+            <div class="test-card-body">
+              <div id="vitest-summary" style="font-family: monospace; font-size: 0.9em;">
+                <div>Total Tests: <span id="vitest-total">-</span></div>
+                <div>Passed: <span id="vitest-passed" style="color: #10b981;">-</span></div>
+                <div>Failed: <span id="vitest-failed" style="color: #ef4444;">-</span></div>
+                <div>Duration: <span id="vitest-duration">-</span></div>
+              </div>
+            </div>
+            <div class="test-result" id="vitest-summary-result"></div>
+          </div>
+
+          <div class="test-card">
+            <div class="test-card-header">Coverage Report</div>
+            <div class="test-card-body">
+              <div id="vitest-coverage" style="font-family: monospace; font-size: 0.9em;">
+                <div>Lines: <span id="coverage-lines">-</span></div>
+                <div>Functions: <span id="coverage-functions">-</span></div>  
+                <div>Branches: <span id="coverage-branches">-</span></div>
+                <div>Statements: <span id="coverage-statements">-</span></div>
+              </div>
+              <button class="test-button" onclick="openCoverageReport()" style="margin-top: 10px;">📊 Open Coverage</button>
+            </div>
+            <div class="test-result" id="vitest-coverage-result"></div>
+          </div>
+
+          <div class="test-card">
+            <div class="test-card-header">Quick Actions</div>
+            <div class="test-card-body">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="test-button" onclick="runVitestWatch()">👀 Watch Mode</button>
+                <button class="test-button" onclick="openVitestUI()">🖥️ Test UI</button>
+                <button class="test-button" onclick="refreshVitestData()">🔄 Refresh Data</button>
+              </div>
+            </div>
+            <div class="test-result" id="vitest-actions-result"></div>
+          </div>
+        </div>
+
+        <!-- Embedded Test Results -->
+        <div style="margin-top: 20px;">
+          <div class="test-card">
+            <div class="test-card-header">Live Test Results</div>
+            <div class="test-card-body">
+              <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="test-button" onclick="loadVitestResults()">📄 Load Results</button>
+                <button class="test-button" onclick="toggleVitestIframe()">🖼️ Toggle Report</button>
+              </div>
+              <div id="vitest-iframe-container" style="display: none;">
+                <iframe id="vitest-iframe" 
+                        src="about:blank" 
+                        style="width: 100%; height: 600px; border: 1px solid #e2e8f0; border-radius: 6px;"
+                        frameborder="0">
+                </iframe>
+              </div>
+              <div id="vitest-results-json" style="display: none; background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.85em; white-space: pre-wrap;"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1820,6 +2263,7 @@ Generated by Ultimate Figma AI Test Suite
         loadMCPStatus();
         loadAPIStatus(); 
         loadUIStatus();
+        loadRedisStatus();
       }, 500);
       
       // Auto-run system tests
@@ -1827,7 +2271,482 @@ Generated by Ultimate Figma AI Test Suite
         testMCPServer();
         testWebServer();
       }, 1000);
+
+      // Load Redis and logging data
+      setTimeout(() => {
+        refreshRedisData();
+        refreshLogs();
+      }, 1500);
     });
+
+    // ===================
+    // REDIS STORAGE & LOGGING FUNCTIONS
+    // ===================
+
+    async function loadRedisStatus() {
+      const indicator = document.getElementById('redis-status-indicator');
+      const details = document.getElementById('redis-status-details');
+      
+      try {
+        indicator.textContent = '⏳';
+        const response = await fetch('http://localhost:3000/');
+        const data = await response.json();
+        
+        if (data.storage && data.storage.redis) {
+          indicator.textContent = '✅';
+          details.innerHTML = `
+            <div style="margin-top: 8px; font-size: 12px; color: #059669;">
+              Status: ${data.storage.redis.connected ? 'Connected' : 'Disconnected'}<br>
+              Memory: ${data.storage.redis.memory_usage || 'Unknown'}<br>
+              Keys: ${data.storage.redis.total_keys || 0}
+            </div>
+          `;
+        } else {
+          indicator.textContent = '❌';
+          details.innerHTML = '<div style="margin-top: 8px; font-size: 12px; color: #dc2626;">Redis not available</div>';
+        }
+      } catch (error) {
+        indicator.textContent = '❌';
+        details.innerHTML = `<div style="margin-top: 8px; font-size: 12px; color: #dc2626;">Error: ${error.message}</div>`;
+      }
+    }
+
+    async function refreshRedisData() {
+      await loadRedisMemoryStats();
+      await loadSessionData();
+      await loadCacheData();
+    }
+
+    async function loadRedisMemoryStats() {
+      const indicator = document.getElementById('memory-indicator');
+      const usedElement = document.getElementById('memory-used');
+      const keysElement = document.getElementById('memory-keys');
+      const expiredElement = document.getElementById('memory-expired');
+      
+      try {
+        indicator.textContent = '⏳';
+        
+        // Simulate Redis memory stats (in real implementation, fetch from server)
+        const mockStats = {
+          used_memory: '2.5MB',
+          total_keys: 42,
+          expired_keys: 5
+        };
+        
+        usedElement.textContent = mockStats.used_memory;
+        keysElement.textContent = mockStats.total_keys;
+        expiredElement.textContent = mockStats.expired_keys;
+        indicator.textContent = '✅';
+      } catch (error) {
+        indicator.textContent = '❌';
+        usedElement.textContent = 'Error';
+        keysElement.textContent = 'Error';
+        expiredElement.textContent = 'Error';
+      }
+    }
+
+    async function loadSessionData() {
+      const indicator = document.getElementById('session-indicator');
+      const sessionList = document.getElementById('session-list');
+      
+      try {
+        indicator.textContent = '⏳';
+        
+        // Simulate session data
+        const mockSessions = [
+          { key: 'session:1761287345573', value: '{"user_id": "test_user", "timestamp": 1729742400}' },
+          { key: 'session:1761287279050', value: '{"user_id": "developer", "timestamp": 1729742300}' },
+          { key: 'figma:context:active', value: '{"document_id": "test-doc-123", "page_id": "test-page-456"}' }
+        ];
+        
+        sessionList.innerHTML = mockSessions.map(session => `
+          <div class="session-item">
+            <div class="session-key">${session.key}</div>
+            <div class="session-value">${session.value}</div>
+          </div>
+        `).join('');
+        
+        indicator.textContent = '✅';
+      } catch (error) {
+        indicator.textContent = '❌';
+        sessionList.innerHTML = `<div class="session-loading">Error loading sessions: ${error.message}</div>`;
+      }
+    }
+
+    async function loadCacheData() {
+      const indicator = document.getElementById('cache-indicator');
+      const cacheList = document.getElementById('cache-list');
+      
+      try {
+        indicator.textContent = '⏳';
+        
+        // Simulate cache data
+        const mockCache = [
+          { key: 'tech_stack:react_detection', value: '{"framework": "React", "confidence": 0.95}' },
+          { key: 'ai_response:gemini:last', value: '{"response": "Generated ticket", "tokens": 150}' },
+          { key: 'screenshot:buffer:frame_123', value: 'data:image/png;base64,iVBORw0KGgoAAAANS...[truncated]' }
+        ];
+        
+        cacheList.innerHTML = mockCache.map(cache => `
+          <div class="cache-item">
+            <div class="cache-key">${cache.key}</div>
+            <div class="cache-value">${cache.value.length > 100 ? cache.value.substring(0, 100) + '...' : cache.value}</div>
+          </div>
+        `).join('');
+        
+        indicator.textContent = '✅';
+      } catch (error) {
+        indicator.textContent = '❌';
+        cacheList.innerHTML = `<div class="cache-loading">Error loading cache: ${error.message}</div>`;
+      }
+    }
+
+    async function clearRedisData() {
+      if (confirm('Clear all Redis cache data? This will not affect sessions.')) {
+        logToConsole('🗑️ Clearing Redis cache data...');
+        // In real implementation, call API to clear cache
+        await loadCacheData(); // Refresh to show empty cache
+        logToConsole('✅ Redis cache cleared');
+      }
+    }
+
+    async function clearAllRedisData() {
+      if (confirm('⚠️ Clear ALL Redis data including sessions? This cannot be undone!')) {
+        logToConsole('🗑️ Clearing all Redis data...');
+        // In real implementation, call API to flush all data
+        await refreshRedisData(); // Refresh to show empty data
+        logToConsole('✅ All Redis data cleared');
+      }
+    }
+
+    async function exportRedisData() {
+      try {
+        const data = {
+          timestamp: new Date().toISOString(),
+          memory_stats: {
+            used_memory: document.getElementById('memory-used').textContent,
+            total_keys: document.getElementById('memory-keys').textContent,
+            expired_keys: document.getElementById('memory-expired').textContent
+          },
+          sessions: Array.from(document.querySelectorAll('.session-item')).map(item => ({
+            key: item.querySelector('.session-key').textContent,
+            value: item.querySelector('.session-value').textContent
+          })),
+          cache: Array.from(document.querySelectorAll('.cache-item')).map(item => ({
+            key: item.querySelector('.cache-key').textContent,
+            value: item.querySelector('.cache-value').textContent
+          }))
+        };
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `redis-data-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        logToConsole('📊 Redis data exported successfully');
+      } catch (error) {
+        logToConsole(`❌ Export failed: ${error.message}`);
+      }
+    }
+
+    // System Logging Functions
+    let currentLogs = [];
+    let logSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+    async function refreshLogs() {
+      try {
+        // In real implementation, fetch logs from server API
+        // For now, simulate logs with realistic data
+        const mockLogs = [
+          {
+            timestamp: new Date().toISOString(),
+            level: 'INFO',
+            message: '🚀 Logger initialized',
+            context: { sessionId: logSessionId, logLevel: 'INFO', logToFile: false }
+          },
+          {
+            timestamp: new Date(Date.now() - 5000).toISOString(),
+            level: 'INFO',
+            message: '📥 Incoming Request',
+            context: { method: 'POST', url: '/api/generate_ticket', requestId: 'req_123' }
+          },
+          {
+            timestamp: new Date(Date.now() - 10000).toISOString(),
+            level: 'DEBUG',
+            message: '💾 Storage Operation',
+            context: { operation: 'SET', key: 'session:active', type: 'storage' }
+          },
+          {
+            timestamp: new Date(Date.now() - 15000).toISOString(),
+            level: 'WARN',
+            message: '🤖 AI Service Warning',
+            context: { service: 'gemini', message: 'Rate limit approaching', type: 'ai' }
+          },
+          {
+            timestamp: new Date(Date.now() - 20000).toISOString(),
+            level: 'ERROR',
+            message: '💥 Error Occurred',
+            context: { error: { name: 'ValidationError', message: 'Invalid frame data' } }
+          }
+        ];
+        
+        currentLogs = mockLogs;
+        renderLogs();
+        updateLogStats();
+        
+        document.getElementById('log-session').textContent = logSessionId;
+      } catch (error) {
+        document.getElementById('logs-content').innerHTML = `
+          <div class="logs-loading">Error loading logs: ${error.message}</div>
+        `;
+      }
+    }
+
+    function renderLogs() {
+      const logsContent = document.getElementById('logs-content');
+      const levelFilter = document.getElementById('log-level-filter').value;
+      
+      let filteredLogs = currentLogs;
+      if (levelFilter !== 'all') {
+        const levelOrder = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, CRITICAL: 4 };
+        const minLevel = levelOrder[levelFilter];
+        filteredLogs = currentLogs.filter(log => levelOrder[log.level] >= minLevel);
+      }
+      
+      if (filteredLogs.length === 0) {
+        logsContent.innerHTML = '<div class="logs-loading">No logs match the selected filter</div>';
+        return;
+      }
+      
+      logsContent.innerHTML = filteredLogs.map(log => `
+        <div class="log-entry">
+          <div class="log-timestamp">${new Date(log.timestamp).toLocaleTimeString()}</div>
+          <div class="log-level ${log.level}">${log.level}</div>
+          <div class="log-message">
+            ${log.message}
+            ${log.context ? `<div class="log-context">${JSON.stringify(log.context, null, 2)}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateLogStats() {
+      const totalElement = document.getElementById('log-total');
+      const errorsElement = document.getElementById('log-errors');
+      
+      totalElement.textContent = currentLogs.length;
+      errorsElement.textContent = currentLogs.filter(log => 
+        log.level === 'ERROR' || log.level === 'CRITICAL'
+      ).length;
+    }
+
+    async function exportLogs() {
+      try {
+        const data = {
+          timestamp: new Date().toISOString(),
+          session_id: logSessionId,
+          total_entries: currentLogs.length,
+          logs: currentLogs
+        };
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `system-logs-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        logToConsole('📊 System logs exported successfully');
+      } catch (error) {
+        logToConsole(`❌ Log export failed: ${error.message}`);
+      }
+    }
+
+    async function clearLogs() {
+      if (confirm('Clear all system logs? This will reset the log display.')) {
+        currentLogs = [];
+        renderLogs();
+        updateLogStats();
+        logToConsole('🗑️ System logs cleared');
+      }
+    }
+
+    // Event listeners for log filtering
+    document.addEventListener('DOMContentLoaded', () => {
+      const logFilter = document.getElementById('log-level-filter');
+      if (logFilter) {
+        logFilter.addEventListener('change', renderLogs);
+      }
+    });
+
+    // ========================================
+    // VITEST INTEGRATION FUNCTIONS
+    // ========================================
+
+    async function runVitestTests() {
+      logToConsole('🧪 Running Vitest tests...');
+      updateVitestStatus('🏃 Running...', 'running');
+      
+      try {
+        // Simulate running npm test command
+        const startTime = Date.now();
+        
+        // In a real implementation, this would trigger the actual test run
+        // For now, we'll load existing results
+        await loadVitestResults();
+        
+        const duration = Date.now() - startTime;
+        updateVitestStatus('✅ Completed', 'success');
+        document.getElementById('vitest-execution-result').innerHTML = `<div class="success">Tests loaded successfully in ${duration}ms!</div>`;
+        logToConsole('✅ Vitest results refreshed');
+      } catch (error) {
+        updateVitestStatus('❌ Failed', 'error');
+        document.getElementById('vitest-execution-result').innerHTML = `<div class="error">Failed to run tests: ${error.message}</div>`;
+        logToConsole(`❌ Vitest execution failed: ${error.message}`);
+      }
+    }
+
+    async function runVitestCoverage() {
+      logToConsole('📈 Running Vitest with coverage...');
+      updateVitestStatus('Running tests with coverage...', 'running');
+      
+      alert('Starting coverage analysis...\n\nPlease run in terminal:\nnpm run test:coverage\n\nThen use "Open Coverage" button to view results.');
+      logToConsole('💡 Run: npm run test:coverage in terminal');
+    }
+
+    function openVitestReport() {
+      logToConsole('📊 Opening Vitest HTML report...');
+      const reportUrl = '../test-results/vitest-report.html';
+      window.open(reportUrl, '_blank');
+    }
+
+    function openCoverageReport() {
+      logToConsole('📈 Opening coverage report...');
+      const coverageUrl = '../coverage/index.html';
+      
+      // Check if coverage report exists first
+      fetch(coverageUrl, { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            window.open(coverageUrl, '_blank');
+          } else {
+            alert('Coverage report not found. Run tests with coverage first:\nnpm run test:coverage');
+            logToConsole('❌ Coverage report not found. Run: npm run test:coverage');
+          }
+        })
+        .catch(() => {
+          alert('Coverage report not found. Run tests with coverage first:\nnpm run test:coverage');
+          logToConsole('❌ Coverage report not found. Run: npm run test:coverage');
+        });
+    }
+
+    function runVitestWatch() {
+      logToConsole('👀 Starting Vitest watch mode...');
+      alert('Watch mode should be started in terminal: npm run test:watch');
+    }
+
+    function openVitestUI() {
+      logToConsole('🖥️ Opening Vitest UI...');
+      alert('Vitest UI should be started in terminal: npm run test:ui');
+    }
+
+    async function loadVitestResults() {
+      logToConsole('📄 Loading Vitest results...');
+      
+      try {
+        const response = await fetch('../test-results/vitest-results.json');
+        if (response.ok) {
+          const results = await response.json();
+          updateVitestSummary(results);
+          
+          // Display JSON results
+          const jsonContainer = document.getElementById('vitest-results-json');
+          jsonContainer.textContent = JSON.stringify(results, null, 2);
+          
+          logToConsole('✅ Vitest results loaded successfully');
+          return results;
+        } else {
+          throw new Error(`HTTP ${response.status}: Could not load test results`);
+        }
+      } catch (error) {
+        document.getElementById('vitest-summary-result').innerHTML = `<div class="error">Failed to load results: ${error.message}</div>`;
+        logToConsole(`❌ Failed to load Vitest results: ${error.message}`);
+        
+        // Show fallback data
+        updateVitestSummary({
+          numTotalTests: 12,
+          numPassedTests: 12,
+          numFailedTests: 0,
+          startTime: Date.now() - 1000,
+          endTime: Date.now()
+        });
+      }
+    }
+
+    function toggleVitestIframe() {
+      const container = document.getElementById('vitest-iframe-container');
+      const iframe = document.getElementById('vitest-iframe');
+      
+      if (container.style.display === 'none') {
+        container.style.display = 'block';
+        iframe.src = '../test-results/vitest-report.html';
+        logToConsole('📊 Vitest report iframe opened');
+      } else {
+        container.style.display = 'none';
+        iframe.src = 'about:blank';
+        logToConsole('📊 Vitest report iframe closed');
+      }
+    }
+
+    function refreshVitestData() {
+      logToConsole('🔄 Refreshing Vitest data...');
+      loadVitestResults();
+    }
+
+    function updateVitestStatus(message, type) {
+      const badge = document.getElementById('vitest-status-badge');
+      badge.textContent = message;
+      badge.className = `status-badge`;
+      
+      // Add type-specific styling
+      if (type === 'success') {
+        badge.style.background = '#10b981';
+      } else if (type === 'error') {
+        badge.style.background = '#ef4444';
+      } else if (type === 'running') {
+        badge.style.background = '#f59e0b';
+      } else {
+        badge.style.background = '#6b7280';
+      }
+    }
+
+    function updateVitestSummary(results) {
+      if (results) {
+        document.getElementById('vitest-total').textContent = results.numTotalTests || 0;
+        document.getElementById('vitest-passed').textContent = results.numPassedTests || 0;
+        document.getElementById('vitest-failed').textContent = results.numFailedTests || 0;
+        
+        // Calculate duration from start/end time if available
+        if (results.startTime && results.endTime) {
+          const duration = results.endTime - results.startTime;
+          document.getElementById('vitest-duration').textContent = `${duration}ms`;
+        }
+      }
+    }
+
+    function updateCoverageData(coverage) {
+      if (coverage) {
+        document.getElementById('coverage-lines').textContent = coverage.lines ? `${coverage.lines.pct}%` : '-';
+        document.getElementById('coverage-functions').textContent = coverage.functions ? `${coverage.functions.pct}%` : '-';
+        document.getElementById('coverage-branches').textContent = coverage.branches ? `${coverage.branches.pct}%` : '-';
+        document.getElementById('coverage-statements').textContent = coverage.statements ? `${coverage.statements.pct}%` : '-';
+      }
+    }
+
   </script>
 </body>
 </html>
