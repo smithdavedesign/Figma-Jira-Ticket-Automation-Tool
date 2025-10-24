@@ -1,0 +1,124 @@
+template_id: "github_issue_component"
+version: "2.0.0"
+organization: "default"
+platform: "github"
+description: "GitHub issue template for component development with proper labels and formatting"
+
+variables:
+  component_name: "{{ figma.component_name }}"
+  issue_type: "enhancement"
+  labels: "{{ project.labels }}"
+  assignees: "{{ project.assignees }}"
+  milestone: "{{ project.milestone }}"
+  technologies: "{{ project.tech_stack }}"
+
+team_standards:
+  testing_framework: "jest-rtl"
+  accessibility_level: "wcag-aa"
+  documentation_format: "markdown"
+  code_style: "prettier"
+  review_process: "standard"
+
+output_format:
+  ticket_type: "Issue"
+  sections: ["header", "description", "acceptance_criteria", "implementation", "testing", "additional_context"]
+  formatting:
+    use_emojis: true
+    include_diagrams: false
+    code_highlighting: true
+    table_formatting: true
+    link_formatting: true
+  ai_context_markers: false
+  include_metadata: true
+
+customization:
+  include_ai_context_markers: false
+  generate_test_files: true
+  create_storybook_stories: true
+  add_accessibility_checklist: true
+  include_performance_metrics: false
+  enable_automated_testing: true
+  include_design_tokens: true
+  add_similar_components: false
+  include_risk_assessment: false
+
+# GitHub issue template content
+content: |
+  ## 🧩 {{ component_name }} Component Implementation
+
+  **Type:** {{ issue_type }}  
+  **Labels:** {{ labels }}  
+  **Assignees:** {{ assignees }}  
+  **Milestone:** {{ milestone }}
+
+  ---
+
+  ### 📋 Description
+  Implement the {{ component_name }} component as specified in the Figma design to enhance our component library with consistent, accessible UI elements.
+
+  **Related Design:** [Figma Link]({{ figma.live_link }})  
+  **📸 Design Screenshot:** ![Screenshot]({{ figma.screenshot_filename }})
+
+  ---
+
+  ### ✅ Acceptance Criteria
+  - [ ] Component renders correctly with all specified props
+  - [ ] All visual states match Figma design (default, hover, focus, disabled)
+  - [ ] Component is fully accessible (WCAG 2.1 AA compliance)
+  - [ ] TypeScript interfaces are properly defined
+  - [ ] Unit tests achieve 90%+ code coverage
+  - [ ] Component integrates with existing design system
+  - [ ] Storybook documentation is complete
+  - [ ] Component is responsive across all breakpoints
+
+  ---
+
+  ### 🔧 Implementation Details
+  **Technology Stack:** {{ technologies }}  
+  **Testing Framework:** {{ team_standards.testing_framework }}  
+  **Code Style:** {{ team_standards.code_style }}
+
+  **File Structure:**
+  ```
+  src/components/{{ component_name }}/
+  ├── index.ts
+  ├── {{ component_name }}.tsx
+  ├── {{ component_name }}.styles.ts
+  ├── {{ component_name }}.types.ts
+  ├── {{ component_name }}.test.tsx
+  └── {{ component_name }}.stories.tsx
+  ```
+
+  ---
+
+  ### 🧪 Testing Requirements
+  - [ ] Unit tests for all component functionality
+  - [ ] Accessibility tests using jest-axe
+  - [ ] Visual regression tests (if applicable)
+  - [ ] Integration tests with related components
+  - [ ] Cross-browser compatibility testing
+
+  **Test Coverage Areas:**
+  - Props validation and default values
+  - Event handler functionality
+  - Keyboard navigation and focus management
+  - Screen reader accessibility
+  - Responsive behavior
+
+  ---
+
+  ### 📚 Additional Context
+  - Component should follow existing design system patterns
+  - Ensure proper semantic HTML structure
+  - Include proper ARIA attributes for accessibility
+  - Optimize for performance and bundle size
+  - Document any breaking changes or migration notes
+
+  **Related Issues:**
+  - #{{ project.related_issue_1 }}
+  - #{{ project.related_issue_2 }}
+
+  **Design System Documentation:**
+  - [Component Guidelines]({{ project.component_guidelines }})
+  - [Accessibility Standards]({{ project.accessibility_standards }})
+  - [Testing Practices]({{ project.testing_practices }})

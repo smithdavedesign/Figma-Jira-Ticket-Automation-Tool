@@ -1,0 +1,345 @@
+template_id: "jira_component_aem"
+version: "2.1.0"
+organization: "default"
+platform: "jira"
+description: "Jira ticket template for AEM component implementation with HTL, OSGi, and Touch UI"
+
+variables:
+  project_name: "{{ project.name }}"
+  component_name: "{{ figma.component_name }}"
+  issue_type: "Task"
+  component_type: "{{ project.component_type }}"
+  priority: "{{ calculated.priority }}"
+  assignee: "{{ team.assignee }}"
+  reporter: "{{ user.name }}"
+  labels: "{{ project.labels }}"
+  technologies: "{{ project.tech_stack }}"
+  story_points: "{{ calculated.story_points }}"
+  figma_url: "{{ figma.live_link }}"
+  design_status: "{{ figma.design_status }}"
+  resource_type: "project/components/{{ figma.component_name | lowercase }}"
+  component_group: "project-components"
+
+team_standards:
+  testing_framework: "junit-mockito"
+  accessibility_level: "wcag-aa"
+  documentation_format: "markdown"
+  code_style: "aem-coding-standards"
+  review_process: "adobe-standards"
+
+output_format:
+  ticket_type: "Story"
+  sections: ["header", "description", "technical_requirements", "implementation_notes", "testing_strategy", "design_reference", "estimation", "aem_structure"]
+  formatting:
+    use_emojis: true
+    include_diagrams: false
+    code_highlighting: true
+    table_formatting: true
+    link_formatting: true
+  ai_context_markers: true
+  include_metadata: true
+
+customization:
+  include_ai_context_markers: true
+  generate_test_files: true
+  create_storybook_stories: false
+  add_accessibility_checklist: true
+  include_performance_metrics: true
+  enable_automated_testing: true
+  include_design_tokens: true
+  add_similar_components: true
+  include_risk_assessment: true
+  generate_aem_code: true
+  include_osgi_config: true
+  add_jcr_structure: true
+
+content: |
+  # 🏗️ AEM Component: {{ component_name }}
+
+  ## 📋 Summary
+  
+  **Priority**: {{ calculated.priority }} | **Story Points**: {{ calculated.story_points }}
+  
+  **🔗 Figma Design**: [View Component]({{ figma.url }})
+  **🎯 AEM Resource Type**: `{{ resource_type }}`
+  **📦 Component Group**: {{ component_group }}
+  
+  ## 🎯 Objective
+  
+  Implement the **{{ component_name }}** component in AEM 6.5 using HTL (HTML Template Language) with proper OSGi bundle structure, JCR node definitions, and Touch UI dialog configuration.
+  
+  ## 🎨 Design Context
+  
+  - **Component Name**: {{ component_name }}
+  - **Dimensions**: {{ figma.dimensions.width }}×{{ figma.dimensions.height }}px
+  - **Complexity**: {{ calculated.complexity }}
+  - **Design System Integration**: Required
+  
+  ## ✅ Acceptance Criteria
+  
+  ### 🏗️ Component Structure
+  - ✅ **HTL Template**: Clean, semantic HTML structure using HTL syntax
+  - ✅ **OSGi Component**: Java backing bean with proper Sling Model annotations
+  - ✅ **Touch UI Dialog**: Intuitive authoring interface with proper field validation
+  - ✅ **JCR Node Types**: Proper component definition and dialog structure
+  - ✅ **Client Libraries**: Organized CSS/JS with proper categories
+  
+  ### 🎨 Visual & Functional Requirements
+  - ✅ **Visual Accuracy**: Matches Figma design specifications exactly
+  - ✅ **Responsive Design**: Works across all supported breakpoints (mobile, tablet, desktop)
+  - ✅ **Design System Compliance**: Uses approved AEM design tokens and style guide
+  - ✅ **Content Authoring**: Intuitive Touch UI experience for content authors
+  
+  ### ♿ Accessibility & Performance
+  - ✅ **WCAG 2.1 AA Compliance**: Proper semantic markup, ARIA labels, keyboard navigation
+  - ✅ **Performance**: Optimized rendering, lazy loading where appropriate
+  - ✅ **SEO Friendly**: Proper heading structure, meta tags, structured data
+  
+  ## 🔧 Technical Implementation
+  
+  ### 📁 AEM Component Structure
+  ```
+  /apps/project/components/{{ component_name | lowercase }}/
+  ├── {{ component_name | lowercase }}.html              # HTL template
+  ├── .content.xml                                       # Component definition
+  ├── _cq_dialog/
+  │   └── .content.xml                                   # Touch UI dialog
+  ├── _cq_design_dialog/
+  │   └── .content.xml                                   # Design dialog (optional)
+  ├── clientlibs/
+  │   ├── css/
+  │   │   └── {{ component_name | lowercase }}.less     # Component styles
+  │   └── js/
+  │       └── {{ component_name | lowercase }}.js       # Component behavior
+  └── {{ component_name }}.java                         # Sling Model (if needed)
+  ```
+  
+  ### 🎯 HTL Template Structure
+  ```html
+  <!--/* {{ component_name }} Component */-->
+  <div data-sly-use.model="{{ resource_type }}"
+       class="cmp-{{ component_name | lowercase }} ${model.cssClass @ context='attribute'}"
+       data-cmp-is="{{ resource_type }}">
+       
+      <!--/* Main content structure based on Figma design */-->
+      <div data-sly-test="${model.title}" class="cmp-{{ component_name | lowercase }}__title">
+          <h2>${model.title @ context='html'}</h2>
+      </div>
+      
+      <div data-sly-test="${model.description}" class="cmp-{{ component_name | lowercase }}__description">
+          ${model.description @ context='html'}
+      </div>
+      
+      <!--/* Additional fields based on design requirements */-->
+      
+  </div>
+  ```
+  
+  ### ☕ Sling Model Implementation
+  ```java
+  @Model(adaptables = Resource.class, defaultInjectionStrategy = DefaultInjectionStrategy.OPTIONAL)
+  @Component(service = {{ component_name }}.class)
+  public class {{ component_name }} {
+      
+      @ValueMapValue
+      private String title;
+      
+      @ValueMapValue
+      private String description;
+      
+      @PostConstruct
+      protected void init() {
+          // Initialize component logic
+      }
+      
+      // Getters and component logic
+      public String getTitle() { return title; }
+      public String getDescription() { return description; }
+      
+      public String getCssClass() {
+          // Return CSS classes based on component state
+          return "cmp-{{ component_name | lowercase }}";
+      }
+  }
+  ```
+  
+  ### 🎛️ Touch UI Dialog Configuration
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0"
+            xmlns:granite="http://www.adobe.com/jcr/granite/1.0"
+            xmlns:cq="http://www.day.com/jcr/cq/1.0"
+            xmlns:jcr="http://www.jcp.org/jcr/1.0"
+            xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+            jcr:primaryType="nt:unstructured"
+            jcr:title="{{ component_name }}"
+            sling:resourceType="cq/gui/components/authoring/dialog">
+      <content
+          jcr:primaryType="nt:unstructured"
+          sling:resourceType="granite/ui/components/coral/foundation/container">
+          <items jcr:primaryType="nt:unstructured">
+              <tabs
+                  jcr:primaryType="nt:unstructured"
+                  sling:resourceType="granite/ui/components/coral/foundation/tabs"
+                  maximized="{Boolean}true">
+                  <items jcr:primaryType="nt:unstructured">
+                      <content
+                          jcr:primaryType="nt:unstructured"
+                          jcr:title="Content"
+                          sling:resourceType="granite/ui/components/coral/foundation/container"
+                          margin="{Boolean}true">
+                          <items jcr:primaryType="nt:unstructured">
+                              <!-- Title field -->
+                              <title
+                                  jcr:primaryType="nt:unstructured"
+                                  sling:resourceType="granite/ui/components/coral/foundation/form/textfield"
+                                  fieldLabel="Title"
+                                  name="./title"/>
+                              <!-- Description field -->
+                              <description
+                                  jcr:primaryType="nt:unstructured"
+                                  sling:resourceType="granite/ui/components/coral/foundation/form/textarea"
+                                  fieldLabel="Description"
+                                  name="./description"/>
+                          </items>
+                      </content>
+                  </items>
+              </tabs>
+          </items>
+      </content>
+  </jcr:root>
+  ```
+  
+  {{#if figma.design_tokens}}
+  ## 🎨 Design Tokens & Assets
+  
+  ### Extracted Design Tokens
+  {{#if figma.design_tokens.colors}}
+  **Colors:**
+  {{#each figma.design_tokens.colors}}
+  - `{{@key}}`: {{this}}
+  {{/each}}
+  {{/if}}
+  
+  {{#if figma.design_tokens.typography}}
+  **Typography:**
+  {{#each figma.design_tokens.typography}}
+  - `{{@key}}`: {{this}}
+  {{/each}}
+  {{/if}}
+  
+  {{#if figma.design_tokens.spacing}}
+  **Spacing:**
+  {{#each figma.design_tokens.spacing}}
+  - `{{@key}}`: {{this}}
+  {{/each}}
+  {{/if}}
+  
+  ### CSS Variables Implementation
+  ```css
+  .cmp-{{ component_name | lowercase }} {
+    {{#each figma.design_tokens.colors}}
+    --color-{{@key}}: {{this}};
+    {{/each}}
+    {{#each figma.design_tokens.spacing}}
+    --spacing-{{@key}}: {{this}};
+    {{/each}}
+  }
+  ```
+  {{/if}}
+  
+  {{#if figma.text_content}}
+  ## 📝 Content Structure
+  
+  **Text Elements from Design:**
+  {{#each figma.text_content}}
+  - {{this}}
+  {{/each}}
+  {{/if}}
+  
+  {{#if figma.component_instances}}
+  ## 🧩 Component Dependencies
+  
+  **Referenced Components:**
+  {{#each figma.component_instances}}
+  - **{{name}}** ({{id}})
+    {{#if variant_properties}}
+    Variants: {{#each variant_properties}}{{@key}}: {{this}}{{#unless @last}}, {{/unless}}{{/each}}
+    {{/if}}
+  {{/each}}
+  {{/if}}
+
+  ## 🧪 Testing Strategy
+  
+  ### Unit Testing (JUnit + Mockito)
+  ```java
+  @ExtendWith({AemContextExtension.class, MockitoExtension.class})
+  class {{ component_name }}Test {
+      
+      @Test
+      void shouldRenderComponentCorrectly() {
+          // Test HTL rendering
+      }
+      
+      @Test
+      void shouldHandleInvalidInputGracefully() {
+          // Test error handling
+      }
+  }
+  ```
+  
+  ### Integration Testing
+  - Touch UI dialog functionality testing
+  - Content authoring workflow validation
+  - Cross-browser compatibility testing
+  - Performance benchmarking
+  
+  ### Accessibility Testing
+  - Automated a11y scanning with axe-core
+  - Screen reader testing (NVDA, JAWS, VoiceOver)
+  - Keyboard navigation validation
+  - Color contrast verification  ## 🚀 Deployment Notes
+  
+  ### Content Package Structure
+  ```xml
+  <!-- Component deployment via content package -->
+  <package>
+      <filters>
+          <filter root="/apps/project/components/{{ component_name | lowercase }}"/>
+          <filter root="/etc/clientlibs/project/{{ component_name | lowercase }}"/>
+      </filters>
+  </package>
+  ```
+  
+  ### Client Library Configuration
+  ```xml
+  <!-- clientlibs/.content.xml -->
+  <?xml version="1.0" encoding="UTF-8"?>
+  <jcr:root xmlns:cq="http://www.day.com/jcr/cq/1.0"
+            xmlns:jcr="http://www.jcp.org/jcr/1.0"
+            jcr:primaryType="cq:ClientLibraryFolder"
+            categories="[project.components.{{ component_name | lowercase }}]"
+            dependencies="[project.base]"/>
+  ```
+  
+  ## 📋 Subtasks
+  
+  - [ ] 🏗️ Create component folder structure in `/apps/project/components/`
+  - [ ] 📝 Implement HTL template with proper semantic markup
+  - [ ] ☕ Create Sling Model with required business logic
+  - [ ] 🎛️ Configure Touch UI dialog for content authoring
+  - [ ] 🎨 Implement responsive CSS using design tokens
+  - [ ] 🧪 Write comprehensive unit and integration tests
+  - [ ] ♿ Validate WCAG 2.1 AA compliance
+  - [ ] 📦 Package and deploy to AEM development environment
+  - [ ] 📚 Update component documentation and style guide
+  
+  ## 🤖 AI Assistant Integration
+  
+  **GitHub Copilot Prompt**: "Generate AEM 6.5 HTL component implementation for '{{ component_name }}' with Sling Model, Touch UI dialog, JCR node structure, and comprehensive JUnit tests. Focus on accessibility, performance, and AEM best practices."
+  
+  **Claude/Cursor Prompt**: "Review this AEM component implementation ticket for completeness. Suggest improvements for HTL template structure, Sling Model design patterns, Touch UI dialog UX, and testing coverage specific to AEM development."
+  
+  ---
+  
+  **🔍 Complexity Analysis**: {{ calculated.complexity }} | **⏱️ Estimated Hours**: {{ calculated.hours }} | **🎯 Confidence**: {{ calculated.confidence }}%

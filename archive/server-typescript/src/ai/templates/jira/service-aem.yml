@@ -1,0 +1,413 @@
+template_id: "jira_service_aem"
+version: "2.1.0"
+organization: "default"
+platform: "jira"
+description: "Jira ticket template for AEM OSGi service implementation with configuration and testing"
+
+variables:
+  project_name: "{{ project.name }}"
+  component_name: "{{ figma.component_name }}"
+  issue_type: "Task"
+  component_type: "{{ project.component_type }}"
+  priority: "{{ calculated.priority }}"
+  assignee: "{{ team.assignee }}"
+  reporter: "{{ user.name }}"
+  labels: "{{ project.labels }}"
+  technologies: "{{ project.tech_stack }}"
+  story_points: "{{ calculated.story_points }}"
+  figma_url: "{{ figma.live_link }}"
+  design_status: "{{ figma.design_status }}"
+  service_name: "{{ figma.component_name }}Service"
+  package_name: "com.project.core.services"
+  design_ref: "{{ figma.frame_id }}"
+  complexity_level: "medium"
+
+team_standards:
+  testing_framework: "junit-mockito"
+  accessibility_level: "wcag-aa"
+  documentation_format: "javadoc"
+  code_style: "aem-coding-standards"
+  review_process: "adobe-standards"
+
+output_format:
+  ticket_type: "story"
+  sections: ["title", "summary", "requirements", "technical_implementation", "osgi_configuration", "testing_strategy", "deployment_notes"]
+  formatting:
+    use_emojis: true
+    include_diagrams: false
+    code_highlighting: true
+    table_formatting: true
+    link_formatting: true
+  ai_context_markers: true
+  include_metadata: true
+
+customization:
+  include_ai_context_markers: true
+  generate_test_files: true
+  create_storybook_stories: false
+  add_accessibility_checklist: false
+  include_performance_metrics: true
+  enable_automated_testing: true
+  include_design_tokens: false
+  add_similar_components: true
+  include_risk_assessment: true
+  generate_aem_code: true
+  include_osgi_config: true
+  add_jcr_structure: false
+
+content: |
+  # ⚙️ AEM OSGi Service: {{ service_name }}
+
+  ## 📋 Summary
+  
+  **Priority**: {{ calculated.priority }} | **Story Points**: {{ calculated.story_points }}
+  
+  **🔗 Design Reference**: [View Specifications]({{ figma.url }})
+  **📦 Package**: {{ package_name }}
+  **🎯 Service Type**: OSGi Component Service
+  
+  ## 🎯 Objective
+  
+  Implement **{{ service_name }}** as an OSGi service in AEM 6.5 with proper configuration management, dependency injection, and comprehensive testing.
+  
+  ## ✅ Acceptance Criteria
+  
+  ### ⚙️ Service Implementation
+  - ✅ **OSGi Component**: Properly annotated service with lifecycle management
+  - ✅ **Configuration**: OSGi configuration with default values and validation
+  - ✅ **Dependencies**: Proper injection of required AEM services
+  - ✅ **Error Handling**: Comprehensive exception handling and logging
+  - ✅ **Thread Safety**: Safe for concurrent access in multi-threaded environment
+  
+  ### 🔧 Integration Requirements
+  - ✅ **AEM Integration**: Seamless integration with AEM service layer
+  - ✅ **JCR Operations**: Proper resource resolution and session management
+  - ✅ **Performance**: Optimized for high-throughput operations
+  - ✅ **Monitoring**: JMX beans for operational monitoring
+  
+  ## 🔧 Technical Implementation
+  
+  ### ☕ Service Interface
+  ```java
+  package {{ package_name }};
+  
+  import org.osgi.annotation.versioning.ProviderType;
+  
+  /**
+   * {{ service_name }} provides functionality for {{ component_name }}.
+   */
+  @ProviderType
+  public interface {{ service_name }} {
+      
+      /**
+       * Process the given input and return result.
+       * 
+       * @param input the input data
+       * @return processed result
+       * @throws {{ service_name }}Exception if processing fails
+       */
+      String processData(String input) throws {{ service_name }}Exception;
+      
+      /**
+       * Get service configuration status.
+       * 
+       * @return true if service is properly configured
+       */
+      boolean isConfigured();
+      
+      /**
+       * Get service statistics for monitoring.
+       * 
+       * @return service statistics
+       */
+      ServiceStatistics getStatistics();
+  }
+  ```
+  
+  ### 🏗️ Service Implementation
+  ```java
+  package {{ package_name }}.impl;
+  
+  import {{ package_name }}.{{ service_name }};
+  import {{ package_name }}.{{ service_name }}Configuration;
+  import {{ package_name }}.{{ service_name }}Exception;
+  import {{ package_name }}.ServiceStatistics;
+  
+  import org.apache.sling.api.resource.ResourceResolverFactory;
+  import org.osgi.service.component.annotations.Activate;
+  import org.osgi.service.component.annotations.Component;
+  import org.osgi.service.component.annotations.ConfigurationPolicy;
+  import org.osgi.service.component.annotations.Deactivate;
+  import org.osgi.service.component.annotations.Modified;
+  import org.osgi.service.component.annotations.Reference;
+  import org.osgi.service.metatype.annotations.Designate;
+  import org.slf4j.Logger;
+  import org.slf4j.LoggerFactory;
+  
+  /**
+   * Implementation of {{ service_name }}.
+   */
+  @Component(
+      service = {{ service_name }}.class,
+      configurationPolicy = ConfigurationPolicy.REQUIRE,
+      immediate = true
+  )
+  @Designate(ocd = {{ service_name }}Configuration.class)
+  public class {{ service_name }}Impl implements {{ service_name }} {
+      
+      private static final Logger LOG = LoggerFactory.getLogger({{ service_name }}Impl.class);
+      
+      @Reference
+      private ResourceResolverFactory resourceResolverFactory;
+      
+      private {{ service_name }}Configuration config;
+      private ServiceStatistics statistics;
+      private volatile boolean configured = false;
+      
+      @Activate
+      protected void activate({{ service_name }}Configuration configuration) {
+          this.config = configuration;
+          this.statistics = new ServiceStatistics();
+          this.configured = validateConfiguration(configuration);
+          
+          if (configured) {
+              LOG.info("{{ service_name }} activated successfully");
+          } else {
+              LOG.error("{{ service_name }} activation failed - invalid configuration");
+          }
+      }
+      
+      @Modified
+      protected void modified({{ service_name }}Configuration configuration) {
+          LOG.info("{{ service_name }} configuration modified");
+          activate(configuration);
+      }
+      
+      @Deactivate
+      protected void deactivate() {
+          configured = false;
+          LOG.info("{{ service_name }} deactivated");
+      }
+      
+      @Override
+      public String processData(String input) throws {{ service_name }}Exception {
+          if (!configured) {
+              throw new {{ service_name }}Exception("Service not properly configured");
+          }
+          
+          if (input == null || input.trim().isEmpty()) {
+              throw new {{ service_name }}Exception("Input cannot be null or empty");
+          }
+          
+          try {
+              statistics.incrementProcessedCount();
+              
+              // Implement your business logic here
+              String result = performProcessing(input);
+              
+              statistics.recordSuccessfulOperation();
+              return result;
+              
+          } catch (Exception e) {
+              statistics.recordFailedOperation();
+              throw new {{ service_name }}Exception("Processing failed: " + e.getMessage(), e);
+          }
+      }
+      
+      @Override
+      public boolean isConfigured() {
+          return configured;
+      }
+      
+      @Override
+      public ServiceStatistics getStatistics() {
+          return statistics;
+      }
+      
+      private String performProcessing(String input) {
+          // Implement your core business logic
+          return "Processed: " + input;
+      }
+      
+      private boolean validateConfiguration({{ service_name }}Configuration config) {
+          return config.enabled() && 
+                 config.processingTimeout() > 0 &&
+                 !config.serviceEndpoint().isEmpty();
+      }
+  }
+  ```
+  
+  ### ⚙️ OSGi Configuration
+  ```java
+  package {{ package_name }};
+  
+  import org.osgi.service.metatype.annotations.AttributeDefinition;
+  import org.osgi.service.metatype.annotations.AttributeType;
+  import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+  
+  /**
+   * Configuration for {{ service_name }}.
+   */
+  @ObjectClassDefinition(
+      name = "{{ component_name }} Service Configuration",
+      description = "Configuration for {{ service_name }}"
+  )
+  public @interface {{ service_name }}Configuration {
+      
+      @AttributeDefinition(
+          name = "Enabled",
+          description = "Enable or disable the service",
+          type = AttributeType.BOOLEAN
+      )
+      boolean enabled() default true;
+      
+      @AttributeDefinition(
+          name = "Processing Timeout",
+          description = "Timeout for processing operations in milliseconds",
+          type = AttributeType.LONG
+      )
+      long processingTimeout() default 5000L;
+      
+      @AttributeDefinition(
+          name = "Service Endpoint",
+          description = "External service endpoint URL",
+          type = AttributeType.STRING
+      )
+      String serviceEndpoint() default "";
+      
+      @AttributeDefinition(
+          name = "Max Concurrent Operations",
+          description = "Maximum number of concurrent operations",
+          type = AttributeType.INTEGER
+      )
+      int maxConcurrentOperations() default 10;
+      
+      @AttributeDefinition(
+          name = "Enable Caching",
+          description = "Enable result caching",
+          type = AttributeType.BOOLEAN
+      )
+      boolean enableCaching() default true;
+  }
+  ```
+  
+  ## 🧪 Testing Strategy
+  
+  ### Unit Tests
+  ```java
+  @ExtendWith(MockitoExtension.class)
+  class {{ service_name }}ImplTest {
+      
+      @Mock
+      private ResourceResolverFactory resourceResolverFactory;
+      
+      @InjectMocks
+      private {{ service_name }}Impl service;
+      
+      private {{ service_name }}Configuration config;
+      
+      @BeforeEach
+      void setUp() {
+          config = createMockConfiguration();
+          service.activate(config);
+      }
+      
+      @Test
+      void testProcessData_Success() throws {{ service_name }}Exception {
+          String input = "test input";
+          String result = service.processData(input);
+          
+          assertNotNull(result);
+          assertTrue(result.contains("Processed"));
+          assertTrue(service.getStatistics().getProcessedCount() > 0);
+      }
+      
+      @Test
+      void testProcessData_NullInput() {
+          assertThrows({{ service_name }}Exception.class, 
+              () -> service.processData(null));
+      }
+      
+      @Test
+      void testServiceConfiguration() {
+          assertTrue(service.isConfigured());
+          assertNotNull(service.getStatistics());
+      }
+      
+      private {{ service_name }}Configuration createMockConfiguration() {
+          {{ service_name }}Configuration mockConfig = Mockito.mock({{ service_name }}Configuration.class);
+          when(mockConfig.enabled()).thenReturn(true);
+          when(mockConfig.processingTimeout()).thenReturn(5000L);
+          when(mockConfig.serviceEndpoint()).thenReturn("http://example.com");
+          when(mockConfig.maxConcurrentOperations()).thenReturn(10);
+          when(mockConfig.enableCaching()).thenReturn(true);
+          return mockConfig;
+      }
+  }
+  ```
+  
+  ### Integration Tests
+  ```java
+  @ExtendWith(AemContextExtension.class)
+  class {{ service_name }}IntegrationTest {
+      
+      private final AemContext context = new AemContext();
+      
+      @Test
+      void testServiceRegistration() {
+          // Test service registration in OSGi container
+          context.registerService({{ service_name }}.class, new {{ service_name }}Impl());
+          
+          {{ service_name }} service = context.getService({{ service_name }}.class);
+          assertNotNull(service);
+      }
+  }
+  ```
+  
+  ## 🚀 Deployment Notes
+  
+  ### Maven Dependencies
+  ```xml
+  <dependencies>
+      <dependency>
+          <groupId>org.osgi</groupId>
+          <artifactId>osgi.cmpn</artifactId>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.sling</groupId>
+          <artifactId>org.apache.sling.api</artifactId>
+          <scope>provided</scope>
+      </dependency>
+  </dependencies>
+  ```
+  
+  ### OSGi Configuration File
+  ```
+  # {{ package_name }}.impl.{{ service_name }}Impl.cfg.json
+  {
+      "enabled": true,
+      "processingTimeout": 5000,
+      "serviceEndpoint": "https://api.example.com",
+      "maxConcurrentOperations": 10,
+      "enableCaching": true
+  }
+  ```
+  
+  ## 📋 Subtasks
+  
+  - [ ] ⚙️ Create service interface and implementation
+  - [ ] 🔧 Define OSGi configuration annotations
+  - [ ] 📝 Implement proper logging and error handling
+  - [ ] 🧪 Write comprehensive unit and integration tests
+  - [ ] 📊 Add JMX monitoring capabilities
+  - [ ] 🚀 Create deployment configurations
+  - [ ] 📚 Document service API and configuration options
+  
+  ## 🤖 AI Assistant Integration
+  
+  **GitHub Copilot Prompt**: "Generate AEM 6.5 OSGi service implementation for '{{ service_name }}' with proper configuration management, dependency injection, comprehensive error handling, and JUnit tests. Focus on thread safety, performance, and AEM best practices."
+  
+  ---
+  
+  **🔍 Complexity Analysis**: {{ calculated.complexity }} | **⏱️ Estimated Hours**: {{ calculated.hours }} | **🎯 Confidence**: {{ calculated.confidence }}%

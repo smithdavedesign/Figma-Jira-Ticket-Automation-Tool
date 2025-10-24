@@ -3,7 +3,7 @@
   "id": "design-intelligence-platform-2025",
   "api": "1.0.0",
   "main": "dist/code.js",
-  "ui": "ui/index.html",
+  "ui": "ui/plugin/index.html",
   "editorType": ["figma", "figjam"],
   "documentAccess": "dynamic-page",
   "networkAccess": {

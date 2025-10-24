@@ -17,69 +17,69 @@
         - generic [ref=e15]: Tech Stack Description
         - textbox "Tech Stack Description" [ref=e16]:
           - /placeholder: "Describe your tech stack, frameworks, libraries, and architecture. Be specific about versions, patterns, and tools you're using.\n\nExamples:\n• React 18 with TypeScript, Material-UI v5, React Query for state management\n• Vue 3 with Composition API, Pinia for state, Vite build tool\n• Next.js 13 with App Router, TailwindCSS, Prisma ORM, PostgreSQL\n• Angular 15 with NgRx, Angular Material, RxJS patterns"
-          - text: React Native with Expo, TypeScript, React Navigation, Async Storage
+          - text: Next.js 14 with TypeScript, Tailwind CSS, Prisma, NextAuth, Vercel deployment
         - button "🔍 Parse Tech Stack" [ref=e17]
-      - generic [ref=e18]:
-        - generic [ref=e19]: 💡 Popular Tech Stack Combinations
-        - generic [ref=e20]:
-          - generic [ref=e21] [cursor=pointer]: React + TypeScript + Material-UI
-          - generic [ref=e22] [cursor=pointer]: Vue 3 + Composition API + Pinia
-          - generic [ref=e23] [cursor=pointer]: Angular 15 + NgRx + Material
-          - generic [ref=e24] [cursor=pointer]: Next.js + TailwindCSS + Prisma
-          - generic [ref=e25] [cursor=pointer]: AEM 6.5 + HTL + Sling + OSGi
-          - generic [ref=e26] [cursor=pointer]: Figma + Design System + Tokens
-      - generic [ref=e27]:
-        - generic [ref=e28]: Target Platform
-        - combobox "Target Platform" [ref=e29]:
+        - generic [ref=e18]: MCP Server unavailable. Generated basic feature ticket instead.
+      - generic [ref=e19]:
+        - generic [ref=e20]: 💡 Popular Tech Stack Combinations
+        - generic [ref=e21]:
+          - generic [ref=e22] [cursor=pointer]: React + TypeScript + Material-UI
+          - generic [ref=e23] [cursor=pointer]: Vue 3 + Composition API + Pinia
+          - generic [ref=e24] [cursor=pointer]: Angular 15 + NgRx + Material
+          - generic [ref=e25] [cursor=pointer]: Next.js + TailwindCSS + Prisma
+          - generic [ref=e26] [cursor=pointer]: AEM 6.5 + HTL + Sling + OSGi
+          - generic [ref=e27] [cursor=pointer]: Figma + Design System + Tokens
+      - generic [ref=e28]:
+        - generic [ref=e29]: Target Platform
+        - combobox "Target Platform" [ref=e30]:
           - option "🎫 Jira"
           - option "🐙 GitHub Issues"
-          - option "📄 Confluence"
-          - option "📏 Linear" [selected]
+          - option "📄 Confluence" [selected]
+          - option "📏 Linear"
           - option "📝 Notion"
           - option "📚 Wiki"
-      - generic [ref=e30]:
-        - generic [ref=e31]: Document Type
-        - combobox "Document Type" [ref=e32]:
-          - option "🧩 Component" [selected]
-          - option "✨ Feature"
+      - generic [ref=e31]:
+        - generic [ref=e32]: Document Type
+        - combobox "Document Type" [ref=e33]:
+          - option "🧩 Component"
+          - option "✨ Feature" [selected]
           - option "💻 Code (Simple)"
           - option "⚙️ Service"
           - option "📄 Page Template"
           - option "🐛 Bug Fix"
           - option "🎯 Epic"
-      - heading "📝 LLM Context Template" [level=4] [ref=e34]
-      - generic [ref=e35]:
-        - generic [ref=e36]:
-          - generic [ref=e37]: "📊 Confidence:"
-          - generic [ref=e38]: 85%
-        - generic [ref=e40] [cursor=pointer]: React
-      - generic [ref=e41]:
-        - generic [ref=e42]:
-          - heading "🔌 MCP Server Status Connected" [level=3] [ref=e43]:
+      - heading "📝 LLM Context Template" [level=4] [ref=e35]
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]: "📊 Confidence:"
+          - generic [ref=e39]: 95%
+        - generic [ref=e41] [cursor=pointer]: Next.js
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - heading "🔌 MCP Server Status Connected" [level=3] [ref=e44]:
             - text: 🔌 MCP Server Status
-            - generic [ref=e44]: Connected
-          - paragraph [ref=e45]: Model Context Protocol server connection
-        - generic [ref=e47]:
-          - generic [ref=e48]:
-            - heading "🚀 Server Connection" [level=4] [ref=e49]
-            - generic [ref=e50]:
-              - generic [ref=e51]: ✅
-              - generic [ref=e52]: Connected (v1.0.0)
-          - generic [ref=e54]:
-            - generic [ref=e55]:
-              - strong [ref=e56]: "Server URL:"
+            - generic [ref=e45]: Connected
+          - paragraph [ref=e46]: Model Context Protocol server connection
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - heading "🚀 Server Connection" [level=4] [ref=e50]
+            - generic [ref=e51]:
+              - generic [ref=e52]: ✅
+              - generic [ref=e53]: Connected (v1.0.0)
+          - generic [ref=e55]:
+            - generic [ref=e56]:
+              - strong [ref=e57]: "Server URL:"
               - text: http://localhost:3000
-            - generic [ref=e57]:
-              - strong [ref=e58]: "Available Tools:"
-              - text: "7"
-            - generic [ref=e59]:
-              - generic [ref=e60]: analyze_project
-              - generic [ref=e61]: generate_tickets
-              - generic [ref=e62]: check_compliance
-              - generic [ref=e63]: generate_enhanced_ticket
-              - generic [ref=e64]: generate_ai_ticket
-              - generic [ref=e65]: analyze_design_health
-              - generic [ref=e66]: generate_template_tickets
+            - generic [ref=e58]:
+              - strong [ref=e59]: "Available Tools:"
+              - text: "6"
+            - generic [ref=e60]:
+              - generic [ref=e61]: project_analyzer
+              - generic [ref=e62]: ticket_generator
+              - generic [ref=e63]: compliance_checker
+              - generic [ref=e64]: batch_processor
+              - generic [ref=e65]: effort_estimator
+              - generic [ref=e66]: relationship_mapper
             - generic [ref=e67]: 🚀 MCP Server Ready - AI-powered design analysis available
       - generic [ref=e68]:
         - button "🔍 Preview Context & Generate" [ref=e69] [cursor=pointer]
@@ -100,6 +100,6 @@
           - button "🧪 Test Screenshot API" [ref=e84] [cursor=pointer]
       - generic [ref=e85]:
         - generic [ref=e86]: Generated Content
-        - textbox [ref=e87]: "{\"success\":true,\"ticket\":\"# 🔄 Fallback Implementation: Component\\n\\n## Status\\nFigma MCP server unavailable - using enhanced local generation.\\n\\n## Next Steps\\n1. Retry when Figma MCP server is available\\n2. Use local context analysis for basic implementation\\n3. Manually verify design alignment\\n\\n## Context Available\\n{}\",\"isFallback\":true}"
+        - textbox [ref=e87]: "# Feature Implementation - Tech Stack Integration ## Summary Implement features using Next.js 14 with TypeScript, Tailwind CSS, Prisma, NextAuth, Vercel deployment ## Description Based on the specified tech stack: Next.js 14 with TypeScript, Tailwind CSS, Prisma, NextAuth, Vercel deployment ## Acceptance Criteria - [ ] Implement core functionality using specified technologies - [ ] Follow best practices for Next.js 14 with TypeScript, Tailwind CSS, Prisma, NextAuth, Vercel deployment - [ ] Ensure proper testing coverage - [ ] Document implementation approach ## Technical Notes - Tech Stack: Next.js 14 with TypeScript, Tailwind CSS, Prisma, NextAuth, Vercel deployment - Generated: 10/23/2025 - Mode: Standalone (no Figma integration) ## Story Points 5"
         - button "📋 Copy to Clipboard" [ref=e88] [cursor=pointer]
 ```

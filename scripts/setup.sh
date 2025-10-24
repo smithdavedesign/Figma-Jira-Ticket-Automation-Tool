@@ -1,22 +1,23 @@
 #!/bin/bash
 
-# Figma AI Ticket Generator Setup Script
+# Figma AI Ticket Generator MCP Server Setup Script
+echo "🚀 Setting up Figma AI Ticket Generator MCP Server..."
 
-echo "🎫 Setting up Figma AI Ticket Generator..."
-
-# Check if Node.js is installed
-if ! command -v node &> /dev/null; then
-    echo "❌ Node.js is not installed. Please install Node.js from https://nodejs.org/"
+# Check Node.js version
+echo "📋 Checking Node.js version..."
+node_version=$(node --version 2>/dev/null)
+if [ $? -ne 0 ]; then
+    echo "❌ Node.js is not installed. Please install Node.js 18+ and try again."
     exit 1
 fi
 
-# Check if npm is installed
-if ! command -v npm &> /dev/null; then
-    echo "❌ npm is not installed. Please install npm."
+echo "✅ Node.js version: $node_version"
+
+# Check if we're in the right directory
+if [ ! -f "package.json" ]; then
+    echo "❌ Please run this script from the server directory"
     exit 1
 fi
-
-echo "✅ Node.js and npm are installed"
 
 # Install dependencies
 echo "📦 Installing dependencies..."
@@ -27,8 +28,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "✅ Dependencies installed"
-
 # Build the project
 echo "🔨 Building the project..."
 npm run build
@@ -38,19 +37,42 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "✅ Project built successfully"
+echo "✅ Build successful!"
 
-echo "
-🎉 Setup complete! 
+# Get the absolute path to the server
+server_path=$(realpath dist/server.js)
 
-Next steps:
-1. Open Figma Desktop App
-2. Go to Plugins → Development → Import plugin from manifest...
-3. Select the manifest.json file from this folder
-4. Get your OpenAI API key from https://platform.openai.com/api-keys
-5. Start generating tickets!
-
-For development:
-- Run 'npm run watch' to auto-rebuild on changes
-- Check the README.md for detailed usage instructions
-"
+echo ""
+echo "🎉 Setup complete!"
+echo ""
+echo "📋 Next steps:"
+echo ""
+echo "1. Add to Claude Code:"
+echo "   claude mcp add --transport stdio figma-ai-ticket-generator node $server_path"
+echo ""
+echo "2. Add to VS Code mcp.json:"
+echo "   {"
+echo "     \"inputs\": [],"
+echo "     \"servers\": {"
+echo "       \"figma-ai-ticket-generator\": {"
+echo "         \"command\": \"node\","
+echo "         \"args\": [\"$server_path\"],"
+echo "         \"type\": \"stdio\""
+echo "       }"
+echo "     }"
+echo "   }"
+echo ""
+echo "3. Test the server:"
+echo "   npm run dev"
+echo ""
+echo "🔗 Available tools:"
+echo "   • analyze_project - Comprehensive project analysis"
+echo "   • batch_process_frames - Bulk frame processing"  
+echo "   • generate_tickets - Automated ticket creation"
+echo "   • check_compliance - Design system compliance"
+echo "   • map_relationships - Component dependency mapping"
+echo "   • estimate_effort - Development effort estimation"
+echo ""
+echo "📚 See README.md for detailed usage examples"
+echo ""
+echo "🚀 Ready to revolutionize your design-to-code workflow!"

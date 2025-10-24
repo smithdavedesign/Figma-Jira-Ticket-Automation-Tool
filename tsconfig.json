@@ -17,7 +17,7 @@
     "node_modules",
     "dist",
     "src/",
-    "server",
+    "app/server",
     "tests",
     "browser-tests"
   ]

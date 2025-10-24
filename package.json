@@ -1,25 +1,27 @@
 {
   "name": "figma-ai-ticket-generator",
   "version": "1.0.0",
-  "description": "Figma plugin to generate Jira tickets using AI from design frames",
+  "description": "Production-ready AI-enhanced Figma plugin with MVC architecture for generating comprehensive development tickets",
   "type": "module",
   "main": "dist/code.js",
   "scripts": {
-    "start": "cd server && node server.js",
-    "start:stable": "cd server && node server.js",
-    "start:dev": "cd server && PORT=3001 npx tsx src/server.ts",
+    "start": "node app/server/main.js",
+    "start:mvc": "node app/server/main.js",
+    "start:redis": "REDIS_HOST=localhost node app/server/main.js",
+    "start:dev": "nodemon --watch app/ --watch core/ --watch config/ --ext js app/server/main.js",
     "dev:all": "node scripts/dev-start.js",
-    "dev:watch": "nodemon --watch server/server.js --watch code.ts --watch ui/ --exec 'npm run build && node scripts/dev-start.js'",
+    "dev:watch": "nodemon --watch app/ --watch core/ --watch ui/ --ext js --exec 'npm run build:plugin && npm start'",
     "deploy": "./scripts/deploy-production.sh",
     "bundle": "./scripts/bundle-production.sh",
     "validate:prod": "./scripts/validate-production.sh",
     "test:e2e": "./scripts/test-e2e.sh",
     "build": "./scripts/build.sh",
+    "build:plugin": "node scripts/build-plugin.js",
     "build:ts": "tsc",
-    "watch": "tsc --watch",
-    "dev": "npm run watch",
+    "watch": "nodemon --watch app/ --watch core/ --ext js app/server/main.js",
+    "dev": "npm run start:dev",
     "clean": "rm -rf dist",
-    "lint": "eslint 'src/**/*.ts' 'code*.ts' --fix",
+    "lint": "eslint 'app/**/*.js' 'core/**/*.js' 'config/**/*.js' --fix",
     "test": "npm run test:unit",
     "test:unit": "node tests/unit/test-tech-stack-parsing.js",
     "test:integration": "cd tests/integration && find . -name '*.js' -exec node {} \\;",
@@ -91,5 +93,8 @@
     "manifest": "manifest.json",
     "main": "dist/code.js",
     "ui": "dist/ui/index.html"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
   }
 }

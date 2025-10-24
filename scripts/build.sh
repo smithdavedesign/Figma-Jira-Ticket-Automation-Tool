@@ -15,10 +15,11 @@ npx tsc
 # Copy UI assets to dist
 echo "🎨 Copying UI assets..."
 mkdir -p dist/ui
-cp ui/index.html dist/ui/
-cp -r ui/components/ dist/ui/ 2>/dev/null || true
-cp -r ui/plugin/ dist/ui/ 2>/dev/null || true
-cp -r ui/test/ dist/ui/ 2>/dev/null || true
+cp -r ui/plugin dist/ui/ 2>/dev/null || true
+cp -r ui/components dist/ui/ 2>/dev/null || true
+cp -r ui/test dist/ui/ 2>/dev/null || true
+# Keep comprehensive ui/index.html as standalone version
+cp ui/index.html dist/ui/standalone.html 2>/dev/null || true
 
 # Inline CSS for Figma compatibility (if needed)
 echo "🎨 Inlining CSS..."
@@ -27,7 +28,7 @@ echo "CSS already inlined in HTML file"
 
 # Create distribution manifest (for packaging)
 echo "📝 Creating distribution manifest..."
-sed 's|dist/ui/index.html|ui/index.html|g' manifest.json > dist/manifest.json
+sed 's|ui/plugin/index.html|ui/plugin/index.html|g' manifest.json > dist/manifest.json
 
 # Copy code.js to root for development (Figma expects it there)
 echo "🔧 Setting up development files..."
@@ -38,9 +39,11 @@ echo "📁 Output:"
 echo "   🎯 FOR FIGMA TESTING:"
 echo "      - manifest.json (Import this into Figma)"
 echo "      - code.js (Plugin logic)"
-echo "      - dist/ui/ (Built UI with inlined CSS)"
+echo "      - ui/plugin/ (Modular UI with separate JS/CSS files)"
 echo ""
 echo "   📦 FOR DISTRIBUTION:"
 echo "      - dist/ (Complete package for publishing)"
+echo "      - dist/ui/plugin/ (Built modular UI)"
+echo "      - dist/ui/standalone.html (Comprehensive standalone UI)"
 echo ""
 echo "🧪 To test: Import manifest.json from root directory into Figma"

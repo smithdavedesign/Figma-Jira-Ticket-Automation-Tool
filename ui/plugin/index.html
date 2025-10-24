@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Design Intelligence Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Load Figma Plugin CSS Variables -->
+  <style>
+    /* Figma Plugin CSS Variables */
+    :root {
+      --figma-color-bg: #ffffff;
+      --figma-color-bg-secondary: #f8f9fa;
+      --figma-color-bg-tertiary: #f1f3f4;
+      --figma-color-bg-hover: #f8f9fa;
+      --figma-color-bg-brand: #0d99ff;
+      --figma-color-bg-brand-hover: #0b7dd6;
+      --figma-color-bg-success: #0d9f3c;
+      --figma-color-bg-success-tertiary: #e6f7ed;
+      --figma-color-bg-warning: #f4a113;
+      --figma-color-bg-warning-tertiary: #fef3e2;
+      --figma-color-bg-danger: #e34f47;
+      --figma-color-bg-danger-tertiary: #fce8e6;
+      --figma-color-text: #1a1a1a;
+      --figma-color-text-secondary: #6c757d;
+      --figma-color-text-tertiary: #9ca3af;
+      --figma-color-text-onbrand: #ffffff;
+      --figma-color-text-onsuccess: #ffffff;
+      --figma-color-text-onwarning: #1a1a1a;
+      --figma-color-text-ondanger: #ffffff;
+      --figma-color-text-success: #0d9f3c;
+      --figma-color-text-warning: #f4a113;
+      --figma-color-text-danger: #e34f47;
+      --figma-color-border: #e1e5e9;
+      --figma-color-border-subtle: #f1f3f4;
+      --figma-color-border-selected: #0d99ff;
+      --figma-color-border-danger: #e34f47;
+      --figma-color-border-warning: #f4a113;
+      --figma-color-border-success: #0d9f3c;
+    }
+
+    /* Dark theme support */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --figma-color-bg: #2c2c2c;
+        --figma-color-bg-secondary: #3c3c3c;
+        --figma-color-bg-tertiary: #4c4c4c;
+        --figma-color-bg-hover: #404040;
+        --figma-color-text: #ffffff;
+        --figma-color-text-secondary: #b3b3b3;
+        --figma-color-text-tertiary: #808080;
+        --figma-color-border: #555555;
+        --figma-color-border-subtle: #444444;
+      }
+    }
+
+    /* Base reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      overflow-x: hidden;
+    }
+  </style>
+  
+  <!-- Load Main Styles -->
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1 class="title">🤖 Design Intelligence Platform</h1>
+    <p class="subtitle">AI-powered ticket generation with design system analysis</p>
+  </div>
+
+  <!-- Main Container with 50/50 Split -->
+  <div class="main-container">
+    
+    <!-- Health Metrics Panel (Left) -->
+    <div class="panel health-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">📊 Design System Health</h2>
+        <p class="panel-subtitle">Real-time compliance and quality metrics</p>
+      </div>
+
+      <!-- Overall Metrics Grid -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-value" id="overallScore">--</div>
+          <div class="metric-label">Overall Score</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="complianceRate">--</div>
+          <div class="metric-label">Compliance Rate</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="componentUsage">--</div>
+          <div class="metric-label">Component Usage</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="tokenAdoption">--</div>
+          <div class="metric-label">Token Adoption</div>
+        </div>
+      </div>
+
+      <!-- Component Analysis -->
+      <div id="componentAnalysis" class="detailed-metrics">
+        <div class="placeholder-text">
+          Select frames or components to analyze compliance
+        </div>
+      </div>
+
+      <!-- Detailed Metrics -->
+      <div class="detailed-metrics">
+        <h3 class="section-title">Component Metrics</h3>
+        <div class="metric-row">
+          <span class="metric-name">Standard Components</span>
+          <span class="metric-score" id="standardComponents">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Custom Components</span>
+          <span class="metric-score" id="customComponents">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Top Component</span>
+          <span class="metric-score" id="topComponent">--</span>
+        </div>
+      </div>
+
+      <div class="detailed-metrics">
+        <h3 class="section-title">Token Metrics</h3>
+        <div class="metric-row">
+          <span class="metric-name">Color Tokens</span>
+          <span class="metric-score" id="colorTokens">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Typography Tokens</span>
+          <span class="metric-score" id="typographyTokens">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Spacing Tokens</span>
+          <span class="metric-score" id="spacingTokens">--</span>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="detailed-metrics">
+        <h3 class="section-title">Recommendations</h3>
+        <div id="healthRecommendations">
+          <div class="placeholder-text">
+            Analyze your selection to get personalized recommendations
+          </div>
+        </div>
+      </div>
+
+      <!-- Last Updated -->
+      <div class="detailed-metrics">
+        <div class="metric-row">
+          <span class="metric-name" id="lastUpdated">Ready for analysis</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticket Generation Panel (Right) -->
+    <div class="panel ticket-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">🎫 AI Ticket Generator</h2>
+        <p class="panel-subtitle">Generate development tickets from Figma designs</p>
+      </div>
+
+      <!-- Configuration Section -->
+      <div class="config-section">
+        <h3 class="config-title">⚙️ Configuration</h3>
+        
+        <div class="form-group">
+          <label for="template">Ticket Template</label>
+          <select id="template">
+            <option value="component">UI Component</option>
+            <option value="feature">Feature Implementation</option>
+            <option value="page">Page/Screen</option>
+            <option value="bug">Bug Fix</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="model">AI Model</label>
+          <select id="model">
+            <option value="gpt-4">GPT-4 (Recommended)</option>
+            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+            <option value="claude-3">Claude 3</option>
+            <option value="gemini-pro">Gemini Pro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="apiKey">API Key (Optional - uses MCP server if available)</label>
+          <input type="password" id="apiKey" placeholder="Enter your API key...">
+        </div>
+
+        <div class="form-group">
+          <label for="customPrompt">Custom Instructions (Optional)</label>
+          <textarea id="customPrompt" rows="3" placeholder="Add specific requirements or context..."></textarea>
+        </div>
+      </div>
+
+      <!-- Status Display -->
+      <div id="status" class="status hidden"></div>
+
+      <!-- Frame Information -->
+      <div id="frameInfo" class="frame-info hidden"></div>
+
+      <!-- Design System Integration -->
+      <div id="designSystemSection" class="config-section hidden">
+        <h3 class="config-title">🎨 Design System Context</h3>
+        <div class="form-group">
+          <div class="metric-row">
+            <span class="metric-name">System Name</span>
+            <span class="metric-score" id="dsName">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name">Detection Confidence</span>
+            <span class="metric-score" id="dsConfidence">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name">Color Tokens</span>
+            <span class="metric-score" id="dsColors">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name">Typography Tokens</span>
+            <span class="metric-score" id="dsTypography">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name">Components</span>
+            <span class="metric-score" id="dsComponents">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compliance Information -->
+      <div id="complianceInfo" class="config-section hidden">
+        <h3 class="config-title">📈 Compliance Analysis</h3>
+        <div class="form-group">
+          <div class="metric-row">
+            <span class="metric-name">Overall Compliance</span>
+            <span class="metric-score" id="complianceScore">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name">Color Compliance</span>
+            <span class="metric-score" id="colorScore">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name">Typography Compliance</span>
+            <span class="metric-score" id="typographyScore">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name">Component Compliance</span>
+            <span class="metric-score" id="componentScore">--</span>
+          </div>
+        </div>
+        
+        <div id="recommendations" class="hidden">
+          <h4 style="margin: 8px 0; font-size: 11px; color: var(--figma-color-text-secondary);">TOP RECOMMENDATIONS</h4>
+          <div id="recList"></div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-group">
+        <button id="generate" class="button">📋 Generate Ticket from Selection</button>
+      </div>
+
+      <!-- Output Section -->
+      <div class="output-section">
+        <div class="form-group">
+          <label for="output">Generated Ticket</label>
+          <textarea id="output" rows="12" readonly placeholder="Your AI-generated ticket will appear here..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <button id="copy" class="button button-secondary" disabled>📋 Copy to Clipboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load JavaScript Modules -->
+  <script src="js/utils.js"></script>
+  <script src="js/health-metrics.js"></script>
+  <script src="js/ticket-generator.js"></script>
+  <script src="js/main.js"></script>
+
+  <!-- Message Handler -->
+  <script>
+    // Handle messages from Figma plugin
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+      
+      console.log('📨 Received message:', msg.type, msg);
+      
+      switch (msg.type) {
+        case 'frame-data':
+          handleFrameData(msg.data);
+          break;
+          
+        case 'compliance-results':
+          displayComplianceResults(msg.compliance, msg.selectionCount);
+          break;
+          
+        case 'compliance-error':
+          showComplianceError(msg.message);
+          break;
+          
+        case 'design-system-detected':
+          displayDesignSystemInfo(msg.designSystem);
+          break;
+          
+        case 'no-design-system':
+          handleNoDesignSystem();
+          break;
+          
+        case 'file-context':
+          handleFileContext(msg.fileKey, msg.fileName);
+          break;
+          
+        case 'error':
+          showStatus(msg.message, 'error');
+          setGenerating(false);
+          break;
+          
+        default:
+          console.log('⚠️ Unknown message type:', msg.type);
+      }
+    };
+
+    console.log('🚀 Design Intelligence Platform UI loaded successfully');
+  </script>
+</body>
+</html>

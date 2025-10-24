@@ -1,0 +1,50 @@
+template_id: "jira_feature_development"
+version: "2.0.0"
+organization: "default"
+platform: "jira"
+description: "Feature development ticket template with user story format"
+
+variables:
+  feature_name: "{{ figma.component_name }}"
+  user_story: "{{ project.user_story }}"
+  technologies: "{{ project.tech_stack }}"
+  complexity_level: "{{ calculated.complexity }}"
+  estimated_hours: "{{ calculated.hours }}"
+
+team_standards:
+  testing_framework: "jest-rtl"
+  accessibility_level: "wcag-aa"
+  documentation_format: "confluence"
+  code_style: "airbnb"
+  review_process: "security-review"
+
+output_format:
+  ticket_type: "Feature"
+  sections:
+    - "title"
+    - "user_story"
+    - "requirements"
+    - "acceptance_criteria"
+    - "technical_implementation"
+    - "testing_strategy"
+    - "subtasks"
+    - "dependencies"
+  formatting:
+    use_emojis: true
+    include_diagrams: true
+    code_highlighting: true
+    table_formatting: true
+    link_formatting: true
+  ai_context_markers: true
+  include_metadata: true
+
+customization:
+  include_ai_context_markers: true
+  generate_test_files: true
+  create_storybook_stories: false
+  add_accessibility_checklist: true
+  include_performance_metrics: true
+  enable_automated_testing: true
+  include_design_tokens: false
+  add_similar_components: false
+  include_risk_assessment: true
