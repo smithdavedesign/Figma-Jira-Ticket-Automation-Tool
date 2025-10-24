@@ -117,14 +117,14 @@ echo
 
 # 1. Check basic file structure
 echo "📁 Checking file structure..."
-if [ -f "ui/standalone/index.html" ]; then
+if [ -f "ui/index.html" ]; then
     echo -e "   ${GREEN}✅${NC} UI files present"
 else
     echo -e "   ${RED}❌${NC} UI files missing"
     ((HEALTH_ISSUES++))
 fi
 
-if [ -f "server/package.json" ]; then
+if [ -f "app/main.js" ]; then
     echo -e "   ${GREEN}✅${NC} MCP server present"
 else
     echo -e "   ${RED}❌${NC} MCP server missing"
@@ -152,7 +152,7 @@ echo
 
 # 4. Check HTTP endpoints
 echo "🌐 Checking HTTP endpoints..."
-if ! check_endpoint "http://localhost:8101/ui/standalone/index.html" "UI Endpoint"; then
+if ! check_endpoint "http://localhost:8101/ui/index.html" "UI Endpoint"; then
     ((HEALTH_ISSUES++))
 fi
 
@@ -175,16 +175,17 @@ else
     echo -e "   ${YELLOW}⚠️${NC}  Node modules not found - run 'npm install'"
 fi
 
-if [ -d "browser-tests/node_modules" ]; then
-    echo -e "   ${GREEN}✅${NC} Browser test dependencies installed"
+if [ -d "tests/playwright-browser-tests" ]; then
+    echo -e "   ${GREEN}✅${NC} Browser test setup present"
 else
-    echo -e "   ${YELLOW}⚠️${NC}  Browser test dependencies missing - run 'cd browser-tests && npm install'"
+    echo -e "   ${YELLOW}⚠️${NC}  Browser tests not found in tests/ directory"
 fi
 
-if [ -d "server/node_modules" ]; then
-    echo -e "   ${GREEN}✅${NC} MCP server dependencies installed"
+# Check all dependencies are installed (consolidated architecture)
+if [ -d "node_modules" ] && [ -f "node_modules/@playwright/test/package.json" ]; then
+    echo -e "   ${GREEN}✅${NC} All dependencies installed (consolidated)"
 else
-    echo -e "   ${YELLOW}⚠️${NC}  MCP server dependencies missing - run 'cd server && npm install'"
+    echo -e "   ${YELLOW}⚠️${NC}  Some dependencies missing - run 'npm install'"
 fi
 
 echo

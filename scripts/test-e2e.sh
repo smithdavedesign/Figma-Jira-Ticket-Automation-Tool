@@ -61,7 +61,7 @@ fi
 echo -e "${BLUE}Testing server endpoints...${NC}"
 
 # Test main endpoint
-if curl -s http://localhost:3000 | grep -q "running"; then
+if curl -s http://localhost:3000 | grep -q "healthy"; then
     echo -e "${GREEN}✅ Main endpoint working${NC}"
 else
     echo -e "${RED}❌ Main endpoint failed${NC}"
@@ -83,7 +83,7 @@ fi
 
 # Step 3: Plugin Validation
 echo -e "${BLUE}Step 3: Plugin File Validation${NC}"
-npm run validate:prod
+npm run validate
 
 # Step 4: Bundle Test
 echo -e "${BLUE}Step 4: Production Bundle Test${NC}"

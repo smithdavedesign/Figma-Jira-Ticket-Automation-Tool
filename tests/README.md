@@ -19,19 +19,24 @@ This directory contains the complete testing infrastructure for the Figma AI Tic
 - **✅ Test Results Organization** - Moved to `tests/test-results/` with HTML reports
 - **✅ Folder Cleanup** - Archived 16 obsolete files, streamlined npm scripts (50→20)
 - **✅ Playwright Reorganization** - Moved to `tests/playwright-browser-tests/` (ready for refresh)
+- **🆕 Comprehensive Test Runner** - Single-command execution of all 8+ test categories
+- **🆕 Live Server Monitoring** - Real-time monitoring with nodemon integration
+- **🆕 Enhanced Test Interface** - Added Live Monitor and Comprehensive Runner tabs
 
 ### **🎯 Current Test Status:**
 - **🧪 Vitest Tests:** 12/12 passing (Logging, Utilities, Core, UI) ✅
-- **🎭 Ultimate Test Suite:** 8 integrated test categories ✅
+- **🎭 Ultimate Test Suite:** 9 integrated test categories (including new Live Monitor & Comprehensive Runner) ✅
 - **📊 Redis Storage UI:** Live monitoring dashboard ✅
 - **📈 Coverage Reports:** V8 provider with HTML visualization ✅
 - **🚀 Performance:** All tests complete in <150ms ✅
+- **🆕 Comprehensive Testing:** Single command runs all 8+ test categories ✅
+- **🆕 Live Monitoring:** Real-time server health checks and performance tracking ✅
 
 ## 🏗️ **Modern Test Architecture**
 
 ### 🎯 **Primary Testing Interface**
 ```
-🚀 ULTIMATE TEST SUITE (Recommended Entry Point)
+🚀 ULTIMATE TEST SUITE (Enhanced - Recommended Entry Point)
 tests/integration/test-consolidated-suite.html
 
 📊 Features:
@@ -43,7 +48,9 @@ tests/integration/test-consolidated-suite.html
 ├── 🧩 UI - User interface component testing
 ├── 🔄 E2E - End-to-end workflow testing
 ├── 🚀 Performance - Load testing and benchmarks
-└── 🧪 Vitest - Modern unit testing framework
+├── 🧪 Vitest - Modern unit testing framework
+├── 📊 Live Monitor - Real-time server monitoring (NEW)
+└── 🎯 Comprehensive - Complete test runner interface (NEW)
 ```
 
 ### 🧪 **Vitest Framework (New)**
@@ -94,14 +101,19 @@ tests/
 
 ## 🚀 **Quick Start Guide**
 
-### **🎯 Recommended Testing Workflow:**
-1. **Start MCP Server:** `npm start` (required for integration tests)
-2. **Open Ultimate Test Suite:** `npm run test:suite`
-3. **Run Vitest Tests:** `npm test` (12 modern unit tests)
+### **🎯 Recommended Testing Workflow (Enhanced):**
+1. **Start Live Monitoring:** `npm run dev:monitor` (recommended for development)
+2. **Run Comprehensive Tests:** `npm run test:all` (single command for all categories)
+3. **Open Enhanced Test Suite:** `npm run test:suite` (includes new Live Monitor & Comprehensive Runner tabs)
 4. **View Test Reports:** `npm run test:report` (opens results browser)
 
 ### **� All Available Commands:**
 ```bash
+# 🚀 NEW: Comprehensive Testing & Monitoring
+npm run test:all           # Run ALL test categories in sequence (NEW)
+npm run monitor            # Live server monitoring with health checks (NEW)
+npm run dev:monitor        # Development monitoring with auto-restart (NEW)
+
 # 🧪 Modern Testing (Vitest Framework)
 npm test                    # Interactive test runner
 npm run test:run           # Single test run  
@@ -110,8 +122,8 @@ npm run test:ui            # Visual test UI dashboard
 npm run test:coverage      # Generate coverage reports
 npm run test:report        # Open HTML test results
 
-# 🎯 Ultimate Test Suite
-npm run test:suite         # Open all-in-one test interface
+# 🎯 Enhanced Test Suite
+npm run test:suite         # Open all-in-one test interface (now with 9 tabs)
 
 # �️ System Testing  
 npm run health             # System health validation
@@ -129,12 +141,14 @@ npm test                  # Run browser tests (to be recreated)
 **Location:** `tests/integration/test-consolidated-suite.html`
 
 **Features:**
-- ✅ **8 Integrated Test Categories** - All testing in one interface
+- ✅ **9 Integrated Test Categories** - All testing in one interface (including new Live Monitor & Comprehensive Runner)
 - ✅ **Redis Storage Monitoring** - Live memory visualization and cache management
 - ✅ **System Logging Dashboard** - Real-time log viewing with filtering
 - ✅ **Professional UI** - Tabbed interface with status indicators
 - ✅ **Comprehensive Reporting** - Downloadable reports with metrics
 - ✅ **Global Test Runner** - Single-click execution of all test categories
+- ✅ **🆕 Live Server Monitoring** - Real-time health checks and performance tracking
+- ✅ **🆕 Comprehensive Test Execution** - Single-command testing across all categories
 
 ### **🧪 Vitest Framework (Modern Unit Testing)**
 **Location:** `tests/unit/vitest-integration.test.mjs`
