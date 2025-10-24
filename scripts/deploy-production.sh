@@ -55,7 +55,7 @@ echo "� Files: production-bundle/"
 echo "🚀 Ready for Figma Desktop testing"
 echo ""
 echo "Quick commands:"
-echo "  npm start           # Start server"
+echo "  npm run start:mvc   # Start MCP server"
 echo "  npm run bundle      # Rebuild bundle"
 echo "  npm run validate:prod # Validate files"
 echo ""
@@ -64,6 +64,6 @@ echo ""
 read -p "Start server now? (y/n): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}Starting server...${NC}"
-    npm start
+    echo -e "${BLUE}Starting MCP server...${NC}"
+    npm run start:mvc
 fi
