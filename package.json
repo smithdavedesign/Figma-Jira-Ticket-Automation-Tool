@@ -11,14 +11,14 @@
     "dev": "npm run start:dev",
     "build": "./scripts/build.sh",
     "build:plugin": "node scripts/build-plugin.js",
-    "build:ts": "tsc",
+    "build:ts": "tsc -p config/tsconfig.json",
     "clean": "rm -rf dist",
-    "lint": "eslint 'app/**/*.js' 'core/**/*.js' 'config/**/*.js' --fix",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:watch": "vitest watch",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage", 
+    "lint": "eslint -c config/eslint.config.js 'app/**/*.js' 'core/**/*.js' 'config/**/*.js' --fix",
+    "test": "vitest -c config/vitest.config.js",
+    "test:run": "vitest -c config/vitest.config.js run",
+    "test:watch": "vitest -c config/vitest.config.js watch",
+    "test:ui": "vitest -c config/vitest.config.js --ui",
+    "test:coverage": "vitest -c config/vitest.config.js run --coverage",
     "test:mcp": "node tests/integration/test-standalone.mjs",
     "test:suite": "echo '🧪 Opening Ultimate Test Suite...' && open tests/integration/test-consolidated-suite.html",
     "health": "./scripts/health-check.sh",
@@ -60,6 +60,7 @@
     "ui": "dist/ui/index.html"
   },
   "dependencies": {
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "ioredis": "^5.8.2"
   }
 }

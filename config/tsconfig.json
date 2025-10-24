@@ -2,16 +2,16 @@
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["ES2017", "DOM"],
-    "module": "None",
+    "module": "None", 
     "strict": true,
     "esModuleInterop": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": false,
-    "outFile": "./dist/code.js"
+    "outFile": "../dist/code.js"
   },
   "include": [
-    "code.ts"
+    "../code.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1065,7 +1065,7 @@ function determineSemanticRole(node: any): string {
       return 'component-definition';
     case 'VECTOR':
       return 'icon';
-    default:
+    default: {
       // Try to infer from name
       const name = node.name.toLowerCase();
       if (name.includes('button')) return 'button';
@@ -1075,6 +1075,7 @@ function determineSemanticRole(node: any): string {
       if (name.includes('card')) return 'card';
       if (name.includes('modal') || name.includes('dialog')) return 'modal';
       return 'unknown';
+    }
   }
 }
 

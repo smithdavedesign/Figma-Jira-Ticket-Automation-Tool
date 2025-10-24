@@ -1,1 +1,0 @@
-{"version":3,"file":"relationship-mapper.d.ts","sourceRoot":"","sources":["../../src/tools/relationship-mapper.ts"],"names":[],"mappings":"AAMA,qBAAa,kBAAkB;IACvB,GAAG,CAAC,IAAI,EAAE,GAAG,GAAG,OAAO,CAAC;QAAE,OAAO,EAAE,KAAK,CAAC;YAAE,IAAI,EAAE,MAAM,CAAC;YAAC,IAAI,EAAE,MAAM,CAAA;SAAE,CAAC,CAAA;KAAE,CAAC;IA4GjF,OAAO,CAAC,cAAc;CAIvB"}
