@@ -897,9 +897,6 @@ Examples:
 • Vue 3 with Composition API, Pinia for state, Vite build tool
 • Next.js 13 with App Router, TailwindCSS, Prisma ORM, PostgreSQL
 • Angular 15 with NgRx, Angular Material, RxJS patterns"></textarea>
-        
-        <!-- Parse Tech Button -->
-        <button id="parseTechBtn" class="button-secondary" type="button">🔍 Parse Tech Stack</button>
       </div>
 
       <!-- Popular Combinations Section -->
@@ -1109,17 +1106,15 @@ Examples:
               <button class="action-btn secondary" id="edit-context-btn">
                 ✏️ Edit Context
               </button>
-              <button class="action-btn primary" id="submit-context-btn" disabled>
-                🚀 Generate with Context
-              </button>
+              <!-- MCP button removed - confusing and redundant -->
             </div>
           </div>
         </div>
       </div>
 
       <div class="button-group">
-        <button id="generate" class="button">🔍 Preview Context & Generate</button>
-        <button id="generateAI" class="button button-ai">🤖 Generate AI Ticket</button>
+        <button id="generateAI" class="button button-ai primary-action">🤖 Generate AI Ticket</button>
+        <button id="generate" class="button secondary-action">🔍 Preview Context</button>
       </div>
       
       <div style="text-align: center; margin: 10px 0;">
@@ -1896,27 +1891,6 @@ Examples:
         // Trigger parsing and confidence update
         const parsed = parseTechStack(template);
         updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
-      }
-    }
-
-    // Parse tech stack button functionality
-    function parseTechStackManually() {
-      const techStackDesc = techStackInput.value.trim();
-      
-      if (!techStackDesc) {
-        showError('Please enter a tech stack description to parse.');
-        return;
-      }
-      
-      try {
-        const parsed = parseTechStack(techStackDesc);
-        if (parsed && typeof parsed === 'object') {
-          updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
-        } else {
-          showError('Failed to parse tech stack - invalid result');
-        }
-      } catch (error) {
-        showError('Error parsing tech stack: ' + error.message);
       }
     }
 
@@ -3977,7 +3951,6 @@ Please fix the MCP server connection and try again.`;
     generateBtn.addEventListener('click', generateContent);
     document.getElementById('generateAI').addEventListener('click', generateAITicket);
     copyBtn.addEventListener('click', copyToClipboard);
-    document.getElementById('parseTechBtn').addEventListener('click', parseTechStackManually);
     
     // Debug panel event listeners
     document.getElementById('showDebug').addEventListener('click', toggleDebugPanel);

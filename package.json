@@ -12,6 +12,8 @@
     "dev": "npm run start:dev",
     "build": "./scripts/build.sh",
     "build:plugin": "node scripts/build-plugin.js",
+    "sync": "./scripts/sync-dist.sh",
+    "sync:watch": "./scripts/sync-watch.sh",
     "build:ts": "tsc -p config/tsconfig.json",
     "clean": "rm -rf dist",
     "lint": "eslint -c config/eslint.config.js 'app/**/*.js' 'core/**/*.js' 'config/**/*.js' --fix",
@@ -42,8 +44,18 @@
     "dev:monitor": "node scripts/live-monitor.js",
     "health": "./scripts/health-check.sh",
     "deploy": "./scripts/deploy-production.sh",
+    "deploy:prod": "./scripts/deploy-production-comprehensive.sh production false false",
+    "deploy:dev": "./scripts/deploy-production-comprehensive.sh development false true",
+    "deploy:staging": "./scripts/deploy-production-comprehensive.sh staging true false",
+    "deploy:quick": "./scripts/deploy-production-comprehensive.sh development true true",
+    "deploy:full": "./scripts/deploy-production-comprehensive.sh production false true",
     "bundle": "./scripts/bundle-production.sh",
-    "validate": "npm run test:run && npm run build && echo '✅ All validation passed'"
+    "validate": "npm run test:run && npm run build && echo '✅ All validation passed'",
+    "validate:prod": "./scripts/validate-production-comprehensive.sh",
+    "validate:basic": "./scripts/validate-production.sh",
+    "package": "npm run deploy:prod && echo '🚀 Plugin packaged for distribution'",
+    "release": "npm run deploy:full && npm run validate:prod && echo '🎉 Release ready!'",
+    "quick-deploy": "npm run sync && npm run validate:prod && echo '⚡ Quick deployment complete'"
   },
   "keywords": [
     "figma",

@@ -32,7 +32,15 @@ sed 's|ui/plugin/index.html|ui/plugin/index.html|g' manifest.json > dist/manifes
 
 # Copy code.js to root for development (Figma expects it there)
 echo "🔧 Setting up development files..."
-cp dist/code.js code.js
+if [ -f "dist/code.js" ]; then
+    cp dist/code.js code.js
+else
+    echo "⚠️  dist/code.js not found, using existing code.js"
+fi
+
+# Final sync to ensure everything is up to date
+echo "🔄 Final sync..."
+./scripts/sync-dist.sh
 
 echo "✅ Build complete!"
 echo "📁 Output:"

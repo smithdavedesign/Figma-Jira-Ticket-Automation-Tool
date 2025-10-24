@@ -268,6 +268,23 @@ curl http://localhost:3000/api/figma/health  # API health ✅
 - **Port References:** All corrected to localhost:3000 ✅
 - **API Endpoints:** All returning HTTP 200 OK ✅
 
+### **🚀 Comprehensive Deployment Commands (NEW!):**
+```bash
+# Production Deployment (Complete workflow)
+npm run deploy:prod            # Full production build + validation (3-5 min)
+npm run deploy:dev             # Development setup with auto-start (2-3 min)
+npm run deploy:quick           # Fast development deploy (1-2 min)
+
+# Validation & Quality
+npm run validate:prod          # Comprehensive system validation (30s)
+npm run validate:basic         # Quick essential files check (10s)
+
+# Release Preparation
+npm run package               # Package for distribution (3-5 min)
+npm run release               # Complete release workflow (5-7 min)
+npm run quick-deploy          # Sync & validate only (20s)
+```
+
 ### **Test Commands (Updated for MVC Architecture):**
 ```bash
 # MCP Server Testing
@@ -718,7 +735,19 @@ cd figma-ticket-generator
 npm install
 ```
 
-### 3. Get Free Gemini API Key
+### 3. **🚀 ONE-COMMAND DEPLOYMENT (NEW!)**
+```bash
+# Complete development setup with server auto-start
+npm run deploy:dev
+
+# OR for production deployment
+npm run deploy:prod
+
+# OR for quick validation
+npm run validate:prod
+```
+
+### 4. Get Free Gemini API Key (Optional for AI features)
 ```bash
 # Visit https://makersuite.google.com/app/apikey
 # Get your free API key (no credit card required)
