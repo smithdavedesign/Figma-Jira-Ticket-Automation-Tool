@@ -1,0 +1,152 @@
+name: Quality Gate
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps chromium
+
+    - name: Lint check
+      run: npm run lint
+
+    - name: Unit tests
+      run: npm run test:run
+
+    - name: Generate test coverage
+      run: npm run test:coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: unit-tests
+
+    - name: MCP Integration test
+      run: npm run test:mcp
+      env:
+        NODE_ENV: test
+
+    - name: Build plugin
+      run: npm run build:ts
+
+    - name: Smoke tests
+      run: npm run test:browser:smoke
+      env:
+        CI: true
+
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: playwright-artifacts
+        path: |
+          tests/artifacts/
+          playwright-report/
+        retention-days: 7
+
+    - name: Comment test results
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      with:
+        script: |
+          const fs = require('fs');
+          
+          // Read test results if they exist
+          let testSummary = '## 🧪 Test Results\n\n';
+          
+          try {
+            // Add coverage info if available
+            if (fs.existsSync('./coverage/coverage-summary.json')) {
+              const coverage = JSON.parse(fs.readFileSync('./coverage/coverage-summary.json'));
+              const pct = coverage.total.lines.pct;
+              const emoji = pct >= 85 ? '✅' : pct >= 70 ? '⚠️' : '❌';
+              testSummary += `${emoji} **Coverage**: ${pct}% (target: 85%)\n`;
+            }
+            
+            // Add smoke test results
+            if (fs.existsSync('./tests/artifacts/smoke-results.json')) {
+              const results = JSON.parse(fs.readFileSync('./tests/artifacts/smoke-results.json'));
+              const passed = results.suites?.reduce((acc, suite) => acc + suite.specs?.filter(s => s.ok).length || 0, 0) || 0;
+              const total = results.suites?.reduce((acc, suite) => acc + suite.specs?.length || 0, 0) || 0;
+              const emoji = passed === total ? '✅' : '❌';
+              testSummary += `${emoji} **Smoke Tests**: ${passed}/${total} passing\n`;
+            }
+            
+          } catch (error) {
+            testSummary += '⚠️ Could not parse test results\n';
+          }
+          
+          testSummary += '\n---\n*View detailed results in the Actions tab*';
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: testSummary
+          });
+
+  release:
+    needs: quality-check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build production bundle
+      run: npm run build:ts
+
+    - name: Create production package
+      run: |
+        mkdir -p releases/
+        cp manifest.json releases/
+        cp -r dist/ releases/
+        cp -r ui/ releases/
+        zip -r "releases/figma-design-intelligence-platform-$(date +%Y%m%d-%H%M%S).zip" releases/manifest.json releases/dist/ releases/ui/
+
+    - name: Upload release artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: production-release
+        path: releases/
+        retention-days: 90
