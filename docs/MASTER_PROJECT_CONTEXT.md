@@ -51,6 +51,8 @@ MCP Server + Express API (localhost:3000)
 - **Enhanced Ultimate Test Suite**: Redis storage monitoring, system logging dashboard, real-time memory visualization
 - **Infrastructure Cleanup**: 50% reduction in UI test files, 60% reduction in npm scripts (50→20), consolidated architecture
 - **Production Monitoring**: Real-time Redis status, session memory tracking, AI service logging, performance metrics
+- **Organized Test Structure**: Playwright reports now organized in tests/test-results/ with type-specific report access (smoke/regression/visual/ci)
+- **Enhanced Test UI Integration**: Test consolidated suite updated with direct links to specific report types and improved navigation
 
 **❌ NOT THIS:** Direct Figma API integration in plugin
 **✅ THIS:** Plugin UI → MCP Server → Secure Backend → Figma API
@@ -387,13 +389,23 @@ npm run health:start                  # Health check + auto-start servers
 npm run validate:quick                # Complete system validation (~3 minutes)
 ```
 
-#### **Browser & UI Testing**
+#### **Browser & UI Testing (Organized Reports in tests/test-results/)**
 ```bash
-npm run test:browser:smoke           # Essential UI functionality (~2 minutes)
-npm run test:browser:quick           # Single UI test (~30 seconds)
-npm run test:browser                 # Full cross-browser suite (~10 minutes)
-npm run test:browser:headed          # Visual debugging mode
-npm run test:browser:ui              # Interactive test runner
+# Multi-tier Playwright testing with organized reports
+npm run test:browser:smoke           # Quick validation (<2 min) → smoke-report/
+npm run test:browser:regression      # Full workflows (<10 min) → regression-report/
+npm run test:browser:visual          # UI consistency (<5 min) → visual-report/
+npm run test:ci                      # CI optimized (<5 min) → ci-report/
+
+# View test reports (opens in browser)
+npm run test:artifacts               # Default (smoke report)
+npm run test:artifacts:smoke         # Smoke test report
+npm run test:artifacts:regression    # Regression test report
+npm run test:artifacts:visual        # Visual test report  
+npm run test:artifacts:ci            # CI test report
+
+# Enhanced test UI suite
+npm run test:suite                   # All-in-one tabbed test interface
 ```
 
 #### **Unit & Performance**

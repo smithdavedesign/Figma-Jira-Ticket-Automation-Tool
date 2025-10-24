@@ -75,6 +75,15 @@ coverage/
 # nyc test coverage
 .nyc_output
 
+# Test results and reports (keep directory structure, ignore contents)
+tests/test-results/playwright-reports/
+tests/test-results/playwright-screenshots/
+tests/artifacts/
+playwright-report/
+test-results/
+test-results.json
+test-results.xml
+
 # Dependency directories
 jspm_packages/
 

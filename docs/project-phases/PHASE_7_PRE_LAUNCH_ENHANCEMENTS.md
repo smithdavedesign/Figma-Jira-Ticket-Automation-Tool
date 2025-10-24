@@ -42,23 +42,38 @@ npm run test:browser:visual
 
 ##### **Failure Documentation System**
 ```bash
-# Auto-capture on test failures
+# Organized test artifacts in tests/test-results/
 tests/
-├── artifacts/
-│   ├── screenshots/           # Visual failure evidence
-│   ├── html-diffs/           # DOM comparison files
-│   ├── network-logs/         # API request/response logs
-│   └── browser-console/      # JavaScript errors and warnings
-├── reports/
-│   ├── playwright-report/    # Interactive HTML reports
-│   └── test-results/         # JSON/XML artifacts
+├── test-results/
+│   ├── playwright-reports/        # HTML test reports by type
+│   │   ├── smoke-report/          # Smoke test HTML report
+│   │   ├── regression-report/     # Regression test HTML report
+│   │   ├── visual-report/         # Visual test HTML report
+│   │   └── ci-report/             # CI test HTML report
+│   ├── playwright-screenshots/    # Visual failure evidence by type
+│   │   ├── smoke-screenshots/     # Smoke test screenshots
+│   │   ├── regression-screenshots/ # Regression test screenshots
+│   │   ├── visual-screenshots/    # Visual test screenshots
+│   │   └── ci-screenshots/        # CI test screenshots
+│   └── vitest-report.html         # Unit test HTML report
+├── playwright/                    # Test configurations
+│   ├── smoke.config.js            # Smoke test config
+│   ├── regression.config.js       # Regression test config
+│   ├── visual.config.js           # Visual test config
+│   └── ci.config.js               # CI test config
+└── smoke/                         # Test files
+    └── *.spec.js                  # Test specifications
 ```
 
 ##### **CI Integration Ready**
 ```bash
-# Add to package.json
-"test:ci": "playwright test --reporter=html,json",
-"test:artifacts": "npx playwright show-report"
+# Enhanced package.json scripts with organized report viewing
+"test:ci": "playwright test --config=tests/playwright/ci.config.js --reporter=html,json",
+"test:artifacts": "npx playwright show-report tests/test-results/playwright-reports/smoke-report",
+"test:artifacts:smoke": "npx playwright show-report tests/test-results/playwright-reports/smoke-report", 
+"test:artifacts:regression": "npx playwright show-report tests/test-results/playwright-reports/regression-report",
+"test:artifacts:visual": "npx playwright show-report tests/test-results/playwright-reports/visual-report",
+"test:artifacts:ci": "npx playwright show-report tests/test-results/playwright-reports/ci-report"
 ```
 
 ---
@@ -214,11 +229,13 @@ const SupportOptions = {
 
 ## 📋 **Implementation Priority**
 
-### **Phase 7.1: Testing & CI Foundation** (Week 1)
-1. ✅ Implement test tier structure (smoke/regression/visual)
-2. ✅ Set up failure artifact capture
-3. ✅ Create GitHub Actions workflow
-4. ✅ Add coverage reporting
+### **Phase 7.1: Testing & CI Foundation** (Week 1) ✅ **COMPLETE**
+1. ✅ Implement test tier structure (smoke/regression/visual/ci)
+2. ✅ Set up organized failure artifact capture in tests/test-results/
+3. ✅ Create GitHub Actions workflow with quality gates
+4. ✅ Add coverage reporting and enhanced test UI integration
+5. ✅ Organize Playwright reports in tests/ folder structure
+6. ✅ Update test UI suite with type-specific report access
 
 ### **Phase 7.2: Observability Layer** (Week 2)  
 1. ✅ Enhanced /health endpoint
