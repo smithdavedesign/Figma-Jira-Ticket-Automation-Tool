@@ -21,7 +21,7 @@
     "test:run": "vitest run",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run",
     "test:mcp": "node tests/integration/test-standalone.mjs",
     "test:suite": "echo '🧪 Opening Ultimate Test Suite...' && open tests/integration/test-consolidated-suite.html",
     "test:monitor": "node scripts/live-test-monitor.js",
