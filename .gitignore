@@ -9,6 +9,12 @@ dist/
 *.js
 *.js.map
 
+# But keep essential config files
+!*.config.js
+!eslint.config.js
+!vitest.config.js
+!tests/playwright/*.config.js
+
 # Environment variables
 .env
 .env.local
