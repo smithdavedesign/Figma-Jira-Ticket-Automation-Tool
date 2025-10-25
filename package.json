@@ -24,6 +24,8 @@
     "test:coverage": "vitest -c config/vitest.config.js run --coverage",
     "test:mcp": "node tests/integration/test-standalone.mjs",
     "test:suite": "echo '🧪 Opening Ultimate Test Suite...' && open tests/integration/test-consolidated-suite.html",
+    "test:monitor": "node scripts/live-test-monitor.js",
+    "test:monitor:dashboard": "echo '🧪 Opening Live Test Monitor Dashboard...' && open tests/test-monitor.html",
     "test:browser:smoke": "playwright test --config=tests/playwright/smoke.config.js",
     "test:browser:regression": "playwright test --config=tests/playwright/regression.config.js",
     "test:browser:visual": "playwright test --config=tests/playwright/visual.config.js",
@@ -93,6 +95,8 @@
   },
   "dependencies": {
     "dotenv": "^17.2.3",
-    "ioredis": "^5.8.2"
+    "express": "^5.1.0",
+    "ioredis": "^5.8.2",
+    "node-fetch": "^3.3.2"
   }
 }
