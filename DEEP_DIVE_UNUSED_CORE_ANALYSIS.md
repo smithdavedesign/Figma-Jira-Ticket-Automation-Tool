@@ -202,7 +202,6 @@ After deep analysis of all 47 unused core files and **successful template system
 ✅ rm core/ai/figma-mcp-gemini-orchestrator.js # Legacy orchestration
 ✅ rm core/compliance/analyzer.js         # Basic compliance checking
 ✅ rm core/utils/precise-screenshot-logic.js # Duplicate screenshot logic
-✅ rm core/logging/middleware.js          # Unused logging middleware
 ```
 
 **🎉 VALUE EXTRACTION COMPLETED:**
@@ -212,6 +211,7 @@ After deep analysis of all 47 unused core files and **successful template system
 ✅ enhance core/data/redis-client.js               # Hybrid caching integrated
 ✅ create core/data/template-manager.js            # Comprehensive template service
 ✅ integrate TemplateManager with app/main.js      # Production integration
+✅ use expressjs core/logging/middleware.js          # used logging middleware
 ```
 
 ### VALUE EXTRACTION OPPORTUNITIES
