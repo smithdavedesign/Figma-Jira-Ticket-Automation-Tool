@@ -16,7 +16,7 @@
     "sync:watch": "./scripts/sync-watch.sh",
     "build:ts": "tsc -p config/tsconfig.json",
     "clean": "rm -rf dist",
-    "lint": "eslint -c config/eslint.config.js app/ core/ config/ --ext .js --fix",
+    "lint": "eslint -c config/eslint.config.js . --fix",
     "test": "vitest -c config/vitest.config.js",
     "test:run": "vitest -c config/vitest.config.js run",
     "test:watch": "vitest -c config/vitest.config.js watch",
