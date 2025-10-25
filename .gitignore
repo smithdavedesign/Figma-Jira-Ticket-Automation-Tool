@@ -14,6 +14,7 @@ dist/
 !eslint.config.js
 !vitest.config.js
 !tests/playwright/*.config.js
+!app/**/*.js
 
 # Environment variables
 .env
