@@ -38,7 +38,7 @@
 - ✅ `core/logging/logger.js` - Used in tests and examples
 - ✅ `core/logging/index.js` - Used in tests and examples
 - ✅ `core/logging/examples.js` - Documentation/examples (self-referencing)
-- ❌ `core/logging/middleware.js` - **UNUSED**
+- ✅ `core/logging/middleware.js` - Switched to expressjs and now used
 
 ### Core Shared Types (0/6 files - 0% used)
 - ❌ `core/shared/types/ai-models.js` - **UNUSED**
