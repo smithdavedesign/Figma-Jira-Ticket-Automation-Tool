@@ -40,8 +40,8 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Serve static files
-  let filePath = path.join(__dirname, req.url);
+  // Serve static files from project root (two levels up from tests/playwright)
+  let filePath = path.join(__dirname, '../../', req.url);
   
   // Default to index.html for directory requests
   if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
@@ -76,7 +76,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`🚀 Test server running on http://localhost:${PORT}`);
-  console.log(`📁 Serving files from: ${__dirname}`);
+  console.log(`📁 Serving files from: ${path.join(__dirname, '../../')}`);
   console.log(`🔗 UI available at: http://localhost:${PORT}/ui/index.html`);
 });
 
