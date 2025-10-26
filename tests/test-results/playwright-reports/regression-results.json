@@ -1,0 +1,96 @@
+{
+  "config": {
+    "configFile": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/playwright/regression.config.js",
+    "rootDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/regression",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "../test-results/playwright-reports/regression-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../test-results/playwright-reports/regression-results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "../test-results/playwright-reports/regression-results.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/regression-screenshots",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/regression",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/regression-screenshots",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {},
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/regression",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 7,
+    "webServer": {
+      "command": "npm run start:mvc",
+      "port": 3000,
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: No tests found",
+      "stack": "Error: No tests found"
+    }
+  ],
+  "stats": {
+    "startTime": "2025-10-24T21:20:11.691Z",
+    "duration": 4.5750000000000455,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
