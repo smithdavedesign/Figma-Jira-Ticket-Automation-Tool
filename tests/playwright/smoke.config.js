@@ -34,8 +34,8 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: 'npm run start:mvc',
-    port: 3000,
+    command: 'npm run start:test-server',
+    port: 8101,
     reuseExistingServer: !process.env.CI
   }
 });

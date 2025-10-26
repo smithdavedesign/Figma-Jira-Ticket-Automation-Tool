@@ -15,6 +15,7 @@ dist/
 !vitest.config.js
 !tests/playwright/*.config.js
 !app/**/*.js
+!test-server.cjs
 
 # Environment variables
 .env
