@@ -252,11 +252,33 @@ class MCPServer {
       });
     }
 
+    this.logger.info(`🔍 [Screenshot Debug] Request received:`, {
+      fileKey,
+      nodeId,
+      scale,
+      format,
+      timestamp: new Date().toISOString()
+    });
+
     try {
       // Use the consolidated Figma extractor for screenshot capture
+      this.logger.info(`🔍 [Screenshot Debug] Calling figmaExtractor.captureScreenshot with:`, {
+        fileKey,
+        nodeId,
+        scale: parseInt(scale),
+        format
+      });
+      
       const screenshotResult = await this.figmaExtractor.captureScreenshot(fileKey, nodeId, {
         scale: parseInt(scale),
         format
+      });
+
+      this.logger.info(`🔍 [Screenshot Debug] Result from figmaExtractor:`, {
+        success: screenshotResult.success,
+        imageUrl: screenshotResult.imageUrl?.substring(0, 100) + '...',
+        error: screenshotResult.error,
+        status: screenshotResult.status
       });
 
       if (!screenshotResult.success) {
@@ -958,8 +980,23 @@ Generated at ${new Date().toISOString()}`
   async generateAITicket(params) {
     const { enhancedFrameData, techStack, documentType, useAI, figmaUrl } = params;
 
+    this.logger.info('🤖 AI Ticket Generation Request:', {
+      useAI,
+      aiConfigEnabled: aiConfig.enabled,
+      hasApiKey: !!process.env.GEMINI_API_KEY,
+      techStack,
+      documentType,
+      frameDataCount: enhancedFrameData?.length || 0
+    });
+
     // Check if AI is enabled and API key is available
     if (!useAI || !aiConfig.enabled || !process.env.GEMINI_API_KEY) {
+      this.logger.warn('❌ AI Generation prerequisites not met:', {
+        useAI,
+        aiEnabled: aiConfig.enabled,
+        hasApiKey: !!process.env.GEMINI_API_KEY
+      });
+      
       // Fallback to template-based generation
       return this.generateTemplateTickets({
         frameData: enhancedFrameData,
@@ -970,27 +1007,43 @@ Generated at ${new Date().toISOString()}`
     }
 
     try {
+      this.logger.info('🚀 Starting Gemini AI generation...');
+      
       // Use Gemini API for AI-enhanced generation
       const prompt = this.buildAIPrompt(enhancedFrameData, techStack, documentType);
+      this.logger.info('📝 AI Prompt built:', { promptLength: prompt.length, preview: prompt.substring(0, 200) + '...' });
+      
       const aiResponse = await this.callGeminiAPI(prompt);
+      this.logger.info('✅ Gemini AI response received:', { responseLength: aiResponse.length });
 
-      return {
+      const result = {
         content: [{
           type: 'text',
-          text: aiResponse
+          text: aiResponse + '\n\n---\n*Generated via Gemini AI at ' + new Date().toISOString() + '*'
         }]
       };
 
+      this.logger.info('🎯 Returning AI-generated ticket');
+      return result;
+
     } catch (error) {
-      this.logger.error('AI generation failed, falling back to template:', error);
+      this.logger.error('❌ AI generation failed, falling back to template:', {
+        error: error.message,
+        stack: error.stack,
+        useAI,
+        apiKeyExists: !!process.env.GEMINI_API_KEY
+      });
 
       // Fallback to template-based generation
-      return this.generateTemplateTickets({
+      const fallbackResult = this.generateTemplateTickets({
         frameData: enhancedFrameData,
         platform: documentType || 'jira',
         documentType: 'component',
         teamStandards: { tech_stack: techStack }
       });
+      
+      this.logger.info('📋 Using template fallback generation');
+      return fallbackResult;
     }
   }
 

@@ -78,7 +78,7 @@ async function fetchScreenshot(fileKey: string, nodeId: string, options: any = {
         fileKey,
         cached: data.cached,
         imageUrl: data.imageUrl.substring(0, 50) + '...',
-        requestTime: data.metadata?.requestTime
+        requestTime: data.metadata && data.metadata.requestTime
       });
       
       return data.imageUrl;
@@ -699,7 +699,7 @@ async function handleGenerateAITicket() {
       figmaType: node.type,
       hasText: 'characters' in node && !!node.characters,
       isComponent: node.type === 'INSTANCE' || node.type === 'COMPONENT',
-      childCount: 'children' in node ? node.children?.length || 0 : 0
+      childCount: 'children' in node ? (node.children && node.children.length) || 0 : 0
     };
 
     return baseData;
@@ -764,7 +764,7 @@ async function handleGenerateAITicket() {
       }
       // Approach 2: Use known fallback file key
       else {
-        console.log('🔍 Figma root name:', figma.root?.name || 'Unknown');
+        console.log('🔍 Figma root name:', (figma.root && figma.root.name) || 'Unknown');
         console.log('⚠️ Cannot determine file key from figma.fileKey, using known fallback');
         // Use the known file key from your Solidigm project
         fileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Your actual file key
@@ -887,8 +887,8 @@ async function buildHierarchy(node: any): Promise<any> {
       try {
         const masterComponent = await currentNode.getMainComponentAsync();
         layerInfo.masterComponent = {
-          id: masterComponent?.id,
-          name: masterComponent?.name
+          id: masterComponent && masterComponent.id,
+          name: masterComponent && masterComponent.name
         };
 
         // Extract component properties and variants
@@ -974,9 +974,9 @@ async function extractDesignTokens(node: any): Promise<any> {
     // Extract typography tokens
     if (node.type === 'TEXT') {
       const fontSize = node.fontSize || 16;
-      const fontFamily = node.fontName?.family || 'Inter';
-      const fontWeight = node.fontName?.style || 'Regular';
-      const lineHeight = node.lineHeight?.value || fontSize * 1.2;
+      const fontFamily = (node.fontName && node.fontName.family) || 'Inter';
+      const fontWeight = (node.fontName && node.fontName.style) || 'Regular';
+      const lineHeight = (node.lineHeight && node.lineHeight.value) || fontSize * 1.2;
 
       const typographyToken = `${fontFamily}-${fontSize}px-${fontWeight}`;
       tokens.typography.push(typographyToken);
@@ -1025,7 +1025,7 @@ async function extractDesignTokens(node: any): Promise<any> {
     if ('effects' in node && node.effects) {
       node.effects.forEach((effect: any) => {
         if (effect.type === 'DROP_SHADOW') {
-          const shadow = `${effect.offset?.x || 0}px ${effect.offset?.y || 0}px ${effect.radius || 0}px`;
+          const shadow = `${(effect.offset && effect.offset.x) || 0}px ${(effect.offset && effect.offset.y) || 0}px ${effect.radius || 0}px`;
           tokens.shadows.push(shadow);
         }
       });

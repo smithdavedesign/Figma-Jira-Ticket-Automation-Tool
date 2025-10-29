@@ -729,6 +729,64 @@
       color: #ef4444;
     }
 
+    /* Design Tokens Styles */
+    .design-tokens-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .design-tokens-section h3 {
+      margin: 0 0 16px 0;
+      color: #374151;
+      font-size: 16px;
+    }
+
+    .tokens-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .token-category {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .token-category h4 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      color: #4b5563;
+      font-weight: 600;
+    }
+
+    .token-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .token-item {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: monospace;
+      border: 1px solid #e2e8f0;
+    }
+
+    .token-more {
+      background: #e5e7eb;
+      color: #6b7280;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-style: italic;
+    }
+
     /* Template Preview Styles */
     .template-preview {
       background: #f8fafc;
@@ -1239,9 +1297,9 @@ Examples:
     const copyBtn = document.getElementById('copyBtn');
     const statusSection = document.querySelector('.status-section');
 
-    // Context preview elements
+    // Context preview elements - safe initialization
     const contextPreviewWrapper = document.getElementById('context-preview-wrapper');
-    const submitContextBtn = document.getElementById('submit-context-btn');
+    const submitContextBtn = document.getElementById('submit-context-btn'); // This element doesn't exist - was removed
     const editContextBtn = document.getElementById('edit-context-btn');
 
     // Figma context variables
@@ -1613,12 +1671,25 @@ Examples:
                 // Handle new backend API format with screenshotUrl
                 else if (msg.screenshotUrl) {
                   console.log('✅ Screenshot URL received from backend API:', msg.screenshotUrl.substring(0, 50) + '...');
-                  screenshotData = { 
-                    dataUrl: msg.screenshotUrl, 
-                    fallback: false,
-                    metadata: msg.metadata || {},
-                    source: msg.metadata?.source || 'backend-api'
-                  };
+                  
+                  // Validate the screenshot URL
+                  if (msg.screenshotUrl.startsWith('http') || msg.screenshotUrl.startsWith('data:image/')) {
+                    screenshotData = { 
+                      dataUrl: msg.screenshotUrl, 
+                      fallback: false,
+                      metadata: msg.metadata || {},
+                      source: msg.metadata?.source || 'backend-api',
+                      size: '~50KB (estimated)',
+                      width: msg.metadata?.width || 400,
+                      height: msg.metadata?.height || 300
+                    };
+                    console.log('✅ Real screenshot from backend API validated');
+                  } else {
+                    console.log('⚠️ Invalid screenshot URL format, using fallback');
+                    screenshotData = createMockScreenshot();
+                    screenshotData.fallback = true;
+                    screenshotData.reason = 'Invalid URL format';
+                  }
                 }
                 // Handle legacy format for backward compatibility
                 else if (msg.screenshot) {
@@ -1655,7 +1726,13 @@ Examples:
                 
                 // Store the screenshot globally for AI ticket generation
                 window.currentScreenshot = screenshotData;
-                updateScreenshotSection(screenshotData);
+                
+                // Update screenshot section if function exists
+                if (typeof updateScreenshotSection === 'function') {
+                  updateScreenshotSection(screenshotData);
+                } else {
+                  console.warn('⚠️ updateScreenshotSection function not found');
+                }
                 break;
               case 'enhanced-frame-data':
                 handleEnhancedFrameData(msg.data, msg.fileContext, msg.processingSummary);
@@ -1922,29 +1999,31 @@ Examples:
           useAI: true
         };
 
-        console.log('📤 Calling MCP generate_template_tickets with enhanced data...');
-        showStatus('🎯 Generating contextual template-based ticket...', 'loading');
+        console.log('📤 Calling MCP generate_ai_ticket with enhanced data...');
+        showStatus('🤖 Generating AI-powered ticket with advanced context...', 'loading');
         
-        // Call MCP server generate_template_tickets tool with proper template parameters
-        const templateParams = {
-          frameData: aiData.enhancedFrameData,
-          figmaContext: {
-            figmaUrl: `https://www.figma.com/file/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}`,
-            component_name: aiData.enhancedFrameData[0]?.name || 'Component',
-            frame_id: aiData.enhancedFrameData[0]?.id
-          },
-          platform: platformSelect.value,
+        // Call MCP server generate_ai_ticket tool for true AI-powered generation
+        const aiParams = {
+          enhancedFrameData: aiData.enhancedFrameData,
+          screenshot: aiData.screenshot,
+          figmaUrl: `https://www.figma.com/file/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}`,
+          techStack: techStackDesc,
           documentType: documentType,
           projectName: aiData.fileContext.fileName,
-          screenshot: aiData.screenshot,
+          fileContext: aiData.fileContext,
+          metadata: aiData.metadata,
+          useAI: true,
+          platform: platformSelect.value,
           teamStandards: generateDynamicTeamStandards(techStackDesc, documentType)
         };
         
-        // 🐛 DEBUG: Show what data is being sent to LLM
-        console.log('🔍 DEBUG: Data being sent to LLM for ticket generation:', {
-          frameData: templateParams.frameData,
-          figmaContext: templateParams.figmaContext,
-          teamStandards: templateParams.teamStandards,
+        // 🐛 DEBUG: Show what data is being sent to AI for ticket generation
+        console.log('🔍 DEBUG: Data being sent to AI for ticket generation:', {
+          enhancedFrameData: aiParams.enhancedFrameData,
+          figmaUrl: aiParams.figmaUrl,
+          techStack: aiParams.techStack,
+          documentType: aiParams.documentType,
+          teamStandards: aiParams.teamStandards,
           aiDataOriginal: aiData,
           screenshot: aiData.screenshot || 'NO SCREENSHOT',
           screenshotAvailable: !!aiData.screenshot
@@ -1964,24 +2043,25 @@ Examples:
         `;
         debugDisplay.innerHTML = `
           <div style="font-weight: bold; color: #667eea; margin-bottom: 10px;">
-            🔍 LLM Request Debug
+            🤖 AI Generation Debug
             <button onclick="this.parentElement.parentElement.remove()" style="float: right; background: #f44; border: none; color: white; padding: 2px 6px; border-radius: 3px; cursor: pointer;">×</button>
           </div>
-          <div><strong>Component:</strong> ${templateParams.figmaContext.component_name}</div>
-          <div><strong>Document Type:</strong> ${templateParams.documentType || 'Not specified'}</div>
-          <div><strong>Platform:</strong> ${templateParams.platform}</div>
-          <div><strong>Tech Stack:</strong> ${JSON.stringify(templateParams.teamStandards.tech_stack)}</div>
-          <div><strong>Frame Data:</strong> ${templateParams.frameData?.length || 0} items</div>
+          <div><strong>Component:</strong> ${(aiParams.enhancedFrameData && aiParams.enhancedFrameData[0] && aiParams.enhancedFrameData[0].name) ? aiParams.enhancedFrameData[0].name : 'Unknown'}</div>
+          <div><strong>Document Type:</strong> ${aiParams.documentType || 'Not specified'}</div>
+          <div><strong>Platform:</strong> ${aiParams.platform}</div>
+          <div><strong>Tech Stack:</strong> ${aiParams.techStack}</div>
+          <div><strong>Frame Data:</strong> ${(aiParams.enhancedFrameData && aiParams.enhancedFrameData.length) ? aiParams.enhancedFrameData.length : 0} items</div>
           <div><strong>Screenshot:</strong> ${aiData.screenshot ? '✅ Available' : '❌ Missing'}</div>
-          <div><strong>Figma URL:</strong> ${templateParams.figmaContext.figmaUrl || 'Not set'}</div>
+          <div><strong>Figma URL:</strong> ${aiParams.figmaUrl || 'Not set'}</div>
+          <div><strong>AI Mode:</strong> ${aiParams.useAI ? '✅ Enabled' : '❌ Disabled'}</div>
           <details style="margin-top: 10px;">
             <summary style="cursor: pointer; color: #667eea;">View Full Data</summary>
-            <pre style="font-size: 9px; margin-top: 5px; white-space: pre-wrap;">${JSON.stringify({frameData: templateParams.frameData, figmaContext: templateParams.figmaContext}, null, 2)}</pre>
+            <pre style="font-size: 9px; margin-top: 5px; white-space: pre-wrap;">${JSON.stringify({enhancedFrameData: aiParams.enhancedFrameData, fileContext: aiParams.fileContext}, null, 2)}</pre>
           </details>
         `;
         document.body.appendChild(debugDisplay);
         
-        const result = await callMCPTool('generate_template_tickets', templateParams);
+        const result = await callMCPTool('generate_ai_ticket', aiParams);
         
         // Process the AI-generated result
         let generatedContent = '';
@@ -2001,24 +2081,48 @@ Examples:
         document.getElementById('results').classList.remove('hidden');
         document.getElementById('copyBtn').disabled = false;
         
-        showStatus('✅ Template-based ticket generated successfully!', 'success');
+        showStatus('✅ AI-powered ticket generated successfully!', 'success');
         console.log('✅ AI ticket generation completed');
         
       } catch (error) {
         console.error('❌ AI ticket processing failed:', error);
         showError(`AI ticket generation failed: ${error.message}`);
         
-        // Fallback to standard generation
+        // Enhanced fallback to standard generation
         try {
-          console.log('🔄 Falling back to standard generation...');
-          const fallbackContent = generateFallbackTicket(aiData);
-          document.getElementById('generatedContent').value = fallbackContent;
-          document.getElementById('results').classList.remove('hidden');
-          document.getElementById('copyBtn').disabled = false;
-          showStatus('⚠️ Used fallback generation (AI unavailable)', 'warning');
+          console.log('🔄 Falling back to enhanced standard generation...');
+          showStatus('🔄 Using fallback ticket generation...', 'warning');
+          
+          const fallbackContent = generateEnhancedFallbackTicket(aiData);
+          const resultsTextarea = document.getElementById('generatedContent');
+          const resultsDiv = document.getElementById('results');
+          const copyBtn = document.getElementById('copyBtn');
+          
+          if (resultsTextarea) resultsTextarea.value = fallbackContent;
+          if (resultsDiv) resultsDiv.classList.remove('hidden');
+          if (copyBtn) copyBtn.disabled = false;
+          
+          showStatus('⚠️ Used enhanced fallback generation (AI unavailable)', 'warning');
         } catch (fallbackError) {
           console.error('❌ Fallback generation also failed:', fallbackError);
-          showError('Both AI and fallback generation failed. Please try again.');
+          
+          // Last resort - basic template generation
+          try {
+            console.log('🔄 Using basic template generation as last resort...');
+            const basicContent = generateBasicFallbackTicket();
+            const resultsTextarea = document.getElementById('generatedContent');
+            const resultsDiv = document.getElementById('results');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            if (resultsTextarea) resultsTextarea.value = basicContent;
+            if (resultsDiv) resultsDiv.classList.remove('hidden');
+            if (copyBtn) copyBtn.disabled = false;
+            
+            showStatus('⚠️ Used basic template generation', 'warning');
+          } catch (basicError) {
+            console.error('❌ All generation methods failed:', basicError);
+            showError('All ticket generation methods failed. Please check MCP server connection.');
+          }
         }
         
       } finally {
@@ -2027,41 +2131,141 @@ Examples:
       }
     }
 
-    // Generate fallback ticket when AI fails
-    function generateFallbackTicket(aiData) {
+    // Generate enhanced fallback ticket when AI fails
+    function generateEnhancedFallbackTicket(aiData) {
       const frameData = aiData.enhancedFrameData[0] || {};
       const fileContext = aiData.fileContext || {};
+      const techStack = techStackInput.value || 'React + TypeScript';
+      const documentType = documentTypeSelect.value || 'component';
       
-      return `# ${frameData.name || 'Design Component'} Implementation
+      // Extract meaningful data from enhanced frame data
+      const colors = frameData.metadata?.colors || [];
+      const hierarchy = frameData.hierarchy || {};
+      const designTokens = hierarchy.designTokens || {};
+      
+      return `# ${frameData.name || 'Design Component'} - ${documentType.charAt(0).toUpperCase() + documentType.slice(1)}
 
-## Overview
-Implement the ${frameData.name || 'selected component'} from ${fileContext.fileName || 'Figma design'}.
+## 📋 Overview
+Implement the **${frameData.name || 'selected component'}** from ${fileContext.fileName || 'Figma design'} using ${techStack}.
 
-## Component Details
+## 🎨 Component Details
 - **Type**: ${frameData.type || 'Component'}
-- **Dimensions**: ${frameData.dimensions?.width || 0}×${frameData.dimensions?.height || 0}px
+- **Dimensions**: ${frameData.dimensions?.width || frameData.width || 0}×${frameData.dimensions?.height || frameData.height || 0}px
 - **Page**: ${fileContext.pageName || 'Unknown'}
-- **Hierarchy Depth**: ${frameData.hierarchy?.totalDepth || 1}
-- **Component Count**: ${frameData.hierarchy?.componentCount || 0}
+- **File**: ${fileContext.fileName || 'Figma Design'}
+- **Selection Count**: ${aiData.metadata?.selectionCount || 1}
 
-## Technical Requirements
-- Implement using ${techStackInput.value || 'specified tech stack'}
-- Maintain responsive design principles
-- Follow accessibility best practices
+## 🏗️ Architecture Analysis
+- **Hierarchy Depth**: ${hierarchy.totalDepth || 1} levels
+- **Component Count**: ${hierarchy.componentCount || 0}
+- **Text Layers**: ${hierarchy.textLayerCount || 0}
+- **Total Layers**: ${hierarchy.layers?.length || 1}
+
+## 🎨 Design Tokens Detected
+${colors.length > 0 ? `
+### Colors (${colors.length})
+${colors.slice(0, 5).map(color => `- ${color}`).join('\n')}
+${colors.length > 5 ? `- ...and ${colors.length - 5} more colors` : ''}` : '- No colors extracted'}
+
+${designTokens.typography?.length > 0 ? `
+### Typography (${designTokens.typography.length})
+${designTokens.typography.slice(0, 3).map(font => `- ${font}`).join('\n')}` : ''}
+
+${designTokens.spacing?.length > 0 ? `
+### Spacing (${designTokens.spacing.length})
+${designTokens.spacing.slice(0, 5).map(space => `- ${space}px`).join('\n')}` : ''}
+
+## 💻 Technical Requirements
+### Tech Stack: ${techStack}
+- Implement using specified technologies
+- Maintain responsive design principles  
+- Follow accessibility best practices (WCAG 2.1 AA)
 - Use design system tokens where applicable
 
-## Acceptance Criteria
-- [ ] Component renders correctly at specified dimensions
-- [ ] Responsive behavior matches design
-- [ ] Accessibility requirements met
-- [ ] Design system tokens used appropriately
+### Implementation Notes
+- **Semantic Role**: ${frameData.metadata?.semanticRole || 'component'}
+- **Has Text Content**: ${frameData.metadata?.hasText ? 'Yes' : 'No'}
+- **Is Component**: ${frameData.metadata?.isComponent ? 'Yes' : 'No'}
+- **Child Elements**: ${frameData.metadata?.childCount || 0}
 
-## Story Points
-${Math.max(3, Math.min(8, Math.ceil((frameData.hierarchy?.componentCount || 1) * 2)))}
+## ✅ Acceptance Criteria
+- [ ] Component renders correctly at ${frameData.dimensions?.width || frameData.width || 0}×${frameData.dimensions?.height || frameData.height || 0}px
+- [ ] Responsive behavior matches design specifications
+- [ ] Accessibility requirements fully implemented
+- [ ] Design system tokens used appropriately
+- [ ] Cross-browser compatibility verified
+- [ ] Performance optimized (< 2s load time)
+${aiData.screenshot ? '- [ ] Visual match confirmed against provided screenshot' : ''}
+
+## 🔍 Testing Strategy
+- [ ] Unit tests for component functionality
+- [ ] Visual regression tests
+- [ ] Accessibility testing with screen readers
+- [ ] Cross-browser testing (Chrome, Firefox, Safari, Edge)
+- [ ] Mobile responsiveness validation
+
+## 📊 Story Points
+**Estimated Effort**: ${Math.max(3, Math.min(13, Math.ceil((hierarchy.componentCount || 1) * 2 + (hierarchy.totalDepth || 1))))}
+
+### Complexity Factors:
+- Component depth: ${hierarchy.totalDepth || 1}
+- Child components: ${hierarchy.componentCount || 0}
+- Text elements: ${hierarchy.textLayerCount || 0}
+- Design tokens: ${(designTokens.colors?.length || 0) + (designTokens.typography?.length || 0)}
+
+## 📎 Resources
+- **Figma File**: ${fileContext.fileName || 'Design File'}
+- **Page**: ${fileContext.pageName || 'Unknown'}
+- **Node ID**: ${frameData.id || 'Unknown'}
+${aiData.screenshot ? '- **Screenshot**: Included for visual reference' : ''}
 
 ---
-*Generated with enhanced fallback mode - AI processing unavailable*
-*Extracted at: ${aiData.metadata?.extractedAt || new Date().toISOString()}*`;
+*🤖 Generated with Enhanced Fallback System*  
+*📅 Created: ${new Date().toLocaleString()}*  
+*🔧 System: AI processing unavailable, using enhanced template generation*  
+*📊 Data Quality: ${aiData.enhancedFrameData?.length || 0} frame(s) analyzed*`;
+    }
+
+    // Generate basic fallback ticket as last resort
+    function generateBasicFallbackTicket() {
+      const techStack = techStackInput.value || 'React + TypeScript';
+      const documentType = documentTypeSelect.value || 'component';
+      const platform = platformSelect.value || 'jira';
+      
+      return `# ${documentType.charAt(0).toUpperCase() + documentType.slice(1)} Implementation
+
+## Summary
+Implement ${documentType} using ${techStack} for ${platform}.
+
+## Description
+This ticket was generated when both AI and enhanced fallback systems were unavailable. Please update with specific requirements from the Figma design.
+
+## Technical Stack
+- **Primary**: ${techStack}
+- **Platform**: ${platform}
+- **Document Type**: ${documentType}
+
+## Basic Requirements
+- [ ] Implement core functionality
+- [ ] Follow ${techStack} best practices
+- [ ] Ensure responsive design
+- [ ] Meet accessibility standards
+- [ ] Add appropriate testing
+
+## Notes
+⚠️ **Manual Review Required**: This ticket was generated with minimal context. Please:
+1. Review the Figma design for specific requirements
+2. Update acceptance criteria based on actual design
+3. Add technical specifications from design system
+4. Include visual reference screenshots
+
+## Story Points
+5 (estimated - requires review)
+
+---
+*🔧 Generated: ${new Date().toLocaleString()}*  
+*⚠️ Status: Basic template - requires manual review and updates*  
+*🛠️ System: Emergency fallback generation used*`;
     }
 
     // Debug Panel Functions
@@ -3169,20 +3373,26 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
       updateContextMetrics(contextData);
 
       // Show the preview section
-      contextPreviewWrapper.classList.remove('hidden');
+      if (contextPreviewWrapper) {
+        contextPreviewWrapper.classList.remove('hidden');
+        
+        // Scroll to preview
+        contextPreviewWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       
-      // Scroll to preview
-      contextPreviewWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      
-      // Update the main generate button
-      generateBtn.innerHTML = '👀 Context Preview Active';
-      generateBtn.disabled = true;
+      // Update the main generate button - check if element exists
+      if (generateBtn) {
+        generateBtn.innerHTML = '👀 Context Preview Active';
+        generateBtn.disabled = true;
+      }
       
       // Store context for actual generation
       pendingContextData = contextData;
 
-      // Enable submit button
-      submitContextBtn.disabled = false;
+      // Enable submit button - check if element exists
+      if (submitContextBtn) {
+        submitContextBtn.disabled = false;
+      }
     }
 
     function updateTechStackSection(techStackData) {
@@ -3947,34 +4157,81 @@ Please fix the MCP server connection and try again.`;
       }
     }
 
-    // Event listeners
-    generateBtn.addEventListener('click', generateContent);
-    document.getElementById('generateAI').addEventListener('click', generateAITicket);
-    copyBtn.addEventListener('click', copyToClipboard);
+    // Event listeners with safety checks
+    if (generateBtn) {
+      generateBtn.addEventListener('click', generateContent);
+    } else {
+      console.warn('⚠️ generateBtn element not found');
+    }
     
-    // Debug panel event listeners
-    document.getElementById('showDebug').addEventListener('click', toggleDebugPanel);
-    document.getElementById('toggleDebug').addEventListener('click', toggleDebugPanel);
-    document.getElementById('openAdvancedDashboard').addEventListener('click', openAdvancedContextDashboard);
+    const generateAIBtn = document.getElementById('generateAI');
+    if (generateAIBtn) {
+      generateAIBtn.addEventListener('click', generateAITicket);
+    } else {
+      console.warn('⚠️ generateAI element not found');
+    }
     
-    // Consolidated testing event listener
-    document.getElementById('launchTestSuite').addEventListener('click', function() {
-        window.open('http://localhost:3000/tests/integration/test-consolidated-suite.html', '_blank');
-    });
+    if (copyBtn) {
+      copyBtn.addEventListener('click', copyToClipboard);
+    } else {
+      console.warn('⚠️ copyBtn element not found');
+    }
+    
+    // Debug panel event listeners with safety checks
+    const showDebugBtn = document.getElementById('showDebug');
+    if (showDebugBtn) {
+      showDebugBtn.addEventListener('click', toggleDebugPanel);
+    } else {
+      console.warn('⚠️ showDebug element not found');
+    }
+    
+    const toggleDebugBtn = document.getElementById('toggleDebug');
+    if (toggleDebugBtn) {
+      toggleDebugBtn.addEventListener('click', toggleDebugPanel);
+    } else {
+      console.warn('⚠️ toggleDebug element not found');
+    }
+    
+    const openAdvancedDashboardBtn = document.getElementById('openAdvancedDashboard');
+    if (openAdvancedDashboardBtn) {
+      openAdvancedDashboardBtn.addEventListener('click', openAdvancedContextDashboard);
+    } else {
+      console.warn('⚠️ openAdvancedDashboard element not found');
+    }
+    
+    // Consolidated testing event listener with safety check
+    const launchTestSuiteBtn = document.getElementById('launchTestSuite');
+    if (launchTestSuiteBtn) {
+      launchTestSuiteBtn.addEventListener('click', function() {
+          window.open('http://localhost:3000/tests/integration/test-consolidated-suite.html', '_blank');
+      });
+    } else {
+      console.warn('⚠️ launchTestSuite element not found');
+    }
 
-    // Context preview event listeners
-    submitContextBtn.addEventListener('click', () => {
-      if (pendingContextData) {
-        proceedWithGeneration(pendingContextData);
-      }
-    });
+    // Context preview event listeners with safety checks
+    if (submitContextBtn) {
+      submitContextBtn.addEventListener('click', () => {
+        if (pendingContextData) {
+          proceedWithGeneration(pendingContextData);
+        }
+      });
+    }
 
-    editContextBtn.addEventListener('click', () => {
-      // Hide context preview to allow editing
-      contextPreviewWrapper.classList.add('hidden');
-      generateBtn.disabled = false;
-      generateBtn.textContent = '🔍 Preview Context & Generate';
-    });
+    if (editContextBtn) {
+      editContextBtn.addEventListener('click', () => {
+        // Hide context preview to allow editing
+        if (contextPreviewWrapper) {
+          contextPreviewWrapper.classList.add('hidden');
+        }
+        if (generateBtn) {
+          generateBtn.disabled = false;
+          generateBtn.textContent = '🔍 Preview Context & Generate';
+        }
+      });
+    } else {
+      console.warn('⚠️ editContextBtn element not found');
+    }
     
     // Tech stack input validation and suggestions
     techStackInput.addEventListener('input', () => {
@@ -4038,6 +4295,74 @@ Please fix the MCP server connection and try again.`;
       // Update the analysis results
       const analysisElement = document.querySelector('.health-analysis');
       if (analysisElement) {
+        // Build design tokens section
+        let tokensHTML = '';
+        if (results.designTokens) {
+          tokensHTML = `
+            <div class="design-tokens-section">
+              <h3>🎨 Design Tokens Extracted</h3>
+              <div class="tokens-grid">
+                ${results.designTokens.colors.length > 0 ? `
+                  <div class="token-category">
+                    <h4>🎨 Colors (${results.designTokens.colors.length})</h4>
+                    <div class="token-list">
+                      ${results.designTokens.colors.slice(0, 5).map(color => `<span class="token-item">${color}</span>`).join('')}
+                      ${results.designTokens.colors.length > 5 ? `<span class="token-more">+${results.designTokens.colors.length - 5} more</span>` : ''}
+                    </div>
+                  </div>
+                ` : ''}
+                
+                ${results.designTokens.fonts.length > 0 ? `
+                  <div class="token-category">
+                    <h4>📝 Typography (${results.designTokens.fonts.length})</h4>
+                    <div class="token-list">
+                      ${results.designTokens.fonts.slice(0, 3).map(font => `<span class="token-item">${font}</span>`).join('')}
+                      ${results.designTokens.fonts.length > 3 ? `<span class="token-more">+${results.designTokens.fonts.length - 3} more</span>` : ''}
+                    </div>
+                  </div>
+                ` : ''}
+                
+                ${results.designTokens.spacing.length > 0 ? `
+                  <div class="token-category">
+                    <h4>📏 Spacing (${results.designTokens.spacing.length})</h4>
+                    <div class="token-list">
+                      ${results.designTokens.spacing.slice(0, 4).map(space => `<span class="token-item">${space}</span>`).join('')}
+                      ${results.designTokens.spacing.length > 4 ? `<span class="token-more">+${results.designTokens.spacing.length - 4} more</span>` : ''}
+                    </div>
+                  </div>
+                ` : ''}
+                
+                ${results.designTokens.borderRadius.length > 0 ? `
+                  <div class="token-category">
+                    <h4>🔄 Border Radius (${results.designTokens.borderRadius.length})</h4>
+                    <div class="token-list">
+                      ${results.designTokens.borderRadius.map(radius => `<span class="token-item">${radius}</span>`).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+                
+                ${results.designTokens.shadows.length > 0 ? `
+                  <div class="token-category">
+                    <h4>🌑 Shadows (${results.designTokens.shadows.length})</h4>
+                    <div class="token-list">
+                      ${results.designTokens.shadows.map(shadow => `<span class="token-item">${shadow}</span>`).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+                
+                ${results.designTokens.opacity.length > 0 ? `
+                  <div class="token-category">
+                    <h4>👻 Opacity (${results.designTokens.opacity.length})</h4>
+                    <div class="token-list">
+                      ${results.designTokens.opacity.map(opacity => `<span class="token-item">${opacity}</span>`).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }
+        
         const analysisHTML = `
           <h3>🔍 Analysis Results</h3>
           <div class="analysis-item">
@@ -4052,6 +4377,7 @@ Please fix the MCP server connection and try again.`;
             <span class="${results.spacingGridOk ? 'status-good' : 'status-warning'}">${results.spacingGridOk ? '✅' : '⚠️'}</span>
             <strong>Spacing:</strong> ${results.spacingGridOk ? 'Grid system properly implemented' : 'Some spacing inconsistencies detected'}  
           </div>
+          ${tokensHTML}
         `;
         analysisElement.innerHTML = analysisHTML;
       }
@@ -4112,8 +4438,13 @@ Please fix the MCP server connection and try again.`;
     // Initialize template preview
     updateTemplateContext();
 
-    // Add event listener for design health analysis
-    document.getElementById('analyzeHealthBtn').addEventListener('click', analyzeDesignHealth);
+    // Add event listener for design health analysis - with safety check
+    const analyzeHealthBtn = document.getElementById('analyzeHealthBtn');
+    if (analyzeHealthBtn) {
+      analyzeHealthBtn.addEventListener('click', analyzeDesignHealth);
+    } else {
+      console.warn('⚠️ analyzeHealthBtn element not found');
+    }
 
     // Debug & Screenshot Functions
     function debugSelectionContext() {
