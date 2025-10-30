@@ -10,7 +10,7 @@ mkdir -p dist
 
 # Build TypeScript
 echo "📦 Compiling TypeScript..."
-npx tsc
+npx tsc -p config/tsconfig.json
 
 # Copy UI assets to dist
 echo "🎨 Copying UI assets..."

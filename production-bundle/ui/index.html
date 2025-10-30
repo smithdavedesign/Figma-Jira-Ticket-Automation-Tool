@@ -2044,7 +2044,7 @@ Examples:
         const mcpParams = {
           enhancedFrameData: aiData.enhancedFrameData,
           screenshot: aiData.screenshot,
-          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${getTeamParam() ? '?t=' + getTeamParam() : ''}`,
+          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${window.getTeamParam && window.getTeamParam() ? '?t=' + window.getTeamParam() : ''}`,
           techStack: techStackDesc,
           documentType: documentType,
           projectName: aiData.fileContext.fileName,
@@ -2060,7 +2060,7 @@ Examples:
         const aiParams = {
           enhancedFrameData: aiData.enhancedFrameData,
           screenshot: aiData.screenshot,
-          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${getTeamParam() ? '?t=' + getTeamParam() : ''}`,
+          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${window.getTeamParam && window.getTeamParam() ? '?t=' + window.getTeamParam() : ''}`,
           techStack: techStackDesc,
           documentType: documentType,
           projectName: aiData.fileContext.fileName,
