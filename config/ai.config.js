@@ -17,12 +17,12 @@ export const aiConfig = {
     gemini: {
       enabled: Boolean(process.env.GEMINI_API_KEY),
       apiKey: process.env.GEMINI_API_KEY,
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       maxTokens: 8192,
       temperature: 0.7,
       vision: {
         enabled: true,
-        model: 'gemini-2.5-flash'
+        model: 'gemini-2.0-flash'
       }
     },
 

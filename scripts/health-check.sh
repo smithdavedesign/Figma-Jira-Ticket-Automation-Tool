@@ -140,10 +140,6 @@ fi
 
 # 3. Check ports
 echo "🔌 Checking server ports..."
-if ! check_port 8101 "UI Server"; then
-    ((HEALTH_ISSUES++))
-fi
-
 if ! check_port 3000 "MCP Server"; then
     ((HEALTH_ISSUES++))
 fi
@@ -152,10 +148,6 @@ echo
 
 # 4. Check HTTP endpoints
 echo "🌐 Checking HTTP endpoints..."
-if ! check_endpoint "http://localhost:8101/ui/index.html" "UI Endpoint"; then
-    ((HEALTH_ISSUES++))
-fi
-
 # MCP server health check (expect different response)
 echo -n "🧠 Checking MCP server health... "
 if curl -s "http://localhost:3000" --connect-timeout 5 --max-time 10 >/dev/null 2>&1; then
@@ -163,6 +155,14 @@ if curl -s "http://localhost:3000" --connect-timeout 5 --max-time 10 >/dev/null 
 else
     echo -e "${RED}❌ NOT RESPONDING${NC}"
     ((HEALTH_ISSUES++))
+fi
+
+# Test MCP UI endpoint if server is running
+echo -n "🔍 Checking MCP UI endpoint... "
+if curl -s "http://localhost:3000/ui/index.html" --connect-timeout 5 --max-time 10 >/dev/null 2>&1; then
+    echo -e "${GREEN}✅ RESPONDING${NC}"
+else
+    echo -e "${YELLOW}⚠️ NOT CONFIGURED${NC} (UI served by MCP server)"
 fi
 
 echo
@@ -202,9 +202,9 @@ else
     echo -e "${RED}⚠️  $HEALTH_ISSUES issue(s) detected${NC}"
     echo
     echo "🚨 Recommendations:"
-    echo "   1. Ensure servers are running: npm run dev (in separate terminals)"
+    echo "   1. Ensure MCP server is running: npm run start:mvc"
     echo "   2. Install missing dependencies: npm install"
-    echo "   3. Check that ports 8101 and 3000 are available"
+    echo "   3. Check that port 3000 is available"
     echo "   4. Re-run with --start-servers to auto-start services"
     echo
     echo "💡 Quick fix: ./scripts/health-check.sh --start-servers"

@@ -28,11 +28,11 @@ An intelligent enterprise platform that transforms Figma designs into comprehens
 - 🎯 **Rich Color Analysis**: Automatic color palette extraction with usage tracking
 - 📝 **Typography Intelligence**: Font detection, sizing, weights, and hierarchy analysis
 - 📐 **Spacing Pattern Recognition**: Grid systems, measurements, and layout structure analysis
-- 🤖 **AI-Enhanced Analysis**: FREE Google Gemini 2.5 Flash with multi-modal visual processing
+- 🤖 **Direct AI Generation**: Streamlined AI processing with Gemini 2.0 Flash bypassing MCP server
 - 📋 **Context-Aware Tickets**: Generate specific tickets based on visual + structural data
 - 🎯 **Design System Intelligence**: Understands component complexity and relationships
 - 🔄 **Multi-Format Output**: Support for JIRA, GitHub Issues, Linear, Notion, and UI formats
-- 🛡️ **Enterprise-Grade**: Fallback system ensures 100% reliability
+- 🛡️ **Enterprise-Grade**: Template fallback system ensures 100% reliability
 - ⚡ **Popular Tech Stacks**: 10 pre-configured combinations with color-coded confidence
 - 🔍 **Parse Tech System**: Intelligent tech stack detection and validation (accessible via test suite)
 - 🧪 **Comprehensive Testing**: ✅ 80 Playwright browser tests + integration + unit + performance tests
