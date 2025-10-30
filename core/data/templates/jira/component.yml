@@ -15,8 +15,8 @@ variables:
   labels: "{{ project.labels }}"
   technologies: "{{ project.tech_stack }}"
   story_points: "{{ calculated.story_points }}"
-        figma_url: "{{ figma.live_link }}",
-        screenshot_filename: "{{ figma.screenshot_url || figma.screenshot_filename }}"
+  figma_url: "{{ figma.live_link }}"
+  screenshot_filename: "{{ figma.screenshot_url || figma.screenshot_filename }}"
   design_status: "{{ figma.design_status }}"
 
 team_standards:
