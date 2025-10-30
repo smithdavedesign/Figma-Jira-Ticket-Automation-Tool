@@ -99,41 +99,43 @@ tests/
     └── jsdomSetup.js                   # Browser environment
 ```
 
-## 🚀 **Quick Start Guide**
+## 🚀 **Quick Start Guide - CONSOLIDATED COMMANDS**
 
-### **🎯 Recommended Testing Workflow (Enhanced):**
-1. **Start Live Monitoring:** `npm run dev:monitor` (recommended for development)
-2. **Run Comprehensive Tests:** `npm run test:all` (single command for all categories)
-3. **Open Enhanced Test Suite:** `npm run test:suite` (includes new Live Monitor & Comprehensive Runner tabs)
-4. **View Test Reports:** `npm run test:report` (opens results browser)
+### **🎯 New Simplified Testing Workflow:**
+1. **Unit Tests:** `npm test` (Fast vitest unit tests - 12 tests in ~120ms)
+2. **System Health:** `npm run health` (30s comprehensive system check)
+3. **All Tests:** `npm run test:all` (Comprehensive orchestrated testing)
+4. **Monitor System:** `npm run monitor` (Live monitoring dashboard)
+5. **Browser Tests:** `npm run test:browser` (Smoke + full browser testing)
+6. **Visual Interface:** `npm run test:suite` (Ultimate Test Suite with 9 tabs)
 
-### **� All Available Commands:**
+### **✅ Essential Commands (8 TOTAL - 65% Reduction):**
 ```bash
-# 🚀 NEW: Comprehensive Testing & Monitoring
-npm run test:all           # Run ALL test categories in sequence (NEW)
-npm run monitor            # Live server monitoring with health checks (NEW)
-npm run dev:monitor        # Development monitoring with auto-restart (NEW)
+# 🚀 TIER 1: Daily Development Commands
+npm test                    # Vitest unit tests (fastest - 12 tests)
+npm run test:suite         # Ultimate Test Suite (visual interface)
+npm run test:all           # Comprehensive orchestrated testing
+npm run health             # System health check (30s)
+npm run monitor            # Live monitoring dashboard
+npm run test:watch         # Development mode with file watching
+npm run test:coverage      # Coverage reports with Vitest
+npm run validate           # Full validation (test + build)
 
-# 🧪 Modern Testing (Vitest Framework)
-npm test                    # Interactive test runner
-npm run test:run           # Single test run  
-npm run test:watch         # Watch mode for development
-npm run test:ui            # Visual test UI dashboard
-npm run test:coverage      # Generate coverage reports
-npm run test:report        # Open HTML test results
-
-# 🎯 Enhanced Test Suite
-npm run test:suite         # Open all-in-one test interface (now with 9 tabs)
-
-# �️ System Testing  
-npm run health             # System health validation
-npm run validate           # Full system validation
-
-# 🎭 Browser Testing (Playwright - needs refresh)
-cd tests/playwright-browser-tests
-npm install               # Install Playwright dependencies
-npm test                  # Run browser tests (to be recreated)
+# 🎯 TIER 2: Specialized Commands
+npm run test:browser       # Browser compatibility (smoke tests)
+npm run test:templates     # Template system validation
+npm run test:ai            # AI integration testing
+npm run test:browser:full  # Full browser test suite
+npm run test:all:full      # Comprehensive testing with AI/performance
+npm run test:reports       # Open all test reports
 ```
+
+### **🎯 Intelligent Test Orchestration:**
+- **Smart Routing:** Automatically selects relevant tests based on changes
+- **Parallel Execution:** Compatible tests run concurrently for speed
+- **Progress Tracking:** Real-time updates and comprehensive reporting
+- **Failure Handling:** Continues with non-critical test failures
+- **Report Generation:** Unified JSON reports and console summaries
 
 ## 🎯 **Test Infrastructure Features**
 
