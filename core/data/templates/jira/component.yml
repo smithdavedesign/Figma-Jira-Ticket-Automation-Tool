@@ -133,6 +133,10 @@ content: |
   - **Screenshot:** {{ figma.screenshot_url || figma.screenshot_filename }}
   - **File Key:** {{ figma.file_id }}
 
+  ### 📸 Visual Reference
+  {{ figma.screenshot_markdown.jira }}
+  {{ figma.screenshot_attachment.copy_paste_note }}
+
   ### Development Notes
   - Use established hooks and patterns from the design system
   - Implement proper error boundaries for component isolation
