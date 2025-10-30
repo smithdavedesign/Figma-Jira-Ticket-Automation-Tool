@@ -3,6 +3,50 @@
 <head>
   <meta charset="utf-8">
   <title>🧪 Ultimate Figma AI Test Suite - All-in-One Consolidated</title>
+  <script>
+    // 🌍 Environment Configuration - Single Source of Truth
+    const ENV_CONFIG = {
+      // Detect environment from hostname/port  
+      isDev: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
+      
+      // API Configuration
+      API_BASE: window.location.hostname === 'localhost' ? 
+        `${window.location.protocol}//${window.location.hostname}:3000` : 
+        window.location.origin,
+      
+      // Endpoints  
+      endpoints: {
+        health: '/api/figma/health',
+        screenshot: '/api/figma/screenshot', 
+        generateTicket: '/api/generate-ticket',
+        testAIScenario: '/api/test-ai-scenario',
+        mcpHealth: '/'
+      },
+      
+      // Test Configuration
+      test: {
+        useRealData: false, // Set to true for production testing
+        mockFileKey: 'test',
+        mockNodeId: 'test:1', 
+        timeouts: {
+          api: 5000,
+          screenshot: 10000,
+          ai: 15000
+        }
+      }
+    };
+    
+    // Helper function to build full URL
+    function getApiUrl(endpoint, params = {}) {
+      const url = new URL(ENV_CONFIG.API_BASE + ENV_CONFIG.endpoints[endpoint]);
+      Object.entries(params).forEach(([key, value]) => {
+        url.searchParams.set(key, value);
+      });
+      return url.toString();
+    }
+    
+    console.log('🌍 Test Suite Environment:', ENV_CONFIG);
+  </script>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
@@ -2288,14 +2332,14 @@
       logToConsole('🧪 Testing API Endpoints...');
       const endpoints = [
         { 
-          path: '/api/figma/health', 
+          url: getApiUrl('health'), 
           expectedStatus: [200], 
-          description: 'Health check endpoint'
+          description: 'Figma API health check endpoint'
         },
         { 
-          path: '/api/figma/screenshot?fileKey=test&nodeId=test', 
-          expectedStatus: [500], 
-          description: 'Screenshot API with test parameters (expected error for invalid fileKey)'
+          url: getApiUrl('screenshot', { fileKey: ENV_CONFIG.test.mockFileKey, nodeId: ENV_CONFIG.test.mockNodeId }), 
+          expectedStatus: [200], 
+          description: 'Screenshot API with mock test parameters (should return mock response)'
         }
       ];
       
@@ -2304,7 +2348,7 @@
       
       for (const endpoint of endpoints) {
         try {
-          const response = await fetch(`http://localhost:3000${endpoint.path}`);
+          const response = await fetch(endpoint.url);
           if (endpoint.expectedStatus.includes(response.status)) {
             passed++;
             logToConsole(`✅ ${endpoint.path} - ${response.status} (${endpoint.description})`);
@@ -2558,17 +2602,20 @@
     async function testScreenshotAPI() {
       logToConsole('🧪 Testing Screenshot API...');
       try {
-        // Test with proper parameters as query params (expect 500 for invalid fileKey)
-        const response = await fetch('http://localhost:3000/api/figma/screenshot?fileKey=BioUSVD6t51ZNejPDRWUjr&nodeId=123:456', {
+        // Test with mock parameters - should return 200 with mock data
+        const response = await fetch(getApiUrl('screenshot', { 
+          fileKey: ENV_CONFIG.test.mockFileKey, 
+          nodeId: ENV_CONFIG.test.mockNodeId 
+        }), {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
         
-        const responseData = await response.text();
+        const responseData = await response.json();
         
-        if (response.status === 500) {
-          // This is expected behavior for invalid/inaccessible file keys
-          displayTestResult('screenshot-api-result', true, '✅ Screenshot API working correctly (returns proper error for invalid fileKey)');
+        if (response.ok && responseData.mock) {
+          displayTestResult('screenshot-api-result', true, '✅ Screenshot API working correctly (mock response received)');
+          logToConsole('✅ Mock screenshot data received:', responseData);
         } else if (response.ok) {
           displayTestResult('screenshot-api-result', true, '✅ Screenshot API responding correctly');
         } else if (response.status === 400) {
@@ -3227,16 +3274,18 @@ template:
       logToConsole('🧪 Testing Dashboard Integration E2E...');
       try {
         // Test dashboard accessibility
-        const dashboardResponse = await fetch('http://localhost:3000/api/ai-test-dashboard');
+        const dashboardResponse = await fetch(ENV_CONFIG.API_BASE + '/api/ai-test-dashboard');
         const dashboardOk = dashboardResponse.ok;
         
         // Test dashboard API endpoints
-        const testResponse = await fetch('http://localhost:3000/api/test-ai-scenario', {
+        const testResponse = await fetch(ENV_CONFIG.API_BASE + '/api/test-ai-scenario', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            figmaData: { name: 'Test Dashboard', type: 'COMPONENT' },
-            template: { name: 'Button', techStack: 'AEM', documentType: 'Jira' }
+            scenario: 'test',
+            techStack: 'React',
+            documentType: 'Jira',
+            componentType: 'Button'
           })
         });
         
@@ -3312,9 +3361,9 @@ template:
       logToConsole('🧪 Testing Comprehensive Response Times...');
       
       const endpoints = [
-        { name: 'Health Check', url: 'http://localhost:3000/', target: 200 },
-        { name: 'Server Status', url: 'http://localhost:3000/', target: 300 },
-        { name: 'Screenshot API', url: 'http://localhost:3000/api/figma/screenshot?fileKey=test&nodeId=test', target: 800 }
+        { name: 'Health Check', url: getApiUrl('mcpHealth'), target: 200 },
+        { name: 'API Health', url: getApiUrl('health'), target: 300 },
+        { name: 'Screenshot API', url: getApiUrl('screenshot', { fileKey: ENV_CONFIG.test.mockFileKey, nodeId: ENV_CONFIG.test.mockNodeId }), target: 800 }
       ];
 
       let totalTests = endpoints.length;
@@ -3324,9 +3373,15 @@ template:
       for (const endpoint of endpoints) {
         try {
           const startTime = performance.now();
-          await fetch(endpoint.url);
+          const response = await fetch(endpoint.url);
           const endTime = performance.now();
           const responseTime = Math.round(endTime - startTime);
+          
+          // Check if response is successful (including mock responses)
+          const isSuccess = response.ok || (response.status === 200);
+          if (!isSuccess) {
+            logToConsole(`⚠️ ${endpoint.name} returned status ${response.status}`);
+          }
           
           const passed = responseTime < endpoint.target;
           if (passed) passedTests++;
@@ -4731,13 +4786,15 @@ Generated by Ultimate Figma AI Test Suite
     function checkServerHealth() {
       logToConsole('🔍 Checking server health...');
       
-      // Simulate health check for MCP server
-      fetch('http://localhost:3000/health')
-        .then(response => {
-          if (response.ok) {
+      // Check MCP server health (correct endpoint is root)
+      fetch('http://localhost:3000/')
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'healthy') {
             document.getElementById('mcp-server-status').innerHTML = 
               '<span style="color: #10b981;">✅ Online</span>';
             updateMonitorStatus('Healthy', 'success');
+            logToConsole(`✅ MCP Server healthy - ${data.tools.length} tools available`);
           } else {
             throw new Error('Server unhealthy');
           }
@@ -4746,17 +4803,23 @@ Generated by Ultimate Figma AI Test Suite
           document.getElementById('mcp-server-status').innerHTML = 
             '<span style="color: #ef4444;">❌ Offline</span>';
           updateMonitorStatus('Unhealthy', 'error');
+          logToConsole(`❌ MCP Server offline: ${error.message}`);
         });
       
       // Update last check time
       document.getElementById('last-health-check').textContent = 
         new Date().toLocaleTimeString();
         
-      // Check test server (if running)
-      fetch('http://localhost:8101/')
+      // Check if UI is accessible
+      fetch('http://localhost:3000/ui/index.html')
         .then(response => {
-          document.getElementById('test-server-status').innerHTML = 
-            '<span style="color: #10b981;">✅ Online</span>';
+          if (response.ok) {
+            document.getElementById('test-server-status').innerHTML = 
+              '<span style="color: #10b981;">✅ Online</span>';
+            logToConsole('✅ UI Server accessible');
+          } else {
+            throw new Error('UI not accessible');
+          }
         })
         .catch(error => {
           document.getElementById('test-server-status').innerHTML = 

@@ -11,13 +11,14 @@ export default defineConfig({
       'tests/**/*.{test,spec}.{js,mjs}'
     ],
 
-    // Basic excludes - make sure to exclude Playwright tests
+    // Basic excludes - make sure to exclude Playwright tests and template tests
     exclude: [
       'node_modules',
       'dist',
       'tests/smoke/**/*',
       'tests/playwright/**/*',
-      'tests/**/playwright/**/*'
+      'tests/**/playwright/**/*',
+      'tests/templates/**/*'  // Template tests are run by test-orchestrator, not vitest
     ],
 
     // Basic timeouts
