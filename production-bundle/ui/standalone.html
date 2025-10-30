@@ -2044,7 +2044,7 @@ Examples:
         const mcpParams = {
           enhancedFrameData: aiData.enhancedFrameData,
           screenshot: aiData.screenshot,
-          figmaUrl: `https://www.figma.com/file/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}`,
+          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${getTeamParam() ? '?t=' + getTeamParam() : ''}`,
           techStack: techStackDesc,
           documentType: documentType,
           projectName: aiData.fileContext.fileName,
@@ -2060,7 +2060,7 @@ Examples:
         const aiParams = {
           enhancedFrameData: aiData.enhancedFrameData,
           screenshot: aiData.screenshot,
-          figmaUrl: `https://www.figma.com/file/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}`,
+          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${getTeamParam() ? '?t=' + getTeamParam() : ''}`,
           techStack: techStackDesc,
           documentType: documentType,
           projectName: aiData.fileContext.fileName,
@@ -3144,7 +3144,7 @@ This ticket was generated when both AI and enhanced fallback systems were unavai
         const mcpParams = {
           enhancedFrameData: mockData.enhancedFrameData,
           screenshot: mockData.screenshot,
-          figmaUrl: `https://www.figma.com/file/${mockData.fileContext.fileKey}/${encodeURIComponent(mockData.fileContext.fileName)}`,
+          figmaUrl: `https://www.figma.com/design/${mockData.fileContext.fileKey}/${encodeURIComponent(mockData.fileContext.fileName)}`,
           techStack: techStackInput.value.trim() || 'React + TypeScript',
           documentType: documentTypeSelect.value,
           projectName: mockData.fileContext.fileName,
@@ -3297,7 +3297,7 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
                     height: 240
                   }],
                   figmaContext: {
-                    figmaUrl: "https://www.figma.com/file/test-file/Test-Template-Combinations",
+                    figmaUrl: "https://www.figma.com/design/test-file/Test-Template-Combinations",
                     component_name: `Test ${documentType} Component`
                   },
                   platform: platform,
@@ -3896,7 +3896,7 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
         
         // Prepare MCP parameters for standalone mode
         const mcpParams = {
-          figmaUrl: 'https://www.figma.com/file/standalone/Test-Design',
+          figmaUrl: 'https://www.figma.com/design/standalone/Test-Design',
           techStack: techStackDesc,
           platform: mappedParams.platform,
           documentType: mappedParams.documentType,
