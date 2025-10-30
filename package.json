@@ -21,7 +21,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "VITEST_COVERAGE=true vitest run --coverage",
     "test:suite": "echo '🧪 Opening Ultimate Test Suite...' && open tests/integration/test-consolidated-suite.html",
     "test:all": "node scripts/test-orchestrator.js all",
     "test:browser": "node scripts/browser-test-suite.js smoke",

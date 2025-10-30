@@ -39,11 +39,10 @@ export default defineConfig({
       NODE_ENV: 'test'
     },
 
-    // Coverage configuration with fallback for CI compatibility
+    // Coverage configuration - only enabled when explicitly requested
     coverage: {
-      // Try v8 first, fallback handled by command
+      enabled: process.env.VITEST_COVERAGE === 'true',
       provider: 'v8',
-      enabled: true,
       reporter: ['text', 'json-summary', 'lcov'],
       reportsDirectory: './coverage',
       exclude: [
