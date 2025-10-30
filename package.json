@@ -19,11 +19,14 @@
     "lint": "eslint . --fix",
     
     "test": "vitest",
+    "test:run": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "test:suite": "echo '🧪 Opening Ultimate Test Suite...' && open tests/integration/test-consolidated-suite.html",
     "test:all": "node scripts/test-orchestrator.js all",
     "test:browser": "node scripts/browser-test-suite.js smoke",
+    "test:browser:smoke": "node scripts/browser-test-suite.js smoke",
+    "test:mcp": "node tests/integration/test-standalone.mjs",
     "test:templates": "node scripts/test-orchestrator.js templates",
     "test:ai": "node scripts/test-orchestrator.js ai",
     
