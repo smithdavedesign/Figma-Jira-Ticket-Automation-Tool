@@ -1585,6 +1585,62 @@ Examples:
       }
     }
 
+    // Team Parameter Management Functions
+    let globalTeamParam = ''; // Store team parameter for URL generation
+
+    /**
+     * Extract team parameter from Figma URL
+     * @param {string} figmaUrl - Full Figma URL
+     * @returns {string} Team parameter or empty string
+     */
+    function extractTeamParamFromUrl(figmaUrl) {
+      if (!figmaUrl || typeof figmaUrl !== 'string') return '';
+      const match = figmaUrl.match(/[?&]t=([^&]+)/);
+      return match ? match[1] : '';
+    }
+
+    /**
+     * Set team parameter for URL generation (can be called from UI)
+     * @param {string} teamParam - Team parameter value
+     */
+    function setTeamParam(teamParam) {
+      globalTeamParam = teamParam || '';
+      console.log('🔗 Team parameter updated:', globalTeamParam ? '✅ Set' : '❌ Cleared');
+    }
+
+    /**
+     * Handle team parameter input from UI
+     * @param {string} input - User input (can be full URL or just team parameter)
+     */
+    function handleTeamParamInput(input) {
+      if (!input || !input.trim()) {
+        setTeamParam('');
+        return;
+      }
+      
+      // If input looks like a URL, extract team parameter
+      if (input.includes('figma.com')) {
+        const teamParam = extractTeamParamFromUrl(input);
+        setTeamParam(teamParam);
+        
+        // Update the input field to show just the extracted parameter
+        const inputField = document.getElementById('teamParam');
+        if (inputField && teamParam) {
+          inputField.value = teamParam;
+          inputField.title = `Extracted from URL: ${teamParam}`;
+          inputField.style.backgroundColor = '#e8f5e8'; // Light green to indicate auto-filled
+        }
+      } else {
+        // Assume it's already a team parameter
+        setTeamParam(input.trim());
+      }
+    }
+
+    // Expose functions globally for UI access
+    window.setTeamParam = setTeamParam;
+    window.getTeamParam = () => globalTeamParam;
+    window.handleTeamParamInput = handleTeamParamInput;
+
     // Initialize Figma plugin communication
     function initializeFigmaIntegration() {
       // Check MCP server status first
@@ -2067,7 +2123,7 @@ Examples:
         const mcpParams = {
           enhancedFrameData: aiData.enhancedFrameData,
           screenshot: aiData.screenshot,
-          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${window.getTeamParam && window.getTeamParam() ? '?t=' + window.getTeamParam() : ''}`,
+          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${window.getTeamParam && window.getTeamParam() ? '&t=' + window.getTeamParam() : ''}`,
           techStack: techStackDesc,
           documentType: documentType,
           projectName: aiData.fileContext.fileName,
@@ -2083,7 +2139,7 @@ Examples:
         const aiParams = {
           enhancedFrameData: aiData.enhancedFrameData,
           screenshot: aiData.screenshot,
-          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${window.getTeamParam && window.getTeamParam() ? '?t=' + window.getTeamParam() : ''}`,
+          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${window.getTeamParam && window.getTeamParam() ? '&t=' + window.getTeamParam() : ''}`,
           techStack: techStackDesc,
           documentType: documentType,
           projectName: aiData.fileContext.fileName,
