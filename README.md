@@ -70,8 +70,10 @@ Our platform follows a clean **Model-View-Controller (MVC)** architecture that e
 
 ```
 📁 MVC Structure (✅ OPTIMIZED):
-├── app/                    # � CONTROLLERS (Entry Points)
-│   └── main.js             # ✅ MCP Server Application Layer (localhost:3000)
+├── app/                    # 🎯 CONTROLLERS (Entry Points)
+│   ├── main.js             # ✅ MCP Server Application Layer (localhost:3000)
+│   ├── cli/                # CLI tools and utilities
+│   └── plugin/             # Plugin-specific controller logic
 │                           # 6 production tools integrated with TemplateManager
 │
 ├── core/                   # 🧠 MODELS (Business Logic) - OPTIMIZED STRUCTURE
@@ -88,32 +90,56 @@ Our platform follows a clean **Model-View-Controller (MVC)** architecture that e
 │   │   │   ├── github/     # GitHub issue templates
 │   │   │   ├── linear/     # Linear ticket templates
 │   │   │   ├── notion/     # Notion page templates
-│   │   │   └── confluence/ # Confluence documentation
+│   │   │   ├── confluence/ # Confluence documentation
+│   │   │   ├── figma/      # Figma-specific templates
+│   │   │   └── wiki/       # Wiki documentation templates
 │   │   ├── template-manager.js     # 🆕 Unified template service (462 lines) ✅
 │   │   ├── redis-client.js         # Redis caching with hybrid memory layer ✅
-│   │   └── session-manager.js      # Session management ✅
+│   │   ├── session-manager.js      # Session management ✅
+│   │   ├── enhanced-figma-extractor.js # Enhanced Figma data extraction ✅
+│   │   ├── extractor.js            # Core data extraction logic ✅
+│   │   └── validator.js            # Data validation layer ✅
+│   ├── ai/                 # 🤖 AI INTEGRATION LAYER
+│   │   └── [AI services and orchestration] # Gemini, template generation
+│   ├── design-intelligence/ # 🎨 DESIGN ANALYSIS
+│   │   └── [Design system analysis and intelligence] # Color, typography, spacing
+│   ├── compliance/         # 🛡️ COMPLIANCE & VALIDATION
+│   │   └── [Compliance checking and validation] # Design system compliance
+│   ├── figma/              # 📐 FIGMA INTEGRATION
+│   │   └── [Figma API and data processing] # Figma-specific utilities
+│   ├── design-system/      # 🎯 DESIGN SYSTEM LOGIC
+│   │   └── [Design token and system analysis] # Design system utilities
 │   ├── utils/              # ✅ CORE UTILITIES (Essential only)
 │   │   ├── error-handler.js        # Error handling ✅
 │   │   └── logger.js              # Logging utilities ✅
 │   └── logging/            # ✅ LOGGING SYSTEM
-│       ├── index.js        # Logging entry point ✅
-│       ├── logger.js       # Core logging functionality ✅
-│       └── examples.js     # Logging examples ✅
+│       └── [Structured logging and monitoring] # Professional logging
+│
+├── src/                    # 📦 SOURCE CODE (Build Target)
+│   └── code.ts             # TypeScript source for Figma plugin ✅
 │
 ├── ui/                     # 🖼️ VIEWS (Frontend)
 │   ├── index.html          # Main plugin UI entry ✅
 │   ├── components/         # UI Components
 │   ├── plugin/             # Plugin-specific UI
-│   └── test/               # UI Testing (archived - consolidated into single suite)
+│   └── test/               # UI Testing components
 │
 ├── config/                 # ⚙️ CONFIGURATION ✅
-│   ├── ai.config.js        # AI provider configurations
-│   ├── redis.config.js     # Redis connection settings
-│   └── server.config.js    # Server settings and environment
+│   ├── ai.config.js        # AI provider configurations ✅
+│   ├── redis.config.js     # Redis connection settings ✅
+│   ├── server.config.js    # Server settings and environment ✅
+│   ├── manifest-dev.json   # Development plugin manifest ✅
+│   └── [Additional config files] # ESLint, TypeScript, Vitest configs
 │
-└── dist/                   # 📦 BUILD OUTPUTS
-    ├── code.js             # Compiled plugin for Figma ✅
-    └── manifest.json       # Figma plugin manifest ✅
+├── scripts/                # 🔧 BUILD & DEPLOYMENT SCRIPTS
+│   └── [Build and deployment automation] # Production scripts
+│
+├── tests/                  # 🧪 COMPREHENSIVE TEST SUITE
+│   └── [Multi-level testing infrastructure] # Unit, integration, system tests
+│
+└── ROOT BUILD OUTPUTS      # 📦 PRODUCTION FILES
+    ├── code.js             # ✅ Compiled plugin for Figma (ROOT)
+    └── manifest.json       # ✅ Figma plugin manifest (ROOT)
 ```
 
 ### **Key MVC Benefits & Recent Optimizations**
