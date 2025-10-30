@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Architecture Test Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .test-controls {
+            padding: 2rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .test-controls h2 {
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .test-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .test-card:hover {
+            border-color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+        }
+        
+        .test-card.running {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .test-card.success {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        
+        .test-card.error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .test-card h3 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .test-card p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .test-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+        
+        .status-idle { background: #f1f5f9; color: #64748b; }
+        .status-running { background: #fef3c7; color: #92400e; }
+        .status-success { background: #d1fae5; color: #065f46; }
+        .status-error { background: #fee2e2; color: #991b1b; }
+        
+        .results {
+            padding: 2rem;
+        }
+        
+        .results h2 {
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+        
+        .result-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .result-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .metric {
+            text-align: center;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 6px;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        
+        .metric-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .result-preview {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+            color: #374151;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Architecture Test Dashboard</h1>
+            <p>Comprehensive testing for Visual Enhanced AI Service with dummy data and real screenshots</p>
+        </div>
+        
+        <div class="test-controls">
+            <h2>🧪 Test Scenarios</h2>
+            <p>Click any test card to run individual scenarios, or use the buttons below to run full test suites.</p>
+            
+            <div style="margin: 1rem 0;">
+                <button class="btn" onclick="runAllTests()" id="runAllBtn">
+                    Run All Tests
+                </button>
+                <button class="btn" onclick="runScreenshotTests()" id="runScreenshotBtn" style="margin-left: 1rem;">
+                    Run Screenshot Tests
+                </button>
+                <button class="btn" onclick="clearResults()" style="margin-left: 1rem; background: #64748b;">
+                    Clear Results
+                </button>
+            </div>
+            
+            <div class="test-grid" id="testGrid">
+                <!-- Test cards will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>📊 Test Results</h2>
+            <div id="resultsContainer">
+                <p style="color: #64748b; font-style: italic;">No tests run yet. Click a test scenario above to get started.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test scenarios data
+        const testScenarios = [
+            {
+                id: 'card-aem',
+                name: 'Card Component - AEM',
+                techStack: 'AEM',
+                documentType: 'jira',
+                componentType: 'card',
+                description: 'Testing card component generation for Adobe Experience Manager'
+            },
+            {
+                id: 'button-react',
+                name: 'Button Component - React TypeScript',
+                techStack: 'React TypeScript',
+                documentType: 'jira',
+                componentType: 'button',
+                description: 'Testing button component generation for React with TypeScript'
+            },
+            {
+                id: 'nav-vue',
+                name: 'Navigation Component - Vue.js',
+                techStack: 'Vue.js',
+                documentType: 'linear',
+                componentType: 'navigation',
+                description: 'Testing navigation component generation for Vue.js'
+            },
+            {
+                id: 'form-angular',
+                name: 'Form Component - Angular',
+                techStack: 'Angular',
+                documentType: 'asana',
+                componentType: 'form',
+                description: 'Testing form component generation for Angular'
+            },
+            {
+                id: 'modal-svelte',
+                name: 'Modal Component - Svelte',
+                techStack: 'Svelte',
+                documentType: 'jira',
+                componentType: 'modal',
+                description: 'Testing modal component generation for Svelte'
+            }
+        ];
+
+        let testResults = new Map();
+
+        // Initialize the dashboard
+        function initDashboard() {
+            const testGrid = document.getElementById('testGrid');
+            
+            testScenarios.forEach(scenario => {
+                const card = createTestCard(scenario);
+                testGrid.appendChild(card);
+            });
+        }
+
+        // Create a test card
+        function createTestCard(scenario) {
+            const card = document.createElement('div');
+            card.className = 'test-card';
+            card.id = `card-${scenario.id}`;
+            card.onclick = () => runSingleTest(scenario);
+            
+            card.innerHTML = `
+                <h3>${scenario.name}</h3>
+                <p>${scenario.description}</p>
+                <div class="test-meta">
+                    <span>${scenario.techStack} → ${scenario.documentType}</span>
+                    <span class="status-badge status-idle" id="status-${scenario.id}">Ready</span>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Run a single test
+        async function runSingleTest(scenario) {
+            const card = document.getElementById(`card-${scenario.id}`);
+            const status = document.getElementById(`status-${scenario.id}`);
+            
+            // Update UI to show running state
+            card.className = 'test-card running';
+            status.className = 'status-badge status-running';
+            status.innerHTML = '<div class="loading"></div> Running';
+            
+            try {
+                // Simulate API call to backend test
+                const response = await fetch('/api/test-ai-scenario', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        scenario: scenario.id,
+                        techStack: scenario.techStack,
+                        documentType: scenario.documentType,
+                        componentType: scenario.componentType
+                    })
+                });
+
+                const result = await response.json();
+                
+                // Store result
+                testResults.set(scenario.id, {
+                    ...result,
+                    scenario: scenario,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Update UI based on result
+                if (result.success) {
+                    card.className = 'test-card success';
+                    status.className = 'status-badge status-success';
+                    status.textContent = '✅ Success';
+                } else {
+                    card.className = 'test-card error';
+                    status.className = 'status-badge status-error';
+                    status.textContent = '❌ Failed';
+                }
+                
+                // Update results display
+                displayResults();
+                
+            } catch (error) {
+                console.error('Test failed:', error);
+                
+                // Update UI for error
+                card.className = 'test-card error';
+                status.className = 'status-badge status-error';
+                status.textContent = '❌ Error';
+                
+                // Store error result
+                testResults.set(scenario.id, {
+                    success: false,
+                    error: error.message,
+                    scenario: scenario,
+                    timestamp: new Date().toISOString()
+                });
+                
+                displayResults();
+            }
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            const btn = document.getElementById('runAllBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading"></div> Running All Tests...';
+            
+            for (const scenario of testScenarios) {
+                await runSingleTest(scenario);
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Run All Tests';
+        }
+
+        // Run screenshot tests
+        async function runScreenshotTests() {
+            const btn = document.getElementById('runScreenshotBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading"></div> Running Screenshot Tests...';
+            
+            try {
+                const response = await fetch('/api/test-ai-screenshots', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                // Display screenshot test results
+                displayScreenshotResults(result);
+                
+            } catch (error) {
+                console.error('Screenshot tests failed:', error);
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Run Screenshot Tests';
+        }
+
+        // Display test results
+        function displayResults() {
+            const container = document.getElementById('resultsContainer');
+            
+            if (testResults.size === 0) {
+                container.innerHTML = '<p style="color: #64748b; font-style: italic;">No tests run yet. Click a test scenario above to get started.</p>';
+                return;
+            }
+            
+            const successCount = Array.from(testResults.values()).filter(r => r.success).length;
+            const totalCount = testResults.size;
+            
+            let html = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">Overall Test Results</div>
+                        <div>${successCount}/${totalCount} tests passed</div>
+                    </div>
+                    <div class="result-metrics">
+                        <div class="metric">
+                            <div class="metric-value">${totalCount}</div>
+                            <div class="metric-label">Total Tests</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${successCount}</div>
+                            <div class="metric-label">Successful</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${totalCount - successCount}</div>
+                            <div class="metric-label">Failed</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${Math.round((successCount / totalCount) * 100)}%</div>
+                            <div class="metric-label">Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Individual test results
+            Array.from(testResults.entries()).forEach(([id, result]) => {
+                const status = result.success ? '✅' : '❌';
+                const preview = result.aiResponse ? result.aiResponse.substring(0, 300) + '...' : 'No response available';
+                
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div class="result-title">${status} ${result.scenario.name}</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">${new Date(result.timestamp).toLocaleTimeString()}</div>
+                        </div>
+                        ${result.confidence ? `
+                            <div class="result-metrics">
+                                <div class="metric">
+                                    <div class="metric-value">${result.confidence}%</div>
+                                    <div class="metric-label">AI Confidence</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-value">${result.processingMetrics?.screenshotProcessed ? 'Yes' : 'No'}</div>
+                                    <div class="metric-label">Screenshot</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-value">${result.duration || 0}ms</div>
+                                    <div class="metric-label">Duration</div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div class="result-preview">${preview}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Display screenshot test results
+        function displayScreenshotResults(results) {
+            // Implementation for screenshot test results
+            console.log('Screenshot test results:', results);
+        }
+
+        // Clear all results
+        function clearResults() {
+            testResults.clear();
+            
+            // Reset all cards
+            testScenarios.forEach(scenario => {
+                const card = document.getElementById(`card-${scenario.id}`);
+                const status = document.getElementById(`status-${scenario.id}`);
+                
+                card.className = 'test-card';
+                status.className = 'status-badge status-idle';
+                status.textContent = 'Ready';
+            });
+            
+            displayResults();
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

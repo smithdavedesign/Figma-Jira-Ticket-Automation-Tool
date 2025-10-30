@@ -39,6 +39,10 @@
     "test:all:quick": "./scripts/run-all-tests.sh --quick",
     "test:performance": "node tests/performance/test-performance-benchmarking.mjs",
     "test:design-system": "node tests/integration/design-system-compliance-tests.mjs",
+    "test:ai": "node tests/ai/ai-architecture-test-suite.js",
+    "test:ai:screenshots": "node tests/ai/real-screenshot-test-suite.js",
+    "test:ai:all": "npm run test:ai && npm run test:ai:screenshots",
+    "test:ai:dashboard": "echo '🧪 Opening AI Test Dashboard...' && open http://localhost:3000/api/ai-test-dashboard",
     "monitor": "node scripts/live-monitor.js",
     "monitor:performance": "node scripts/monitor-performance.js",
     "monitor:health": "node scripts/monitor-health.js",
@@ -94,6 +98,7 @@
     "ui": "dist/ui/index.html"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "ioredis": "^5.8.2",

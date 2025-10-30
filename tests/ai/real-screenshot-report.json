@@ -1,0 +1,246 @@
+{
+  "testSuite": "Real Screenshot AI Test Suite",
+  "timestamp": "2025-10-30T00:59:44.706Z",
+  "totalDuration": 722,
+  "summary": {
+    "totalTests": 4,
+    "successful": 0,
+    "failed": 4,
+    "screenshotsDownloaded": 2,
+    "screenshotFailures": 2,
+    "averageConfidence": 0
+  },
+  "environment": {
+    "hasGeminiApiKey": true,
+    "nodeVersion": "v22.14.0",
+    "platform": "darwin"
+  },
+  "results": [
+    {
+      "scenario": "Material Design Button - AEM",
+      "techStack": "AEM",
+      "documentType": "jira",
+      "componentType": "button",
+      "startTime": 1761785983984,
+      "success": false,
+      "screenshotDownloaded": true,
+      "screenshotSize": 100,
+      "aiResponse": null,
+      "confidence": 0,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
+      "warnings": [],
+      "duration": 148
+    },
+    {
+      "scenario": "Bootstrap Card - React TypeScript",
+      "techStack": "React TypeScript",
+      "documentType": "jira",
+      "componentType": "card",
+      "startTime": 1761785984132,
+      "success": false,
+      "screenshotDownloaded": true,
+      "screenshotSize": 40346,
+      "aiResponse": null,
+      "confidence": 0,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
+      "warnings": [],
+      "duration": 268
+    },
+    {
+      "scenario": "Ant Design Form - Vue.js",
+      "techStack": "Vue.js",
+      "documentType": "linear",
+      "componentType": "form",
+      "startTime": 1761785984401,
+      "success": false,
+      "screenshotDownloaded": true,
+      "screenshotSize": 4729,
+      "aiResponse": null,
+      "confidence": 0,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
+      "warnings": [],
+      "duration": 145
+    },
+    {
+      "scenario": "Chakra UI Modal - Angular",
+      "techStack": "Angular",
+      "documentType": "asana",
+      "componentType": "modal",
+      "startTime": 1761785984546,
+      "success": false,
+      "screenshotDownloaded": true,
+      "screenshotSize": 100,
+      "aiResponse": null,
+      "confidence": 0,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
+      "warnings": [],
+      "duration": 157
+    }
+  ],
+  "tests": [
+    {
+      "name": "Material Design Button - AEM",
+      "techStack": "AEM",
+      "documentType": "jira",
+      "componentType": "button",
+      "description": "Material Design button component for AEM implementation",
+      "screenshotUrl": "https://lh3.googleusercontent.com/MBUGpVEsJrY-xRe0uiHCEX18r20FjHjfWQ7OUG2RGl3H0hQOIjGmwMl0UY_2RGrF6YY=s400",
+      "altScreenshot": "https://via.placeholder.com/300x100/1976D2/FFFFFF?text=Material+Button",
+      "frameData": {
+        "component_name": "MaterialButton",
+        "nodeCount": 4,
+        "type": "COMPONENT",
+        "name": "Material Design Button",
+        "fills": [
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.1,
+              "g": 0.46,
+              "b": 0.82
+            }
+          },
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1
+            }
+          }
+        ],
+        "style": {
+          "fontFamily": "Roboto",
+          "fontSize": 14,
+          "fontWeight": 500
+        }
+      }
+    },
+    {
+      "name": "Bootstrap Card - React TypeScript",
+      "techStack": "React TypeScript",
+      "documentType": "jira",
+      "componentType": "card",
+      "description": "Bootstrap-style card component for React TypeScript",
+      "screenshotUrl": "https://getbootstrap.com/docs/5.3/assets/img/bootstrap-icons.png",
+      "altScreenshot": "https://via.placeholder.com/400x300/F8F9FA/212529?text=Bootstrap+Card",
+      "frameData": {
+        "component_name": "BootstrapCard",
+        "nodeCount": 8,
+        "type": "COMPONENT",
+        "name": "Bootstrap Card",
+        "fills": [
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.97,
+              "g": 0.98,
+              "b": 0.98
+            }
+          },
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.13,
+              "g": 0.15,
+              "b": 0.16
+            }
+          }
+        ],
+        "style": {
+          "fontFamily": "system-ui",
+          "fontSize": 16,
+          "fontWeight": 400
+        }
+      }
+    },
+    {
+      "name": "Ant Design Form - Vue.js",
+      "techStack": "Vue.js",
+      "documentType": "linear",
+      "componentType": "form",
+      "description": "Ant Design form component adapted for Vue.js",
+      "screenshotUrl": "https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg",
+      "altScreenshot": "https://via.placeholder.com/500x400/1890FF/FFFFFF?text=Ant+Design+Form",
+      "frameData": {
+        "component_name": "AntDesignForm",
+        "nodeCount": 12,
+        "type": "COMPONENT",
+        "name": "Ant Design Form",
+        "fills": [
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.1,
+              "g": 0.56,
+              "b": 1
+            }
+          },
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1
+            }
+          }
+        ],
+        "style": {
+          "fontFamily": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto",
+          "fontSize": 14,
+          "fontWeight": 400
+        }
+      }
+    },
+    {
+      "name": "Chakra UI Modal - Angular",
+      "techStack": "Angular",
+      "documentType": "asana",
+      "componentType": "modal",
+      "description": "Chakra UI inspired modal for Angular applications",
+      "screenshotUrl": "https://via.placeholder.com/600x400/319795/FFFFFF?text=Chakra+UI+Modal",
+      "altScreenshot": "https://via.placeholder.com/600x400/319795/FFFFFF?text=Modal+Dialog",
+      "frameData": {
+        "component_name": "ChakraModal",
+        "nodeCount": 10,
+        "type": "COMPONENT",
+        "name": "Chakra UI Modal",
+        "fills": [
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.19,
+              "g": 0.59,
+              "b": 0.58
+            }
+          },
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1
+            }
+          }
+        ],
+        "style": {
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": 400
+        }
+      }
+    }
+  ]
+}

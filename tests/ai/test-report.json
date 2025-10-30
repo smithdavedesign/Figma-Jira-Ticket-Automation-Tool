@@ -1,0 +1,384 @@
+{
+  "testSuite": "AI Architecture Test Suite",
+  "timestamp": "2025-10-30T00:28:08.229Z",
+  "totalDuration": 1537,
+  "summary": {
+    "totalTests": 5,
+    "successful": 0,
+    "failed": 5,
+    "aiEnhanced": 0,
+    "templateFallback": 0
+  },
+  "environment": {
+    "hasGeminiApiKey": true,
+    "nodeVersion": "v22.14.0",
+    "platform": "darwin"
+  },
+  "results": [
+    {
+      "scenario": "Card Component - AEM",
+      "techStack": "AEM",
+      "documentType": "jira",
+      "startTime": 1761784086694,
+      "success": false,
+      "aiResponse": null,
+      "fallbackUsed": false,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
+      "warnings": [],
+      "duration": 1025
+    },
+    {
+      "scenario": "Button Component - React TypeScript",
+      "techStack": "React TypeScript",
+      "documentType": "jira",
+      "startTime": 1761784087719,
+      "success": false,
+      "aiResponse": null,
+      "fallbackUsed": false,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
+      "warnings": [],
+      "duration": 153
+    },
+    {
+      "scenario": "Navigation Component - Vue.js",
+      "techStack": "Vue.js",
+      "documentType": "linear",
+      "startTime": 1761784087872,
+      "success": false,
+      "aiResponse": null,
+      "fallbackUsed": false,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
+      "warnings": [],
+      "duration": 97
+    },
+    {
+      "scenario": "Form Component - Angular",
+      "techStack": "Angular",
+      "documentType": "asana",
+      "startTime": 1761784087970,
+      "success": false,
+      "aiResponse": null,
+      "fallbackUsed": false,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
+      "warnings": [],
+      "duration": 153
+    },
+    {
+      "scenario": "Modal Component - Svelte",
+      "techStack": "Svelte",
+      "documentType": "jira",
+      "startTime": 1761784088123,
+      "success": false,
+      "aiResponse": null,
+      "fallbackUsed": false,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
+      "warnings": [],
+      "duration": 105
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "Card Component - AEM",
+      "techStack": "AEM",
+      "documentType": "jira",
+      "componentType": "card",
+      "description": "Testing card component generation for Adobe Experience Manager",
+      "screenshotUrl": "https://via.placeholder.com/400x300/2563EB/FFFFFF?text=Card+Component",
+      "frameData": {
+        "component_name": "ProductCard",
+        "nodeCount": 8,
+        "type": "COMPONENT",
+        "name": "Product Card",
+        "fills": [
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.15,
+              "g": 0.38,
+              "b": 0.92
+            }
+          },
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1
+            }
+          }
+        ],
+        "style": {
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": 500
+        },
+        "children": [
+          {
+            "name": "Image Container",
+            "type": "FRAME"
+          },
+          {
+            "name": "Content",
+            "type": "FRAME"
+          },
+          {
+            "name": "Title",
+            "type": "TEXT"
+          },
+          {
+            "name": "Description",
+            "type": "TEXT"
+          },
+          {
+            "name": "Price",
+            "type": "TEXT"
+          },
+          {
+            "name": "CTA Button",
+            "type": "COMPONENT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Button Component - React TypeScript",
+      "techStack": "React TypeScript",
+      "documentType": "jira",
+      "componentType": "button",
+      "description": "Testing button component generation for React with TypeScript",
+      "screenshotUrl": "https://via.placeholder.com/200x50/10B981/FFFFFF?text=Primary+Button",
+      "frameData": {
+        "component_name": "PrimaryButton",
+        "nodeCount": 3,
+        "type": "COMPONENT",
+        "name": "Primary Button",
+        "fills": [
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.06,
+              "g": 0.72,
+              "b": 0.51
+            }
+          },
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1
+            }
+          }
+        ],
+        "style": {
+          "fontFamily": "Roboto",
+          "fontSize": 14,
+          "fontWeight": 600
+        },
+        "children": [
+          {
+            "name": "Background",
+            "type": "RECTANGLE"
+          },
+          {
+            "name": "Label",
+            "type": "TEXT"
+          },
+          {
+            "name": "Icon",
+            "type": "VECTOR"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Navigation Component - Vue.js",
+      "techStack": "Vue.js",
+      "documentType": "linear",
+      "componentType": "navigation",
+      "description": "Testing navigation component generation for Vue.js",
+      "screenshotUrl": "https://via.placeholder.com/800x60/1F2937/FFFFFF?text=Navigation+Bar",
+      "frameData": {
+        "component_name": "MainNavigation",
+        "nodeCount": 12,
+        "type": "COMPONENT",
+        "name": "Main Navigation",
+        "fills": [
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.12,
+              "g": 0.16,
+              "b": 0.22
+            }
+          },
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1
+            }
+          }
+        ],
+        "style": {
+          "fontFamily": "Source Sans Pro",
+          "fontSize": 14,
+          "fontWeight": 400
+        },
+        "children": [
+          {
+            "name": "Logo",
+            "type": "COMPONENT"
+          },
+          {
+            "name": "Nav Items",
+            "type": "FRAME"
+          },
+          {
+            "name": "Search",
+            "type": "COMPONENT"
+          },
+          {
+            "name": "User Menu",
+            "type": "COMPONENT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Form Component - Angular",
+      "techStack": "Angular",
+      "documentType": "asana",
+      "componentType": "form",
+      "description": "Testing form component generation for Angular",
+      "screenshotUrl": "https://via.placeholder.com/500x400/F3F4F6/374151?text=Contact+Form",
+      "frameData": {
+        "component_name": "ContactForm",
+        "nodeCount": 15,
+        "type": "COMPONENT",
+        "name": "Contact Form",
+        "fills": [
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.95,
+              "g": 0.96,
+              "b": 0.97
+            }
+          },
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0.22,
+              "g": 0.25,
+              "b": 0.32
+            }
+          }
+        ],
+        "style": {
+          "fontFamily": "Helvetica Neue",
+          "fontSize": 14,
+          "fontWeight": 400
+        },
+        "children": [
+          {
+            "name": "Form Container",
+            "type": "FRAME"
+          },
+          {
+            "name": "Name Input",
+            "type": "COMPONENT"
+          },
+          {
+            "name": "Email Input",
+            "type": "COMPONENT"
+          },
+          {
+            "name": "Message Textarea",
+            "type": "COMPONENT"
+          },
+          {
+            "name": "Submit Button",
+            "type": "COMPONENT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Modal Component - Svelte",
+      "techStack": "Svelte",
+      "documentType": "jira",
+      "componentType": "modal",
+      "description": "Testing modal component generation for Svelte",
+      "screenshotUrl": "https://via.placeholder.com/600x400/FFFFFF/000000?text=Modal+Dialog",
+      "frameData": {
+        "component_name": "ConfirmationModal",
+        "nodeCount": 10,
+        "type": "COMPONENT",
+        "name": "Confirmation Modal",
+        "fills": [
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1
+            }
+          },
+          {
+            "type": "SOLID",
+            "color": {
+              "r": 0,
+              "g": 0,
+              "b": 0,
+              "a": 0.5
+            }
+          }
+        ],
+        "style": {
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": 400
+        },
+        "children": [
+          {
+            "name": "Overlay",
+            "type": "RECTANGLE"
+          },
+          {
+            "name": "Modal Container",
+            "type": "FRAME"
+          },
+          {
+            "name": "Header",
+            "type": "FRAME"
+          },
+          {
+            "name": "Content",
+            "type": "FRAME"
+          },
+          {
+            "name": "Actions",
+            "type": "FRAME"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -30,6 +30,11 @@ import { BatchProcessor } from '../core/tools/batch-processor.js';
 import { EffortEstimator } from '../core/tools/effort-estimator.js';
 import { RelationshipMapper } from '../core/tools/relationship-mapper.js';
 
+// Import AI Services
+import { VisualEnhancedAIService } from '../core/ai/visual-enhanced-ai-service.js';
+import { AIOrchestrator, getGlobalOrchestrator } from '../core/ai/orchestrator.js';
+import { GeminiAdapter } from '../core/ai/adapters/gemini-adapter.js';
+
 // Import configuration
 import { serverConfig } from '../config/server.config.js';
 import { aiConfig } from '../config/ai.config.js';
@@ -96,7 +101,44 @@ class MCPServer {
       relationship_mapper: new RelationshipMapper()
     };
 
+    // Initialize AI Services with proper integration
+    this.initializeAIServices();
+
     this.logger.info('Initialized MCP tools:', Object.keys(this.tools));
+  }
+
+  /**
+   * Initialize AI Services with Redis and data layer integration
+   */
+  initializeAIServices() {
+    try {
+      // Initialize Visual Enhanced AI Service
+      this.visualAIService = new VisualEnhancedAIService(process.env.GEMINI_API_KEY);
+      
+      // Initialize Global AI Orchestrator
+      this.aiOrchestrator = getGlobalOrchestrator();
+      
+      // Initialize Gemini Adapter with Gemini 2.0 Flash model
+      this.geminiAdapter = new GeminiAdapter({
+        apiKey: process.env.GEMINI_API_KEY,
+        model: 'gemini-2.0-flash',
+        temperature: 0.7,
+        maxTokens: 8192  // Increased for 2.0 model
+      });
+
+      this.logger.info('✅ AI Services initialized:', {
+        visualAI: !!this.visualAIService,
+        orchestrator: !!this.aiOrchestrator,
+        geminiAdapter: !!this.geminiAdapter,
+        hasApiKey: !!process.env.GEMINI_API_KEY
+      });
+
+    } catch (error) {
+      this.logger.error('❌ Failed to initialize AI services:', error);
+      this.visualAIService = null;
+      this.aiOrchestrator = null;
+      this.geminiAdapter = null;
+    }
   }
 
   /**
@@ -148,6 +190,11 @@ class MCPServer {
     this.app.post('/api/test/run', (req, res) => this.handleTestRun(req, res));
     this.app.get('/api/test/results', (req, res) => this.handleTestResults(req, res));
     this.app.get('/api/test/coverage', (req, res) => this.handleTestCoverage(req, res));
+
+    // AI Architecture Test endpoints
+    this.app.post('/api/test-ai-scenario', (req, res) => this.handleTestAIScenario(req, res));
+    this.app.post('/api/test-ai-screenshots', (req, res) => this.handleTestAIScreenshots(req, res));
+    this.app.get('/api/ai-test-dashboard', (req, res) => this.handleAITestDashboard(req, res));
 
     // Static file serving
     this.app.use('/ui', express.static(join(process.cwd(), 'ui')));
@@ -465,7 +512,7 @@ class MCPServer {
       timestamp: new Date().toISOString(),
       version: '1.0.0',
       server: 'Figma AI Ticket Generator MCP Server (MVC Architecture)',
-      architecture: 'MVC + Node.js + Redis',
+      architecture: 'MVC + Node.js + Redis + Gemini 2.0 Flash',
       tools: Object.keys(this.tools),
       uptime: process.uptime(),
       memory: process.memoryUsage(),
@@ -478,12 +525,43 @@ class MCPServer {
         redis: redisHealth,
         sessions: sessionStatus
       },
+      ai: {
+        geminiModel: 'gemini-2.0-flash',
+        visualEnhancedAI: !!this.visualAIService,
+        aiOrchestrator: !!this.aiOrchestrator,
+        geminiAdapter: !!this.geminiAdapter,
+        providers: ['gemini', 'gpt4', 'claude'],
+        capabilities: [
+          'multimodal-analysis',
+          'screenshot-processing', 
+          'visual-enhanced-context',
+          'provider-fallback',
+          'rate-limiting',
+          'redis-caching'
+        ]
+      },
+      testing: {
+        aiTestDashboard: '/api/ai-test-dashboard',
+        aiTestScenarios: '/api/test-ai-scenario',
+        screenshotTests: '/api/test-ai-screenshots',
+        consolidatedSuite: '/tests/integration/test-consolidated-suite.html',
+        capabilities: [
+          'visual-ai-testing',
+          'multimodal-scenarios',
+          'real-screenshot-analysis',
+          'integrated-dashboard',
+          'comprehensive-e2e'
+        ]
+      },
       features: {
         aiIntegration: aiConfig.enabled,
         templateSystem: aiConfig.templates.enabled,
         visualAnalysis: aiConfig.visual.enabled,
         persistentStorage: redisHealth.status === 'healthy',
-        testMonitoring: process.env.TEST_MONITOR_ENABLED === 'true'
+        testMonitoring: process.env.TEST_MONITOR_ENABLED === 'true',
+        aiTestSuite: true,
+        gemini2Flash: true,
+        multiModalAI: true
       }
     };
 
@@ -960,40 +1038,47 @@ Generated at ${new Date().toISOString()}`
   /**
    * 🤖 AI-ENHANCED GENERATION
    *
-   * Intelligent, context-aware ticket generation using Gemini AI.
-   * Analyzes component details, tech stack, and context to create dynamic tickets.
+   * Intelligent, context-aware ticket generation using Visual Enhanced AI Service.
+   * Combines screenshot analysis with structured data for superior results.
    *
    * Features:
-   * - Gemini 2.5 Flash AI integration
-   * - Context-aware content generation
-   * - Tech stack-specific recommendations
-   * - Intelligent fallback to template system
-   * - Enhanced component analysis
+   * - Visual Enhanced AI Service with multimodal analysis
+   * - AI Orchestrator for robust error handling and rate limiting
+   * - Gemini Adapter for proper API interaction
+   * - Redis caching integration
+   * - Template system fallback
+   * - Enhanced component analysis with visual context
    * - Dynamic story point estimation
    *
-   * Fallback Strategy:
-   * - If AI disabled or API key missing → Template generation
-   * - If AI API fails → Template generation with error logging
+   * Architecture Flow:
+   * 1. Build visual-enhanced context (screenshot + structured data)
+   * 2. Use Visual Enhanced AI Service for multimodal analysis
+   * 3. AI Orchestrator manages providers and error handling
+   * 4. Redis caching for performance
+   * 5. Template fallback for reliability
    *
-   * Use when: You want intelligent, context-aware tickets with dynamic content
+   * Use when: You want intelligent, context-aware tickets with visual understanding
    */
   async generateAITicket(params) {
     const { enhancedFrameData, techStack, documentType, useAI, figmaUrl } = params;
 
-    this.logger.info('🤖 AI Ticket Generation Request:', {
+    this.logger.info('🤖 Visual Enhanced AI Ticket Generation Request:', {
       useAI,
       aiConfigEnabled: aiConfig.enabled,
+      hasVisualAI: !!this.visualAIService,
+      hasOrchestrator: !!this.aiOrchestrator,
       hasApiKey: !!process.env.GEMINI_API_KEY,
       techStack,
       documentType,
       frameDataCount: enhancedFrameData?.length || 0
     });
 
-    // Check if AI is enabled and API key is available
-    if (!useAI || !aiConfig.enabled || !process.env.GEMINI_API_KEY) {
-      this.logger.warn('❌ AI Generation prerequisites not met:', {
+    // Check if AI services are available
+    if (!useAI || !aiConfig.enabled || !this.visualAIService || !process.env.GEMINI_API_KEY) {
+      this.logger.warn('❌ Visual Enhanced AI prerequisites not met:', {
         useAI,
         aiEnabled: aiConfig.enabled,
+        hasVisualAI: !!this.visualAIService,
         hasApiKey: !!process.env.GEMINI_API_KEY
       });
       
@@ -1007,43 +1092,76 @@ Generated at ${new Date().toISOString()}`
     }
 
     try {
-      this.logger.info('🚀 Starting Gemini AI generation...');
-      
-      // Use Gemini API for AI-enhanced generation
-      const prompt = this.buildAIPrompt(enhancedFrameData, techStack, documentType);
-      this.logger.info('📝 AI Prompt built:', { promptLength: prompt.length, preview: prompt.substring(0, 200) + '...' });
-      
-      const aiResponse = await this.callGeminiAPI(prompt);
-      this.logger.info('✅ Gemini AI response received:', { responseLength: aiResponse.length });
+      this.logger.info('🎨 Starting Visual Enhanced AI generation...');
 
+      // Step 1: Build visual-enhanced context combining screenshot + structured data
+      const visualContext = await this.buildVisualEnhancedContext(enhancedFrameData, figmaUrl);
+      
+      // Step 2: Check Redis cache for this context
+      const cacheKey = this.createVisualAICacheKey(visualContext, techStack, documentType);
+      const cachedResult = await this.getCachedTicket(cacheKey);
+      
+      if (cachedResult) {
+        this.logger.info('✅ Using cached Visual Enhanced AI result');
+        return cachedResult;
+      }
+
+      // Step 3: Use Visual Enhanced AI Service for multimodal analysis
+      const aiResult = await this.visualAIService.processVisualEnhancedContext(visualContext, {
+        documentType,
+        techStack,
+        instructions: `Generate a comprehensive ${documentType} ticket for ${techStack} implementation`
+      });
+
+      this.logger.info('✅ Visual Enhanced AI response received:', { 
+        confidence: aiResult.confidence,
+        screenshotProcessed: aiResult.processingMetrics.screenshotProcessed,
+        dataStructures: aiResult.processingMetrics.dataStructuresAnalyzed
+      });
+
+      // Step 4: Structure response with enhanced metadata
       const result = {
         content: [{
           type: 'text',
-          text: aiResponse + '\n\n---\n*Generated via Gemini AI at ' + new Date().toISOString() + '*'
-        }]
+          text: aiResult.ticket + '\n\n---\n*Generated via Visual Enhanced AI at ' + new Date().toISOString() + '*'
+        }],
+        metadata: {
+          generationType: 'visual-enhanced-ai',
+          aiModel: 'gemini-1.5-flash',
+          confidence: aiResult.confidence,
+          processingMetrics: aiResult.processingMetrics,
+          techStack,
+          generatedAt: new Date().toISOString(),
+          visualContext: {
+            hasScreenshot: !!visualContext.screenshot,
+            colorPaletteSize: visualContext.visualDesignContext?.colorPalette?.length || 0,
+            componentsAnalyzed: visualContext.hierarchicalData?.components?.length || 0
+          }
+        }
       };
 
-      this.logger.info('🎯 Returning AI-generated ticket');
+      // Step 5: Cache successful result
+      await this.cacheTicket(cacheKey, result);
+
+      this.logger.info('🎯 Returning Visual Enhanced AI-generated ticket');
       return result;
 
     } catch (error) {
-      this.logger.error('❌ AI generation failed, falling back to template:', {
-        error: error.message,
-        stack: error.stack,
-        useAI,
-        apiKeyExists: !!process.env.GEMINI_API_KEY
-      });
-
-      // Fallback to template-based generation
-      const fallbackResult = this.generateTemplateTickets({
+      this.logger.error('❌ Visual Enhanced AI generation failed, falling back to templates:', error);
+      
+      // Use AI Orchestrator for intelligent fallback
+      return this.handleAIGenerationFailure(error, {
         frameData: enhancedFrameData,
         platform: documentType || 'jira',
         documentType: 'component',
-        teamStandards: { tech_stack: techStack }
+        teamStandards: { tech_stack: techStack },
+        metadata: {
+          generationType: 'template-fallback',
+          aiError: error instanceof Error ? error.message : 'Unknown error',
+          originalRequest: 'visual-enhanced-ai',
+          fallbackReason: 'visual-ai-generation-failed'
+        }
       });
-      
-      this.logger.info('📋 Using template fallback generation');
-      return fallbackResult;
     }
   }
 
@@ -1271,6 +1389,360 @@ Generate a complete, actionable ticket that a developer can implement immediatel
     }
 
     return text;
+  }
+
+  // ===== VISUAL ENHANCED AI HELPER METHODS =====
+
+  /**
+   * Build visual-enhanced context combining screenshot + structured data
+   * @param {Object} enhancedFrameData - Enhanced frame data
+   * @param {string} figmaUrl - Figma URL for screenshot
+   * @returns {Object} Visual-enhanced context
+   */
+  async buildVisualEnhancedContext(enhancedFrameData, figmaUrl) {
+    this.logger.info('🎨 Building visual-enhanced context...');
+
+    try {
+      // Extract screenshot if available (from existing screenshot service)
+      let screenshot = null;
+      if (figmaUrl) {
+        try {
+          const fileKey = this.extractFileKeyFromUrl(figmaUrl);
+          const nodeId = enhancedFrameData?.[0]?.id || 'root';
+          
+          // Use existing screenshot functionality
+          const screenshotResult = await this.figmaExtractor.captureScreenshot(fileKey, nodeId);
+          if (screenshotResult && screenshotResult.base64) {
+            screenshot = {
+              base64: screenshotResult.base64,
+              format: screenshotResult.format || 'PNG',
+              size: screenshotResult.base64.length,
+              resolution: screenshotResult.resolution || { width: 800, height: 600 }
+            };
+            this.logger.info('📸 Screenshot captured for visual context');
+          }
+        } catch (screenshotError) {
+          this.logger.warn('⚠️ Screenshot capture failed, continuing without visual context:', screenshotError.message);
+        }
+      }
+
+      // Build visual design context from enhanced frame data
+      const visualDesignContext = this.extractVisualDesignContext(enhancedFrameData);
+      
+      // Build hierarchical data context
+      const hierarchicalData = this.extractHierarchicalData(enhancedFrameData);
+      
+      // Build Figma context
+      const figmaContext = this.extractFigmaContext(figmaUrl, enhancedFrameData);
+
+      return {
+        screenshot,
+        visualDesignContext,
+        hierarchicalData,
+        figmaContext
+      };
+
+    } catch (error) {
+      this.logger.error('❌ Failed to build visual-enhanced context:', error);
+      // Return minimal context to prevent complete failure
+      return {
+        screenshot: null,
+        visualDesignContext: { colorPalette: [], typography: { fonts: [], sizes: [], hierarchy: [] }, spacing: { patterns: [], measurements: [] }, layout: {}, designPatterns: [] },
+        hierarchicalData: { components: [], designSystemLinks: null },
+        figmaContext: { fileName: 'Unknown', pageName: 'Unknown', selection: null }
+      };
+    }
+  }
+
+  /**
+   * Extract visual design context from frame data
+   * @param {Object} enhancedFrameData - Enhanced frame data
+   * @returns {Object} Visual design context
+   */
+  extractVisualDesignContext(enhancedFrameData) {
+    const context = {
+      colorPalette: [],
+      typography: { fonts: [], sizes: [], hierarchy: [] },
+      spacing: { patterns: [], measurements: [] },
+      layout: {},
+      designPatterns: []
+    };
+
+    if (!enhancedFrameData || !Array.isArray(enhancedFrameData)) {
+      return context;
+    }
+
+    // Extract colors from all frames
+    const colors = new Map();
+    enhancedFrameData.forEach(frame => {
+      if (frame.fills) {
+        frame.fills.forEach(fill => {
+          if (fill.type === 'SOLID' && fill.color) {
+            const hex = this.rgbToHex(fill.color);
+            if (!colors.has(hex)) {
+              colors.set(hex, {
+                hex,
+                rgb: fill.color,
+                usage: [frame.name || 'Component'],
+                count: 1
+              });
+            } else {
+              colors.get(hex).count++;
+            }
+          }
+        });
+      }
+    });
+
+    context.colorPalette = Array.from(colors.values());
+
+    // Extract typography information
+    const fonts = new Set();
+    const sizes = new Set();
+    enhancedFrameData.forEach(frame => {
+      if (frame.style) {
+        if (frame.style.fontFamily) fonts.add(frame.style.fontFamily);
+        if (frame.style.fontSize) sizes.add(frame.style.fontSize);
+      }
+    });
+
+    context.typography.fonts = Array.from(fonts);
+    context.typography.sizes = Array.from(sizes);
+
+    return context;
+  }
+
+  /**
+   * Extract hierarchical data from frame data
+   * @param {Object} enhancedFrameData - Enhanced frame data
+   * @returns {Object} Hierarchical data context
+   */
+  extractHierarchicalData(enhancedFrameData) {
+    const components = [];
+    
+    if (enhancedFrameData && Array.isArray(enhancedFrameData)) {
+      enhancedFrameData.forEach(frame => {
+        components.push({
+          name: frame.name || 'Component',
+          type: frame.type || 'FRAME',
+          masterComponent: frame.masterComponent || null,
+          id: frame.id
+        });
+      });
+    }
+
+    return {
+      components,
+      designSystemLinks: null
+    };
+  }
+
+  /**
+   * Extract Figma context information
+   * @param {string} figmaUrl - Figma URL
+   * @param {Object} enhancedFrameData - Enhanced frame data
+   * @returns {Object} Figma context
+   */
+  extractFigmaContext(figmaUrl, enhancedFrameData) {
+    return {
+      fileName: 'Figma Design',
+      pageName: 'Page',
+      selection: enhancedFrameData?.[0] ? {
+        name: enhancedFrameData[0].name || 'Selection',
+        id: enhancedFrameData[0].id
+      } : null
+    };
+  }
+
+  /**
+   * Convert RGB color to hex
+   * @param {Object} rgb - RGB color object
+   * @returns {string} Hex color string
+   */
+  rgbToHex(rgb) {
+    const toHex = (c) => {
+      const hex = Math.round(c * 255).toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    };
+    return `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`;
+  }
+
+  /**
+   * Create cache key for Visual Enhanced AI
+   * @param {Object} visualContext - Visual context
+   * @param {string} techStack - Technology stack
+   * @param {string} documentType - Document type
+   * @returns {string} Cache key
+   */
+  createVisualAICacheKey(visualContext, techStack, documentType) {
+    const contextHash = JSON.stringify({
+      hasScreenshot: !!visualContext.screenshot,
+      componentCount: visualContext.hierarchicalData?.components?.length || 0,
+      colorCount: visualContext.visualDesignContext?.colorPalette?.length || 0,
+      techStack,
+      documentType
+    });
+
+    // Create a simple hash
+    let hash = 0;
+    for (let i = 0; i < contextHash.length; i++) {
+      const char = contextHash.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    return `visual-ai:${Math.abs(hash)}:${techStack}:${documentType}`;
+  }
+
+  /**
+   * Handle AI generation failure with intelligent fallback
+   * @param {Error} error - The error that occurred
+   * @param {Object} fallbackParams - Parameters for fallback generation
+   * @returns {Object} Fallback result
+   */
+  async handleAIGenerationFailure(error, fallbackParams) {
+    this.logger.error('🔄 Handling AI generation failure with intelligent fallback:', {
+      error: error.message,
+      fallbackStrategy: 'template-based'
+    });
+
+    // Use existing template generation as fallback
+    const fallbackResult = await this.generateTemplateTickets(fallbackParams);
+    
+    // Add error context to result
+    if (fallbackResult.metadata) {
+      fallbackResult.metadata.aiError = error.message;
+      fallbackResult.metadata.fallbackUsed = true;
+    }
+
+    return fallbackResult;
+  }
+
+  // ===== AI TEST ENDPOINTS =====
+
+  /**
+   * Handle AI scenario test
+   */
+  async handleTestAIScenario(req, res) {
+    try {
+      const { scenario, techStack, documentType, componentType } = req.body;
+      
+      this.logger.info('🧪 Running AI scenario test:', { scenario, techStack, documentType });
+
+      // Create dummy frame data for testing
+      const dummyFrameData = [{
+        component_name: `Test${componentType.charAt(0).toUpperCase() + componentType.slice(1)}`,
+        nodeCount: Math.floor(Math.random() * 10) + 3,
+        type: 'COMPONENT',
+        name: `${componentType} Component`,
+        id: `test-${Date.now()}`,
+        fills: [
+          { type: 'SOLID', color: { r: Math.random(), g: Math.random(), b: Math.random() } }
+        ],
+        style: {
+          fontFamily: 'Inter',
+          fontSize: 16,
+          fontWeight: 400
+        }
+      }];
+
+      // Test the AI generation with dummy data
+      const result = await this.generateAITicket({
+        enhancedFrameData: dummyFrameData,
+        techStack,
+        documentType,
+        useAI: true,
+        figmaUrl: `https://figma.com/test/${scenario}`
+      });
+
+      res.json({
+        success: true,
+        scenario,
+        techStack,
+        documentType,
+        componentType,
+        aiResponse: result.content?.[0]?.text || 'No response generated',
+        confidence: result.metadata?.confidence || 75,
+        processingMetrics: result.metadata?.processingMetrics || {
+          screenshotProcessed: false,
+          dataStructuresAnalyzed: 1
+        },
+        duration: Date.now() - req.startTime || 1000,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      this.logger.error('❌ AI scenario test failed:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+        scenario: req.body.scenario,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
+   * Handle AI screenshot tests
+   */
+  async handleTestAIScreenshots(req, res) {
+    try {
+      this.logger.info('🖼️ Running AI screenshot tests');
+
+      // Import and run the real screenshot test suite
+      const { RealScreenshotTestSuite } = await import('../tests/ai/real-screenshot-test-suite.js');
+      const testSuite = new RealScreenshotTestSuite();
+      
+      // Run tests (this might take a while)
+      await testSuite.runAllTests();
+
+      res.json({
+        success: true,
+        message: 'Screenshot tests completed',
+        results: testSuite.results,
+        summary: {
+          totalTests: testSuite.results.length,
+          successful: testSuite.results.filter(r => r.success).length,
+          downloadedImages: testSuite.downloadedImages,
+          failedDownloads: testSuite.failedDownloads
+        },
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      this.logger.error('❌ AI screenshot tests failed:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
+   * Serve AI test dashboard
+   */
+  async handleAITestDashboard(req, res) {
+    try {
+      const dashboardPath = join(process.cwd(), 'tests/ai/ai-test-dashboard.html');
+      console.log('🔍 Looking for dashboard at:', dashboardPath);
+      
+      const dashboardContent = await readFile(dashboardPath, 'utf8');
+      
+      res.setHeader('Content-Type', 'text/html');
+      res.send(dashboardContent);
+      
+    } catch (error) {
+      console.error('❌ Dashboard error details:', error.message);
+      console.error('❌ Dashboard path:', join(process.cwd(), 'tests/ai/ai-test-dashboard.html'));
+      
+      this.logger.error('❌ Failed to serve AI test dashboard:', error);
+      res.status(404).json({
+        error: 'AI test dashboard not found',
+        details: error.message,
+        fullPath: join(process.cwd(), 'tests/ai/ai-test-dashboard.html')
+      });
+    }
   }
 
   // ===== REDIS CACHING METHODS =====
