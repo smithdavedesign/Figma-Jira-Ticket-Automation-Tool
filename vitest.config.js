@@ -27,16 +27,43 @@ export default defineConfig({
     // Disable threading for CI compatibility
     threads: false,
 
-    // Simple reporter
-    reporter: 'default',
+    // Simple reporter for CI
+    reporter: process.env.CI ? 'basic' : 'default',
 
     // Disable features that might cause Node.js compatibility issues
     watch: false,
-    isolate: false,
+    isolate: true, // Enable isolation for better test reliability
 
     // Simple environment
     env: {
       NODE_ENV: 'test'
+    },
+
+    // Coverage configuration with fallback for CI compatibility
+    coverage: {
+      // Try v8 first, fallback handled by command
+      provider: 'v8',
+      enabled: true,
+      reporter: ['text', 'json-summary', 'lcov'],
+      reportsDirectory: './coverage',
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        'tests/**',
+        'coverage/**',
+        '**/*.config.js',
+        '**/*.config.mjs',
+        'app/plugin/**',
+        'scripts/**',
+        'tools/**'
+      ],
+      // Minimal thresholds for CI
+      thresholds: {
+        lines: 1,
+        functions: 1,
+        branches: 1,
+        statements: 1
+      }
     }
   }
 });
