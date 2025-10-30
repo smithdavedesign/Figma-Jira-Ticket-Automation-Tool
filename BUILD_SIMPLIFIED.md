@@ -8,7 +8,7 @@ The project has been simplified to focus on **Figma Desktop** usage only, elimin
 ### Essential Files (Figma Desktop)
 ```
 📁 figma-ticket-generator/
-├── 📄 manifest-simple.json     # Use this for Figma Desktop
+├── 📄 manifest.json           # Main manifest (points to simplified paths)
 ├── 📄 code.js                  # Compiled plugin logic
 ├── 📁 ui/
 │   └── 📄 index.html          # Single UI file with team parameter auto-extraction
@@ -34,7 +34,7 @@ npm run build                  # Uses build-simple.sh
 ./scripts/build-simple.sh      # Direct usage
 
 # Import into Figma
-# Use manifest-simple.json in Figma Desktop
+# Use manifest.json in Figma Desktop (now points to simplified paths)
 ```
 
 ### Legacy Build (If needed)
@@ -80,4 +80,4 @@ npm run test:browser:smoke    # CI tests pass with either build
 
 ---
 
-**Recommendation**: Use the simplified build (`build-simple.sh` + `manifest-simple.json`) unless you specifically need the complex packaging for distribution.
+**Recommendation**: Use the simplified build (`build-simple.sh` + `manifest.json`) - the main manifest now points to simplified paths.
