@@ -15,8 +15,8 @@ variables:
   labels: "{{ project.labels }}"
   technologies: "{{ project.tech_stack }}"
   story_points: "{{ calculated.story_points }}"
-  figma_url: "{{ figma.live_link }}"
-  screenshot_filename: "{{ figma.screenshot_filename }}"
+        figma_url: "{{ figma.live_link }}",
+        screenshot_filename: "{{ figma.screenshot_url || figma.screenshot_filename }}"
   design_status: "{{ figma.design_status }}"
 
 team_standards:
@@ -51,86 +51,121 @@ customization:
 
 # Template content following exact Jira format
 content: |
-  ## Jira Ticket
-
-  **Project:** {{ project_name }}  
-  **Issue Type:** {{ issue_type }}  
-  **Summary:** {{ component_name }} Component Implementation  
-  **Component:** {{ component_type }}  
-  **Priority:** {{ priority }}  
-  **Assignee:** {{ assignee }}  
-  **Reporter:** {{ reporter }}  
+  **Project:** {{ project_name }}
+  **Issue Type:** {{ issue_type }}
+  **Summary:** {{ component_name }} Component Implementation
+  **Component:** {{ component_type }}
+  **Priority:** {{ priority }}
+  **Assignee:** {{ assignee }}
+  **Reporter:** {{ reporter }}
   **Labels:** {{ labels }}
+  **Tech Stack:** {{ technologies }}
 
-  ---
+  ## Description
+  
+  Implement the **{{ component_name }}** component based on Figma design specifications for {{ project_name }}. This component will enhance our design system capabilities and provide users with a consistent, accessible interface element.
 
-  ### **Description**
-  Implement the {{ component_name }} component based on the Figma design specifications to enhance our design system capabilities.
+  {{ #calculated.design_analysis }}
+  ### AI Design Analysis
+  {{ calculated.design_analysis }}
+  {{ /calculated.design_analysis }}
 
-  **Business Goal:**  
-  Provide users with a consistent, accessible {{ component_name }} component that follows our design system standards and improves the overall user experience.
+  ### Business Value
+  - Consistent user experience across the platform
+  - Improved accessibility and usability
+  - Reusable component for faster development
+  - Design system standardization
 
-  **Technical Summary:**  
-  Build a reusable {{ component_name }} component using {{ technologies }} with proper TypeScript interfaces, comprehensive testing, and design system integration.
+  ## Technical Requirements
 
-  ---
+  ### Core Implementation
+  - [ ] Create {{ component_name }} component with TypeScript interfaces
+  - [ ] Implement responsive design following breakpoint standards
+  - [ ] Integrate with design system tokens and theming
+  - [ ] Add comprehensive accessibility features (ARIA, keyboard navigation)
+  - [ ] Ensure cross-browser compatibility (Chrome, Firefox, Safari, Edge)
 
-  ### **Technical Requirements**
-  - [ ] Create {{ component_name }} component with proper TypeScript interfaces  
-  - [ ] Implement responsive design following breakpoint standards  
-  - [ ] Integrate with existing design system tokens  
-  - [ ] Add comprehensive accessibility features (ARIA labels, keyboard navigation)
-  - [ ] Ensure cross-browser compatibility
+  ### Design System Integration
+  - [ ] Use design tokens for colors, spacing, typography
+  {{ #figma.extracted_colors }}
+  - [ ] Implement detected color palette: {{ figma.extracted_colors }}
+  {{ /figma.extracted_colors }}
+  {{ #figma.extracted_typography }}
+  - [ ] Apply typography system: {{ figma.extracted_typography }}
+  {{ /figma.extracted_typography }}
+  - [ ] Follow established component patterns and conventions
+  - [ ] Implement proper prop interfaces and validation
+  - [ ] Add theme support and CSS custom properties
 
-  **Dependencies:**  
-  - Design system tokens library
-  - Component testing utilities
-  - Accessibility testing tools
-  - {{ figma_url }}
+  ### Code Quality
+  - [ ] Write comprehensive unit tests (target: 90%+ coverage)
+  - [ ] Add integration tests for complex interactions
+  - [ ] Document component API and usage examples
+  - [ ] Follow established coding standards and linting rules
 
-  **Acceptance Criteria:**
+  ## Acceptance Criteria
+
+  ### Functional Requirements
   - [ ] Component renders correctly with all specified props
-  - [ ] All interactive states work as designed (hover, focus, disabled)
-  - [ ] Component passes accessibility audit (WCAG 2.1 AA)
-  - [ ] Unit tests achieve 90%+ code coverage
-  - [ ] Component documentation is complete with usage examples
+  - [ ] All interactive states work as designed (hover, focus, active, disabled)
+  - [ ] Component handles edge cases and error states gracefully
+  - [ ] Performance meets established benchmarks
+  - [ ] Component is fully keyboard accessible
 
-  ---
+  ### Quality Assurance
+  - [ ] Passes all accessibility audits (WCAG 2.1 AA compliance)
+  - [ ] Unit tests achieve minimum 90% code coverage
+  - [ ] No console errors or warnings in development/production
+  - [ ] Visual regression tests pass for all supported browsers
+  - [ ] Component documentation includes usage examples and API reference
 
-  ### **Implementation Notes**
-  - Use {{ team_standards.testing_framework }} for component testing
-  - Follow {{ team_standards.code_style }} code style guidelines  
-  - Implement {{ team_standards.accessibility_level }} accessibility standards
-  - Use design system hooks for consistent theming
-  - Example: Use `useComponentTheme` hook for consistent styling  
+  ## Implementation Details
 
-  ---
+  ### Technology Stack
+  - **Framework:** {{ technologies }}
+  - **Testing:** Jest + React Testing Library
+  - **Code Style:** Prettier + ESLint
+  - **Accessibility:** WCAG 2.1 AA
 
-  ### **Testing Strategy**
-  - [ ] Unit Tests ({{ team_standards.testing_framework }})
-  - [ ] Accessibility Checks (axe-core integration)  
-  - [ ] Visual Regression Tests (Chromatic/Percy)
+  ### Design Reference
+  - **Figma Design:** {{ figma.live_link }}
+  - **Design Status:** {{ figma.design_status }}
+  - **Screenshot:** {{ figma.screenshot_url || figma.screenshot_filename }}
+  - **File Key:** {{ figma.file_id }}
+
+  ### Development Notes
+  - Use established hooks and patterns from the design system
+  - Implement proper error boundaries for component isolation
+  - Consider performance implications for large-scale usage
+  - Ensure component works in both light and dark themes
+
+  ## Testing Strategy
+
+  ### Automated Tests
+  - [ ] Unit tests for all component logic and rendering
+  - [ ] Accessibility tests using axe-core
+  - [ ] Visual regression tests for UI consistency
   - [ ] Integration tests with related components
+  - [ ] Performance tests for render time and memory usage
+
+  ### Manual Testing
+  - [ ] Cross-browser compatibility testing
+  - [ ] Keyboard navigation testing
+  - [ ] Screen reader compatibility testing
+  - [ ] Mobile responsiveness testing
+  - [ ] Edge case and error state testing
+
+  ## Definition of Done
+  - [ ] All acceptance criteria met
+  - [ ] Code reviewed and approved by team
+  - [ ] All tests passing in CI/CD pipeline
+  - [ ] Documentation updated and published
+  - [ ] Component deployed to design system library
+  - [ ] Usage examples added to Storybook
+  - [ ] Accessibility audit completed and passed
 
   ---
 
-  ### **Design Reference**
-  **Figma Frame:** {{ figma_url }}  
-  **📸 Design Screenshot**: !{{ figma.screenshot_filename }}|thumbnail!
-  **Design Status:** {{ design_status }}
-
-  ---
-
-  ### **Estimation**
-  **Effort:** {{ story_points }} Story Points  
+  **Estimation:** {{ story_points }} Story Points
+  **Complexity:** {{ calculated.complexity }}
   **Due Date:** {{ project.due_date }}
-
-  ---
-
-  <!-- START: ai_context_markers -->
-  **AI Assistant Context:**
-  - Component Type: {{ component_name }}
-  - Technology Stack: {{ technologies }}
-  - Complexity Level: {{ calculated.complexity }}
-  - Design Reference: {{ figma_url }}
-  <!-- END: ai_context_markers -->

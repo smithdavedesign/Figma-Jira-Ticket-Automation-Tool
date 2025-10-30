@@ -1,14 +1,14 @@
 {
   "testSuite": "Real Screenshot AI Test Suite",
-  "timestamp": "2025-10-30T04:57:08.883Z",
-  "totalDuration": 29715,
+  "timestamp": "2025-10-30T15:32:52.258Z",
+  "totalDuration": 658,
   "summary": {
     "totalTests": 4,
-    "successful": 3,
-    "failed": 1,
+    "successful": 0,
+    "failed": 4,
     "screenshotsDownloaded": 2,
     "screenshotFailures": 2,
-    "averageConfidence": 95
+    "averageConfidence": 0
   },
   "environment": {
     "hasGeminiApiKey": true,
@@ -21,49 +21,43 @@
       "techStack": "AEM",
       "documentType": "jira",
       "componentType": "button",
-      "startTime": 1761800199168,
-      "success": true,
+      "startTime": 1761838371601,
+      "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 100,
-      "aiResponse": "## JIRA Ticket: Implement Material Design Button Component in AEM\n\n**Summary:** Implement a Material Design Button component in AEM based on the provided Figma design (\"Material Design Button - AEM Real Screenshot Test\"). This component should adhere to the defined design system principles, be accessible, and responsive.\n\n**Issue Type:** Story\n\n**Priority:** High\n\n**Assignee:** (Assign to a specific developer)\n\n**Labels:** component, aem, material-design, button, design-system, accessibility\n\n**Description:**\n\nWe need to implement a reusable Material Design Button component in AEM, adhering to the visual specifications and design system guidelines detailed in the Figma file \"Material Design Button - AEM Real Screenshot Test\" (Component Library/Material Design Button). This ticket covers the implementation of a standard, solid-fill button.\n\n**🎯 Visual Analysis Summary:**\n\nThe button is a solid rectangle filled with a primary color.  Based on the provided screenshot, it appears to be a standard Material Design button with a solid fill background. While the screenshot itself only shows a blue block, the structured data suggests it should be a `MaterialButton` component adhering to Material Design principles. We will need a follow-up screenshot or additional details (hover state, disabled state, text) to fully complete the implementation and verify its intended functionality. Based on the color pallete the button should have a white label color.\n\n**📋 Implementation Details:**\n\n*   **Component Name:** `material-button`\n*   **AEM Component Path:** `/apps/<project>/components/content/material-button`\n*   **Sling Model:** Create a Sling Model to manage button properties.\n*   **HTL Template:**  Implement the button using HTL, leveraging the Sling Model to access component properties.\n*   **Dialog:** Create an AEM dialog for authors to configure the button's text, link, color (using the design system's color palette), and target (e.g., new window).\n*   **Consider using WCM Core Components' Button component as a starting point, if applicable, and customizing to match the design.**\n\n**🎨 Design System Integration:**\n\n*   **Color Palette:**\n    *   Background Color: Use the design system token corresponding to `#1a75d1` (Component fill 1). Define this token in the AEM Style System.\n    *   Text Color: Use the design system token corresponding to `#ffffff` (Component fill 2). Define this token in the AEM Style System.\n*   **Typography:**\n    *   Font Family: `Roboto`\n    *   Font Size: `14px` (Primary typography style)\n    *   Apply appropriate design system tokens for font family and size.\n*   **Spacing & Layout:**  Adhere to the defined spacing pattern (4px, 8px, 16px, 24px, 32px) for internal padding and margins.\n\n**✅ Acceptance Criteria:**\n\n*   **Visual Fidelity:** The button should visually match the Figma design screenshot (taking into account the lack of details on text, hover state, etc.). Specifically, the background color should be `#1a75d1` and the text color should be `#ffffff`.\n*   **Design System Compliance:** The component must utilize the defined design system tokens for colors, typography, and spacing.\n*   **Content Authoring:** Authors should be able to configure the button's text, link, and open in new tab via the AEM dialog.\n*   **Accessibility:** The button must meet WCAG 2.1 AA accessibility standards.\n    *   Sufficient color contrast between text and background.\n    *   Keyboard navigation: Button should be focusable and navigable using the keyboard.\n    *   ARIA attributes: Use appropriate ARIA attributes for screen reader compatibility (e.g., `aria-label` if needed).\n*   **Responsive Behavior:** Button should maintain its visual appearance and functionality across different screen sizes.\n*   **Code Quality:** Code should be clean, well-documented, and follow AEM best practices.\n\n**🔧 Technical Notes:**\n\n*   **Styling:** Use the AEM Style System to manage component styling. This will allow for easy modification and reuse of the component.  Favor Style System over direct CSS modifications.\n*   **Accessibility:** Conduct thorough accessibility testing using tools like WAVE and screen readers.\n*   **Performance:** Optimize the component for fast loading and smooth interactions.  Avoid using inline styles.\n*   **Reusability:**  Design the component to be reusable across different sections of the website.\n*   **Consider leveraging AEM's Context-Aware Configuration (CAC) for managing environment-specific settings (e.g., API endpoints).**\n*   **Consider using the AEM Project Archetype to create the project structure.**\n\n**📱 Responsive Considerations:**\n\n*   The button should scale appropriately on different screen sizes.\n*   Use CSS media queries or responsive CSS frameworks (e.g., Flexbox, Grid) to ensure proper rendering on various devices.\n*   Test the button on different devices and screen resolutions.\n\n**Attachments:**\n\n*   Figma File: Material Design Button - AEM Real Screenshot Test\n*   Screenshot: [Attached Screenshot of the Button]\n\n**Subtasks:**\n\n*   [ ] Create AEM component structure and HTL template.\n*   [ ] Implement Sling Model for button properties.\n*   [ ] Develop AEM dialog for content authoring.\n*   [ ] Integrate design system tokens for colors, typography, and spacing.\n*   [ ] Implement responsive styling.\n*   [ ] Conduct accessibility testing.\n*   [ ] Perform unit and integration testing.\n*   [ ] Deploy component to development environment.\n\n**Note:** This ticket is based on the provided information.  A complete implementation will require additional design specifications (hover states, disabled states, text styles, etc.) to be accurate.  A follow-up meeting with the UX/UI team might be necessary to clarify these details.\n",
-      "confidence": 95,
-      "processingMetrics": {
-        "screenshotProcessed": true,
-        "dataStructuresAnalyzed": 5,
-        "promptTokens": 675.25,
-        "responseTokens": 1439.25
-      },
-      "errors": [],
+      "aiResponse": null,
+      "confidence": 0,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
       "warnings": [],
-      "duration": 9335
+      "duration": 149
     },
     {
       "scenario": "Bootstrap Card - React TypeScript",
       "techStack": "React TypeScript",
       "documentType": "jira",
       "componentType": "card",
-      "startTime": 1761800208503,
-      "success": true,
+      "startTime": 1761838371750,
+      "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 40346,
-      "aiResponse": "## JIRA Ticket\n\n**Summary:** Implement Bootstrap Card Component in React TypeScript\n\n**Project:** UI Component Library\n\n**Type:** Story\n\n**Priority:** High\n\n**Assignee:** (Unassigned)\n\n**Labels:** React, TypeScript, Bootstrap, Card, DesignSystem, Accessibility, Component\n\n**Description:**\n\nThis ticket is for the implementation of a Bootstrap Card component using React TypeScript. The component should adhere to the provided visual design and integrate seamlessly with the existing design system. Accessibility (WCAG 2.1 AA) and responsiveness are critical requirements.\n\n**🎯 Visual Analysis Summary:**\n\nThe design features a stylized \"B\" icon in the center. The card has a rounded shape with a distinctive bracket-like border. It looks like a modern Bootstrap-inspired logo with an abstract look. The card has two colors: a purple fill and a white \"B\".\n\n**📋 Implementation Details:**\n\n*   **Component Name:** `BootstrapCard`\n*   **Technology:** React TypeScript\n*   **File Structure:**\n    *   `src/components/BootstrapCard/BootstrapCard.tsx`\n    *   `src/components/BootstrapCard/BootstrapCard.module.css` (or `styled-components`)\n    *   `src/components/BootstrapCard/BootstrapCard.test.tsx`\n*   **Core Functionality:**\n    *   The component will render the visual card, ensuring correct visual fidelity to the provided screenshot.\n    *   The \"B\" icon should be configurable. This could be achieved by making it a React `children` or by providing a prop for the text.\n    *   The purple color can be made configurable by passing color props.\n    *   The card outline needs to be generated either by SVG or through CSS tricks.\n\n**🎨 Design System Integration:**\n\n*   **Color Palette:**\n    *   Purple fill: Utilize a color variable from the design system representing the same color found in the image.  If no such variable exists, create one, eg. `$brand-primary`.\n    *   White text: Use a color variable from the design system, `$white`, as the B icon color.\n*   **Typography:**\n    *   Font: `system-ui` should be applied globally (check the root of the design system).\n    *   Size:  The size of the letter should be set using existing design system tokens or create a new appropriate token. The size should also have responsive breakpoints for different screen sizes.\n*   **Spacing:**\n    *   The margins of the Card will adhere to 8px or 16px as detected spacing.\n\n**✅ Acceptance Criteria:**\n\n*   **Visual Fidelity:** The rendered component should match the design screenshot precisely in all browsers and devices.\n*   **Design System Compliance:** All colors, typography, and spacing must be derived from the design system.\n*   **Accessibility:**\n    *   The component should be focusable.\n    *   Use appropriate ARIA attributes.\n    *   Pass accessibility audits with no critical or serious violations.  Use tools like axe DevTools.\n*   **Responsiveness:** The component should scale appropriately on different screen sizes using media queries or responsive utilities provided by the CSS framework.\n*   **Reusability:** The component should be easily reusable throughout the application with different content and configurations (e.g., different sizes).\n*   **Unit Tests:**  Write comprehensive unit tests covering all aspects of the component's functionality and rendering.\n*   **Code Quality:**  The code should be clean, well-documented, and follow best practices for React and TypeScript.\n\n**🔧 Technical Notes:**\n\n*   **Styling Approach:** Explore using CSS modules or styled-components for styling.  Ensure the chosen approach aligns with existing project conventions.\n*   **SVG vs. CSS:** Consider using SVG for the card border if it's too complex to create with CSS. If using CSS, explore `border-radius` and pseudo-elements.\n*   **Performance:** Be mindful of rendering performance, especially when dealing with complex styling.  Utilize React.memo or other optimization techniques as needed.\n*   **TypeScript:** Ensure all components and props are properly typed with TypeScript.\n*   **Accessibility:** Test with a screen reader to ensure proper screen reader support.\n\n**📱 Responsive Considerations:**\n\n*   **Scaling:** The card and its contents should scale proportionally on smaller screens.\n*   **Breakpoints:** Define appropriate breakpoints to adjust the layout and typography for different screen sizes.\n*   **Testing:** Test the component on a variety of devices and screen sizes to ensure responsiveness.  Use browser developer tools to simulate different devices.\n\n**Attachments:**\n\n*   [Link to Figma file](Bootstrap Card - React TypeScript Real Screenshot Test)\n*   Screenshot of the component\n\n**Story Points:** 5\n",
-      "confidence": 95,
-      "processingMetrics": {
-        "screenshotProcessed": true,
-        "dataStructuresAnalyzed": 5,
-        "promptTokens": 687.5,
-        "responseTokens": 1163.75
-      },
-      "errors": [],
+      "aiResponse": null,
+      "confidence": 0,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
       "warnings": [],
-      "duration": 8141
+      "duration": 213
     },
     {
       "scenario": "Ant Design Form - Vue.js",
       "techStack": "Vue.js",
       "documentType": "linear",
       "componentType": "form",
-      "startTime": 1761800216644,
+      "startTime": 1761838371963,
       "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 4729,
@@ -71,31 +65,28 @@
       "confidence": 0,
       "processingMetrics": {},
       "errors": [
-        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] Provided image is not valid."
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
       ],
       "warnings": [],
-      "duration": 1545
+      "duration": 129
     },
     {
       "scenario": "Chakra UI Modal - Angular",
       "techStack": "Angular",
       "documentType": "asana",
       "componentType": "modal",
-      "startTime": 1761800218189,
-      "success": true,
+      "startTime": 1761838372092,
+      "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 100,
-      "aiResponse": "Okay, I've reviewed the provided screenshot (which is just a solid blue color, implying a placeholder), the Figma selection details, and the enhanced design context.  I will generate a comprehensive Asana ticket for the Angular implementation of the Chakra UI Modal, based on the *assumption* that the screenshot represents a basic modal structure, even though there's no visible modal content. I will treat the blue screen as the modal's backdrop.\n\n**Asana Ticket: Implement Chakra UI Modal Component (Angular)**\n\n**Project:** Component Library\n\n**Section:** Development\n\n**Assignee:** (Developer Name)\n\n**Due Date:** (Date)\n\n**1. 🎯 Visual Analysis Summary:**\n\n*   **Overall:** This ticket is for the implementation of a Chakra UI-based modal component in Angular. The modal consists of a backdrop (currently represented by a solid blue screen placeholder in the screenshot).\n*   **Backdrop:** The backdrop overlays the existing page content, dimming it to focus attention on the modal. The backdrop's color is #309694 (Component fill 1).  It likely covers the entire viewport. It blocks interaction with the underlying content. Clicking the backdrop (or a close button within the modal) should close the modal.\n*   **Modal Content (Placeholder):** The screenshot displays a full blue color, implying it needs to be populated.\n*   **Behavior:** When activated, the modal should appear centered on the screen (horizontally and vertically), or positioned as needed by the containing application.\n\n**2. 📋 Implementation Details:**\n\n*   **Component Name:** `ChakraModalComponent`\n*   **Framework:** Angular\n*   **Chakra UI:** Leverage Chakra UI for the styling and structure of the modal.\n*   **Backdrop:**  Implement the backdrop as an overlay element with the specified color (#309694). Ensure the backdrop covers the entire screen and prevents interaction with elements underneath.\n*   **Modal Structure:** Use Chakra UI's `Modal` component as a base.  Set up basic structure that accepts `ng-content` to display variable modal content\n*   **Service/Store integration (if needed):** If the modal needs to share state with the rest of the application (e.g., modal state controlled by a service), use a service or NgRx store for data flow.  Design it as a pure, presentational component that receives inputs and emits outputs.\n*   **Accessibility:** Implement proper ARIA attributes (e.g., `aria-modal`, `aria-labelledby`, `aria-describedby`) to make the modal accessible to screen readers.  Use `FocusTrap` to ensure the focus stays within the modal. Implement keyboard navigation for dismissing modal.\n*   **Event Handling:** Clicking the backdrop should trigger a close event.\n*   **Animation (Optional):** Consider adding a subtle fade-in/fade-out animation for the modal appearance/disappearance to enhance user experience.\n\n**3. 🎨 Design System Integration:**\n\n*   **Colors:**\n    *   Use `#309694` as the backdrop color (Component fill 1). Name this variable something consistent with design system conventions, e.g., `$chakra-modal-backdrop`.\n    *   Use `#ffffff` for any background content behind/within the modal content area.\n*   **Typography:**\n    *   Use the `Inter` font family as defined in the typography system.\n    *   The modal content (titles, text, buttons) will follow the `Primary`, `Secondary`, and `Caption` hierarchy guidelines.\n*   **Spacing & Layout:**\n    *   Adhere to the 4px, 8px, 16px, 24px, and 32px spacing pattern throughout the modal's content.\n    *   Utilize flexbox or grid for responsive and flexible layout within the modal.\n*   **Component Architecture:**  Re-use the `ChakraModalComponent` for similar use cases across the application.\n\n**4. ✅ Acceptance Criteria:**\n\n*   The modal backdrop is displayed correctly with the designated color (#309694).\n*   The modal backdrop prevents interaction with the content behind it.\n*   The modal's content is correctly positioned and styled based on the design system.\n*   The modal can be closed by clicking the backdrop.\n*   The modal is accessible to screen readers (ARIA attributes are correctly implemented).\n*   Focus is trapped within the modal when it's open.\n*   The modal is responsive and adapts to different screen sizes.\n*   The modal uses the correct font (Inter) and typography styles as defined in the design system.\n*   Adheres to spacing pattern (4px, 8px, 16px, 24px, 32px).\n*   Code follows Angular best practices and is well-documented.\n\n**5. 🔧 Technical Notes:**\n\n*   Consider using Angular CDK's `Overlay` module for creating the modal backdrop. This provides a robust and flexible way to manage overlays.\n*   Implement `OnPush` change detection strategy for optimal performance.\n*   Separate the modal's presentation logic from its data loading and processing logic.  Use input properties to pass data into the component, and output events to signal changes.\n*   Implement a `ModalService` to control the opening and closing of the modal, if needed by application requirements.\n*   Use a CSS variable for the backdrop color so it is customizable and themeable.\n*   Ensure the backdrop is fully transparent and covers the whole page before transitioning to the defined backdrop color.\n\n**6. 📱 Responsive Considerations:**\n\n*   The modal should be centered on the screen on all devices (or positioned as required per a specific application use).\n*   Modal's width should adapt responsively. Consider using `max-width` to ensure the modal content doesn't become excessively wide on larger screens. Use appropriate Chakra UI responsive breakpoints for these.\n*   Text and element sizes should scale appropriately on smaller screens.\n*   Test the modal on various devices and screen sizes to ensure a consistent user experience.\n*   Use media queries or Chakra UI's responsive styles to adjust the modal's layout based on screen size.\n\n**Subtasks:**\n\n*   [ ] Create `ChakraModalComponent` with backdrop and content placeholder.\n*   [ ] Implement backdrop styling (color, transparency, click-to-close).\n*   [ ] Integrate with Chakra UI's `Modal` component for basic structure.\n*   [ ] Implement focus trapping using `FocusTrap`.\n*   [ ] Add ARIA attributes for accessibility.\n*   [ ] Implement responsive styles.\n*   [ ] Write unit tests for the component.\n*   [ ] Document the component's usage and API.\n\n**Attachments:**\n\n*   Figma File: Chakra UI Modal - Angular Real Screenshot Test\n*   Screenshot: Chakra UI Modal\n\nThis ticket provides a comprehensive outline for the implementation of a Chakra UI modal component in Angular.  It covers the visual design, technical details, accessibility considerations, and testing requirements. Remember to replace placeholder values (e.g., Assignee, Due Date) with actual values and update the ticket with any specific requirements of the application using the modal.  The key is to remember that the screenshot was largely just a placeholder and the real work is building the right modal *structure* for displaying future content.\n",
-      "confidence": 95,
-      "processingMetrics": {
-        "screenshotProcessed": true,
-        "dataStructuresAnalyzed": 5,
-        "promptTokens": 674.75,
-        "responseTokens": 1745.5
-      },
-      "errors": [],
+      "aiResponse": null,
+      "confidence": 0,
+      "processingMetrics": {},
+      "errors": [
+        "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
+      ],
       "warnings": [],
-      "duration": 10692
+      "duration": 165
     }
   ],
   "tests": [

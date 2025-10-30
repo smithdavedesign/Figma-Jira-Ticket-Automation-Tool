@@ -18,7 +18,7 @@ export default defineConfig({
       'tests/smoke/**/*',
       'tests/playwright/**/*',
       'tests/**/playwright/**/*',
-      'tests/templates/**/*'  // Template tests are run by test-orchestrator, not vitest
+      'tests/templates/**/*' // Template tests are run by test-orchestrator, not vitest
     ],
 
     // Basic timeouts

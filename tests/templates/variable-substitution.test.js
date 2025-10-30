@@ -201,6 +201,39 @@ async function runVariableSubstitutionTests() {
   };
 }
 
+// Vitest test suite
+import { describe, test, expect } from 'vitest';
+
+describe('Variable Substitution Tests', () => {
+  test('should find and process template variables', async () => {
+    const result = await runVariableSubstitutionTests();
+    expect(result).toBeDefined();
+    expect(result.totalFiles).toBeGreaterThan(0);
+    expect(result.results).toBeInstanceOf(Array);
+  });
+
+  test('should handle mock context data', () => {
+    expect(mockContextData).toBeDefined();
+    expect(mockContextData.componentName).toBe('TestComponent');
+    expect(mockContextData.projectName).toBe('Test Project');
+  });
+
+  test('should extract Handlebars variables from template content', () => {
+    const template = 'Hello {{name}}, welcome to {{project}}!';
+    const variables = extractHandlebarsVariables(template);
+    expect(variables).toContain('name');
+    expect(variables).toContain('project');
+    expect(variables.length).toBe(2);
+  });
+
+  test('should substitute variables in template content', () => {
+    const template = 'Component: {{componentName}}, Project: {{projectName}}';
+    const context = { componentName: 'TestComp', projectName: 'TestProj' };
+    const result = substituteVariables(template, context);
+    expect(result).toBe('Component: TestComp, Project: TestProj');
+  });
+});
+
 // Run tests if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   runVariableSubstitutionTests()

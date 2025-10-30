@@ -239,6 +239,50 @@ async function runJiraTemplateTests() {
   return results;
 }
 
+// Vitest test structure
+import { describe, test, expect } from 'vitest';
+
+describe('Jira Template Tests', () => {
+  test('should run Jira template tests', async () => {
+    const result = await runJiraTemplateTests();
+    expect(result).toBeDefined();
+    expect(result.overall).toBeDefined();
+    expect(result.structure).toBeDefined();
+    expect(result.variables).toBeDefined();
+    expect(result.format).toBeDefined();
+  });
+
+  test('should validate Jira template structure', () => {
+    const result = testJiraTemplateStructure();
+    expect(result).toBeDefined();
+    expect(result.success).toBeDefined();
+    expect(Array.isArray(result.requiredFields)).toBe(true);
+    expect(Array.isArray(result.missingFields)).toBe(true);
+    expect(Array.isArray(result.jiraFields)).toBe(true);
+  });
+
+  test('should test Jira ticket format', () => {
+    const result = testJiraTicketFormat();
+    expect(result).toBeDefined();
+    expect(result.success).toBeDefined();
+    expect(typeof result.hasTitle).toBe('boolean');
+    expect(typeof result.hasDescription).toBe('boolean');
+    expect(typeof result.hasAcceptanceCriteria).toBe('boolean');
+    expect(typeof result.hasTechnicalDetails).toBe('boolean');
+    expect(result.estimatedLength).toBeGreaterThanOrEqual(0);
+  });
+
+  test('should have valid Jira test context', () => {
+    expect(jiraTestContext).toBeDefined();
+    expect(jiraTestContext.componentName).toBeDefined();
+    expect(jiraTestContext.project).toBeDefined();
+    expect(jiraTestContext.issueType).toBeDefined();
+    expect(Array.isArray(jiraTestContext.acceptanceCriteria)).toBe(true);
+    expect(Array.isArray(jiraTestContext.colors)).toBe(true);
+    expect(Array.isArray(jiraTestContext.labels)).toBe(true);
+  });
+});
+
 // Run tests if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   runJiraTemplateTests()

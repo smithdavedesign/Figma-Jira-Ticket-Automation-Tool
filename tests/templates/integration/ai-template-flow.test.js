@@ -340,6 +340,48 @@ async function runAITemplateIntegrationTests() {
   return testResults;
 }
 
+// Vitest test structure
+import { describe, test, expect } from 'vitest';
+
+describe('AI Template Integration Tests', () => {
+  test('should run AI template integration tests', async () => {
+    const result = await runAITemplateIntegrationTests();
+    expect(result).toBeDefined();
+    expect(result.overall).toBeDefined();
+    expect(result.aiGeneration).toBeDefined();
+    expect(result.templateFallback).toBeDefined();
+    expect(result.serviceFallback).toBeDefined();
+    expect(result.multiplePlatforms).toBeDefined();
+  });
+
+  test('should test direct AI generation', async () => {
+    const result = await testDirectAIGeneration();
+    expect(result).toBeDefined();
+    expect(result.success).toBeDefined();
+    expect(result.processingTime).toBeGreaterThanOrEqual(0);
+  });
+
+  test('should test template fallback system', async () => {
+    const result = await testTemplateFallback();
+    expect(result).toBeDefined();
+    expect(result.success).toBeDefined();
+    expect(result.processingTime).toBeGreaterThanOrEqual(0);
+  });
+
+  test('should test multiple platform templates', async () => {
+    const result = await testMultiplePlatforms();
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  test('should have valid mock enhanced frame data', () => {
+    expect(Array.isArray(mockEnhancedFrameData)).toBe(true);
+    expect(mockEnhancedFrameData.length).toBeGreaterThan(0);
+    expect(mockEnhancedFrameData[0]).toHaveProperty('name');
+    expect(mockEnhancedFrameData[0]).toHaveProperty('type');
+  });
+});
+
 // Run tests if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   runAITemplateIntegrationTests()

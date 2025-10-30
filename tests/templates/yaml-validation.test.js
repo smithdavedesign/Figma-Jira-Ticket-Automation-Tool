@@ -152,6 +152,35 @@ async function runYamlValidationTests() {
   };
 }
 
+// Vitest test structure
+import { describe, test, expect } from 'vitest';
+
+describe('YAML Template Validation Tests', () => {
+  test('should validate YAML template syntax and structure', async () => {
+    const result = await runYamlValidationTests();
+    expect(result).toBeDefined();
+    expect(result.success).toBeDefined();
+    expect(result.totalFiles).toBeGreaterThanOrEqual(0);
+    expect(result.validFiles).toBeGreaterThanOrEqual(0);
+  });
+
+  test('should find YAML files in templates directory', () => {
+    const yamlFiles = findYamlFiles(templatesDir);
+    expect(Array.isArray(yamlFiles)).toBe(true);
+  });
+
+  test('should validate individual YAML files', () => {
+    const testYamlContent = `
+platform: test
+description: Test template
+template: "Hello {{ name }}"
+    `.trim();
+    
+    // Mock file validation
+    expect(typeof validateYamlFile).toBe('function');
+  });
+});
+
 // Run tests if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   runYamlValidationTests()

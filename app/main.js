@@ -184,7 +184,10 @@ class MCPServer {
     this.app.get('/api/figma/health', (req, res) => this.handleFigmaHealth(req, res));
     this.app.get('/api/figma/screenshot', (req, res) => this.handleFigmaScreenshot(req, res));
     this.app.post('/api/generate-ticket', (req, res) => this.handleGenerateTicket(req, res));
-    this.app.post('/api/generate-ai-ticket-direct', (req, res) => this.handleDirectAIGeneration(req, res));
+    this.app.post('/api/generate-ai-ticket-direct', (req, res) => {
+      this.logger.info('🎯 DIRECT AI ENDPOINT CALLED - Route handler triggered');
+      return this.handleDirectAIGeneration(req, res);
+    });
 
     // Test monitoring endpoints
     this.app.get('/api/test/status', (req, res) => this.handleTestStatus(req, res));
@@ -197,13 +200,18 @@ class MCPServer {
     this.app.post('/api/test-ai-screenshots', (req, res) => this.handleTestAIScreenshots(req, res));
     this.app.get('/api/ai-test-dashboard', (req, res) => this.handleAITestDashboard(req, res));
 
+    // Live Figma Testing endpoints
+    this.app.post('/api/configure', (req, res) => this.handleConfiguration(req, res));
+    this.app.post('/api/screenshot', (req, res) => this.handleLiveScreenshot(req, res));
+    this.app.post('/api/analysis', (req, res) => this.handleLiveAnalysis(req, res));
+
     // Static file serving
     this.app.use('/ui', express.static(join(process.cwd(), 'ui')));
     this.app.use('/tests', express.static(join(process.cwd(), 'tests')));
 
     // Error handling middleware (must be last)
     this.app.use(errorLogger);
-    this.app.use((err, req, res, _next) => {
+    this.app.use((err, req, res, next) => {
       this.errorHandler.handleServerError(err, req, res);
     });
 
@@ -307,7 +315,7 @@ class MCPServer {
         success: true,
         mock: true,
         fileKey,
-        nodeId,  
+        nodeId,
         screenshotUrl: `data:image/svg+xml;base64,${Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#10b981"/><text x="50" y="50" font-family="Arial" font-size="12" fill="white" text-anchor="middle" dy="4">MOCK</text></svg>').toString('base64')}`,
         timestamp: new Date().toISOString(),
         testMode: true
@@ -425,7 +433,7 @@ class MCPServer {
    */
   async handleDirectAIGeneration(req, res) {
     try {
-      this.logger.info('🤖 Direct AI Generation Request:', {
+      this.logger.info('🤖 Direct AI Generation Request (Plugin called direct endpoint):', {
         body: !!req.body,
         enhancedFrameData: req.body?.enhancedFrameData?.length || 0,
         techStack: req.body?.techStack,
@@ -480,48 +488,49 @@ class MCPServer {
 
       // Use Visual Enhanced AI Service directly
       if (this.visualAIService && useAI) {
-        this.logger.info('🎨 Using Visual Enhanced AI Service for direct generation...');
+        try {
+          this.logger.info('🎨 Using Visual Enhanced AI Service for direct generation...');
 
-        const aiResult = await this.visualAIService.processVisualEnhancedContext(visualContext, {
-          documentType: documentType || 'component',
-          techStack: techStack || 'React',
-          instructions: `Generate a comprehensive ${documentType || 'component'} ticket for ${techStack || 'React'} implementation using ${platform || 'jira'} format`
-        });
-
-
-
-        if (aiResult && (aiResult.content || aiResult.ticket)) {
-          this.logger.info('✅ Visual Enhanced AI generation successful');
-          return res.json({
-            success: true,
-            generatedTicket: aiResult.content || aiResult.ticket,
-            source: 'Visual Enhanced AI Service',
-            confidence: aiResult.confidence || 0.85,
-            metadata: {
-              timestamp: new Date().toISOString(),
-              techStack,
-              documentType,
-              platform,
-              hasScreenshot: !!screenshot
-            }
+          const aiResult = await this.visualAIService.processVisualEnhancedContext(visualContext, {
+            documentType: documentType || 'component',
+            techStack: techStack || 'React',
+            instructions: `Generate a comprehensive ${documentType || 'component'} ticket for ${techStack || 'React'} implementation using ${platform || 'jira'} format`
           });
+
+          if (aiResult && (aiResult.content || aiResult.ticket)) {
+            this.logger.info('✅ Visual Enhanced AI generation successful');
+            return res.json({
+              success: true,
+              generatedTicket: aiResult.content || aiResult.ticket,
+              source: 'Visual Enhanced AI Service',
+              confidence: aiResult.confidence || 0.85,
+              metadata: {
+                timestamp: new Date().toISOString(),
+                techStack,
+                documentType,
+                platform,
+                hasScreenshot: !!screenshot
+              }
+            });
+          }
+        } catch (aiError) {
+          this.logger.warn('⚠️ AI Service failed, falling back to template generation:', aiError.message);
         }
       }
 
-      // Fallback to Template Manager with AI context
-      this.logger.info('🎯 Falling back to Template Manager with AI context...');
+      // Fallback to Enhanced Template Manager with rich context
+      this.logger.info('🔄 Falling back to enhanced template generation via direct AI endpoint...');
 
-      const templateResult = await this.templateManager.generateTicket({
+      const templateResult = await this.generateEnhancedTemplateTicket({
+        enhancedFrameData,
         platform: platform || 'jira',
         documentType: documentType || 'component',
-        componentName: enhancedFrameData[0]?.name || 'Component',
-        techStack: techStack || 'React',
-        figmaContext: visualContext.figmaContext,
-        requestData: {
-          frameData: enhancedFrameData[0],
-          teamStandards,
-          enhancedData: visualContext
-        }
+        techStack,
+        teamStandards,
+        figmaUrl: figmaUrl || fileContext?.url,
+        fileKey: fileContext?.fileKey,
+        projectName: projectName || fileContext?.fileName,
+        screenshot
       });
 
       if (templateResult && templateResult.content) {
@@ -565,8 +574,8 @@ class MCPServer {
     // Create cache key based on request parameters
     const cacheKey = this.createTicketCacheKey(requestData);
 
-    // Try to get cached ticket first
-    const cachedTicket = await this.getCachedTicket(cacheKey);
+    // Try to get cached ticket first (DISABLED for fresh generation)
+    const cachedTicket = null; // await this.getCachedTicket(cacheKey);
     if (cachedTicket) {
       this.logger.info(`📋 Using cached ticket for ${platform}-${documentType}: ${componentName}`);
       return cachedTicket;
@@ -1155,6 +1164,78 @@ ${this.estimateStoryPoints(frameData[0])}
   }
 
   /**
+   * Enhanced Template Ticket Generation
+   * Uses the Template Manager with rich design context
+   */
+  async generateEnhancedTemplateTicket(params) {
+    const { enhancedFrameData, techStack, documentType } = params;
+    
+    if (!enhancedFrameData || enhancedFrameData.length === 0) {
+      throw new Error('No frame data provided for template generation');
+    }
+
+    const frameData = enhancedFrameData[0];
+    const componentName = frameData.name || 'Component';
+
+    this.logger.info(`🎨 Generating enhanced template ticket for ${componentName}`);
+    this.logger.info(`🔍 Enhanced frame data:`, {
+      componentName,
+      hasHierarchy: !!frameData.hierarchy,
+      designTokensCount: frameData.hierarchy?.designTokens?.colors?.length || 0,
+      techStack
+    });
+
+    try {
+      // Use the Template Manager with enhanced context
+      const templateResult = await this.templateManager.generateTicket({
+        platform: documentType === 'component' ? 'jira' : documentType,
+        documentType: 'component',
+        componentName,
+        techStack,
+        figmaContext: {
+          metadata: {
+            name: 'Design System Project',
+            id: frameData.metadata?.fileKey || 'BioUSVD6t51ZNeG0g9AcNz'
+          },
+          specifications: {
+            colors: frameData.hierarchy?.designTokens?.colors || [],
+            typography: frameData.hierarchy?.designTokens?.typography || []
+          }
+        },
+        requestData: {
+          enhancedFrameData,
+          fileContext: {
+            fileKey: frameData.metadata?.fileKey || 'BioUSVD6t51ZNeG0g9AcNz',
+            fileName: 'Solidigm Dotcom 3.0 - Dayani'
+          },
+          screenshot: frameData.screenshot || null,
+          frameData: frameData
+        }
+      });
+
+      return {
+        content: templateResult.content,
+        metadata: {
+          ...templateResult.metadata,
+          generationType: 'enhanced-template',
+          source: 'Template Manager'
+        }
+      };
+
+    } catch (error) {
+      this.logger.error('❌ Enhanced template generation failed:', error);
+      
+      // Ultimate fallback to basic template
+      return this.generateTemplateTickets({
+        frameData: enhancedFrameData,
+        platform: documentType || 'jira',
+        documentType: 'component',
+        teamStandards: { tech_stack: techStack }
+      });
+    }
+  }
+
+  /**
    * 🚀 LEGACY/BASIC GENERATION
    *
    * Simple, lightweight ticket generation for backward compatibility.
@@ -1231,12 +1312,12 @@ Generated at ${new Date().toISOString()}`
         hasApiKey: !!process.env.GEMINI_API_KEY
       });
 
-      // Fallback to template-based generation
-      return this.generateTemplateTickets({
-        frameData: enhancedFrameData,
-        platform: documentType || 'jira',
-        documentType: 'component',
-        teamStandards: { tech_stack: techStack }
+      // Fallback to enhanced template-based generation
+      this.logger.info('🔄 Falling back to enhanced template generation');
+      return this.generateEnhancedTemplateTicket({
+        enhancedFrameData,
+        techStack,
+        documentType: documentType || 'jira'
       });
     }
 
@@ -1246,9 +1327,10 @@ Generated at ${new Date().toISOString()}`
       // Step 1: Build visual-enhanced context combining screenshot + structured data
       const visualContext = await this.buildVisualEnhancedContext(enhancedFrameData, figmaUrl);
 
-      // Step 2: Check Redis cache for this context
+      // Step 2: Check Redis cache for this context (DISABLED for fresh generation)
       const cacheKey = this.createVisualAICacheKey(visualContext, techStack, documentType);
-      const cachedResult = await this.getCachedTicket(cacheKey);
+      // Temporarily disable caching to ensure fresh tickets
+      const cachedResult = null; // await this.getCachedTicket(cacheKey);
 
       if (cachedResult) {
         this.logger.info('✅ Using cached Visual Enhanced AI result');
@@ -1522,7 +1604,7 @@ Analysis completed at ${new Date().toISOString()}`;
   /**
    * Check compliance
    */
-  async checkCompliance(_params) {
+  async checkCompliance(params) {
     return {
       compliance: {
         score: 85,
@@ -1970,6 +2052,116 @@ Generate a complete, actionable ticket that a developer can implement immediatel
         error: 'AI test dashboard not found',
         details: error.message,
         fullPath: join(process.cwd(), 'tests/ai/ai-test-dashboard.html')
+      });
+    }
+  }
+
+  // ===== LIVE FIGMA TESTING HANDLERS =====
+
+  /**
+   * Handle live testing configuration
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
+   */
+  async handleConfiguration(req, res) {
+    try {
+      const config = req.body;
+      this.logger.info('🎯 Configuring live testing environment:', { mode: config.mode });
+
+      // Store configuration in memory (could be extended to Redis)
+      this.liveTestConfig = {
+        ...config,
+        timestamp: new Date().toISOString()
+      };
+
+      res.json({
+        status: 'success',
+        message: 'Live testing environment configured',
+        config: this.liveTestConfig
+      });
+
+    } catch (error) {
+      this.logger.error('❌ Live configuration failed:', error);
+      res.status(500).json({
+        error: 'Configuration failed',
+        details: error.message
+      });
+    }
+  }
+
+  /**
+   * Handle live screenshot requests (integration with existing handleFigmaScreenshot)
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
+   */
+  async handleLiveScreenshot(req, res) {
+    try {
+      const requestData = req.body;
+      this.logger.info('📸 Processing live screenshot request');
+
+      // Check if this is a live test mode
+      if (requestData.mode === 'live-test') {
+        // For live testing, we expect actual Figma plugin data
+        if (!requestData.frameData && !requestData.instruction) {
+          return res.json({
+            status: 'pending',
+            message: 'Please select a frame in Figma and trigger screenshot from the plugin',
+            instruction: 'Use the plugin UI to capture a screenshot of your selected frame'
+          });
+        }
+      }
+
+      // Delegate to existing screenshot handler
+      await this.handleFigmaScreenshot(req, res);
+
+    } catch (error) {
+      this.logger.error('❌ Live screenshot failed:', error);
+      res.status(500).json({
+        error: 'Live screenshot failed',
+        details: error.message
+      });
+    }
+  }
+
+  /**
+   * Handle live AI analysis requests
+   * @param {Object} req - Express request
+   * @param {Object} res - Express response
+   */
+  async handleLiveAnalysis(req, res) {
+    try {
+      const { screenshot, mode } = req.body;
+      this.logger.info('🤖 Processing live AI analysis request');
+
+      if (!screenshot) {
+        return res.status(400).json({
+          error: 'No screenshot data provided',
+          message: 'Screenshot data is required for AI analysis'
+        });
+      }
+
+      // Prepare analysis request
+      const analysisRequest = {
+        screenshot_data: screenshot,
+        analysis_type: 'live-testing',
+        mode: mode || 'live-test'
+      };
+
+      // Use existing AI service for analysis
+      const analysisResult = await this.aiService.analyzeDesign(analysisRequest);
+
+      res.json({
+        status: 'success',
+        analysis: analysisResult,
+        timestamp: new Date().toISOString(),
+        mode: 'live-testing'
+      });
+
+    } catch (error) {
+      this.logger.error('❌ Live AI analysis failed:', error);
+      res.status(500).json({
+        error: 'Live AI analysis failed',
+        details: error.message
       });
     }
   }

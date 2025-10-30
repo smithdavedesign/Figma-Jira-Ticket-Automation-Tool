@@ -874,6 +874,7 @@
       <button class="tab-btn" onclick="showTab('vitest', event)">🧪 Vitest</button>
       <button class="tab-btn" onclick="showTab('playwright', event)">🎭 Playwright</button>
       <button class="tab-btn" onclick="showTab('monitor', event)">🔄 Live Monitor</button>
+      <button class="tab-btn" onclick="showTab('live-figma', event)">🎯 Live Figma Testing</button>
       <button class="tab-btn" onclick="showTab('comprehensive', event)">🚀 All Tests</button>
     </div>
 
@@ -1691,7 +1692,6 @@
                 <button class="test-button" style="font-size: 0.8em; padding: 4px 8px;" onclick="openSpecificReport('smoke')">💨 Smoke</button>
                 <button class="test-button" style="font-size: 0.8em; padding: 4px 8px;" onclick="openSpecificReport('regression')">🔄 Regression</button>
                 <button class="test-button" style="font-size: 0.8em; padding: 4px 8px;" onclick="openSpecificReport('visual')">👁️ Visual</button>
-                <button class="test-button" style="font-size: 0.8em; padding: 4px 8px;" onclick="openSpecificReport('ci')">🤖 CI</button>
               </div>
             </div>
             <div class="test-result" id="playwright-summary-result"></div>
@@ -1933,6 +1933,96 @@
               <button class="test-button success" onclick="openTestMonitorDashboard()">🖥️ Open Dashboard</button>
             </div>
             <div class="test-result" id="monitor-controls-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Figma Testing Tab -->
+    <div class="tab-content" id="live-figma">
+      <div class="test-section">
+        <div class="section-header">
+          <div class="test-title">🎯 Live Figma Desktop Integration Testing</div>
+          <button class="test-button" id="live-figma-setup" style="width: auto;" onclick="setupLiveFigmaTesting()">Setup Live Testing</button>
+        </div>
+        
+        <div class="test-grid">
+          <!-- Connection Status Card -->
+          <div class="test-card">
+            <div class="test-card-header">🔌 Figma Desktop Connection</div>
+            <div class="test-card-body">
+              <div style="margin-bottom: 10px;">
+                <span class="status-badge" id="figma-connection-status">Unknown</span>
+              </div>
+              <p>Status: <span id="figma-connection-details">Checking...</span></p>
+              <button class="test-button" onclick="checkFigmaConnection()">Check Connection</button>
+            </div>
+          </div>
+
+          <!-- Plugin Loading Instructions Card -->
+          <div class="test-card">
+            <div class="test-card-header">📋 Plugin Loading Guide</div>
+            <div class="test-card-body">
+              <div id="plugin-instructions">
+                <ol style="margin: 0; padding-left: 20px; line-height: 1.6;">
+                  <li>Open Figma Desktop application</li>
+                  <li>Create or open a design file with frames</li>
+                  <li>Go to <strong>Plugins → Development → Import plugin from manifest...</strong></li>
+                  <li>Navigate to project folder and select <code>manifest.json</code></li>
+                  <li>Run plugin: <strong>Plugins → Development → Design Intelligence Platform</strong></li>
+                </ol>
+              </div>
+              <button class="test-button" onclick="copyManifestPath()" style="margin-top: 10px;">📋 Copy Manifest Path</button>
+            </div>
+          </div>
+
+          <!-- Live Screenshot Test Card -->
+          <div class="test-card">
+            <div class="test-card-header">📸 Live Screenshot Testing</div>
+            <div class="test-card-body">
+              <div style="margin-bottom: 10px;">
+                <span class="status-badge" id="screenshot-test-status">Ready</span>
+              </div>
+              <p>Test screenshot capture with real Figma frames</p>
+              <button class="test-button" onclick="runLiveScreenshotTest()">Test Screenshot</button>
+              <div class="test-result" id="screenshot-test-result"></div>
+            </div>
+          </div>
+
+          <!-- AI Analysis Test Card -->
+          <div class="test-card">
+            <div class="test-card-header">🤖 Live AI Analysis Testing</div>
+            <div class="test-card-body">
+              <div style="margin-bottom: 10px;">
+                <span class="status-badge" id="ai-analysis-status">Ready</span>
+              </div>
+              <p>Test AI design analysis with real Figma data</p>
+              <button class="test-button" onclick="runLiveAITest()">Test AI Analysis</button>
+              <div class="test-result" id="ai-analysis-result"></div>
+            </div>
+          </div>
+
+          <!-- Data Flow Validation Card -->
+          <div class="test-card">
+            <div class="test-card-header">🔄 End-to-End Data Flow</div>
+            <div class="test-card-body">
+              <div style="margin-bottom: 10px;">
+                <span class="status-badge" id="dataflow-status">Ready</span>
+              </div>
+              <p>Validate: Figma → Plugin → MCP Server → AI Services</p>
+              <button class="test-button" onclick="runDataFlowTest()">Test Data Flow</button>
+              <div class="test-result" id="dataflow-result"></div>
+            </div>
+          </div>
+
+          <!-- Live Test Results Card -->
+          <div class="test-card">
+            <div class="test-card-header">📊 Live Test Results</div>
+            <div class="test-card-body">
+              <div class="test-result" id="live-figma-results">
+                <p>Run live tests to see detailed results here.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -3939,6 +4029,328 @@ Generated by Ultimate Figma AI Test Suite
     }
 
     // ===================
+    // LIVE FIGMA TESTING FUNCTIONS
+    // ===================
+    
+    let liveFigmaTestSetup = null;
+
+    async function setupLiveFigmaTesting() {
+      console.log('🎯 Setting up Live Figma Testing...');
+
+      try {
+        // Initialize the live test setup class
+        if (typeof FigmaLiveTestSetup !== 'undefined') {
+          liveFigmaTestSetup = new FigmaLiveTestSetup();
+        } else {
+          // Load the live test setup script
+          await loadScript('/tests/live/figma-live-test-setup.js');
+          liveFigmaTestSetup = new FigmaLiveTestSetup();
+        }
+
+        // Run the complete setup
+        const results = await liveFigmaTestSetup.runCompleteTest();
+        
+        // Update UI with results
+        updateLiveFigmaStatus(results);
+        
+        console.log('✅ Live Figma Testing setup complete', results);
+        
+      } catch (error) {
+        console.error('❌ Live Figma Testing setup failed:', error);
+        updateElementContent('live-figma-results', `
+          <div class="error">
+            <strong>Setup Failed:</strong> ${error.message}
+          </div>
+        `);
+      }
+    }
+
+    async function checkFigmaConnection() {
+      console.log('🔍 Checking Figma Desktop connection...');
+      
+      try {
+        if (!liveFigmaTestSetup) {
+          liveFigmaTestSetup = new FigmaLiveTestSetup();
+        }
+
+        const connectionOk = await liveFigmaTestSetup.checkFigmaConnection();
+        const statusElement = document.getElementById('figma-connection-status');
+        const detailsElement = document.getElementById('figma-connection-details');
+
+        if (connectionOk) {
+          statusElement.textContent = 'Connected';
+          statusElement.className = 'status-badge success';
+          detailsElement.textContent = 'MCP Server healthy, ready for plugin connection';
+        } else {
+          statusElement.textContent = 'Failed';
+          statusElement.className = 'status-badge error';
+          detailsElement.textContent = 'MCP Server connection failed - check if server is running';
+        }
+
+        return connectionOk;
+      } catch (error) {
+        console.error('❌ Connection check failed:', error);
+        const statusElement = document.getElementById('figma-connection-status');
+        const detailsElement = document.getElementById('figma-connection-details');
+        
+        statusElement.textContent = 'Error';
+        statusElement.className = 'status-badge error';
+        detailsElement.textContent = error.message;
+        
+        return false;
+      }
+    }
+
+    async function runLiveScreenshotTest() {
+      console.log('📸 Running live screenshot test...');
+      
+      const statusElement = document.getElementById('screenshot-test-status');
+      const resultElement = document.getElementById('screenshot-test-result');
+      
+      statusElement.textContent = 'Testing...';
+      statusElement.className = 'status-badge running';
+      
+      try {
+        if (!liveFigmaTestSetup) {
+          liveFigmaTestSetup = new FigmaLiveTestSetup();
+        }
+
+        const result = await liveFigmaTestSetup.testLiveScreenshot();
+        
+        if (result) {
+          statusElement.textContent = 'Success';
+          statusElement.className = 'status-badge success';
+          
+          resultElement.innerHTML = `
+            <div class="success">
+              <strong>Screenshot Test Passed</strong><br>
+              Timestamp: ${new Date().toISOString()}<br>
+              <pre>${JSON.stringify(result, null, 2)}</pre>
+            </div>
+          `;
+        } else {
+          statusElement.textContent = 'Failed';
+          statusElement.className = 'status-badge error';
+          
+          resultElement.innerHTML = `
+            <div class="error">
+              <strong>Screenshot Test Failed</strong><br>
+              Please ensure plugin is loaded in Figma and a frame is selected.
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('❌ Screenshot test failed:', error);
+        statusElement.textContent = 'Error';
+        statusElement.className = 'status-badge error';
+        
+        resultElement.innerHTML = `
+          <div class="error">
+            <strong>Screenshot Test Error:</strong> ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    async function runLiveAITest() {
+      console.log('🤖 Running live AI analysis test...');
+      
+      const statusElement = document.getElementById('ai-analysis-status');
+      const resultElement = document.getElementById('ai-analysis-result');
+      
+      statusElement.textContent = 'Testing...';
+      statusElement.className = 'status-badge running';
+      
+      try {
+        if (!liveFigmaTestSetup) {
+          liveFigmaTestSetup = new FigmaLiveTestSetup();
+        }
+
+        // First get screenshot data, then analyze
+        const screenshotResult = await liveFigmaTestSetup.testLiveScreenshot();
+        
+        if (!screenshotResult) {
+          throw new Error('No screenshot data available for AI analysis');
+        }
+
+        const analysisResult = await liveFigmaTestSetup.testLiveAnalysis(screenshotResult);
+        
+        if (analysisResult) {
+          statusElement.textContent = 'Success';
+          statusElement.className = 'status-badge success';
+          
+          resultElement.innerHTML = `
+            <div class="success">
+              <strong>AI Analysis Test Passed</strong><br>
+              Timestamp: ${new Date().toISOString()}<br>
+              <pre>${JSON.stringify(analysisResult, null, 2)}</pre>
+            </div>
+          `;
+        } else {
+          statusElement.textContent = 'Failed';
+          statusElement.className = 'status-badge error';
+          
+          resultElement.innerHTML = `
+            <div class="error">
+              <strong>AI Analysis Test Failed</strong><br>
+              Check that AI services are configured and accessible.
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('❌ AI analysis test failed:', error);
+        statusElement.textContent = 'Error';
+        statusElement.className = 'status-badge error';
+        
+        resultElement.innerHTML = `
+          <div class="error">
+            <strong>AI Analysis Test Error:</strong> ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    async function runDataFlowTest() {
+      console.log('🔄 Running end-to-end data flow test...');
+      
+      const statusElement = document.getElementById('dataflow-status');
+      const resultElement = document.getElementById('dataflow-result');
+      
+      statusElement.textContent = 'Testing...';
+      statusElement.className = 'status-badge running';
+      
+      try {
+        // Run all tests in sequence to validate data flow
+        const connectionOk = await checkFigmaConnection();
+        const screenshotResult = await liveFigmaTestSetup.testLiveScreenshot();
+        const aiResult = screenshotResult ? await liveFigmaTestSetup.testLiveAnalysis(screenshotResult) : null;
+        
+        const flowResults = {
+          connection: connectionOk,
+          screenshot: !!screenshotResult,
+          aiAnalysis: !!aiResult,
+          timestamp: new Date().toISOString()
+        };
+        
+        const allPassed = connectionOk && screenshotResult && aiResult;
+        
+        if (allPassed) {
+          statusElement.textContent = 'Success';
+          statusElement.className = 'status-badge success';
+          
+          resultElement.innerHTML = `
+            <div class="success">
+              <strong>✅ End-to-End Data Flow Validated</strong><br>
+              🔌 Connection: ✅<br>
+              📸 Screenshot: ✅<br>
+              🤖 AI Analysis: ✅<br>
+              Complete pipeline working correctly!
+            </div>
+          `;
+        } else {
+          statusElement.textContent = 'Partial';
+          statusElement.className = 'status-badge warning';
+          
+          resultElement.innerHTML = `
+            <div class="warning">
+              <strong>⚠️ Partial Data Flow Success</strong><br>
+              🔌 Connection: ${connectionOk ? '✅' : '❌'}<br>
+              📸 Screenshot: ${screenshotResult ? '✅' : '❌'}<br>
+              🤖 AI Analysis: ${aiResult ? '✅' : '❌'}<br>
+              Some components need attention.
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('❌ Data flow test failed:', error);
+        statusElement.textContent = 'Error';
+        statusElement.className = 'status-badge error';
+        
+        resultElement.innerHTML = `
+          <div class="error">
+            <strong>Data Flow Test Error:</strong> ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    function copyManifestPath() {
+      const manifestPath = '/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/manifest.json';
+      
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(manifestPath).then(() => {
+          console.log('📋 Manifest path copied to clipboard');
+          // Show temporary feedback
+          const button = event.target;
+          const originalText = button.textContent;
+          button.textContent = '✅ Copied!';
+          setTimeout(() => {
+            button.textContent = originalText;
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy manifest path:', err);
+        });
+      } else {
+        console.log('📋 Manifest path:', manifestPath);
+        alert(`Manifest path: ${manifestPath}`);
+      }
+    }
+
+    function updateLiveFigmaStatus(results) {
+      const resultsElement = document.getElementById('live-figma-results');
+      
+      if (results.status === 'ready-for-manual-testing') {
+        resultsElement.innerHTML = `
+          <div class="success">
+            <h4>🎯 Live Testing Environment Ready!</h4>
+            <p><strong>Setup completed:</strong> ${results.endTime}</p>
+            
+            <div style="margin: 15px 0;">
+              <h5>✅ Completed Setup Steps:</h5>
+              <ul>
+                ${results.steps.map(step => 
+                  `<li>${step.step}: ${step.success ? '✅' : '❌'}</li>`
+                ).join('')}
+              </ul>
+            </div>
+            
+            <div style="margin: 15px 0;">
+              <h5>📋 Next Steps:</h5>
+              <p>${results.nextStep}</p>
+            </div>
+            
+            <div class="info">
+              <strong>Ready for manual plugin testing in Figma Desktop!</strong>
+            </div>
+          </div>
+        `;
+      } else if (results.status === 'failed') {
+        resultsElement.innerHTML = `
+          <div class="error">
+            <h4>❌ Live Testing Setup Failed</h4>
+            <p>Some setup steps failed. Please check the logs and try again.</p>
+            <ul>
+              ${results.steps.map(step => 
+                `<li>${step.step}: ${step.success ? '✅' : '❌'} ${step.error ? `(${step.error})` : ''}</li>`
+              ).join('')}
+            </ul>
+          </div>
+        `;
+      }
+    }
+
+    // Helper function to load external scripts
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    // ===================
     // COMPREHENSIVE TAB SPECIFIC FUNCTIONS
     // ===================
     
@@ -4550,7 +4962,6 @@ Generated by Ultimate Figma AI Test Suite
       // Try multiple report locations (smoke is most common)
       const reportUrls = [
         '../test-results/playwright-reports/smoke-report/index.html',
-        '../test-results/playwright-reports/ci-report/index.html',
         '../test-results/playwright-reports/regression-report/index.html',
         '../test-results/playwright-reports/visual-report/index.html'
       ];
@@ -4583,7 +4994,7 @@ Generated by Ultimate Figma AI Test Suite
     
     function openSpecificReport(type) {
       logToConsole(`📊 Opening ${type} Playwright report...`);
-      const reportUrl = `../test-results/playwright-reports/${type}-report/index.html`;
+      const reportUrl = `${ENV_CONFIG.API_BASE}/tests/test-results/playwright-reports/${type}-report/index.html`;
       
       fetch(reportUrl, { method: 'HEAD' })
         .then(response => {
@@ -4591,13 +5002,15 @@ Generated by Ultimate Figma AI Test Suite
             window.open(reportUrl, '_blank');
             logToConsole(`✅ Opened ${type} report: ${reportUrl}`);
           } else {
-            alert(`${type.charAt(0).toUpperCase() + type.slice(1)} report not found. Run tests first:\nnpm run test:browser:${type}`);
-            logToConsole(`❌ ${type} report not found. Run tests first.`);
+            const message = `${type.charAt(0).toUpperCase() + type.slice(1)} report not found. Run tests first: npm run test:browser`;
+            alert(message);
+            logToConsole(`❌ ${message}`);
           }
         })
-        .catch(() => {
-          alert(`${type.charAt(0).toUpperCase() + type.slice(1)} report not found. Run tests first:\nnpm run test:browser:${type}`);
-          logToConsole(`❌ ${type} report not found. Run tests first.`);
+        .catch(error => {
+          const message = `${type.charAt(0).toUpperCase() + type.slice(1)} report not accessible: ${error.message}`;
+          alert(message);
+          logToConsole(`❌ ${message}`);
         });
     }
 
