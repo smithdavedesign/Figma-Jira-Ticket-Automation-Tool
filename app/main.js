@@ -184,6 +184,7 @@ class MCPServer {
     this.app.get('/api/figma/health', (req, res) => this.handleFigmaHealth(req, res));
     this.app.get('/api/figma/screenshot', (req, res) => this.handleFigmaScreenshot(req, res));
     this.app.post('/api/generate-ticket', (req, res) => this.handleGenerateTicket(req, res));
+    this.app.post('/api/generate-ai-ticket-direct', (req, res) => this.handleDirectAIGeneration(req, res));
 
     // Test monitoring endpoints
     this.app.get('/api/test/status', (req, res) => this.handleTestStatus(req, res));
@@ -402,6 +403,138 @@ class MCPServer {
       };
 
       res.status(500).json(errorResponse);
+    }
+  }
+
+  /**
+   * Handle direct AI ticket generation (bypasses MCP server)
+   */
+  async handleDirectAIGeneration(req, res) {
+    try {
+      this.logger.info('🤖 Direct AI Generation Request:', {
+        body: !!req.body,
+        enhancedFrameData: req.body?.enhancedFrameData?.length || 0,
+        techStack: req.body?.techStack,
+        documentType: req.body?.documentType,
+        hasScreenshot: !!req.body?.screenshot
+      });
+
+      const {
+        enhancedFrameData,
+        screenshot,
+        figmaUrl,
+        techStack,
+        documentType,
+        platform,
+        teamStandards,
+        projectName,
+        fileContext,
+        useAI = true
+      } = req.body;
+
+      if (!enhancedFrameData || !enhancedFrameData.length) {
+        return res.status(400).json({
+          error: 'Enhanced frame data is required',
+          details: 'No frame data provided for AI generation'
+        });
+      }
+
+      // Build context for Visual Enhanced AI Service
+      const visualContext = {
+        figmaContext: {
+          fileName: projectName || fileContext?.fileName || 'Unknown Project',
+          pageName: fileContext?.pageName || 'Design Page',
+          selection: enhancedFrameData[0] || {},
+          fileKey: fileContext?.fileKey
+        },
+        screenshot: screenshot ? { url: screenshot, format: 'png' } : null,
+        hierarchicalData: {
+          components: enhancedFrameData.map(frame => ({
+            name: frame.name || 'Unnamed Component',
+            type: frame.type || 'COMPONENT',
+            id: frame.id
+          }))
+        },
+        visualDesignContext: {
+          colorPalette: this.extractColorsFromFrameData(enhancedFrameData),
+          typography: this.extractTypographyFromFrameData(enhancedFrameData),
+          spacing: this.extractSpacingFromFrameData(enhancedFrameData),
+          layout: { structure: 'Component-based', alignment: 'Auto Layout' },
+          designPatterns: ['Component System', 'Design Tokens']
+        }
+      };
+
+      // Use Visual Enhanced AI Service directly
+      if (this.visualAIService && useAI) {
+        this.logger.info('🎨 Using Visual Enhanced AI Service for direct generation...');
+        
+        const aiResult = await this.visualAIService.processVisualEnhancedContext(visualContext, {
+          documentType: documentType || 'component',
+          techStack: techStack || 'React',
+          instructions: `Generate a comprehensive ${documentType || 'component'} ticket for ${techStack || 'React'} implementation using ${platform || 'jira'} format`
+        });
+
+        if (aiResult && aiResult.content) {
+          this.logger.info('✅ Visual Enhanced AI generation successful');
+          return res.json({
+            success: true,
+            generatedTicket: aiResult.content,
+            source: 'Visual Enhanced AI Service',
+            confidence: aiResult.confidence || 0.85,
+            metadata: {
+              timestamp: new Date().toISOString(),
+              techStack,
+              documentType,
+              platform,
+              hasScreenshot: !!screenshot
+            }
+          });
+        }
+      }
+
+      // Fallback to Template Manager with AI context
+      this.logger.info('🎯 Falling back to Template Manager with AI context...');
+      
+      const templateResult = await this.templateManager.generateTicket({
+        platform: platform || 'jira',
+        documentType: documentType || 'component',
+        componentName: enhancedFrameData[0]?.name || 'Component',
+        techStack: techStack || 'React',
+        figmaContext: visualContext.figmaContext,
+        requestData: {
+          frameData: enhancedFrameData[0],
+          teamStandards,
+          enhancedData: visualContext
+        }
+      });
+
+      if (templateResult && templateResult.ticket) {
+        this.logger.info('✅ Template-based generation successful');
+        return res.json({
+          success: true,
+          generatedTicket: templateResult.ticket,
+          source: 'Template Manager',
+          confidence: 0.75,
+          metadata: {
+            timestamp: new Date().toISOString(),
+            techStack,
+            documentType,
+            platform,
+            template: templateResult.templateUsed || 'default'
+          }
+        });
+      }
+
+      throw new Error('Both AI and template generation failed');
+
+    } catch (error) {
+      this.logger.error('❌ Direct AI generation failed:', error);
+      
+      res.status(500).json({
+        error: 'Direct AI generation failed',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
     }
   }
 
@@ -1257,6 +1390,86 @@ Analysis completed at ${new Date().toISOString()}`;
 
     const match = figmaUrl.match(/figma\.com\/file\/([a-zA-Z0-9]+)/);
     return match ? match[1] : null;
+  }
+
+  /**
+   * Extract colors from frame data for AI context
+   */
+  extractColorsFromFrameData(frameData) {
+    const colors = [];
+    
+    frameData.forEach(frame => {
+      if (frame.designTokens?.colors) {
+        frame.designTokens.colors.forEach(color => {
+          colors.push({
+            hex: color.value || color.hex || '#000000',
+            rgb: this.hexToRgb(color.value || color.hex || '#000000'),
+            usage: [color.name || 'Unknown'],
+            count: color.usage || 1
+          });
+        });
+      }
+    });
+
+    return colors.length > 0 ? colors : [
+      { hex: '#667eea', rgb: { r: 102, g: 126, b: 234 }, usage: ['Primary'], count: 1 },
+      { hex: '#764ba2', rgb: { r: 118, g: 75, b: 162 }, usage: ['Secondary'], count: 1 }
+    ];
+  }
+
+  /**
+   * Extract typography from frame data for AI context
+   */
+  extractTypographyFromFrameData(frameData) {
+    const fonts = new Set();
+    const sizes = new Set();
+    
+    frameData.forEach(frame => {
+      if (frame.designTokens?.fonts) {
+        frame.designTokens.fonts.forEach(font => {
+          if (font.fontFamily) fonts.add(font.fontFamily);
+          if (font.fontSize) sizes.add(font.fontSize);
+        });
+      }
+    });
+
+    return {
+      fonts: fonts.size > 0 ? Array.from(fonts) : ['Inter', 'SF Pro Display'],
+      sizes: sizes.size > 0 ? Array.from(sizes) : [14, 16, 18, 24, 32],
+      hierarchy: ['Heading 1', 'Heading 2', 'Body', 'Caption']
+    };
+  }
+
+  /**
+   * Extract spacing from frame data for AI context
+   */
+  extractSpacingFromFrameData(frameData) {
+    const spacingValues = new Set();
+    
+    frameData.forEach(frame => {
+      if (frame.designTokens?.spacing) {
+        frame.designTokens.spacing.forEach(space => {
+          if (space.value) spacingValues.add(space.value);
+        });
+      }
+    });
+
+    return {
+      patterns: spacingValues.size > 0 ? Array.from(spacingValues).map(v => `${v}px`) : ['8px', '16px', '24px', '32px'],
+      measurements: spacingValues.size > 0 ? Array.from(spacingValues) : [8, 16, 24, 32]
+    };
+  }
+
+  /**
+   * Convert hex color to RGB
+   */
+  hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
   }
 
   /**

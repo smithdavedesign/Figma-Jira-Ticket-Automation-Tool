@@ -1531,6 +1531,47 @@ Examples:
       }
     }
 
+    // Direct AI Generation (bypasses MCP server)
+    async function generateTicketWithDirectAI(params) {
+      console.log('🤖 Starting direct AI generation with Visual Enhanced AI Service...');
+      
+      try {
+        // Call the server's direct AI generation endpoint
+        const response = await fetch(`${MCP_SERVER_URL}/api/generate-ai-ticket-direct`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(params)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Direct AI generation failed: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('✅ Direct AI generation completed:', result);
+        
+        // Return the generated ticket content
+        if (result.content && Array.isArray(result.content)) {
+          return result.content
+            .filter(item => item.type === 'text')
+            .map(item => typeof item.text === 'string' ? item.text : JSON.stringify(item.text))
+            .join('\n\n');
+        } else if (result.ticket) {
+          return typeof result.ticket === 'string' ? result.ticket : JSON.stringify(result.ticket);
+        } else if (result.generatedTicket) {
+          return result.generatedTicket;
+        } else {
+          throw new Error('No valid ticket content in response');
+        }
+
+      } catch (error) {
+        console.error('❌ Direct AI generation failed:', error);
+        throw error;
+      }
+    }
+
     // Initialize Figma plugin communication
     function initializeFigmaIntegration() {
       // Check MCP server status first
@@ -2061,18 +2102,10 @@ Examples:
         `;
         document.body.appendChild(debugDisplay);
         
-        const result = await callMCPTool('generate_ai_ticket', aiParams);
+        // Use direct AI generation instead of MCP server
+        const generatedContent = await generateTicketWithDirectAI(aiParams);
         
-        // Process the AI-generated result
-        let generatedContent = '';
-        if (result.content && Array.isArray(result.content)) {
-          generatedContent = result.content
-            .filter(item => item.type === 'text')
-            .map(item => typeof item.text === 'string' ? item.text : JSON.stringify(item.text))
-            .join('\n\n');
-        } else if (result.ticket) {
-          generatedContent = typeof result.ticket === 'string' ? result.ticket : JSON.stringify(result.ticket);
-        } else {
+        if (!generatedContent) {
           throw new Error('No content received from AI generation');
         }
 
