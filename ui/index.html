@@ -1113,6 +1113,21 @@ Examples:
                     <p>No visual context available</p>
                     <small>Screenshots help AI understand design layouts and requirements</small>
                   </div>
+                  <!-- Enhanced Screenshot Actions -->
+                  <div id="screenshot-actions" style="display: none; margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                    <div class="screenshot-buttons" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                      <button id="copy-screenshot-btn" class="btn-secondary" style="flex: 1; font-size: 12px;">
+                        📋 Copy to Clipboard
+                      </button>
+                      <button id="download-screenshot-btn" class="btn-secondary" style="flex: 1; font-size: 12px;">
+                        💾 Download PNG
+                      </button>
+                      <button id="jira-instructions-btn" class="btn-secondary" style="flex: 1; font-size: 12px;">
+                        📝 Jira Help
+                      </button>
+                    </div>
+                    <div id="clipboard-status" style="font-size: 11px; color: #666; text-align: center;"></div>
+                  </div>
                 </div>
               </div>
 
@@ -3735,6 +3750,150 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
           </div>
         </div>
       `;
+
+      // Show and setup enhanced screenshot actions
+      const screenshotActions = document.getElementById('screenshot-actions');
+      if (screenshotActions) {
+        screenshotActions.style.display = 'block';
+        setupScreenshotActions(screenshotData);
+      }
+    }
+
+    // Enhanced Screenshot Actions with Clipboard Integration
+    function setupScreenshotActions(screenshotData) {
+      const copyBtn = document.getElementById('copy-screenshot-btn');
+      const downloadBtn = document.getElementById('download-screenshot-btn');
+      const jiraBtn = document.getElementById('jira-instructions-btn');
+      const statusDiv = document.getElementById('clipboard-status');
+
+      // Copy to Clipboard functionality
+      if (copyBtn) {
+        copyBtn.onclick = async () => {
+          try {
+            statusDiv.textContent = 'Copying to clipboard...';
+            statusDiv.style.color = '#666';
+            
+            if (navigator.clipboard && window.ClipboardItem) {
+              // Modern Clipboard API
+              const blob = await dataURLToBlob(screenshotData.dataUrl);
+              const clipboardItem = new ClipboardItem({ [blob.type]: blob });
+              await navigator.clipboard.write([clipboardItem]);
+              
+              statusDiv.textContent = '✅ Screenshot copied! Paste directly in Jira (Ctrl/Cmd+V)';
+              statusDiv.style.color = '#10b981';
+              
+              // Reset status after 5 seconds
+              setTimeout(() => {
+                statusDiv.textContent = 'Ready for clipboard operations';
+                statusDiv.style.color = '#666';
+              }, 5000);
+            } else {
+              // Fallback for older browsers
+              statusDiv.textContent = '⚠️ Clipboard not supported. Use download instead.';
+              statusDiv.style.color = '#f59e0b';
+            }
+          } catch (error) {
+            console.error('Clipboard copy failed:', error);
+            statusDiv.textContent = '❌ Copy failed. Try download instead.';
+            statusDiv.style.color = '#ef4444';
+          }
+        };
+      }
+
+      // Download functionality
+      if (downloadBtn) {
+        downloadBtn.onclick = () => {
+          const componentName = screenshotData.metadata?.nodeName || window.currentSelection?.[0]?.name || 'component';
+          const fileName = `${componentName.replace(/[^a-zA-Z0-9]/g, '-')}-screenshot.png`;
+          
+          const link = document.createElement('a');
+          link.download = fileName;
+          link.href = screenshotData.dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          statusDiv.textContent = `✅ Downloaded as ${fileName}`;
+          statusDiv.style.color = '#10b981';
+          
+          setTimeout(() => {
+            statusDiv.textContent = 'Screenshot downloaded successfully';
+            statusDiv.style.color = '#666';
+          }, 3000);
+        };
+      }
+
+      // Jira Instructions
+      if (jiraBtn) {
+        jiraBtn.onclick = () => {
+          showJiraInstructions();
+        };
+      }
+
+      // Initialize status
+      statusDiv.textContent = 'Ready for clipboard operations';
+      statusDiv.style.color = '#666';
+    }
+
+    // Convert data URL to Blob for clipboard
+    async function dataURLToBlob(dataURL) {
+      return new Promise((resolve) => {
+        const arr = dataURL.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        resolve(new Blob([u8arr], { type: mime }));
+      });
+    }
+
+    // Show Jira attachment instructions
+    function showJiraInstructions() {
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+        background: rgba(0,0,0,0.7); z-index: 10000; 
+        display: flex; align-items: center; justify-content: center;
+      `;
+      
+      modal.innerHTML = `
+        <div style="background: white; padding: 24px; border-radius: 8px; max-width: 500px; margin: 20px;">
+          <h3 style="margin: 0 0 16px 0; color: #1f2937;">📋 Jira Screenshot Instructions</h3>
+          <div style="line-height: 1.6; color: #374151;">
+            <p><strong>Method 1: Direct Paste (Recommended)</strong></p>
+            <ol style="margin: 8px 0; padding-left: 20px;">
+              <li>Click "📋 Copy to Clipboard" above</li>
+              <li>Go to your Jira ticket</li>
+              <li>Press <kbd>Ctrl+V</kbd> (or <kbd>Cmd+V</kbd> on Mac)</li>
+              <li>Screenshot will appear inline in your ticket</li>
+            </ol>
+            
+            <p><strong>Method 2: File Upload</strong></p>
+            <ol style="margin: 8px 0; padding-left: 20px;">
+              <li>Click "💾 Download PNG" above</li>
+              <li>In Jira, click "Attach files" or drag & drop</li>
+              <li>Select the downloaded PNG file</li>
+            </ol>
+            
+            <p style="background: #f3f4f6; padding: 12px; border-radius: 4px; margin: 16px 0 0 0;">
+              <strong>💡 Pro Tip:</strong> The generated ticket already includes the image reference as <code>!${(window.currentSelection?.[0]?.name || 'Component')}-screenshot.png|thumbnail!</code>
+            </p>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" 
+                  style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 16px; cursor: pointer;">
+            Got it!
+          </button>
+        </div>
+      `;
+      
+      modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+      };
+      
+      document.body.appendChild(modal);
     }
 
     function updateContextMetrics(contextData) {

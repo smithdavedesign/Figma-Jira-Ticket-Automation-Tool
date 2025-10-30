@@ -639,13 +639,25 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
     const params = [];
 
     if (nodeId) {
-      // nodeId is already properly formatted, don't double-encode
-      params.push(`node-id=${nodeId}`);
+      // Fix node ID format: handle semicolon-separated IDs and proper encoding
+      let formattedNodeId = nodeId;
+      
+      // If nodeId contains semicolons, convert to comma-separated and take primary
+      if (formattedNodeId.includes(';')) {
+        const nodeIds = formattedNodeId.split(';');
+        formattedNodeId = nodeIds[0]; // Use primary node ID for deep linking
+      }
+      
+      // Ensure proper URL encoding for node ID
+      params.push(`node-id=${encodeURIComponent(formattedNodeId)}`);
     }
 
     if (teamParam) {
       params.push(`t=${teamParam}`);
     }
+
+    // Add mode parameter for better deep-linking
+    params.push('mode=design');
 
     if (params.length > 0) {
       baseUrl += `?${params.join('&')}`;
