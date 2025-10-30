@@ -27,8 +27,8 @@ export default defineConfig({
     // Disable threading for CI compatibility
     threads: false,
 
-    // Simple reporter for CI
-    reporter: process.env.CI ? 'basic' : 'default',
+    // Use default reporter for maximum compatibility
+    reporter: 'default',
 
     // Disable features that might cause Node.js compatibility issues
     watch: false,
