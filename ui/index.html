@@ -1593,6 +1593,29 @@ Examples:
       // Set up periodic server status checks
       setInterval(checkMCPServerStatus, 30000); // Check every 30 seconds
 
+      // Auto-extract team parameter from current Figma URL
+      const currentUrl = window.location.href;
+      const teamParamMatch = currentUrl.match(/[?&]t=([^&]+)/);
+      if (teamParamMatch && teamParamMatch[1]) {
+        const extractedTeamParam = teamParamMatch[1];
+        console.log('🎯 Auto-extracted team parameter from URL:', extractedTeamParam);
+        // Set the team parameter automatically
+        if (window.setTeamParam) {
+          window.setTeamParam(extractedTeamParam);
+          console.log('✅ Team parameter automatically set on initialization');
+          
+          // Also update the UI input field to show the extracted value
+          const teamParamInput = document.getElementById('teamParam');
+          if (teamParamInput) {
+            teamParamInput.value = extractedTeamParam;
+            teamParamInput.style.backgroundColor = '#e8f5e8'; // Light green to indicate auto-filled
+            console.log('📝 Team parameter input field updated with extracted value');
+          }
+        }
+      } else {
+        console.log('ℹ️ No team parameter found in current URL');
+      }
+
       // Listen for messages from Figma plugin code
         window.addEventListener('message', (event) => {
           console.log('🎨 Received message:', event.data);
