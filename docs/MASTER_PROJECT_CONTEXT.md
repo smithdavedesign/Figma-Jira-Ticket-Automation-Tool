@@ -12,6 +12,8 @@
 4. **DOCUMENTATION PLACEMENT** - ALL .md files MUST go in docs/ subdirectories per consolidated structure below
 5. **CHECK EXISTING DOCS FIRST** - Review consolidated guides in appropriate docs/ subdirectory before creating new documentation to avoid duplication
 6. **USE CONSOLIDATED STRUCTURE** - Reference the table of contents in main README.md or docs/README.md to navigate to correct documentation folder
+7. **🧪 CONSOLIDATED TESTING FRAMEWORK** - All testing MUST use the consolidated structure: 8 essential commands, master orchestrator scripts, unified test interface
+8. **🚀 TEST CREATION RULES** - New tests must integrate with Ultimate Test Suite (tests/integration/test-consolidated-suite.html) and follow 8-command structure
 
 ---
 
@@ -62,6 +64,47 @@ MCP Server + Express API (localhost:3000)
 
 **❌ NOT THIS:** Direct Figma API integration in plugin
 **✅ THIS:** Plugin UI → MCP Server → Secure Backend → Figma API
+
+---
+
+## 🧪 **CONSOLIDATED TESTING FRAMEWORK (October 2025)**
+
+### **🚀 MAJOR CONSOLIDATION ACHIEVEMENT**
+- **65% Command Reduction**: Reduced from 23→8 essential test commands
+- **Script Consolidation**: Removed 8 redundant scripts (28→20 files)
+- **Master Orchestrators**: 3 unified scripts for intelligent test routing
+- **Production Ready**: 100% browser test pass rate, comprehensive system health
+
+### **🎯 NEW TESTING STRUCTURE (MANDATORY FOR ALL FUTURE WORK)**
+```bash
+# TIER 1: Essential Commands (8 TOTAL)
+npm test                # Vitest unit tests (fastest)
+npm run test:all        # Master orchestrator - comprehensive testing  
+npm run test:browser    # Unified browser testing
+npm run test:templates  # Template validation
+npm run health          # System health check
+npm run monitor         # Unified monitoring dashboard
+npm run dev:start       # Development server
+npm run validate        # Full validation
+
+# Master Orchestrator Scripts (DO NOT MODIFY)
+scripts/test-orchestrator.js     # 300+ line master test runner
+scripts/monitor-dashboard.js     # 380+ line monitoring system
+scripts/browser-test-suite.js    # 350+ line browser test router
+```
+
+### **🎛️ ULTIMATE TEST SUITE INTEGRATION**
+- **Location**: `tests/integration/test-consolidated-suite.html`
+- **Features**: 9 integrated tabs including Live Monitor & Comprehensive Runner
+- **RULE**: All new tests MUST integrate with this interface
+- **Architecture**: Single consolidated testing entry point
+
+### **📋 TESTING RULES FOR AI ASSISTANTS**
+1. **NO NEW INDIVIDUAL TEST SCRIPTS** - Use consolidated commands only
+2. **INTEGRATE WITH ULTIMATE SUITE** - Add new tests to existing interface
+3. **USE MASTER ORCHESTRATORS** - Leverage existing test routing scripts
+4. **FOLLOW 8-COMMAND STRUCTURE** - Do not create additional npm scripts
+5. **UPDATE CONSOLIDATED DOCS** - Changes go to `docs/testing/` directory only
 
 ---
 

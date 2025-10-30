@@ -10,7 +10,10 @@ This directory contains the complete testing infrastructure for the Figma AI Tic
 - **📊 Comprehensive Logging** - Structured test monitoring
 - **📈 Coverage Reports** - Complete test coverage analysis
 
-## 🎯 **Major Infrastructure Improvements (October 2025)**
+## 🎯 **TEST SUITE CONSOLIDATION COMPLETE (October 2025)**
+
+### **🚀 MANDATORY CONSOLIDATED TESTING FRAMEWORK**
+**⚠️ CRITICAL: All future testing must follow this consolidated structure**
 
 ### **🏗️ Complete Infrastructure Overhaul:**
 - **✅ Ultimate Test Suite** - All-in-one tabbed interface replacing 22+ individual test files
@@ -100,6 +103,13 @@ tests/
 ```
 
 ## 🚀 **Quick Start Guide - CONSOLIDATED COMMANDS**
+
+### **📋 AI ASSISTANT RULES FOR TESTING**
+1. **DO NOT CREATE NEW TEST SCRIPTS** - Use existing 8-command structure only
+2. **INTEGRATE WITH ULTIMATE SUITE** - Add tests to `tests/integration/test-consolidated-suite.html`
+3. **USE MASTER ORCHESTRATORS** - Leverage `scripts/test-orchestrator.js` and related scripts
+4. **NO INDIVIDUAL npm SCRIPTS** - Follow consolidated command structure
+5. **UPDATE CONSOLIDATED DOCS** - Changes only to `docs/testing/` directory
 
 ### **🎯 New Simplified Testing Workflow:**
 1. **Unit Tests:** `npm test` (Fast vitest unit tests - 12 tests in ~120ms)
