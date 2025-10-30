@@ -639,7 +639,8 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
     const params = [];
 
     if (nodeId) {
-      params.push(`node-id=${encodeURIComponent(nodeId)}`);
+      // nodeId is already properly formatted, don't double-encode
+      params.push(`node-id=${nodeId}`);
     }
 
     if (teamParam) {
@@ -695,8 +696,8 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
       description: `Visual reference for the ${componentName} component implementation`,
       // Instructions for manual attachment
       copy_paste_note: screenshotUrl ?
-        `💡 Tip: Right-click the image at ${screenshotUrl} and copy/save to attach manually` :
-        '💡 Tip: Take a screenshot of the component in Figma and attach manually'
+        `💡 For Jira: Open ${screenshotUrl} → Right-click → Save Image → Drag file to Jira ticket` :
+        '💡 For Jira: Take screenshot in Figma → Save as PNG → Drag file to Jira ticket'
     };
   }
 
