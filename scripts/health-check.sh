@@ -175,7 +175,7 @@ else
     echo -e "   ${YELLOW}⚠️${NC}  Node modules not found - run 'npm install'"
 fi
 
-if [ -d "tests/playwright-browser-tests" ]; then
+if [ -d "tests/playwright" ]; then
     echo -e "   ${GREEN}✅${NC} Browser test setup present"
 else
     echo -e "   ${YELLOW}⚠️${NC}  Browser tests not found in tests/ directory"

@@ -48,7 +48,7 @@ export default [
       },
     },
     rules: {
-      'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
+      'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_', 'caughtErrorsIgnorePattern': '^_' }],
       'no-console': 'off', // Allow console in Figma plugins and development
       'no-undef': 'error',
       'prefer-const': 'warn',
@@ -99,7 +99,7 @@ export default [
       'no-unused-vars': 'off',
       'no-undef': 'off',
       // Enable TypeScript-specific rules
-      '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_', 'caughtErrorsIgnorePattern': '^_' }],
       '@typescript-eslint/no-explicit-any': 'off', // Allow any for Figma plugin flexibility
       'no-console': 'off',
     },

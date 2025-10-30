@@ -15,8 +15,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { readFile } from 'fs/promises';
-import { join, extname } from 'path';
-import { existsSync } from 'fs';
+import { join } from 'path';
 
 // Load environment variables first
 dotenv.config();
@@ -32,7 +31,7 @@ import { RelationshipMapper } from '../core/tools/relationship-mapper.js';
 
 // Import AI Services
 import { VisualEnhancedAIService } from '../core/ai/visual-enhanced-ai-service.js';
-import { AIOrchestrator, getGlobalOrchestrator } from '../core/ai/orchestrator.js';
+import { getGlobalOrchestrator } from '../core/ai/orchestrator.js';
 import { GeminiAdapter } from '../core/ai/adapters/gemini-adapter.js';
 
 // Import configuration
@@ -204,7 +203,7 @@ class MCPServer {
 
     // Error handling middleware (must be last)
     this.app.use(errorLogger);
-    this.app.use((err, req, res, next) => {
+    this.app.use((err, req, res, _next) => {
       this.errorHandler.handleServerError(err, req, res);
     });
 
@@ -423,7 +422,7 @@ class MCPServer {
       const {
         enhancedFrameData,
         screenshot,
-        figmaUrl,
+        figmaUrl, // eslint-disable-line no-unused-vars
         techStack,
         documentType,
         platform,
