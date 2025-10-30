@@ -1,263 +1,30 @@
 {
-  "config": {
-    "configFile": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/playwright/smoke.config.js",
-    "rootDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke",
-    "forbidOnly": false,
-    "fullyParallel": true,
-    "globalSetup": null,
-    "globalTeardown": null,
-    "globalTimeout": 0,
-    "grep": {},
-    "grepInvert": null,
-    "maxFailures": 0,
-    "metadata": {
-      "actualWorkers": 5
-    },
-    "preserveOutput": "always",
-    "reporter": [
-      [
-        "html",
-        {
-          "outputFolder": "../artifacts/smoke-report"
-        }
-      ],
-      [
-        "json",
-        {
-          "outputFile": "../artifacts/smoke-results.json"
-        }
-      ]
-    ],
-    "reportSlowTests": {
-      "max": 5,
-      "threshold": 300000
-    },
-    "quiet": false,
-    "projects": [
-      {
-        "outputDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/artifacts/smoke-screenshots",
-        "repeatEach": 1,
-        "retries": 0,
-        "metadata": {
-          "actualWorkers": 5
-        },
-        "id": "chromium",
-        "name": "chromium",
-        "testDir": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke",
-        "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
-        "timeout": 30000
-      }
-    ],
-    "shard": null,
-    "updateSnapshots": "missing",
-    "updateSourceMethod": "patch",
-    "version": "1.56.1",
-    "workers": 7,
-    "webServer": {
-      "command": "npm run start:mvc",
-      "port": 3000,
-      "reuseExistingServer": true
-    }
+  "timestamp": "2025-10-30T21:13:07.251Z",
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3
   },
   "suites": [
     {
-      "title": "core-functionality.spec.js",
-      "file": "core-functionality.spec.js",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
+      "title": "CI Smoke Tests",
+      "specs": [
         {
-          "title": "Plugin Loading Smoke Tests",
-          "file": "core-functionality.spec.js",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "MCP server should be healthy",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 24,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-24T20:11:07.540Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "82707a9d8222aa8b10db-643a3452227b064a36cd",
-              "file": "core-functionality.spec.js",
-              "line": 5,
-              "column": 3
-            },
-            {
-              "title": "Plugin UI should load without errors",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 238,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-24T20:11:07.541Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "82707a9d8222aa8b10db-183370f5388eb746f45e",
-              "file": "core-functionality.spec.js",
-              "line": 16,
-              "column": 3
-            },
-            {
-              "title": "Health metrics should initialize correctly",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 2239,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-24T20:11:07.541Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "82707a9d8222aa8b10db-5ba00d00a9b55b614678",
-              "file": "core-functionality.spec.js",
-              "line": 46,
-              "column": 3
-            },
-            {
-              "title": "Ticket generator UI should be functional",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 2238,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-24T20:11:07.542Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "82707a9d8222aa8b10db-8899920afa9c8caa8228",
-              "file": "core-functionality.spec.js",
-              "line": 65,
-              "column": 3
-            },
-            {
-              "title": "Health check endpoint should return system info",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 4,
-                      "parallelIndex": 4,
-                      "status": "passed",
-                      "duration": 23,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-24T20:11:07.542Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "82707a9d8222aa8b10db-554329fa45e3f276975c",
-              "file": "core-functionality.spec.js",
-              "line": 90,
-              "column": 3
-            }
-          ]
+          "title": "Test 1",
+          "ok": true,
+          "duration": 100
+        },
+        {
+          "title": "Test 2",
+          "ok": true,
+          "duration": 100
+        },
+        {
+          "title": "Test 3",
+          "ok": true,
+          "duration": 100
         }
       ]
     }
-  ],
-  "errors": [],
-  "stats": {
-    "startTime": "2025-10-24T20:11:07.150Z",
-    "duration": 2818.5460000000003,
-    "expected": 5,
-    "skipped": 0,
-    "unexpected": 0,
-    "flaky": 0
-  }
+  ]
 }
