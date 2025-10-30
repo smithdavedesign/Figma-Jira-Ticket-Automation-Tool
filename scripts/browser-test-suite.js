@@ -257,9 +257,9 @@ class BrowserTestSuite {
       // Directory already exists, continue
     }
     
-    const reporters = [
-      `--reporter=html`
-    ];
+    // Note: Output folder is already configured in individual Playwright config files
+    // We don't need to override it here as each config has proper paths
+    const reporters = [];
 
     return reporters.join(' ');  
   }

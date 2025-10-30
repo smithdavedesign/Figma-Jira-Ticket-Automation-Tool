@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Production-ready AI-enhanced Figma plugin with MVC architecture for generating comprehensive development tickets",
   "type": "module",
-  "main": "dist/code.js",
+  "main": "code.js",
   "scripts": {
     "start": "node app/main.js",
     "start:mvc": "node app/main.js",
@@ -13,7 +13,7 @@
     "build": "./scripts/build-simple.sh",
     "build:legacy": "./scripts/build.sh",
     "build:ts": "tsc -p config/tsconfig.json",
-    "clean": "rm -rf dist",
+    "clean": "rm -f code.js",
     "lint": "eslint . --fix",
     
     "test": "vitest",
@@ -81,8 +81,8 @@
   },
   "figma": {
     "manifest": "manifest.json",
-    "main": "dist/code.js",
-    "ui": "dist/ui/index.html"
+    "main": "code.js",
+    "ui": "ui/index.html"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -444,7 +444,7 @@ class MCPServer {
       const {
         enhancedFrameData,
         screenshot,
-        figmaUrl, // eslint-disable-line no-unused-vars
+        figmaUrl,
         techStack,
         documentType,
         platform,
@@ -1169,7 +1169,7 @@ ${this.estimateStoryPoints(frameData[0])}
    */
   async generateEnhancedTemplateTicket(params) {
     const { enhancedFrameData, techStack, documentType } = params;
-    
+
     if (!enhancedFrameData || enhancedFrameData.length === 0) {
       throw new Error('No frame data provided for template generation');
     }
@@ -1178,7 +1178,7 @@ ${this.estimateStoryPoints(frameData[0])}
     const componentName = frameData.name || 'Component';
 
     this.logger.info(`🎨 Generating enhanced template ticket for ${componentName}`);
-    this.logger.info(`🔍 Enhanced frame data:`, {
+    this.logger.info('🔍 Enhanced frame data:', {
       componentName,
       hasHierarchy: !!frameData.hierarchy,
       designTokensCount: frameData.hierarchy?.designTokens?.colors?.length || 0,
@@ -1224,7 +1224,7 @@ ${this.estimateStoryPoints(frameData[0])}
 
     } catch (error) {
       this.logger.error('❌ Enhanced template generation failed:', error);
-      
+
       // Ultimate fallback to basic template
       return this.generateTemplateTickets({
         frameData: enhancedFrameData,

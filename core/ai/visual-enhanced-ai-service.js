@@ -93,7 +93,7 @@ export class VisualEnhancedAIService {
    */
   buildEnhancedPrompt(context, options) {
     const { documentType = 'jira', techStack = 'React TypeScript', instructions = '' } = options;
-    
+
     // Extract intelligent insights from the context
     const designInsights = this.analyzeDesignContext(context);
 
@@ -221,10 +221,10 @@ Generate a **comprehensive professional ticket** that includes:
 
     // Analyze component name to infer type and purpose
     const componentName = context.componentName || context.figmaContext?.selection?.name || '';
-    
+
     if (componentName) {
       const nameLower = componentName.toLowerCase();
-      
+
       // Infer component type from name
       if (nameLower.includes('button') || nameLower.includes('btn')) {
         insights.componentType = 'Interactive Button';

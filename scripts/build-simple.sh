@@ -5,13 +5,12 @@
 
 echo "🏗️  Building Figma Plugin (Simplified)..."
 
-# Build TypeScript to code.js
+# Build TypeScript directly to root code.js
 echo "📦 Compiling TypeScript..."
 npx tsc -p config/tsconfig.json
 
-# Copy compiled code.js to root (where Figma expects it)
-if [ -f "dist/code.js" ]; then
-    cp dist/code.js code.js
+# Verify compilation succeeded
+if [ -f "code.js" ]; then
     echo "✅ code.js ready for Figma"
 else
     echo "❌ TypeScript compilation failed"

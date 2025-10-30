@@ -8,15 +8,14 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": false,
-    "outFile": "../dist/code.js"
+    "outFile": "../code.js"
   },
   "include": [
-    "../code.ts"
+    "../src/code.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "src/",
     "app/server",
     "tests",
     "browser-tests"

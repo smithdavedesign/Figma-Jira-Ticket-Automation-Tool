@@ -229,13 +229,13 @@ export class AdvancedTemplateEngine {
     // Substitute figma context variables with fallback support (including nested properties)
     result = result.replace(/\{\{\s*figma\.([a-zA-Z_.][\w.]*)\s*(\|\|\s*figma\.([a-zA-Z_.][\w.]*))?\s*\}\}/g, (match, key, fallbackExpr, fallbackKey) => {
       const value = this.getNestedProperty(context.figma, key);
-      if (value) return value;
-      
+      if (value) {return value;}
+
       if (fallbackKey) {
         const fallbackValue = this.getNestedProperty(context.figma, fallbackKey);
-        if (fallbackValue) return fallbackValue;
+        if (fallbackValue) {return fallbackValue;}
       }
-      
+
       return match;
     });
 
@@ -347,12 +347,12 @@ export class AdvancedTemplateEngine {
     result = result.replace(sectionPattern, (match, sectionKey, innerContent) => {
       // Get the value from context using the section key
       const value = this.evaluateCondition(sectionKey, context);
-      
+
       if (value && this.isTruthy(value)) {
         // If the value exists and is truthy, return the inner content
         return innerContent;
       }
-      
+
       // If value is falsy, remove the entire section
       return '';
     });

@@ -3,12 +3,11 @@
 echo "📦 Creating Production Bundle..."
 
 # Clean previous builds
-rm -rf dist
 rm -rf production-bundle
 
-# Run the standard build
-echo "🔨 Running standard build..."
-./scripts/build.sh
+# Run the simplified build
+echo "🔨 Running simplified build..."
+npm run build
 
 # Create production bundle directory
 mkdir -p production-bundle
@@ -17,7 +16,7 @@ mkdir -p production-bundle
 echo "📁 Copying production files..."
 cp manifest.json production-bundle/
 cp code.js production-bundle/
-cp -r dist/ui production-bundle/ui
+cp -r ui production-bundle/ui
 cp README.md production-bundle/
 cp LICENSE production-bundle/
 

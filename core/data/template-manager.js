@@ -64,7 +64,7 @@ export class TemplateManager {
       const cacheKey = this.createTicketCacheKey(params);
 
       // Check cache first (disabled for fresh template generation)
-      // TODO: Re-enable caching after template stabilization   
+      // TODO: Re-enable caching after template stabilization
       const cacheEnabled = false; // Cache disabled for development
       if (cacheEnabled && this.config.cacheTemplates) {
         const cachedTicket = await this.getCachedTicket(cacheKey);

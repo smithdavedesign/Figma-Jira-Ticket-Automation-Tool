@@ -7,6 +7,12 @@
  * Tests manifest, code, UI, and MCP server integration
  */
 
+import fs from 'fs';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+
 console.log('🎨 LIVE FIGMA PLUGIN TEST');
 console.log('=' .repeat(50));
 console.log('Testing actual Figma plugin functionality');
@@ -51,7 +57,6 @@ class FigmaPluginTest {
     console.log('-'.repeat(30));
     
     try {
-      const fs = require('fs');
       const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
       
       // Check required fields
@@ -93,7 +98,6 @@ class FigmaPluginTest {
     console.log('-'.repeat(30));
     
     try {
-      const fs = require('fs');
       
       // Check main code file
       if (fs.existsSync('code.js')) {
@@ -148,10 +152,9 @@ class FigmaPluginTest {
     console.log('-'.repeat(30));
     
     try {
-      const fs = require('fs');
       
       // Check unified UI (the correct one)
-      const uiPath = 'ui/unified/index.html';
+      const uiPath = 'ui/index.html';
       if (fs.existsSync(uiPath)) {
         const uiContent = fs.readFileSync(uiPath, 'utf8');
         const uiSize = fs.statSync(uiPath).size;
@@ -204,9 +207,6 @@ class FigmaPluginTest {
     console.log('-'.repeat(30));
     
     try {
-      const { exec } = require('child_process');
-      const { promisify } = require('util');
-      const execAsync = promisify(exec);
       
       // Test MCP server availability
       const { stdout: healthCheck } = await execAsync(
@@ -252,10 +252,9 @@ class FigmaPluginTest {
       console.log('   🎭 Simulating Figma plugin environment...');
       
       // Check if plugin would load correctly
-      const fs = require('fs');
       const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
       const codeExists = fs.existsSync(manifest.main);
-      const uiExists = fs.existsSync('ui/unified/index.html');
+      const uiExists = fs.existsSync('ui/index.html');
       
       if (codeExists && uiExists) {
         console.log('   ✅ Plugin files present for Figma loading');
@@ -341,15 +340,13 @@ class FigmaPluginTest {
 }
 
 // Run Figma tests
-if (require.main === module) {
-  const tester = new FigmaPluginTest();
-  
-  tester.runFigmaTests()
-    .then(() => {
-      console.log('\n🎉 Figma plugin test complete!');
-      console.log('🎨 Plugin is ready for import into Figma');
-    })
-    .catch(error => {
-      console.error('\n❌ Figma test failed:', error);
-    });
-}
+const tester = new FigmaPluginTest();
+
+tester.runFigmaTests()
+  .then(() => {
+    console.log('\n🎉 Figma plugin test complete!');
+    console.log('🎨 Plugin is ready for import into Figma');
+  })
+  .catch(error => {
+    console.error('\n❌ Figma test failed:', error);
+  });
