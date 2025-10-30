@@ -63,9 +63,10 @@ export class TemplateManager {
       // Create cache key for this specific ticket configuration
       const cacheKey = this.createTicketCacheKey(params);
 
-    // Check cache first (disabled for fresh template generation)
-    const disableCache = true; // TODO: Re-enable caching after template stabilization
-    if (false && this.config.cacheTemplates) {
+      // Check cache first (disabled for fresh template generation)
+      // TODO: Re-enable caching after template stabilization   
+      const cacheEnabled = false; // Cache disabled for development
+      if (cacheEnabled && this.config.cacheTemplates) {
         const cachedTicket = await this.getCachedTicket(cacheKey);
         if (cachedTicket) {
           this.logger.info(`📋 Using cached ticket: ${cacheKey}`);
@@ -462,11 +463,11 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
    */
   generateDesignAnalysisSummary(figmaContext, componentName, requestData) {
     const parts = [];
-    
+
     // Get enhanced data if available
     const enhancedData = requestData?.enhancedFrameData?.[0];
     const hierarchy = enhancedData?.hierarchy;
-    
+
     // Component type analysis with enhanced intelligence
     const nameLower = (componentName || '').toLowerCase();
     if (nameLower.includes('why solidigm')) {
@@ -585,8 +586,10 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
    * @returns {string|null} - The extracted file key or null if not found
    */
   extractFileKeyFromUrl(figmaUrl) {
-    if (!figmaUrl) return null;
-    
+    if (!figmaUrl) {
+      return null;
+    }
+
     // Match Figma URLs: https://www.figma.com/file/<fileKey>/* or https://www.figma.com/design/<fileKey>/*
     // Production keys are 22+ chars, but allow shorter keys for testing
     const match = figmaUrl.match(/figma\.com\/(?:file|design)\/([a-zA-Z0-9]{8,})/);
@@ -602,22 +605,22 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
    */
   buildFigmaUrl(figmaContext, requestData, extractedFileKey) {
     // Get file key from various sources
-    const fileKey = figmaContext?.metadata?.id || figmaContext?.fileKey || 
+    const fileKey = figmaContext?.metadata?.id || figmaContext?.fileKey ||
                    requestData?.fileContext?.fileKey || requestData?.fileKey || extractedFileKey;
-    
+
     if (!fileKey || fileKey === 'unknown') {
-      return `https://www.figma.com/file/unknown`;
+      return 'https://www.figma.com/file/unknown';
     }
 
     // Get project name for URL (encode for URL safety)
-    const projectName = requestData?.fileContext?.fileName || 
-                       figmaContext?.metadata?.name || 
+    const projectName = requestData?.fileContext?.fileName ||
+                       figmaContext?.metadata?.name ||
                        requestData?.metadata?.fileName ||
                        'Design-File';
     const encodedProjectName = encodeURIComponent(projectName.replace(/\s+/g, '-'));
 
     // Get node ID from frame data
-    const nodeId = requestData?.frameData?.id || 
+    const nodeId = requestData?.frameData?.id ||
                   requestData?.enhancedFrameData?.[0]?.id ||
                   requestData?.metadata?.nodeId;
 
@@ -634,19 +637,19 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
     // Build the complete URL with parameters
     let baseUrl = `https://www.figma.com/design/${fileKey}/${encodedProjectName}`;
     const params = [];
-    
+
     if (nodeId) {
       params.push(`node-id=${encodeURIComponent(nodeId)}`);
     }
-    
+
     if (teamParam) {
       params.push(`t=${teamParam}`);
     }
-    
+
     if (params.length > 0) {
       baseUrl += `?${params.join('&')}`;
     }
-    
+
     return baseUrl;
   }
 
@@ -656,7 +659,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
   generateScreenshotMarkdown(componentName, requestData, figmaContext) {
     const screenshotUrl = requestData?.screenshot || figmaContext?.screenshot;
     const filename = `${componentName}-screenshot.png`;
-    
+
     if (screenshotUrl) {
       // Return multiple formats for maximum compatibility
       return {
@@ -667,7 +670,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
         wiki: `[[File:${filename}|thumb|${componentName} Component]]`
       };
     }
-    
+
     return {
       markdown: `![${componentName} Component](${filename})`,
       html: `<img src="${filename}" alt="${componentName} Component" style="max-width: 100%; height: auto;" />`,
@@ -683,7 +686,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
   generateScreenshotAttachment(componentName, requestData, figmaContext) {
     const screenshotUrl = requestData?.screenshot || figmaContext?.screenshot;
     const filename = `${componentName}-screenshot.png`;
-    
+
     return {
       filename,
       url: screenshotUrl || null,
@@ -691,9 +694,9 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
       title: `${componentName} - Design Reference`,
       description: `Visual reference for the ${componentName} component implementation`,
       // Instructions for manual attachment
-      copy_paste_note: screenshotUrl ? 
+      copy_paste_note: screenshotUrl ?
         `💡 Tip: Right-click the image at ${screenshotUrl} and copy/save to attach manually` :
-        `💡 Tip: Take a screenshot of the component in Figma and attach manually`
+        '💡 Tip: Take a screenshot of the component in Figma and attach manually'
     };
   }
 

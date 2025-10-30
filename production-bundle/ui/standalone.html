@@ -994,6 +994,19 @@ Examples:
         </select>
       </div>
 
+      <!-- Team Parameter Input for Figma URL Generation -->
+      <div class="form-group">
+        <label for="teamParam">🔗 Figma Team Parameter (Optional)</label>
+        <input type="text" 
+               id="teamParam" 
+               placeholder="Paste your Figma URL or enter team parameter (e.g., N40s8WSxJE4gHM4T-0)"
+               onblur="handleTeamParamInput(this.value)"
+               title="This helps preserve team context in generated Figma URLs. You can paste your full Figma URL and we'll extract the team parameter automatically.">
+        <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">
+          💡 Tip: Paste your current Figma URL to automatically extract the team parameter, or find the 't=' value in your URL
+        </small>
+      </div>
+
       <div class="form-group">
         <label for="documentType">Document Type</label>
         <select id="documentType" onchange="updateTemplateContext()">
@@ -4089,10 +4102,18 @@ ${techStack}
         }
         
         const fileName = contextData.figmaContext?.fileName || 'current-file';
-        const figmaUrl = `https://www.figma.com/file/${realFileKey}/${encodeURIComponent(fileName)}`;
+        
+        // Build Figma URL with modern /design/ format and team parameter support
+        let figmaUrl = `https://www.figma.com/design/${realFileKey}/${encodeURIComponent(fileName)}`;
+        
+        // Add team parameter if available
+        const teamParam = window.getTeamParam ? window.getTeamParam() : '';
+        if (teamParam && teamParam.trim()) {
+          figmaUrl += `?t=${teamParam}`;
+        }
         
         console.log('🔗 Real file key extracted:', realFileKey);
-        console.log('🔗 Generated Figma URL:', figmaUrl);
+        console.log('🔗 Generated Figma URL with team parameter:', figmaUrl);
         
         // Fix: Map UI documentType to proper platform/documentType split
         const platformMap = {

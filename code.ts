@@ -280,7 +280,9 @@ async function handleGetContext() {
       fileKey: fileKey,
       fileName: figma.root.name || 'Figma Design',
       pageId: figma.currentPage.id,
-      pageName: figma.currentPage.name
+      pageName: figma.currentPage.name,
+      // Team parameter will be captured from UI input
+      teamParam: null
     };
 
     figma.ui.postMessage({

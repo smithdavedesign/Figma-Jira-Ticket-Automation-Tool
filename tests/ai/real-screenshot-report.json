@@ -1,7 +1,7 @@
 {
   "testSuite": "Real Screenshot AI Test Suite",
-  "timestamp": "2025-10-30T21:02:42.603Z",
-  "totalDuration": 573,
+  "timestamp": "2025-10-30T21:28:28.321Z",
+  "totalDuration": 545,
   "summary": {
     "totalTests": 4,
     "successful": 0,
@@ -21,7 +21,7 @@
       "techStack": "AEM",
       "documentType": "jira",
       "componentType": "button",
-      "startTime": 1761858162030,
+      "startTime": 1761859707777,
       "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 100,
@@ -39,7 +39,7 @@
       "techStack": "React TypeScript",
       "documentType": "jira",
       "componentType": "card",
-      "startTime": 1761858162183,
+      "startTime": 1761859707931,
       "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 40346,
@@ -50,14 +50,14 @@
         "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
       ],
       "warnings": [],
-      "duration": 199
+      "duration": 183
     },
     {
       "scenario": "Ant Design Form - Vue.js",
       "techStack": "Vue.js",
       "documentType": "linear",
       "componentType": "form",
-      "startTime": 1761858162382,
+      "startTime": 1761859708114,
       "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 4729,
@@ -68,14 +68,14 @@
         "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
       ],
       "warnings": [],
-      "duration": 128
+      "duration": 126
     },
     {
       "scenario": "Chakra UI Modal - Angular",
       "techStack": "Angular",
       "documentType": "asana",
       "componentType": "modal",
-      "startTime": 1761858162511,
+      "startTime": 1761859708240,
       "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 100,
@@ -86,7 +86,7 @@
         "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
       ],
       "warnings": [],
-      "duration": 92
+      "duration": 81
     }
   ],
   "tests": [

@@ -4102,10 +4102,18 @@ ${techStack}
         }
         
         const fileName = contextData.figmaContext?.fileName || 'current-file';
-        const figmaUrl = `https://www.figma.com/file/${realFileKey}/${encodeURIComponent(fileName)}`;
+        
+        // Build Figma URL with modern /design/ format and team parameter support
+        let figmaUrl = `https://www.figma.com/design/${realFileKey}/${encodeURIComponent(fileName)}`;
+        
+        // Add team parameter if available
+        const teamParam = window.getTeamParam ? window.getTeamParam() : '';
+        if (teamParam && teamParam.trim()) {
+          figmaUrl += `?t=${teamParam}`;
+        }
         
         console.log('🔗 Real file key extracted:', realFileKey);
-        console.log('🔗 Generated Figma URL:', figmaUrl);
+        console.log('🔗 Generated Figma URL with team parameter:', figmaUrl);
         
         // Fix: Map UI documentType to proper platform/documentType split
         const platformMap = {
