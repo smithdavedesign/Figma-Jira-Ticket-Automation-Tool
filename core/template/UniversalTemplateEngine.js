@@ -233,11 +233,12 @@ export class UniversalTemplateEngine {
       return value !== null && value !== undefined ? String(value) : '';
     });
 
-    // 2. Handle conditionals: {% if condition %} content {% endif %}
-    result = result.replace(/{%\s*if\s+([^%]+)\s*%}([\s\S]*?){%\s*endif\s*%}/g,
-      (match, condition, content) => {
+    // 2. Handle conditionals with else: {% if condition %} content {% else %} else_content {% endif %}
+    result = result.replace(/{%\s*if\s+([^%]+)\s*%}([\s\S]*?)(?:{%\s*else\s*%}([\s\S]*?))?{%\s*endif\s*%}/g,
+      (match, condition, ifContent, elseContent = '') => {
         const value = this.evaluateExpression(condition, context, template);
-        return this.isTruthy(value) ? this.substituteVariables(content, context, template) : '';
+        const contentToUse = this.isTruthy(value) ? ifContent : elseContent;
+        return this.substituteVariables(contentToUse, context, template);
       }
     );
 
