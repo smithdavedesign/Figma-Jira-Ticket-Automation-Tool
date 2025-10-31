@@ -276,13 +276,13 @@ export class UniversalTemplateEngine {
     const trimmed = expression.trim();
 
     // Handle mathematical operations: "calculated.confidence * 100"
-    const mathMatch = trimmed.match(/^(.+?)\s*(\*|\+|\-|\/)\s*(\d+(?:\.\d+)?)$/);
+    const mathMatch = trimmed.match(/^(.+?)\s*(\*|\+|-|\/)\s*(\d+(?:\.\d+)?)$/);
     if (mathMatch) {
       const [, leftExpr, operator, rightValue] = mathMatch;
       const leftValue = this.evaluateExpression(leftExpr, context, template);
       const rightNum = parseFloat(rightValue);
       const leftNum = parseFloat(leftValue);
-      
+
       if (!isNaN(leftNum) && !isNaN(rightNum)) {
         switch (operator) {
         case '*': return Math.round(leftNum * rightNum);
@@ -351,19 +351,20 @@ export class UniversalTemplateEngine {
       // Handle date formatting
       if (value === 'now') {
         const now = new Date();
-        return arg ? now.toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: '2-digit', 
+        return arg ? now.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
           day: '2-digit',
           hour: '2-digit',
           minute: '2-digit'
         }) : now.toISOString().split('T')[0];
       }
       return value;
-    case 'multiply':
+    case 'multiply': {
       // Handle mathematical operations like confidence * 100
       const multiplier = parseFloat(arg) || 100;
       return Math.round(parseFloat(value) * multiplier);
+    }
     case 'default':
       // Handle default values
       return this.isTruthy(value) ? value : arg;
@@ -495,7 +496,7 @@ Please customize this template for your specific needs.
     // If template has merged base template data, add it to context
     if (template?.template) {
       const enrichedContext = { ...context };
-      
+
       console.log('🔍 CONTEXT ENRICHMENT DEBUG - Input Context:');
       console.log('  📊 Input context keys:', Object.keys(context));
       console.log('  📋 Figma context:', JSON.stringify(context.figma || {}, null, 2));
@@ -503,8 +504,8 @@ Please customize this template for your specific needs.
       console.log('  📊 Calculated context:', JSON.stringify(context.calculated || {}, null, 2));
       console.log('  👥 Org context:', JSON.stringify(context.org || {}, null, 2));
       console.log('  🔧 Base template keys:', Object.keys(template.template));
-      
-      // Add base template variables to context  
+
+      // Add base template variables to context
       if (template.template.resources) {
         console.log('  🔗 Processing base template resources...');
         // Resolve template variables in resources
@@ -520,13 +521,13 @@ Please customize this template for your specific needs.
         });
         console.log(`  ✅ Resolved ${enrichedContext.resources.length} resources`);
       }
-      
+
       if (template.template.variables) {
         console.log('  📝 Processing base template variables...');
         // Merge base template variables but don't override context data
         enrichedContext.base_variables = template.template.variables;
         console.log('  📝 Base variables keys:', Object.keys(template.template.variables));
-        
+
         // Log some key variables for debugging
         if (template.template.variables.figma_url) {
           const resolved = this.substituteVariables(template.template.variables.figma_url, context);
@@ -537,32 +538,32 @@ Please customize this template for your specific needs.
           console.log(`    github_url: "${template.template.variables.github_url}" -> "${resolved}"`);
         }
       }
-      
+
       if (template.template.design) {
         console.log('  🎨 Adding base template design data...');
         enrichedContext.design = template.template.design;
         console.log('    Design keys:', Object.keys(template.template.design));
       }
-      
+
       if (template.template.authoring) {
         console.log('  📝 Merging base template authoring data...');
-        enrichedContext.authoring = { 
-          ...template.template.authoring, 
-          ...enrichedContext.authoring 
+        enrichedContext.authoring = {
+          ...template.template.authoring,
+          ...enrichedContext.authoring
         };
         console.log('    Authoring keys:', Object.keys(enrichedContext.authoring));
       }
-      
+
       console.log('🔄 CONTEXT ENRICHMENT COMPLETE');
       console.log('  📊 Final enriched context keys:', Object.keys(enrichedContext));
       console.log('  🔗 Resources count:', enrichedContext.resources?.length || 0);
       console.log('  📝 Base variables available:', !!enrichedContext.base_variables);
       console.log('  🎨 Design data available:', !!enrichedContext.design);
       console.log('  📝 Authoring data available:', !!enrichedContext.authoring);
-      
+
       return enrichedContext;
     }
-    
+
     console.log('⚠️ No base template data found for enrichment');
     return context;
   }
@@ -580,7 +581,7 @@ Please customize this template for your specific needs.
       // Load base template
       const basePath = join(this.configDir, 'template_configs/base.yml');
       const baseTemplate = await this.loadTemplate(basePath);
-      
+
       if (!baseTemplate?.template) {
         console.warn('Base template not found or invalid structure, using template as-is');
         return template;
@@ -615,14 +616,14 @@ Please customize this template for your specific needs.
    */
   deepMerge(target, source) {
     // Handle null/undefined cases
-    if (!target && !source) return {};
-    if (!target) return { ...source };
-    if (!source) return { ...target };
-    
+    if (!target && !source) {return {};}
+    if (!target) {return { ...source };}
+    if (!source) {return { ...target };}
+
     const result = { ...target };
-    
+
     for (const key in source) {
-      if (source.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           result[key] = this.deepMerge(result[key] || {}, source[key]);
         } else {
@@ -630,7 +631,7 @@ Please customize this template for your specific needs.
         }
       }
     }
-    
+
     return result;
   }
 

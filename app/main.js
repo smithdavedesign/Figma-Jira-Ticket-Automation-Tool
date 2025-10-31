@@ -620,7 +620,7 @@ class MCPServer {
     console.log('  📊 Request Data Keys:', Object.keys(requestData || {}));
     console.log('  🔗 Figma URL:', requestData?.figmaUrl);
     console.log('  📸 Screenshot:', requestData?.screenshot);
-    
+
     const templateResult = await this.templateManager.generateTicket({
       platform,
       documentType: templateType,

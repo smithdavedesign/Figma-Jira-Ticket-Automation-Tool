@@ -150,14 +150,14 @@ export class TemplateManager {
     // Extract file key from figmaUrl if not available in other sources
     const figmaUrl = requestData?.figmaUrl;
     const extractedFileKey = figmaUrl ? this.extractFileKeyFromUrl(figmaUrl) : null;
-    
+
     console.log('  🔗 URL extraction:', {
       figmaUrl,
       extractedFileKey,
       screenshot: requestData?.screenshot
     });
 
-    return {
+    const templateContext = {
       // Figma context data
       figma: {
         component_name: componentName,
@@ -724,7 +724,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
 
     // Add mode parameter for better deep-linking
     params.push('mode=design');
-    
+
     // Add scaling for better viewing
     params.push('scaling=min-zoom');
 
@@ -787,7 +787,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
    */
   calculatePriority(figmaContext, techStack) {
     const complexity = this.calculateComplexity(figmaContext);
-    const isComplexTech = Array.isArray(techStack) 
+    const isComplexTech = Array.isArray(techStack)
       ? techStack.some(tech => tech.toLowerCase().includes('aem'))
       : techStack.toLowerCase().includes('aem');
 
@@ -805,10 +805,10 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
    */
   calculateStoryPoints(figmaContext, techStack) {
     const hours = this.estimateHours(figmaContext, techStack);
-    
-    if (hours <= 4) return '3';
-    if (hours <= 8) return '5';
-    if (hours <= 16) return '8';
+
+    if (hours <= 4) {return '3';}
+    if (hours <= 8) {return '5';}
+    if (hours <= 16) {return '8';}
     return '13';
   }
 
@@ -818,18 +818,18 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
   generateImplementationNotes(figmaContext, techStack) {
     const notes = [];
     const complexity = this.calculateComplexity(figmaContext);
-    
+
     if (complexity === 'complex') {
       notes.push('Consider breaking down into smaller sub-components');
       notes.push('Plan for comprehensive testing strategy');
     }
-    
+
     if (Array.isArray(techStack) && techStack.some(tech => tech.toLowerCase().includes('aem'))) {
       notes.push('Follow AEM component development best practices');
       notes.push('Ensure Touch UI compatibility');
       notes.push('Implement proper Sling Model bindings');
     }
-    
+
     return notes.length > 0 ? notes : ['Standard component implementation approach'];
   }
 
@@ -848,7 +848,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
     if (figmaContext?.components?.some(c => c.name.toLowerCase().includes('button'))) {
       requirements.push('Proper button states and focus indicators');
     }
-    
+
     if (figmaContext?.components?.some(c => c.name.toLowerCase().includes('form'))) {
       requirements.push('Form field labels and error messages');
     }
