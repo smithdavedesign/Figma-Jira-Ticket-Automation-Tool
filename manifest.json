@@ -24,8 +24,5 @@
     ],
     "reasoning": "AI services for ticket generation, Figma API for screenshots, backend API for secure screenshot proxy"
   },
-  "permissions": ["currentuser"],
-  "capabilities": [
-    "textreview"
-  ]
+  "permissions": ["currentuser"]
 }

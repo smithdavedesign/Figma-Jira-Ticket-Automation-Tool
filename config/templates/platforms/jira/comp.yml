@@ -109,9 +109,10 @@ template:
     
     ## 🔗 Resources
     
-    {% for resource in resources %}
-    - **{{ resource.type }}**: [{{ resource.notes }}]({{ resource.link }})
-    {% endfor %}
+    - **Design System**: [Component Library]({{ project.component_library_url | default('https://storybook.company.com') }})
+    - **Accessibility**: [WCAG Guidelines]({{ project.accessibility_url | default('https://accessibility.company.com') }})
+    - **Testing**: [Testing Standards]({{ project.testing_standards_url | default('https://testing.company.com') }})
+    - **Figma**: [Design Specs]({{ figma.live_link }})
     
     ---
     
