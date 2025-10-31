@@ -19,6 +19,9 @@ import { ErrorHandler } from '../core/utils/error-handler.js';
 import { ServiceContainer } from './controllers/ServiceContainer.js';
 import { RouteRegistry } from './core/RouteRegistry.js';
 
+// AI Services
+import { AIOrchestrator } from '../core/ai/orchestrator.js';
+
 // Services
 import { TicketGenerationService } from './services/TicketGenerationService.js';
 import { ScreenshotService } from './services/ScreenshotService.js';
@@ -140,7 +143,16 @@ export class RefactoredServer {
         new TestingService(redis, configService, screenshotService, analysisService), true, ['redis', 'configurationService', 'screenshotService', 'analysisService']);
       
       this.serviceContainer.register('ticketGenerationService', (container, redis, configService, screenshotService, analysisService) => 
-        new TicketGenerationService(redis, configService, screenshotService, analysisService), true, ['redis', 'configurationService', 'screenshotService', 'analysisService']);      this.logger.info(`✅ Service Container initialized: ${this.serviceContainer.getRegisteredServices().length} services`);
+        new TicketGenerationService(redis, configService, screenshotService, analysisService), true, ['redis', 'configurationService', 'screenshotService', 'analysisService']);
+      
+      // Register AI orchestrator
+      this.serviceContainer.register('aiOrchestrator', (container, redis, configService) => 
+        new AIOrchestrator(redis, configService), true, ['redis', 'configurationService']);
+      
+      // Register alias for backward compatibility
+      this.serviceContainer.register('ticketService', (container) => container.get('ticketGenerationService'), true, ['ticketGenerationService']);
+      
+      this.logger.info(`✅ Service Container initialized: ${this.serviceContainer.getRegisteredServices().length} services`);
       
     } catch (error) {
       this.logger.error('❌ Service Container initialization failed:', error);
