@@ -851,6 +851,133 @@
       font-style: italic;
       padding: 20px;
     }
+
+    /* Markdown content styles */
+    .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+      color: #333;
+      margin: 16px 0 8px 0;
+    }
+
+    .markdown-content h2 {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+
+    .markdown-content code {
+      background: #f6f8fa;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+
+    .markdown-content pre {
+      background: #f6f8fa;
+      padding: 12px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 0.85em;
+    }
+
+    .markdown-content blockquote {
+      border-left: 4px solid #dfe2e5;
+      padding: 0 16px;
+      color: #6a737d;
+      margin: 16px 0;
+    }
+
+    /* Multi-format template preview styles */
+    .template-format-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 4px;
+    }
+
+    .format-tab {
+      padding: 4px 12px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 4px 4px 0 0;
+      cursor: pointer;
+      font-size: 0.8em;
+      transition: all 0.2s ease;
+    }
+
+    .format-tab.active {
+      background: #007aff;
+      color: white;
+    }
+
+    .format-tab:hover:not(.active) {
+      background: #e0e0e0;
+    }
+
+    .template-rendered {
+      background: white;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 16px;
+      margin: 8px 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 0.9em;
+      max-height: 500px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    /* Jira content styles */
+    .jira-content h1, .jira-content h2, .jira-content h3 {
+      color: #333;
+      margin: 16px 0 8px 0;
+      font-weight: 600;
+    }
+
+    .jira-content h2 {
+      font-size: 1.2em;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+
+    .jira-content .jira-image {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+      display: inline-block;
+      margin: 2px;
+    }
+
+    .jira-content .jira-link {
+      color: #1976d2;
+      text-decoration: underline;
+    }
+
+    .jira-content .jira-bold {
+      font-weight: 600;
+    }
+
+    .jira-content ul {
+      padding-left: 20px;
+    }
+
+    .jira-content .checkbox-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .jira-content .checkbox-list li {
+      margin: 4px 0;
+    }
+
+    .jira-content .checkbox-list li:before {
+      content: "☐ ";
+      color: #666;
+      margin-right: 4px;
+    }
   </style>
 </head>
 <body>
@@ -1295,16 +1422,125 @@
         </div>
       </div>
 
-      <!-- Template System Preview -->
-      <div class="test-section preview-section">
-        <div class="test-title">👁️ Template System Integration Results</div>
-        <div class="template-preview" id="template-system-preview">
-          Click "Run All Template & Integration Tests" to see comprehensive system results...
-        </div>
-      </div>
-    </div>
+        <!-- YAML Template Validation & Preview Section -->
+        <div class="test-section">
+          <div class="test-title">📋 YAML Template Validation & Preview</div>
+          
+          <!-- Template Selection & Controls -->
+          <div class="test-grid" style="margin-bottom: 20px;">
+            <div class="test-card">
+              <div class="test-card-header">🎯 Template Selector</div>
+              <div class="test-card-body">
+                <div style="margin-bottom: 12px;">
+                  <label for="platform-select" style="font-weight: 500; display: block; margin-bottom: 4px;">Platform:</label>
+                  <select id="platform-select" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;" onchange="updateTemplateList()">
+                    <option value="jira">Jira</option>
+                    <option value="confluence">Confluence</option>
+                    <option value="figma">Figma</option>
+                    <option value="wiki">Wiki</option>
+                  </select>
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <label for="template-type-select" style="font-weight: 500; display: block; margin-bottom: 4px;">Template Type:</label>
+                  <select id="template-type-select" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;" onchange="loadSelectedTemplate()">
+                    <option value="comp">Component</option>
+                    <option value="code">Code Task</option>
+                    <option value="feature">Feature</option>
+                    <option value="service">Service</option>
+                    <option value="wiki">Wiki Page</option>
+                  </select>
+                </div>
+                <button class="test-button" onclick="loadSelectedTemplate()">🔄 Load Template</button>
+                <button class="test-button secondary" onclick="validateAllTemplates()">🧪 Validate All</button>
+              </div>
+            </div>
 
-    <!-- AI Tab -->
+            <div class="test-card">
+              <div class="test-card-header">🔧 Template Actions</div>
+              <div class="test-card-body">
+                <div style="margin-bottom: 12px;">
+                  <button class="test-button" onclick="processTemplateWithDummyData()">🎯 Process with Dummy Data</button>
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <button class="test-button secondary" onclick="exportTemplateResult()">📋 Export Result</button>
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <button class="test-button secondary" onclick="copyTemplateToClipboard()">📄 Copy Template</button>
+                </div>
+                <div>
+                  <button class="test-button" onclick="runTemplateSystemTests()">🚀 Run System Tests</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Template Display Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <!-- Raw Template Display -->
+            <div class="test-card">
+              <div class="test-card-header">📝 Raw YAML Template</div>
+              <div class="test-card-body">
+                <div class="template-preview" id="raw-template-display" style="max-height: 500px; background: #f8fafc; font-size: 12px;">
+                  Select a template to view its raw YAML content...
+                </div>
+              </div>
+            </div>
+
+            <!-- Processed Template Display -->
+            <div class="test-card">
+              <div class="test-card-header">🎯 Processed Template Output</div>
+              <div class="test-card-body">
+                <div class="template-preview" id="processed-template-display" style="max-height: 500px; background: #f0f9ff; font-size: 12px;">
+                  Click "Process with Dummy Data" to see the final output...
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Template Validation Results -->
+          <div class="test-card">
+            <div class="test-card-header">✅ Template Validation Results</div>
+            <div class="test-card-body">
+              <div id="template-validation-results" style="background: #f8fafc; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 13px; min-height: 100px;">
+                Load a template to see validation results...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template System Preview -->
+        <div class="test-section preview-section">
+          <div class="test-title">👁️ Template System Integration Results</div>
+          
+          <div class="template-format-tabs">
+            <button class="format-tab active" onclick="switchTemplatePreviewFormat('rendered')">Rendered</button>
+            <button class="format-tab" onclick="switchTemplatePreviewFormat('jira')">Jira</button>
+            <button class="format-tab" onclick="switchTemplatePreviewFormat('markdown')">Markdown</button>
+            <button class="format-tab" onclick="switchTemplatePreviewFormat('confluence')">Confluence</button>
+            <button class="format-tab" onclick="switchTemplatePreviewFormat('raw')">Raw</button>
+          </div>
+
+          <div id="preview-rendered" class="template-rendered" style="display: block;">
+            Click "Run All Template & Integration Tests" to see comprehensive system results...
+          </div>
+
+          <div id="preview-jira" class="template-preview" style="display: none;">
+            Jira format will appear here after running tests...
+          </div>
+
+          <div id="preview-markdown" class="template-preview" style="display: none;">
+            Markdown format will appear here after running tests...
+          </div>
+
+          <div id="preview-confluence" class="template-preview" style="display: none;">
+            Confluence format will appear here after running tests...
+          </div>
+
+          <div id="preview-raw" class="template-preview" style="display: none;">
+            Raw template output will appear here after running tests...
+          </div>
+        </div>
+      </div>    <!-- AI Tab -->
     <div class="tab-content" id="ai">
       <div class="test-section">
         <div class="section-header">
@@ -2965,8 +3201,13 @@ template:
 
     async function runTemplateSystemTests() {
       logToConsole('🚀 Running all Template & System Integration tests...');
-      const preview = document.getElementById('template-system-preview');
-      preview.innerHTML = '<div style="color: #f59e0b; padding: 20px; text-align: center;">🔄 Running comprehensive template system integration tests...</div>';
+      // Update all preview panels with loading state
+      const loadingMessage = '<div style="color: #f59e0b; padding: 20px; text-align: center;">🔄 Running comprehensive template system integration tests...</div>';
+      document.getElementById('preview-rendered').innerHTML = loadingMessage;
+      document.getElementById('preview-jira').innerHTML = loadingMessage;
+      document.getElementById('preview-markdown').innerHTML = loadingMessage;
+      document.getElementById('preview-confluence').innerHTML = loadingMessage;
+      document.getElementById('preview-raw').innerHTML = loadingMessage;
       
       // Run basic template tests first
       await testTemplateEngine();
@@ -2993,20 +3234,32 @@ template:
       
       const passRate = (passed / results.length * 100).toFixed(1);
       
-      preview.innerHTML = `
-<div style="color: #059669; font-weight: bold; margin-bottom: 12px;">🏗️ Template & System Integration Results</div>
-<div style="margin: 10px 0; padding: 16px; background: #f0f9ff; border-radius: 8px;">
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
-    <div><strong>Template Manager:</strong> ${document.getElementById('template-manager-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}</div>
-    <div><strong>YAML Processing:</strong> ${document.getElementById('yaml-parsing-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}</div>
-    <div><strong>Redis Cache:</strong> ${document.getElementById('redis-caching-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}</div>
-    <div><strong>Error Handling:</strong> ${document.getElementById('error-context-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}</div>
-    <div><strong>Platform Routing:</strong> ${document.getElementById('platform-routing-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}</div>
-    <div><strong>Performance:</strong> ${document.getElementById('template-performance-result')?.textContent.includes('✅') ? '✅ Optimal' : '❌ Issues'}</div>
-  </div>
-  <div style="color: #059669;"><strong>Overall Status:</strong> ${passed}/${results.length} systems operational (${passRate}% success rate)</div>
-</div>
-      `;
+      // Generate a sample template to show in different formats
+      const sampleTemplate = `h2. 🏗️ Template & System Integration Results
+
+*Overall Status*: ${passed}/${results.length} systems operational (${passRate}% success rate)
+
+h3. System Components Status
+
+* *Template Manager*: ${document.getElementById('template-manager-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}
+* *YAML Processing*: ${document.getElementById('yaml-parsing-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}
+* *Redis Cache*: ${document.getElementById('redis-caching-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}
+* *Error Handling*: ${document.getElementById('error-context-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}
+* *Platform Routing*: ${document.getElementById('platform-routing-result')?.textContent.includes('✅') ? '✅ Working' : '❌ Failed'}
+* *Performance*: ${document.getElementById('template-performance-result')?.textContent.includes('✅') ? '✅ Optimal' : '❌ Issues'}
+
+{code}
+Test Results Summary:
+- Total Tests: ${results.length}
+- Passed: ${passed}
+- Success Rate: ${passRate}%
+- Generated: ${new Date().toLocaleString()}
+{code}
+
+_This is a live preview of the template system showing multi-format rendering capabilities including Jira markup, Markdown, Confluence, and raw output._`;
+
+      // Update all preview formats
+      updateTemplatePreview(sampleTemplate);
       
       logToConsole(`✅ Template System Integration tests completed: ${passed}/${results.length} passed (${passRate}%)`);
     }
@@ -3596,6 +3849,11 @@ template:
         await runCategoryWithProgress('system', runSystemTests);
         await runCategoryWithProgress('screenshots', runScreenshotTests);
         await runCategoryWithProgress('templates', runTemplateSystemTests);
+        
+        // NEW: YAML Template Validation
+        logToConsole('🧪 Running YAML Template Validation...');
+        await validateAllTemplates();
+        
         await runCategoryWithProgress('ai', runAITests);
         await runCategoryWithProgress('ui', runUITests);
         await runCategoryWithProgress('e2e', runE2ETests);
@@ -3913,6 +4171,509 @@ template:
       }
     }
 
+    // ===================
+    // TEMPLATE VALIDATION & PREVIEW FUNCTIONS
+    // ===================
+    
+    // Comprehensive dummy data for template testing - matches the context from conversation history
+    const templateDummyData = {
+      // Figma data (matches template variables)
+      figma: {
+        component_name: 'PrimaryButton',
+        component_type: 'FRAME',
+        design_status: 'Ready for Development',
+        screenshot_filename: 'primary-button.png',
+        live_link: 'https://figma.com/primary-button',
+        extracted_colors: ['#007bff', '#ffffff', '#f8f9fa'],
+        extracted_typography: ['Inter 16px', 'Inter 14px'],
+        screenshot_markdown: {
+          jira: '![Primary Button](primary-button.png)'
+        }
+      },
+      
+      // Project data
+      project: {
+        name: 'Design System Components',
+        tech_stack: ['React', 'TypeScript'],
+        component_prefix: 'UI',
+        testing_framework: 'Jest',
+        community_url: 'https://community.example.com'
+      },
+      
+      // Calculated values
+      calculated: {
+        priority: 'High',
+        story_points: 8,
+        hours: 8,
+        confidence: 'High',
+        risk_factors: ['State management complexity'],
+        similar_components: ['SecondaryButton', 'IconButton']
+      },
+      
+      // Authoring data
+      authoring: {
+        notes: 'Primary button implementation with focus states',
+        component_path: '/src/components/PrimaryButton',
+        cq_template: 'button-component',
+        touch_ui_required: true
+      },
+      
+      // Resource data
+      resource: {
+        type: 'Button Component Documentation',
+        link: 'https://docs.example.com/primary-button',
+        notes: 'Accessibility and interaction guidelines'
+      },
+      
+      // Tech stack reference
+      tech: 'React',
+      
+      // URLs
+      storybook_url: 'https://storybook.example.com',
+      github_url: 'https://github.com/example/ui-components',
+      wiki_url: 'https://wiki.example.com',
+      
+      // Special CSS/Style values
+      'marginBottom:': '16px',
+      '//': 'comment',
+      
+      // Current timestamp as string literal
+      "'now'": new Date().toISOString()
+    };
+
+    // Template structure mapping (based on our consolidated structure)
+    const templateStructure = {
+      jira: ['comp', 'code', 'feature', 'service', 'wiki'],
+      confluence: ['comp', 'code', 'feature', 'service', 'wiki'],
+      figma: ['comp', 'code', 'feature', 'service', 'wiki'],
+      wiki: ['comp', 'code', 'feature', 'service', 'wiki']
+    };
+
+    // Current template state
+    let currentTemplate = {
+      platform: 'jira',
+      type: 'comp',
+      raw: null,
+      processed: null,
+      validation: null
+    };
+
+    function updateTemplateList() {
+      const platform = document.getElementById('platform-select').value;
+      const typeSelect = document.getElementById('template-type-select');
+      
+      // Clear current options
+      typeSelect.innerHTML = '';
+      
+      // Add options based on platform
+      const types = templateStructure[platform] || ['comp', 'code', 'feature', 'service', 'wiki'];
+      types.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = getTemplateTypeName(type);
+        typeSelect.appendChild(option);
+      });
+      
+      // Auto-load the first template
+      loadSelectedTemplate();
+    }
+
+    function getTemplateTypeName(type) {
+      const names = {
+        comp: 'Component',
+        code: 'Code Task',
+        feature: 'Feature',
+        service: 'Service',
+        wiki: 'Wiki Page'
+      };
+      return names[type] || type;
+    }
+
+    async function loadSelectedTemplate() {
+      const platform = document.getElementById('platform-select').value;
+      const type = document.getElementById('template-type-select').value;
+      
+      currentTemplate.platform = platform;
+      currentTemplate.type = type;
+      
+      try {
+        logToConsole(`🔄 Loading template: ${platform}/${type}.yml`);
+        
+        // For template validation testing, use mock templates with realistic structure
+        logToConsole(`🔄 Generating mock template for: ${platform}/${type}.yml`);
+        let templateContent = generateMockTemplate(platform, type);
+        
+        currentTemplate.raw = templateContent;
+        
+        // Display raw template
+        document.getElementById('raw-template-display').textContent = templateContent;
+        
+        // Validate template
+        validateCurrentTemplate();
+        
+        logToConsole(`✅ Template loaded: ${platform}/${type}.yml`);
+        
+      } catch (error) {
+        logToConsole(`❌ Error loading template: ${error.message}`);
+        displayTemplateError(`Error loading template: ${error.message}`);
+      }
+    }
+
+    function generateMockTemplate(platform, type) {
+      const typeName = getTemplateTypeName(type);
+      
+      return `meta:
+  platform: ${platform}
+  document_type: ${type}
+  version: 1.0.0
+  last_updated: ${new Date().toISOString().split('T')[0]}
+  status: stable
+  inherits_from: base.yml
+
+# Template for ${typeName} in ${platform}
+template:
+  title: "[{{ project.component_prefix | default('UI') }}] {{ figma.component_name }} ${typeName}"
+  issue_type: ${type === 'feature' ? 'Epic' : 'Task'}
+  priority: "{{ calculated.priority | default('Medium') }}"
+  labels: ["${type}", "ui", "{{ project.tech_stack.0 | lowercase }}"]
+  
+  content: |
+    ## 🎯 ${typeName} Overview
+    
+    Implement the **{{ figma.component_name }}** ${type} from the design specifications.
+    
+    **📋 Quick Details:**
+    - **Type**: {{ figma.component_type | default('${typeName}') }}
+    - **Tech Stack**: {{ project.tech_stack | join(', ') | default('React, TypeScript') }}
+    - **Priority**: {{ calculated.priority | default('Medium') }}
+    - **Story Points**: {{ calculated.story_points | default('5') }}
+    - **Design Status**: {{ figma.design_status | default('Ready for Development') }}
+    
+    ## 🎨 Design References
+    {{ figma.screenshot_markdown.${platform} | default('[Screenshot will be generated]') }}
+    
+    **Figma Link**: {{ figma.live_link | default('N/A') }}
+    **Design System**: {{ project.name | default('Component Library') }}
+    
+    ## 🔧 Technical Requirements
+    - **Framework**: {{ tech | default('React') }}
+    - **Testing**: {{ project.testing_framework | default('Jest') }}
+    - **Documentation**: {{ resource.link | default('TBD') }}
+    
+    ## ✅ Acceptance Criteria
+    - [ ] Component matches design specifications
+    - [ ] All interactive states implemented
+    - [ ] Responsive behavior validated
+    - [ ] Accessibility requirements met
+    - [ ] Unit tests written and passing
+    
+    ## 📚 Resources
+    - **Storybook**: {{ storybook_url | default('TBD') }}
+    - **GitHub**: {{ github_url | default('TBD') }}
+    - **Wiki**: {{ wiki_url | default('TBD') }}
+    
+    ---
+    *Generated on {{ 'now' }} by Design Intelligence Platform*`;
+    }
+
+    function validateCurrentTemplate() {
+      if (!currentTemplate.raw) {
+        displayTemplateError('No template loaded');
+        return;
+      }
+      
+      const validation = validateTemplateContent(currentTemplate.raw);
+      currentTemplate.validation = validation;
+      displayValidationResults(validation);
+    }
+
+    function validateTemplateContent(templateContent) {
+      const validation = {
+        isValid: false,
+        errors: [],
+        warnings: [],
+        structure: null,
+        variables: []
+      };
+      
+      try {
+        // Parse YAML structure (simplified validation)
+        const lines = templateContent.split('\n');
+        let hasMetaSection = false;
+        let hasTemplateSection = false;
+        let variableCount = 0;
+        
+        for (const line of lines) {
+          if (line.trim().startsWith('meta:')) hasMetaSection = true;
+          if (line.trim().startsWith('template:')) hasTemplateSection = true;
+          
+          // Count variables
+          const variableMatches = line.match(/\{\{[^}]+\}\}/g);
+          if (variableMatches) {
+            variableCount += variableMatches.length;
+            validation.variables.push(...variableMatches);
+          }
+        }
+        
+        // Validation checks
+        if (!hasMetaSection) {
+          validation.errors.push('Missing meta section');
+        }
+        
+        if (!hasTemplateSection) {
+          validation.errors.push('Missing template section');
+        }
+        
+        if (variableCount === 0) {
+          validation.warnings.push('No variables found in template');
+        }
+        
+        validation.isValid = validation.errors.length === 0;
+        validation.structure = {
+          hasMeta: hasMetaSection,
+          hasTemplate: hasTemplateSection,
+          variableCount: variableCount,
+          lineCount: lines.length
+        };
+        
+        return validation;
+        
+      } catch (error) {
+        validation.errors.push(`Validation error: ${error.message}`);
+        return validation;
+      }
+    }
+
+    function displayValidationResults(validation) {
+      const resultsElement = document.getElementById('template-validation-results');
+      
+      let html = `<div style="margin-bottom: 16px;">
+        <div style="font-weight: bold; color: ${validation.isValid ? '#059669' : '#dc2626'};">
+          ${validation.isValid ? '✅ Template Valid' : '❌ Template Invalid'}
+        </div>
+      </div>`;
+      
+      if (validation.structure) {
+        html += `<div style="margin-bottom: 16px;">
+          <div style="font-weight: bold; margin-bottom: 8px;">📋 Structure Analysis:</div>
+          <div>Meta Section: ${validation.structure.hasMeta ? '✅' : '❌'}</div>
+          <div>Template Section: ${validation.structure.hasTemplate ? '✅' : '❌'}</div>
+          <div>Variables Found: ${validation.structure.variableCount}</div>
+          <div>Total Lines: ${validation.structure.lineCount}</div>
+        </div>`;
+      }
+      
+      if (validation.errors.length > 0) {
+        html += `<div style="margin-bottom: 16px;">
+          <div style="font-weight: bold; color: #dc2626; margin-bottom: 8px;">❌ Errors:</div>
+          ${validation.errors.map(error => `<div style="color: #dc2626;">• ${error}</div>`).join('')}
+        </div>`;
+      }
+      
+      if (validation.warnings.length > 0) {
+        html += `<div style="margin-bottom: 16px;">
+          <div style="font-weight: bold; color: #f59e0b; margin-bottom: 8px;">⚠️ Warnings:</div>
+          ${validation.warnings.map(warning => `<div style="color: #f59e0b;">• ${warning}</div>`).join('')}
+        </div>`;
+      }
+      
+      if (validation.variables.length > 0) {
+        const uniqueVars = [...new Set(validation.variables)];
+        html += `<div>
+          <div style="font-weight: bold; margin-bottom: 8px;">🔧 Variables (${uniqueVars.length}):</div>
+          <div style="font-size: 11px; color: #64748b; word-wrap: break-word;">
+            ${uniqueVars.join(', ')}
+          </div>
+        </div>`;
+      }
+      
+      resultsElement.innerHTML = html;
+    }
+
+    function displayTemplateError(message) {
+      document.getElementById('raw-template-display').innerHTML = `<div style="color: #dc2626; text-align: center; padding: 40px;">${message}</div>`;
+      document.getElementById('processed-template-display').innerHTML = `<div style="color: #64748b; text-align: center; padding: 40px;">Load a valid template first</div>`;
+      document.getElementById('template-validation-results').innerHTML = `<div style="color: #dc2626;">${message}</div>`;
+    }
+
+    function processTemplateWithDummyData() {
+      if (!currentTemplate.raw || !currentTemplate.validation?.isValid) {
+        logToConsole('⚠️ Cannot process invalid template');
+        return;
+      }
+      
+      try {
+        logToConsole('🎯 Processing template with dummy data...');
+        
+        // Simple variable substitution (enhanced version from our fixes)
+        let processed = currentTemplate.raw;
+        
+        // Replace variables with dummy data
+        processed = processed.replace(/\{\{([^}]+)\}\}/g, (match, variable) => {
+          const cleanVar = variable.trim().split(' ')[0].split('|')[0];
+          
+          // Handle nested properties (e.g., "figma.component_name")
+          const value = getNestedProperty(templateDummyData, cleanVar);
+          return value !== undefined ? value : match;
+        });
+        
+        currentTemplate.processed = processed;
+        
+        // Display processed template
+        document.getElementById('processed-template-display').textContent = processed;
+        
+        logToConsole('✅ Template processed successfully with dummy data');
+        
+      } catch (error) {
+        logToConsole(`❌ Error processing template: ${error.message}`);
+        document.getElementById('processed-template-display').innerHTML = 
+          `<div style="color: #dc2626; padding: 20px;">Error processing template: ${error.message}</div>`;
+      }
+    }
+
+    function getNestedProperty(obj, path) {
+      return path.split('.').reduce((current, key) => {
+        return current && current[key] !== undefined ? current[key] : undefined;
+      }, obj);
+    }
+
+    async function validateAllTemplates() {
+      logToConsole('🧪 Validating all templates (offline mode)...');
+      
+      let totalValidated = 0;
+      let validTemplates = 0;
+      let errors = [];
+      
+      for (const platform of Object.keys(templateStructure)) {
+        for (const type of templateStructure[platform]) {
+          try {
+            logToConsole(`🔍 Validating ${platform}/${type}...`);
+            
+            // Generate and validate template directly without UI updates
+            const templateContent = generateMockTemplate(platform, type);
+            const validation = validateTemplateContent(templateContent);
+            
+            totalValidated++;
+            if (validation.isValid) {
+              validTemplates++;
+              logToConsole(`  ✅ ${platform}/${type} - Valid`);
+            } else {
+              const errorMsg = validation.errors.join(', ') || 'Unknown error';
+              errors.push(`${platform}/${type}: ${errorMsg}`);
+              logToConsole(`  ❌ ${platform}/${type} - ${errorMsg}`);
+            }
+            
+          } catch (error) {
+            errors.push(`${platform}/${type}: ${error.message}`);
+            logToConsole(`  ❌ ${platform}/${type} - ${error.message}`);
+            totalValidated++;
+          }
+        }
+      }
+      
+      const successRate = Math.round((validTemplates / totalValidated) * 100);
+      
+      logToConsole(`✅ Template validation complete: ${validTemplates}/${totalValidated} valid (${successRate}%)`);
+      
+      if (errors.length > 0) {
+        logToConsole('❌ Validation errors:');
+        errors.forEach(error => logToConsole(`   • ${error}`));
+      }
+      
+      // Generate validation template to show in different formats
+      const validationTemplate = `h2. 🧪 Template Validation Results
+
+*Success Rate*: ${successRate}% (${validTemplates}/${totalValidated} templates valid)
+
+h3. Validation Summary
+
+* *Total Templates*: ${totalValidated}
+* *Valid Templates*: ${validTemplates}
+* *Invalid Templates*: ${totalValidated - validTemplates}
+* *Platforms Tested*: ${Object.keys(templateStructure).join(', ')}
+* *Types per Platform*: ${templateStructure[Object.keys(templateStructure)[0]]?.length || 'N/A'}
+
+{code:title=Template Structure}
+Platforms: ${Object.keys(templateStructure).length}
+Total Combinations: ${totalValidated}
+Validation Status: ${successRate === 100 ? 'ALL PASSED' : 'SOME FAILURES'}
+{code}
+
+_Multi-format template validation completed with ${successRate}% success rate._`;
+
+      // Update all preview formats with validation results
+      updateTemplatePreview(validationTemplate);
+      
+      // Log any errors if they exist
+      if (errors.length > 0) {
+        logToConsole('❌ Validation errors found:');
+        errors.forEach(error => logToConsole(`   • ${error}`));
+      }
+    }
+
+    function exportTemplateResult() {
+      if (!currentTemplate.processed) {
+        logToConsole('⚠️ No processed template to export');
+        return;
+      }
+      
+      try {
+        const exportData = {
+          metadata: {
+            platform: currentTemplate.platform,
+            type: currentTemplate.type,
+            timestamp: new Date().toISOString(),
+            validation: currentTemplate.validation
+          },
+          raw: currentTemplate.raw,
+          processed: currentTemplate.processed,
+          dummyData: templateDummyData
+        };
+        
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `template-${currentTemplate.platform}-${currentTemplate.type}-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        logToConsole('📋 Template result exported as JSON');
+        
+      } catch (error) {
+        logToConsole(`❌ Export failed: ${error.message}`);
+      }
+    }
+
+    function copyTemplateToClipboard() {
+      const contentToCopy = currentTemplate.processed || currentTemplate.raw;
+      
+      if (!contentToCopy) {
+        logToConsole('⚠️ No template content to copy');
+        return;
+      }
+      
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(contentToCopy).then(() => {
+          logToConsole('📋 Template copied to clipboard');
+        }).catch(err => {
+          logToConsole(`❌ Copy failed: ${err.message}`);
+        });
+      } else {
+        logToConsole('📋 Clipboard not available in this browser');
+      }
+    }
+
+    // Initialize template UI on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize template selector
+      setTimeout(() => {
+        updateTemplateList();
+      }, 1000);
+    });
+
     function resetMasterTests() {
       logToConsole('🔄 Resetting master test suite...');
       
@@ -3962,7 +4723,13 @@ template:
       };
       
       updateMetrics();
-      document.getElementById('template-preview').innerHTML = 'Click "Run All Template Tests" to see generated template output...';
+      // Initialize template preview system
+      const initialMessage = 'Click "Run All Template Tests" to see generated template output...';
+      document.getElementById('preview-rendered').innerHTML = initialMessage;
+      document.getElementById('preview-jira').innerHTML = initialMessage;
+      document.getElementById('preview-markdown').innerHTML = initialMessage;
+      document.getElementById('preview-confluence').innerHTML = initialMessage;
+      document.getElementById('preview-raw').innerHTML = initialMessage;
       logToConsole('✅ All tests reset');
     }
 
@@ -4026,6 +4793,134 @@ Generated by Ultimate Figma AI Test Suite
       }).catch(() => {
         logToConsole('📋 Report downloaded as file (clipboard not available)');
       });
+    }
+
+    // ===================
+    // MULTI-FORMAT TEMPLATE PREVIEW FUNCTIONS
+    // ===================
+
+    function switchTemplatePreviewFormat(format) {
+      // Hide all preview panels
+      ['rendered', 'jira', 'markdown', 'confluence', 'raw'].forEach(f => {
+        document.getElementById(`preview-${f}`).style.display = 'none';
+      });
+      
+      // Remove active class from all tabs
+      document.querySelectorAll('.format-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show selected panel and activate tab
+      document.getElementById(`preview-${format}`).style.display = 'block';
+      event.target.classList.add('active');
+      
+      logToConsole(`📋 Switched template preview to ${format} format`);
+    }
+
+    function updateTemplatePreview(content) {
+      if (!content) return;
+
+      // Update all format views
+      document.getElementById('preview-raw').innerHTML = `<pre>${escapeHtml(content)}</pre>`;
+      document.getElementById('preview-jira').innerHTML = `<pre>${escapeHtml(content)}</pre>`;
+      document.getElementById('preview-markdown').innerHTML = `<pre>${escapeHtml(convertToMarkdown(content))}</pre>`;
+      document.getElementById('preview-confluence').innerHTML = `<pre>${escapeHtml(convertToConfluence(content))}</pre>`;
+      
+      // Render formatted version
+      const renderedContent = renderTemplateContent(content, 'jira');
+      document.getElementById('preview-rendered').innerHTML = renderedContent;
+    }
+
+    function convertToMarkdown(jiraContent) {
+      return jiraContent
+        // Headers
+        .replace(/h([1-6])\.\s*/g, (match, level) => '#'.repeat(parseInt(level)) + ' ')
+        // Bold text
+        .replace(/\*([^*]+)\*/g, '**$1**')
+        // Italic text
+        .replace(/_([^_]+)_/g, '*$1*')
+        // Code blocks
+        .replace(/\{code\}/g, '```')
+        // Quotes
+        .replace(/\{quote\}/g, '> ')
+        // Lists
+        .replace(/\* /g, '- ')
+        .replace(/\# /g, '1. ');
+    }
+
+    function convertToConfluence(jiraContent) {
+      return jiraContent
+        // Headers
+        .replace(/h([1-6])\.\s*(.+)/g, '<h$1>$2</h$1>')
+        // Bold text
+        .replace(/\*([^*]+)\*/g, '<strong>$1</strong>')
+        // Italic text
+        .replace(/_([^_]+)_/g, '<em>$1</em>')
+        // Code blocks
+        .replace(/\{code\}/g, '<ac:structured-macro ac:name="code"><ac:plain-text-body><![CDATA[')
+        .replace(/\{code\}/g, ']]></ac:plain-text-body></ac:structured-macro>')
+        // Quotes
+        .replace(/\{quote\}/g, '<ac:structured-macro ac:name="quote"><ac:rich-text-body>')
+        .replace(/\{quote\}/g, '</ac:rich-text-body></ac:structured-macro>');
+    }
+
+    function renderTemplateContent(content, platform) {
+      let html = escapeHtml(content);
+      
+      if (platform === 'jira') {
+        // Convert Jira markup to HTML
+        html = html
+          // Headers
+          .replace(/^h([1-6])\.\s*(.+)$/gm, '<h$1>$2</h$1>')
+          // Bold text
+          .replace(/\*\*(.+?)\*\*/g, '<span class="jira-bold">$1</span>')
+          .replace(/\*(.+?)\*/g, '<span class="jira-bold">$1</span>')
+          // Jira image attachments
+          .replace(/!([^|]+)\|thumbnail!/g, '<span class="jira-image">📷 $1 (thumbnail)</span>')
+          .replace(/!([^!]+)!/g, '<span class="jira-image">📷 $1</span>')
+          // Links
+          .replace(/\[([^\]]+)\|([^\]]+)\]/g, '<a href="$2" class="jira-link">$1</a>')
+          // Lists
+          .replace(/^\* (.+)$/gm, '<li>$1</li>')
+          .replace(/^- (.+)$/gm, '<li>$1</li>')
+          // Code blocks
+          .replace(/\{code\}([\s\S]*?)\{code\}/g, '<pre><code>$1</code></pre>')
+          // Line breaks
+          .replace(/\n/g, '<br>');
+        
+        // Wrap lists
+        html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
+        
+        return `<div class="jira-content">${html}</div>`;
+      } else {
+        // Default markdown-style rendering
+        html = html
+          // Headers
+          .replace(/^h([1-6])\.\s*(.+)$/gm, '<h$1>$2</h$1>')
+          .replace(/^#{1,6}\s*(.+)$/gm, (match, text) => {
+            const level = match.indexOf(' ');
+            return `<h${level}>${text}</h${level}>`;
+          })
+          // Bold text
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<strong>$1</strong>')
+          // Lists
+          .replace(/^\* (.+)$/gm, '<li>$1</li>')
+          .replace(/^- (.+)$/gm, '<li>$1</li>')
+          // Line breaks
+          .replace(/\n/g, '<br>');
+        
+        // Wrap lists
+        html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
+        
+        return `<div class="markdown-content">${html}</div>`;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     // ===================
@@ -4443,10 +5338,22 @@ Generated by Ultimate Figma AI Test Suite
         loadRedisStatus();
       }, 500);
       
-      // Auto-run system tests
+      // Auto-run system tests (only if server is available)
       setTimeout(() => {
-        testMCPServer();
-        testWebServer();
+        // Check if server is available before running tests
+        fetch('http://localhost:3000/')
+          .then(response => {
+            if (response.ok) {
+              logToConsole('✅ Server detected - running system tests');
+              testMCPServer();
+              testWebServer();
+            } else {
+              logToConsole('ℹ️ Server not available - skipping system tests');
+            }
+          })
+          .catch(() => {
+            logToConsole('ℹ️ Server not available - skipping system tests');
+          });
       }, 1000);
 
       // Load Redis and logging data

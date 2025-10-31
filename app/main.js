@@ -611,6 +611,16 @@ class MCPServer {
     }
 
     // Generate ticket using the advanced template system
+    console.log('🎯 TEMPLATE GENERATION DEBUG - Input to Template Manager:');
+    console.log('  📋 Platform:', platform);
+    console.log('  📄 Document Type:', templateType);
+    console.log('  🏷️ Component Name:', componentName);
+    console.log('  🔧 Tech Stack:', techStack);
+    console.log('  🎨 Has Figma Context:', !!figmaContext);
+    console.log('  📊 Request Data Keys:', Object.keys(requestData || {}));
+    console.log('  🔗 Figma URL:', requestData?.figmaUrl);
+    console.log('  📸 Screenshot:', requestData?.screenshot);
+    
     const templateResult = await this.templateManager.generateTicket({
       platform,
       documentType: templateType,
@@ -619,6 +629,11 @@ class MCPServer {
       figmaContext,
       requestData
     });
+
+    console.log('✅ TEMPLATE GENERATION COMPLETE:');
+    console.log('  📝 Generated Content Length:', templateResult.content?.length || 0);
+    console.log('  🎯 Template ID:', templateResult.templateId || 'Unknown');
+    console.log('  📊 Content Preview:', templateResult.content?.substring(0, 150) + '...');
 
     const generatedTicket = templateResult.content;
 

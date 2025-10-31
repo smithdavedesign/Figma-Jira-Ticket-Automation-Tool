@@ -2,10 +2,8 @@
 # UNIVERSAL BASE TEMPLATE - YAML ANCHORS & INHERITANCE
 # Single source of truth for all template variables and structure
 # Works with any tech stack, platform, and document type
-# ======================================================
-
-# Base template definition - referenced by all other templates
-base: &base
+# ======================================================# Base template definition for merging with platform-specific templates
+template:
   variables:
     # -----------------------------
     # Project & component context
@@ -132,5 +130,4 @@ base: &base
     check_authoring: true
     message_if_missing: "⚠️ Field not filled in or missing"
 
-# Export base for inheritance
-template: *base
+# This template serves as the base for all platform-specific templates

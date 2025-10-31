@@ -60,26 +60,47 @@ function validateYamlFile(filePath) {
       result.warnings.push('Template should be an object');
     }
     
-    // Check for required fields (common template structure)
-    const requiredFields = ['platform', 'description'];
-    for (const field of requiredFields) {
-      if (!parsed[field]) {
-        result.warnings.push(`Missing recommended field: ${field}`);
+    // Check for new hierarchical structure with meta and template sections
+    if (parsed.meta) {
+      // New structure validation
+      if (!parsed.meta.platform) {
+        result.warnings.push('Missing meta.platform field');
+      }
+      if (!parsed.meta.document_type) {
+        result.warnings.push('Missing meta.document_type field');
+      }
+    } else {
+      // Legacy structure validation
+      const requiredFields = ['platform', 'description'];
+      for (const field of requiredFields) {
+        if (!parsed[field]) {
+          result.warnings.push(`Missing recommended field: ${field}`);
+        }
       }
     }
     
-    // Check template content (either 'template' or 'content' field)
-    const templateContent = parsed.template || parsed.content;
-    if (templateContent && typeof templateContent !== 'string') {
-      result.warnings.push('Template content should be a string');
+    // Check template content (hierarchical structure)
+    let templateContent = null;
+    
+    if (parsed.template) {
+      // New hierarchical structure - template is an object with content field
+      if (typeof parsed.template === 'object' && parsed.template.content) {
+        templateContent = parsed.template.content;
+      } else if (typeof parsed.template === 'string') {
+        // Simple string template
+        templateContent = parsed.template;
+      }
+    } else if (parsed.content) {
+      // Legacy structure - content at root level
+      templateContent = parsed.content;
     }
     
     if (!templateContent) {
-      result.warnings.push('Missing template content (template or content field)');
+      result.warnings.push('Missing template content (template.content or content field)');
     }
     
     // Check for Handlebars variables
-    if (templateContent && templateContent.includes('{{')) {
+    if (templateContent && typeof templateContent === 'string' && templateContent.includes('{{')) {
       const handlebarsVars = templateContent.match(/\{\{[^}]+\}\}/g) || [];
       result.handlebarsVariables = handlebarsVars.length;
     }

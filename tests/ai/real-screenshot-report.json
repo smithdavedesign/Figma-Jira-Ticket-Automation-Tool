@@ -1,7 +1,7 @@
 {
   "testSuite": "Real Screenshot AI Test Suite",
-  "timestamp": "2025-10-30T23:07:04.891Z",
-  "totalDuration": 651,
+  "timestamp": "2025-10-31T05:01:18.803Z",
+  "totalDuration": 722,
   "summary": {
     "totalTests": 4,
     "successful": 0,
@@ -21,7 +21,7 @@
       "techStack": "AEM",
       "documentType": "jira",
       "componentType": "button",
-      "startTime": 1761865624241,
+      "startTime": 1761886878081,
       "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 100,
@@ -32,14 +32,14 @@
         "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
       ],
       "warnings": [],
-      "duration": 151
+      "duration": 251
     },
     {
       "scenario": "Bootstrap Card - React TypeScript",
       "techStack": "React TypeScript",
       "documentType": "jira",
       "componentType": "card",
-      "startTime": 1761865624392,
+      "startTime": 1761886878332,
       "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 40346,
@@ -50,14 +50,14 @@
         "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
       ],
       "warnings": [],
-      "duration": 212
+      "duration": 238
     },
     {
       "scenario": "Ant Design Form - Vue.js",
       "techStack": "Vue.js",
       "documentType": "linear",
       "componentType": "form",
-      "startTime": 1761865624604,
+      "startTime": 1761886878570,
       "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 4729,
@@ -68,14 +68,14 @@
         "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
       ],
       "warnings": [],
-      "duration": 124
+      "duration": 146
     },
     {
       "scenario": "Chakra UI Modal - Angular",
       "techStack": "Angular",
       "documentType": "asana",
       "componentType": "modal",
-      "startTime": 1761865624728,
+      "startTime": 1761886878716,
       "success": false,
       "screenshotDownloaded": true,
       "screenshotSize": 100,
@@ -86,7 +86,7 @@
         "AI processing failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent: [400 Bad Request] API Key not found. Please pass a valid API key. [{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"generativelanguage.googleapis.com\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"API Key not found. Please pass a valid API key.\"}]"
       ],
       "warnings": [],
-      "duration": 163
+      "duration": 87
     }
   ],
   "tests": [

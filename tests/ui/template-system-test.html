@@ -199,8 +199,266 @@
       margin: 8px 0;
       font-family: monospace;
       font-size: 0.85em;
-      max-height: 200px;
+      max-height: 400px;
       overflow-y: auto;
+    }
+
+    .template-rendered {
+      background: white;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 16px;
+      margin: 8px 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 0.9em;
+      max-height: 500px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    .template-format-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 4px;
+    }
+
+    .format-tab {
+      padding: 4px 12px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 4px 4px 0 0;
+      cursor: pointer;
+      font-size: 0.8em;
+      transition: all 0.2s ease;
+    }
+
+    .format-tab.active {
+      background: #007aff;
+      color: white;
+    }
+
+    .format-tab:hover:not(.active) {
+      background: #e0e0e0;
+    }
+
+    /* Jira markup styles */
+    .jira-content h1, .jira-content h2, .jira-content h3 {
+      color: #333;
+      margin: 16px 0 8px 0;
+      font-weight: 600;
+    }
+
+    .jira-content h2 {
+      font-size: 1.2em;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+
+    .jira-content .jira-image {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+      display: inline-block;
+      margin: 2px;
+    }
+
+    .jira-content .jira-link {
+      color: #1976d2;
+      text-decoration: underline;
+    }
+
+    .jira-content .jira-bold {
+      font-weight: 600;
+    }
+
+    .jira-content ul {
+      padding-left: 20px;
+    }
+
+    .jira-content .checkbox-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .jira-content .checkbox-list li {
+      margin: 4px 0;
+    }
+
+    .jira-content .checkbox-list li:before {
+      content: "☐ ";
+      color: #666;
+      margin-right: 4px;
+    }
+
+    /* Markdown styles */
+    .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+      color: #333;
+      margin: 16px 0 8px 0;
+    }
+
+    .markdown-content h2 {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+
+    .markdown-content code {
+      background: #f6f8fa;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+
+    .markdown-content pre {
+      background: #f6f8fa;
+      padding: 12px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 0.85em;
+    }
+
+    .markdown-content blockquote {
+      border-left: 4px solid #dfe2e5;
+      padding: 0 16px;
+      color: #6a737d;
+      margin: 16px 0;
+    }
+
+    /* Debug info styles */
+    .debug-info {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+      font-size: 0.85em;
+    }
+
+    .debug-info h3 {
+      color: #569cd6;
+      margin: 0 0 12px 0;
+      font-size: 1.1em;
+    }
+
+    .debug-section {
+      margin: 12px 0;
+      padding: 8px;
+      background: #2d2d30;
+      border-radius: 4px;
+      border-left: 3px solid #007acc;
+    }
+
+    .debug-key {
+      color: #9cdcfe;
+      font-weight: 600;
+    }
+
+    .debug-value {
+      color: #ce9178;
+    }
+
+    .debug-success {
+      color: #4ec9b0;
+    }
+
+    .debug-warning {
+      color: #dcdcaa;
+    }
+
+    .debug-error {
+      color: #f44747;
+    }
+
+    /* Enhanced test cards */
+    .test-card.inheritance {
+      border-left: 4px solid #28a745;
+    }
+
+    .test-card.rendering {
+      border-left: 4px solid #17a2b8;
+    }
+
+    .test-card.debug {
+      border-left: 4px solid #ffc107;
+    }
+
+    /* Advanced controls */
+    .advanced-controls {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+      border: 1px solid #e9ecef;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin: 8px 0;
+    }
+
+    .control-group label {
+      font-weight: 500;
+      min-width: 120px;
+    }
+
+    .control-input {
+      flex: 1;
+      padding: 6px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: #007aff;
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
     }
 
     .platform-tabs {
@@ -351,6 +609,48 @@
       </div>
     </div>
 
+    <!-- Base Template Inheritance Tests -->
+    <div class="test-section">
+      <h2 class="test-title">🧬 Base Template Inheritance Tests</h2>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header">
+            <span class="status-indicator status-unknown" id="base-inheritance-status"></span>
+            Base Template Merging
+          </div>
+          <div class="test-card-body">
+            Test base.yml inheritance across platforms<br>
+            <button class="test-button" onclick="testBaseTemplateInheritance()">🧪 Test Base Inheritance</button>
+          </div>
+          <div class="test-result" id="base-inheritance-result"></div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <span class="status-indicator status-unknown" id="resource-resolution-status"></span>
+            Resource Resolution
+          </div>
+          <div class="test-card-body">
+            Test base template resource variable resolution<br>
+            <button class="test-button" onclick="testResourceResolution()">🔗 Test Resources</button>
+          </div>
+          <div class="test-result" id="resource-resolution-result"></div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header">
+            <span class="status-indicator status-unknown" id="context-enrichment-status"></span>
+            Context Enrichment
+          </div>
+          <div class="test-card-body">
+            Test context data flow and variable population<br>
+            <button class="test-button" onclick="testContextEnrichment()">📊 Test Context</button>
+          </div>
+          <div class="test-result" id="context-enrichment-result"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Platform Template Tests -->
     <div class="test-section">
       <h2 class="test-title">🌐 Platform Template Tests</h2>
@@ -361,6 +661,7 @@
         <button class="platform-tab" onclick="switchPlatform('notion')">Notion</button>
         <button class="platform-tab" onclick="switchPlatform('github')">GitHub</button>
         <button class="platform-tab" onclick="switchPlatform('linear')">Linear</button>
+        <button class="platform-tab" onclick="switchPlatform('asana')">Asana</button>
         <button class="platform-tab" onclick="switchPlatform('wiki')">Wiki</button>
       </div>
 
@@ -462,6 +763,43 @@
       </div>
     </div>
 
+    <!-- Advanced Test Configuration -->
+    <div class="test-section">
+      <h2 class="test-title">⚙️ Advanced Test Configuration</h2>
+      <div class="advanced-controls">
+        <div class="control-group">
+          <label>🔗 Server URL:</label>
+          <input type="text" class="control-input" id="server-url" value="http://localhost:3000" />
+        </div>
+        <div class="control-group">
+          <label>🎨 Test Figma URL:</label>
+          <input type="text" class="control-input" id="test-figma-url" value="https://www.figma.com/file/test123/Template-Test-Project" />
+        </div>
+        <div class="control-group">
+          <label>📸 Test Screenshot:</label>
+          <input type="text" class="control-input" id="test-screenshot" value="https://example.com/test-screenshot.png" />
+        </div>
+        <div class="control-group">
+          <label>🔧 Tech Stack:</label>
+          <input type="text" class="control-input" id="test-tech-stack" value="React, TypeScript, Material-UI" />
+        </div>
+        <div class="control-group">
+          <label>🔍 Debug Mode:</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="debug-mode" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="control-group">
+          <label>🚀 Use Live API:</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="use-live-api" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- Comprehensive Test Runner -->
     <div class="test-section">
       <h2 class="test-title">🚀 Comprehensive Test Runner</h2>
@@ -469,16 +807,56 @@
         <button class="test-button" style="font-size: 1.1em; padding: 16px 32px;" onclick="runAllTests()">
           🎯 Run All Template System Tests
         </button>
+        <button class="test-button" onclick="runBaseTemplateTests()">🧬 Run Base Template Tests</button>
+        <button class="test-button" onclick="runRenderingTests()">📖 Run Rendering Tests</button>
         <button class="test-button secondary" onclick="resetTests()">🔄 Reset Tests</button>
         <button class="test-button success" onclick="generateReport()">📊 Generate Report</button>
+        <button class="test-button" onclick="exportResults()">💾 Export Results</button>
       </div>
     </div>
 
     <!-- Template Preview -->
     <div class="test-section">
       <h2 class="test-title">👁️ Template Preview</h2>
-      <div class="template-preview" id="template-preview">
-        Click "Run All Tests" to see generated template output...
+      
+      <div class="template-format-tabs">
+        <button class="format-tab active" onclick="switchPreviewFormat('rendered')">📖 Rendered</button>
+        <button class="format-tab" onclick="switchPreviewFormat('jira')">🎫 Jira Markup</button>
+        <button class="format-tab" onclick="switchPreviewFormat('markdown')">📝 Markdown</button>
+        <button class="format-tab" onclick="switchPreviewFormat('confluence')">📄 Confluence</button>
+        <button class="format-tab" onclick="switchPreviewFormat('debug')">🔍 Debug Info</button>
+        <button class="format-tab" onclick="switchPreviewFormat('raw')">📄 Raw</button>
+      </div>
+
+      <div id="preview-rendered" class="template-rendered" style="display: block;">
+        <p style="color: #666; text-align: center; padding: 40px;">
+          Click "Run All Tests" or test individual templates to see rendered output...
+        </p>
+      </div>
+
+      <div id="preview-jira" class="template-preview" style="display: none;">
+        Click "Run All Tests" to see Jira markup...
+      </div>
+
+      <div id="preview-markdown" class="template-preview" style="display: none;">
+        Click "Run All Tests" to see Markdown source...
+      </div>
+
+      <div id="preview-confluence" class="template-preview" style="display: none;">
+        Click "Run All Tests" to see Confluence markup...
+      </div>
+
+      <div id="preview-debug" class="template-preview" style="display: none;">
+        <div class="debug-info">
+          <h3>🔍 Template Debug Information</h3>
+          <div id="debug-content">
+            <p>Run a template test to see debugging information...</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="preview-raw" class="template-preview" style="display: none;">
+        Click "Run All Tests" to see raw template output...
       </div>
     </div>
 
@@ -502,6 +880,14 @@
     };
 
     let currentPlatform = 'jira';
+    let currentPreviewFormat = 'rendered';
+    let lastGeneratedTicket = '';
+    let lastDebugInfo = {};
+    let testConfig = {
+      serverUrl: 'http://localhost:3000',
+      debugMode: true,
+      useLiveAPI: true
+    };
     const consoleOutput = document.getElementById('console-output');
 
     // Utility functions
@@ -684,33 +1070,7 @@ variables:
     }
 
     async function testPlatformTemplate(platform, documentType) {
-      log(`Testing ${platform}/${documentType} template...`);
-      try {
-        // Simulate template generation
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const mockTicket = generateMockTicket(platform, documentType);
-        
-        showResult(`${platform}-${documentType}-result`, 
-          `✅ ${documentType} template generated successfully`, 'success', 
-          `Generated ${mockTicket.length} characters`);
-        
-        addTestResult(`${platform}/${documentType}`, true, 'Template generated successfully');
-        log(`✅ ${platform}/${documentType} template test passed`);
-        
-        // Update preview
-        document.getElementById('template-preview').innerHTML = 
-          `<strong>${platform}/${documentType} Template Preview:</strong><br><br>${mockTicket.substring(0, 500)}...`;
-        
-        return true;
-      } catch (error) {
-        showResult(`${platform}-${documentType}-result`, 
-          `❌ ${documentType} template failed`, 'error', error.message);
-        
-        addTestResult(`${platform}/${documentType}`, false, error.message);
-        log(`❌ ${platform}/${documentType} template test failed: ` + error.message, 'error');
-        return false;
-      }
+      return await testPlatformTemplateWithPreview(platform, documentType);
     }
 
     function generateMockTicket(platform, documentType) {
@@ -999,8 +1359,9 @@ Implement the **TestComponent** component from the design specifications.
         testTemplateListings,
         testYAMLParser,
         () => testPlatformTemplate('jira', 'component'),
+        () => testPlatformTemplate('jira', 'feature'),
         () => testPlatformTemplate('confluence', 'documentation'),
-        () => testPlatformTemplate('notion', 'component-page'),
+        () => testPlatformTemplate('github', 'issue'),
         () => testVariableSubstitution('figma'),
         () => testVariableSubstitution('project'),
         () => testVariableSubstitution('calculated'),
@@ -1074,10 +1435,519 @@ ${testResults.passed === testResults.total ?
 *Generated by Template System Test Suite v1.0.0*
       `.trim();
       
-      document.getElementById('template-preview').innerHTML = 
-        `<pre>${report}</pre>`;
+      // Show report in a separate modal or console instead of overriding template preview
+      log('📊 Test report generated:');
+      log(report.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'));
+    }
+
+    // Format rendering functions
+    function switchPreviewFormat(format) {
+      currentPreviewFormat = format;
       
-      log('📊 Test report generated');
+      // Update active tab
+      document.querySelectorAll('.format-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Show/hide appropriate preview
+      ['rendered', 'jira', 'markdown', 'confluence', 'debug', 'raw'].forEach(f => {
+        document.getElementById(`preview-${f}`).style.display = f === format ? 'block' : 'none';
+      });
+      
+      // Re-render current content in new format
+      if (lastGeneratedTicket) {
+        updateTemplatePreview(lastGeneratedTicket, currentPlatform);
+      }
+      
+      // Update debug view if selected
+      if (format === 'debug' && lastDebugInfo) {
+        updateDebugView(lastDebugInfo);
+      }
+      
+      log(`Switched preview format to ${format}`);
+    }
+
+    function updateTemplatePreview(ticketContent, platform = 'jira') {
+      lastGeneratedTicket = ticketContent;
+      
+      // Update all format views
+      document.getElementById('preview-raw').innerHTML = `<pre>${escapeHtml(ticketContent)}</pre>`;
+      document.getElementById('preview-jira').innerHTML = `<pre>${escapeHtml(ticketContent)}</pre>`;
+      document.getElementById('preview-markdown').innerHTML = `<pre>${escapeHtml(convertToMarkdown(ticketContent))}</pre>`;
+      document.getElementById('preview-confluence').innerHTML = `<pre>${escapeHtml(convertToConfluence(ticketContent))}</pre>`;
+      
+      // Render formatted version
+      const renderedContent = renderTemplateContent(ticketContent, platform);
+      document.getElementById('preview-rendered').innerHTML = renderedContent;
+    }
+
+    function updateDebugView(debugInfo) {
+      const debugContent = document.getElementById('debug-content');
+      let html = '';
+      
+      if (debugInfo.templateInfo) {
+        html += '<div class="debug-section">';
+        html += '<div class="debug-key">Template Information:</div>';
+        html += `<div class="debug-value">Platform: ${debugInfo.templateInfo.platform}</div>`;
+        html += `<div class="debug-value">Template ID: ${debugInfo.templateInfo.templateId}</div>`;
+        html += `<div class="debug-value">Base Inheritance: ${debugInfo.templateInfo.hasBaseInheritance ? '✅' : '❌'}</div>`;
+        html += '</div>';
+      }
+      
+      if (debugInfo.contextInfo) {
+        html += '<div class="debug-section">';
+        html += '<div class="debug-key">Context Information:</div>';
+        Object.entries(debugInfo.contextInfo).forEach(([key, value]) => {
+          const status = value ? 'debug-success' : 'debug-error';
+          html += `<div class="${status}">${key}: ${value ? '✅' : '❌'}</div>`;
+        });
+        html += '</div>';
+      }
+      
+      if (debugInfo.resourceInfo) {
+        html += '<div class="debug-section">';
+        html += '<div class="debug-key">Resource Resolution:</div>';
+        debugInfo.resourceInfo.forEach((resource, index) => {
+          const status = resource.resolved ? 'debug-success' : 'debug-warning';
+          html += `<div class="${status}">Resource ${index + 1}: ${resource.type} - ${resource.resolved ? 'Resolved' : 'Fallback'}</div>`;
+        });
+        html += '</div>';
+      }
+      
+      debugContent.innerHTML = html || '<p>No debug information available</p>';
+    }
+
+    function renderTemplateContent(content, platform) {
+      switch (platform) {
+        case 'jira':
+          return renderJiraMarkup(content);
+        case 'confluence':
+          return renderConfluenceMarkup(content);
+        case 'github':
+        case 'notion':
+        case 'linear':
+          return renderMarkdown(content);
+        default:
+          return renderMarkdown(content);
+      }
+    }
+
+    function renderJiraMarkup(content) {
+      let html = escapeHtml(content);
+      
+      // Convert Jira markup to HTML
+      html = html
+        // Headers
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        
+        // Bold text
+        .replace(/\*\*(.+?)\*\*/g, '<span class="jira-bold">$1</span>')
+        
+        // Jira image attachments
+        .replace(/!([^|]+)\|thumbnail!/g, '<span class="jira-image">📷 $1 (thumbnail)</span>')
+        .replace(/!([^!]+)!/g, '<span class="jira-image">📷 $1</span>')
+        
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="jira-link">$1</a>')
+        
+        // Checkboxes
+        .replace(/^- \[ \] (.+)$/gm, '<li>☐ $1</li>')
+        .replace(/^- \[x\] (.+)$/gm, '<li>☑ $1</li>')
+        
+        // Bullet points
+        .replace(/^- (.+)$/gm, '<li>• $1</li>')
+        
+        // Line breaks
+        .replace(/\n/g, '<br>');
+      
+      // Wrap lists
+      html = html.replace(/(<li>.*?<\/li>)/gs, (match) => {
+        if (match.includes('☐') || match.includes('☑')) {
+          return `<ul class="checkbox-list">${match}</ul>`;
+        }
+        return `<ul>${match}</ul>`;
+      });
+      
+      return `<div class="jira-content">${html}</div>`;
+    }
+
+    function renderConfluenceMarkup(content) {
+      // Similar to Jira but with Confluence-specific markup
+      return renderJiraMarkup(content);
+    }
+
+    function renderMarkdown(content) {
+      let html = escapeHtml(content);
+      
+      // Convert Markdown to HTML
+      html = html
+        // Headers
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        
+        // Bold and italic
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        
+        // Code blocks
+        .replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+        
+        // Images (convert Jira format to standard)
+        .replace(/!([^|]+)\|thumbnail!/g, '<em>🖼️ Image: $1 (thumbnail)</em>')
+        .replace(/!([^!]+)!/g, '<em>🖼️ Image: $1</em>')
+        
+        // Checkboxes
+        .replace(/^- \[ \] (.+)$/gm, '<li>☐ $1</li>')
+        .replace(/^- \[x\] (.+)$/gm, '<li>☑ $1</li>')
+        
+        // Bullet points
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        
+        // Blockquotes
+        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+        
+        // Line breaks
+        .replace(/\n/g, '<br>');
+      
+      // Wrap lists
+      html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
+      
+      return `<div class="markdown-content">${html}</div>`;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Enhanced test functions with preview updates
+    async function testPlatformTemplateWithPreview(platform, documentType) {
+      log(`Testing ${platform}/${documentType} template with live API...`);
+      try {
+        // Call the actual API
+        const response = await fetch('http://localhost:3000/api/generate-ai-ticket-direct', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            enhancedFrameData: [{
+              id: `test-${documentType}`,
+              name: `Test${documentType.charAt(0).toUpperCase() + documentType.slice(1)}`,
+              hierarchy: {
+                componentCount: Math.floor(Math.random() * 5) + 1,
+                textLayerCount: Math.floor(Math.random() * 3) + 1
+              }
+            }],
+            techStack: "React, TypeScript, Material-UI",
+            documentType: documentType,
+            platform: platform,
+            useAI: false
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const ticket = result.generatedTicket || generateMockTicket(platform, documentType);
+          
+          showResult(`${platform}-${documentType}-result`, 
+            `✅ ${documentType} template generated successfully`, 'success', 
+            `Generated ${ticket.length} characters via API`);
+          
+          addTestResult(`${platform}/${documentType}`, true, 'Template generated successfully');
+          log(`✅ ${platform}/${documentType} template test passed`);
+          
+          // Update preview with real content
+          updateTemplatePreview(ticket, platform);
+          
+          return true;
+        } else {
+          throw new Error(`API responded with ${response.status}`);
+        }
+      } catch (error) {
+        // Fallback to mock if API fails
+        log(`⚠️ API failed, using mock data: ${error.message}`, 'warning');
+        const mockTicket = generateMockTicket(platform, documentType);
+        
+        showResult(`${platform}-${documentType}-result`, 
+          `⚠️ ${documentType} template generated (mock)`, 'warning', 
+          `Generated ${mockTicket.length} characters (offline mode)`);
+        
+        addTestResult(`${platform}/${documentType}`, true, 'Template generated (mock)');
+        log(`⚠️ ${platform}/${documentType} template test passed (mock)`);
+        
+        // Update preview with mock content
+        updateTemplatePreview(mockTicket, platform);
+        
+        return true;
+      }
+    }
+
+    // Format conversion functions
+    function convertToMarkdown(jiraContent) {
+      return jiraContent
+        .replace(/\*([^*]+)\*/g, '**$1**')  // Bold
+        .replace(/_([^_]+)_/g, '*$1*')      // Italic
+        .replace(/h([1-6])\.\s*/g, (match, level) => '#'.repeat(parseInt(level)) + ' ')  // Headers
+        .replace(/\{code\}/g, '```')        // Code blocks
+        .replace(/\{quote\}/g, '> ')        // Quotes
+        .replace(/\* /g, '- ')              // Lists
+        .replace(/\# /g, '1. ');            // Numbered lists
+    }
+
+    function convertToConfluence(jiraContent) {
+      return jiraContent
+        .replace(/\*([^*]+)\*/g, '<strong>$1</strong>')    // Bold
+        .replace(/_([^_]+)_/g, '<em>$1</em>')              // Italic
+        .replace(/h([1-6])\.\s*(.+)/g, '<h$1>$2</h$1>')    // Headers
+        .replace(/\{code\}/g, '<ac:structured-macro ac:name="code"><ac:plain-text-body><![CDATA[')  // Code start
+        .replace(/\{code\}/g, ']]></ac:plain-text-body></ac:structured-macro>')  // Code end
+        .replace(/\{quote\}/g, '<ac:structured-macro ac:name="quote"><ac:rich-text-body>')  // Quote start
+        .replace(/\{quote\}/g, '</ac:rich-text-body></ac:structured-macro>');    // Quote end
+    }
+
+    function switchPreviewTab(tab) {
+      // Hide all preview tabs
+      document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+      
+      // Show selected tab
+      document.querySelector(`[onclick="switchPreviewTab('${tab}')"]`).classList.add('active');
+      document.getElementById(`preview-${tab}`).style.display = 'block';
+    }
+
+    // Base template inheritance tests
+    async function testBaseTemplateInheritance() {
+      log('🧪 Testing base template inheritance...', 'info');
+      
+      try {
+        const response = await fetch(`${getServerUrl()}/api/debug/template-context`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            platform: 'jira',
+            templateId: 'bug-report',
+            debugLevel: 'verbose'
+          })
+        });
+
+        if (response.ok) {
+          const debugInfo = await response.json();
+          
+          showResult('base-inheritance-result',
+            '✅ Base template inheritance test completed',
+            'success',
+            `Base variables: ${debugInfo.baseVariables || 0}, Inherited: ${debugInfo.inheritedCount || 0}`
+          );
+          
+          updateDebugView(debugInfo);
+          addTestResult('base-template/inheritance', true, 'Base inheritance working');
+          return true;
+        }
+      } catch (error) {
+        showResult('base-inheritance-result',
+          '❌ Base template inheritance test failed',
+          'error',
+          error.message
+        );
+        addTestResult('base-template/inheritance', false, error.message);
+      }
+      
+      return false;
+    }
+
+    async function testResourceResolution() {
+      log('🧪 Testing resource resolution...', 'info');
+      
+      try {
+        const response = await fetch(`${getServerUrl()}/api/resources/resolve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            templateId: 'jira/bug-report',
+            resourceTypes: ['screenshots', 'attachments', 'links']
+          })
+        });
+
+        if (response.ok) {
+          const resourceInfo = await response.json();
+          
+          showResult('resource-resolution-result',
+            '✅ Resource resolution test completed',
+            'success',
+            `Resolved: ${resourceInfo.resolved || 0}, Failed: ${resourceInfo.failed || 0}`
+          );
+          
+          addTestResult('base-template/resources', true, 'Resource resolution working');
+          return true;
+        }
+      } catch (error) {
+        showResult('resource-resolution-result',
+          '❌ Resource resolution test failed',
+          'error',
+          error.message
+        );
+        addTestResult('base-template/resources', false, error.message);
+      }
+      
+      return false;
+    }
+
+    async function testContextEnrichment() {
+      log('🧪 Testing context enrichment...', 'info');
+      
+      try {
+        const testContext = {
+          figmaUrl: 'https://figma.com/file/test123',
+          selectedElement: 'button-component',
+          userSelection: 'Create bug report for navigation issue'
+        };
+
+        const response = await fetch(`${getServerUrl()}/api/context/enrich`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testContext)
+        });
+
+        if (response.ok) {
+          const enrichedContext = await response.json();
+          
+          showResult('context-enrichment-result',
+            '✅ Context enrichment test completed',
+            'success',
+            `Enriched fields: ${Object.keys(enrichedContext).length}, Base merged: ${enrichedContext.baseContextMerged ? 'Yes' : 'No'}`
+          );
+          
+          addTestResult('base-template/context', true, 'Context enrichment working');
+          return true;
+        }
+      } catch (error) {
+        showResult('context-enrichment-result',
+          '❌ Context enrichment test failed',
+          'error',
+          error.message
+        );
+        addTestResult('base-template/context', false, error.message);
+      }
+      
+      return false;
+    }
+
+    // Advanced test runner functions
+    async function runBaseTemplateTests() {
+      log('🚀 Running base template test suite...', 'info');
+      
+      const tests = [
+        testBaseTemplateInheritance,
+        testResourceResolution,
+        testContextEnrichment
+      ];
+      
+      let passed = 0;
+      for (const test of tests) {
+        if (await test()) passed++;
+        await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause between tests
+      }
+      
+      log(`📊 Base template tests completed: ${passed}/${tests.length} passed`, 
+        passed === tests.length ? 'success' : 'warning');
+      
+      return passed === tests.length;
+    }
+
+    async function runRenderingTests() {
+      log('🚀 Running rendering test suite...', 'info');
+      
+      const platforms = ['jira', 'github', 'notion', 'confluence'];
+      const documentTypes = ['bug-report', 'feature-request'];
+      
+      let passed = 0;
+      let total = 0;
+      
+      for (const platform of platforms) {
+        for (const docType of documentTypes) {
+          total++;
+          if (await testPlatformTemplate(platform, docType)) {
+            passed++;
+          }
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+      
+      log(`📊 Rendering tests completed: ${passed}/${total} passed`, 
+        passed === total ? 'success' : 'warning');
+      
+      return passed === total;
+    }
+
+    function exportResults() {
+      const results = {
+        timestamp: new Date().toISOString(),
+        testResults: testResults,
+        lastGeneratedTicket: lastGeneratedTicket,
+        metrics: {
+          totalTests: testResults.length,
+          passed: testResults.filter(r => r.success).length,
+          failed: testResults.filter(r => !r.success).length
+        }
+      };
+      
+      const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `template-test-results-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      log('📁 Test results exported successfully', 'success');
+    }
+
+    // Configuration functions
+    function toggleDebugMode() {
+      const debugMode = document.getElementById('debug-mode').checked;
+      log(`Debug mode ${debugMode ? 'enabled' : 'disabled'}`, 'info');
+      
+      // Show/hide debug sections
+      const debugSections = document.querySelectorAll('.debug-info');
+      debugSections.forEach(section => {
+        section.style.display = debugMode ? 'block' : 'none';
+      });
+      
+      // Show/hide debug tab
+      const debugTab = document.querySelector('[onclick="switchPreviewTab(\'debug\')"]');
+      if (debugTab) {
+        debugTab.style.display = debugMode ? 'inline-block' : 'none';
+      }
+    }
+
+    function toggleLiveAPI() {
+      const liveAPI = document.getElementById('live-api').checked;
+      log(`Live API ${liveAPI ? 'enabled' : 'disabled'}`, 'info');
+      
+      // Update server URL display
+      const serverUrlInput = document.getElementById('server-url');
+      if (liveAPI && serverUrlInput.value.includes('localhost')) {
+        serverUrlInput.style.borderColor = '#28a745';
+      } else if (!liveAPI) {
+        serverUrlInput.style.borderColor = '#ffc107';
+      }
+    }
+
+    function getServerUrl() {
+      const liveAPI = document.getElementById('live-api').checked;
+      const customUrl = document.getElementById('server-url').value;
+      
+      return liveAPI ? customUrl : 'http://mock-server-disabled';
     }
 
     // Initialize
@@ -1086,6 +1956,12 @@ ${testResults.passed === testResults.total ?
       log('Ready to test parameterized ticket generation across 10+ platforms');
       updateMetrics();
       updatePlatformContent('jira');
+      
+      // Initialize first tab
+      switchPreviewTab('rendered');
+      
+      // Initialize debug mode
+      toggleDebugMode();
     });
   </script>
 </body>

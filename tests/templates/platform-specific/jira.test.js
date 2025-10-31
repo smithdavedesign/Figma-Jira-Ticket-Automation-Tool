@@ -14,41 +14,72 @@ const jiraTemplatePath = join(__dirname, '../../../config/templates/platforms/ji
  * Enhanced context data specifically for Jira testing
  */
 const jiraTestContext = {
-  // Component details
-  componentName: 'PrimaryButton',
-  componentDescription: 'Main call-to-action button component',
-  componentType: 'COMPONENT',
+  // Figma data (matches template variables)
+  figma: {
+    component_name: 'PrimaryButton',
+    component_type: 'COMPONENT',
+    design_status: 'Ready for Development',
+    screenshot_filename: 'primary-button.png',
+    live_link: 'https://figma.com/primary-button',
+    extracted_colors: ['#007bff', '#ffffff', '#f8f9fa'],
+    extracted_typography: ['Inter 16px', 'Inter 14px'],
+    screenshot_markdown: {
+      jira: '![Primary Button](primary-button.png)'
+    }
+  },
   
-  // Jira-specific fields
-  project: 'UI Components',
+  // Project data
+  project: {
+    name: 'UI Components',
+    tech_stack: ['React', 'TypeScript'],
+    component_prefix: 'UI',
+    testing_framework: 'Jest'
+  },
+  
+  // Calculated values
+  calculated: {
+    priority: 'High',
+    story_points: 8,
+    hours: 8,
+    confidence: 'High',
+    risk_factors: ['State management complexity'],
+    similar_components: ['SecondaryButton', 'IconButton']
+  },
+  
+  // Authoring data
+  authoring: {
+    notes: 'Primary button implementation with focus states',
+    component_path: '/src/components/PrimaryButton',
+    cq_template: 'button-component',
+    touch_ui_required: true
+  },
+  
+  // Resource data
+  resource: {
+    type: 'Button Component Documentation',
+    link: 'https://docs.example.com/primary-button',
+    notes: 'Accessibility and interaction guidelines'
+  },
+  
+  // Tech stack reference
+  tech: 'React',
+  
+  // URLs
+  storybook_url: 'https://storybook.example.com',
+  github_url: 'https://github.com/example/ui-components',
+  wiki_url: 'https://wiki.example.com',
+  
+  // Legacy compatibility
+  componentName: 'PrimaryButton',
+  projectName: 'UI Components',
   issueType: 'Story',
   priority: 'High',
   assignee: 'developer@company.com',
   reporter: 'designer@company.com',
   labels: ['frontend', 'component', 'ui'],
   
-  // Technical details
-  techStack: 'React TypeScript',
-  framework: 'React',
-  complexity: 'Medium',
-  estimatedHours: 8,
-  
-  // Design details
-  colors: ['#007bff', '#ffffff', '#f8f9fa'],
-  typography: ['Inter 16px', 'Inter 14px'],
-  spacing: [8, 16, 24],
-  
-  // File details
-  fileName: 'component-library.fig',
-  pageName: 'Button Components',
-  nodeId: '123:456',
-  
-  // Acceptance criteria
-  acceptanceCriteria: [
-    'Button displays correctly in all states',
-    'Button is accessible with proper ARIA attributes',
-    'Button works on all supported browsers'
-  ]
+  // Current timestamp as string literal
+  "'now'": new Date().toISOString()
 };
 
 /**
@@ -75,26 +106,53 @@ function testJiraTemplateStructure() {
     
     const template = validation.parsed;
     
-    // Check for Jira-specific required fields
-    const requiredJiraFields = [
-      'platform',
-      'description',
-      'content'
-    ];
+    // Check for Jira-specific required fields in new hierarchical structure
+    const requiredJiraFields = [];
     
-    result.requiredFields = requiredJiraFields;
-    
-    for (const field of requiredJiraFields) {
-      if (template[field]) {
-        result.jiraFields.push(field);
-      } else {
-        result.missingFields.push(field);
-      }
+    // Check meta section
+    if (template.meta) {
+      if (!template.meta.platform) requiredJiraFields.push('meta.platform');
+      if (!template.meta.document_type) requiredJiraFields.push('meta.document_type');
+    } else {
+      // Legacy structure
+      if (!template.platform) requiredJiraFields.push('platform');
+      if (!template.description) requiredJiraFields.push('description');
     }
     
+    // Check template section
+    if (template.template) {
+      if (!template.template.content) requiredJiraFields.push('template.content');
+    } else if (!template.content) {
+      requiredJiraFields.push('content');
+    }
+    
+    result.requiredFields = requiredJiraFields;
+    result.missingFields = requiredJiraFields; // All missing fields were already identified above
+    
+    // Check which fields are present
+    if (template.meta?.platform) result.jiraFields.push('meta.platform');
+    if (template.meta?.document_type) result.jiraFields.push('meta.document_type'); 
+    if (template.template?.content) result.jiraFields.push('template.content');
+    
+    // Legacy fields
+    if (template.platform) result.jiraFields.push('platform');
+    if (template.description) result.jiraFields.push('description');
+    if (template.content) result.jiraFields.push('content');
+    
     // Check template content for Jira-specific elements
-    const templateContent = template.template || template.content;
-    if (templateContent) {
+    let templateContent = null;
+    
+    if (template.template) {
+      if (typeof template.template === 'object' && template.template.content) {
+        templateContent = template.template.content;
+      } else if (typeof template.template === 'string') {
+        templateContent = template.template;
+      }
+    } else if (template.content) {
+      templateContent = template.content;
+    }
+    
+    if (templateContent && typeof templateContent === 'string') {
       const jiraKeywords = [
         'Summary:',
         'Description:',
@@ -106,6 +164,8 @@ function testJiraTemplateStructure() {
       result.jiraKeywords = jiraKeywords.filter(keyword => 
         templateContent.includes(keyword)
       );
+    } else {
+      result.jiraKeywords = [];
     }
     
     result.success = result.missingFields.length === 0;

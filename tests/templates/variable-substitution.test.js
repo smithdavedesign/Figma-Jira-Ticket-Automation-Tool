@@ -13,35 +13,74 @@ const templatesDir = join(__dirname, '../../config/templates/platforms');
  * Mock context data for testing variable substitution
  */
 const mockContextData = {
-  // Component data
-  componentName: 'TestComponent',
-  componentDescription: 'A test component for validation',
-  componentType: 'FRAME',
-  
-  // Design data
-  colors: ['#FF0000', '#00FF00', '#0000FF'],
-  fonts: ['Inter', 'Roboto'],
-  spacing: [8, 16, 24, 32],
+  // Figma data (matches template variables)
+  figma: {
+    component_name: 'TestComponent',
+    component_type: 'FRAME',
+    design_status: 'Ready for Development',
+    screenshot_filename: 'test-component.png',
+    live_link: 'https://figma.com/test',
+    extracted_colors: ['#FF0000', '#00FF00', '#0000FF'],
+    extracted_typography: ['Inter 16px', 'Roboto 14px'],
+    screenshot_markdown: {
+      jira: '![Screenshot](test-component.png)'
+    }
+  },
   
   // Project data
+  project: {
+    name: 'Test Project',
+    tech_stack: ['React', 'TypeScript'],
+    component_prefix: 'UI',
+    testing_framework: 'Jest',
+    community_url: 'https://community.example.com'
+  },
+  
+  // Calculated values
+  calculated: {
+    priority: 'High',
+    story_points: 5,
+    hours: 8,
+    confidence: 'High',
+    risk_factors: ['Complex state management'],
+    similar_components: ['Button', 'Input']
+  },
+  
+  // Authoring data
+  authoring: {
+    notes: 'Component implementation notes',
+    component_path: '/src/components/TestComponent',
+    cq_template: 'base-component',
+    touch_ui_required: true
+  },
+  
+  // Resource data
+  resource: {
+    type: 'Component Documentation',
+    link: 'https://docs.example.com/test-component',
+    notes: 'Additional implementation notes'
+  },
+  
+  // Tech stack reference
+  tech: 'React',
+  
+  // URLs
+  storybook_url: 'https://storybook.example.com',
+  github_url: 'https://github.com/example/repo',
+  wiki_url: 'https://wiki.example.com',
+  
+  // Special CSS/Style values
+  'marginBottom:': '16px',
+  '//': 'comment',
+  
+  // Legacy data for compatibility
+  componentName: 'TestComponent',
   projectName: 'Test Project',
-  fileName: 'test-file.fig',
-  pageName: 'Test Page',
-  
-  // Technical data
-  techStack: 'React TypeScript',
-  framework: 'React',
-  platform: 'web',
-  
-  // Ticket data
   ticketId: 'TEST-123',
   priority: 'High',
-  assignee: 'test@example.com',
   
-  // Metadata
-  timestamp: new Date().toISOString(),
-  author: 'Test Suite',
-  version: '1.0.0'
+  // Current timestamp as string literal
+  "'now'": new Date().toISOString()
 };
 
 /**
@@ -71,10 +110,22 @@ function substituteVariables(template, context) {
   const regex = /\{\{([^}]+)\}\}/g;
   result = result.replace(regex, (match, variable) => {
     const cleanVar = variable.trim().split(' ')[0].split('|')[0];
-    return context[cleanVar] !== undefined ? context[cleanVar] : match;
+    
+    // Handle nested properties (e.g., "figma.component_name")
+    const value = getNestedProperty(context, cleanVar);
+    return value !== undefined ? value : match;
   });
   
   return result;
+}
+
+/**
+ * Get nested property value from object using dot notation
+ */
+function getNestedProperty(obj, path) {
+  return path.split('.').reduce((current, key) => {
+    return current && current[key] !== undefined ? current[key] : undefined;
+  }, obj);
 }
 
 /**
@@ -101,7 +152,19 @@ function testTemplateVariableSubstitution(filePath, context = mockContextData) {
     
     result.templateValid = true;
     
-    const templateContent = validation.parsed.template || validation.parsed.content;
+    // Extract template content from hierarchical structure
+    let templateContent = null;
+    
+    if (validation.parsed.template) {
+      if (typeof validation.parsed.template === 'object' && validation.parsed.template.content) {
+        templateContent = validation.parsed.template.content;
+      } else if (typeof validation.parsed.template === 'string') {
+        templateContent = validation.parsed.template;
+      }
+    } else if (validation.parsed.content) {
+      templateContent = validation.parsed.content;
+    }
+    
     if (!templateContent) {
       result.error = 'No template content found';
       return result;

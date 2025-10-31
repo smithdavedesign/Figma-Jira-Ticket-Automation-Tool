@@ -2,9 +2,9 @@
 
 /**
  * Universal Template System CLI
- * 
+ *
  * Command-line interface for testing and using the Universal Template Engine
- * 
+ *
  * Usage:
  *   template-cli generate --platform jira --type component --stack react
  *   template-cli list --platform jira
@@ -103,7 +103,7 @@ program
             default: platform
           },
           {
-            type: 'list', 
+            type: 'list',
             name: 'type',
             message: 'Select document type:',
             choices: ['component', 'feature', 'service', 'authoring'],
@@ -148,23 +148,23 @@ program
         // Ensure output directory exists
         const dir = join(process.cwd(), output.substring(0, output.lastIndexOf('/')));
         await mkdir(dir, { recursive: true });
-        
+
         // Write to file
-        const content = typeof rendered === 'object' 
-          ? JSON.stringify(rendered, null, 2) 
+        const content = typeof rendered === 'object'
+          ? JSON.stringify(rendered, null, 2)
           : rendered;
         await writeFile(join(process.cwd(), output), content);
         console.log(chalk.green(`✅ Template saved to: ${output}\n`));
       } else {
         console.log(chalk.yellow('📄 Generated Template:\n'));
         console.log(chalk.white('─'.repeat(80)));
-        
+
         if (typeof rendered === 'object') {
           console.log(JSON.stringify(rendered, null, 2));
         } else {
           console.log(rendered);
         }
-        
+
         console.log(chalk.white('─'.repeat(80)));
       }
 
@@ -174,7 +174,7 @@ program
     }
   });
 
-// List Templates Command  
+// List Templates Command
 program
   .command('list')
   .description('List available templates')
@@ -186,7 +186,7 @@ program
       console.log(chalk.blue('\n📚 Available Templates:\n'));
 
       const templates = await engine.listAvailableTemplates();
-      
+
       // Apply filters
       let filteredTemplates = templates;
       if (options.platform) {
@@ -248,10 +248,10 @@ program
           try {
             const platform = templateInfo.platform || 'wiki';
             const stack = templateInfo.techStack || 'custom';
-            
+
             const template = await engine.resolveTemplate(platform, templateInfo.documentType, stack);
             const rendered = await engine.renderTemplate(template, sampleContext);
-            
+
             console.log(chalk.green(`✅ ${platform}/${templateInfo.documentType}/${stack}`));
             successCount++;
           } catch (error) {
@@ -260,7 +260,7 @@ program
           }
         }
 
-        console.log(chalk.blue(`\n📊 Test Results:`));
+        console.log(chalk.blue('\n📊 Test Results:'));
         console.log(`Success: ${chalk.green(successCount)}`);
         console.log(`Failures: ${chalk.red(failureCount)}`);
         console.log(`Total: ${chalk.white(successCount + failureCount)}\n`);
@@ -278,10 +278,10 @@ program
         for (const testCase of testCases) {
           try {
             console.log(chalk.yellow(`Testing: ${testCase.platform}/${testCase.type}/${testCase.stack}`));
-            
+
             const template = await engine.resolveTemplate(testCase.platform, testCase.type, testCase.stack);
             const rendered = await engine.renderTemplate(template, sampleContext);
-            
+
             console.log(chalk.green(`✅ Success - resolved from: ${template._meta.resolutionPath}`));
           } catch (error) {
             console.log(chalk.red(`❌ Failed: ${error.message}`));
@@ -333,7 +333,7 @@ program
   .description('Run interactive demo of the template system')
   .action(async () => {
     console.log(chalk.blue('\n🎭 Universal Template System Demo\n'));
-    
+
     const answers = await inquirer.prompt([
       {
         type: 'list',
@@ -349,28 +349,28 @@ program
     ]);
 
     switch (answers.demoType) {
-      case 'platform':
-        await demoplatformTemplate();
-        break;
-      case 'techstack':
-        await demoTechStackTemplate();
-        break;
-      case 'fallback':
-        await demoFallbackResolution();
-        break;
-      case 'comparison':
-        await demoTemplateComparison();
-        break;
+    case 'platform':
+      await demoplatformTemplate();
+      break;
+    case 'techstack':
+      await demoTechStackTemplate();
+      break;
+    case 'fallback':
+      await demoFallbackResolution();
+      break;
+    case 'comparison':
+      await demoTemplateComparison();
+      break;
     }
   });
 
 // Demo functions
 async function demoplatformTemplate() {
   console.log(chalk.yellow('\n🎯 Platform Template Demo - Jira Component\n'));
-  
+
   const template = await engine.resolveTemplate('jira', 'component', 'react');
   const rendered = await engine.renderTemplate(template, sampleContext);
-  
+
   console.log(chalk.cyan('Resolution Path:'), template._meta.resolutionPath);
   console.log(chalk.cyan('Template Type:'), 'Platform Template');
   console.log(chalk.yellow('\n📄 Rendered Output:\n'));
@@ -379,10 +379,10 @@ async function demoplatformTemplate() {
 
 async function demoTechStackTemplate() {
   console.log(chalk.yellow('\n⚙️  Tech Stack Template Demo - React Component\n'));
-  
+
   const template = await engine.resolveTemplate('unknown-platform', 'component', 'react');
   const rendered = await engine.renderTemplate(template, sampleContext);
-  
+
   console.log(chalk.cyan('Resolution Path:'), template._meta.resolutionPath);
   console.log(chalk.cyan('Template Type:'), 'Tech Stack Template');
   console.log(chalk.yellow('\n📄 Rendered Output:\n'));
@@ -391,10 +391,10 @@ async function demoTechStackTemplate() {
 
 async function demoFallbackResolution() {
   console.log(chalk.yellow('\n🔄 Fallback Resolution Demo\n'));
-  
+
   const template = await engine.resolveTemplate('unknown-platform', 'unknown-type', 'unknown-stack');
   const rendered = await engine.renderTemplate(template, sampleContext);
-  
+
   console.log(chalk.cyan('Resolution Path:'), template._meta.resolutionPath);
   console.log(chalk.cyan('Template Type:'), 'Built-in Fallback');
   console.log(chalk.yellow('\n📄 Fallback Template:\n'));
@@ -403,13 +403,13 @@ async function demoFallbackResolution() {
 
 async function demoTemplateComparison() {
   console.log(chalk.yellow('\n📋 Template Comparison Demo\n'));
-  
+
   const combinations = [
     { platform: 'jira', type: 'component', stack: 'react' },
     { platform: 'wiki', type: 'component', stack: 'react' },
     { platform: 'figma', type: 'component', stack: 'react' }
   ];
-  
+
   for (const combo of combinations) {
     const template = await engine.resolveTemplate(combo.platform, combo.type, combo.stack);
     console.log(chalk.green(`${combo.platform}/${combo.type}/${combo.stack}:`));

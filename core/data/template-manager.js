@@ -135,9 +135,27 @@ export class TemplateManager {
   buildTemplateContext(params) {
     const { componentName, techStack, figmaContext, requestData, platform, documentType } = params;
 
+    console.log('🏗️ BUILDING TEMPLATE CONTEXT DEBUG:');
+    console.log('  📋 Input params:', {
+      componentName,
+      techStack,
+      platform,
+      documentType,
+      hasFigmaContext: !!figmaContext,
+      hasRequestData: !!requestData
+    });
+    console.log('  🎨 Request data keys:', Object.keys(requestData || {}));
+    console.log('  📊 Figma context keys:', Object.keys(figmaContext || {}));
+
     // Extract file key from figmaUrl if not available in other sources
     const figmaUrl = requestData?.figmaUrl;
     const extractedFileKey = figmaUrl ? this.extractFileKeyFromUrl(figmaUrl) : null;
+    
+    console.log('  🔗 URL extraction:', {
+      figmaUrl,
+      extractedFileKey,
+      screenshot: requestData?.screenshot
+    });
 
     return {
       // Figma context data
@@ -185,9 +203,11 @@ export class TemplateManager {
         confidence: this.calculateConfidence(figmaContext),
         similar_components: this.findSimilarComponents(figmaContext),
         risk_factors: this.identifyRiskFactors(figmaContext, techStack),
-        priority: 'Medium',
-        story_points: '5',
-        design_analysis: this.generateDesignAnalysisSummary(figmaContext, componentName, requestData)
+        priority: this.calculatePriority(figmaContext, techStack),
+        story_points: this.calculateStoryPoints(figmaContext, techStack),
+        design_analysis: this.generateDesignAnalysisSummary(figmaContext, componentName, requestData),
+        implementation_notes: this.generateImplementationNotes(figmaContext, techStack),
+        accessibility_requirements: this.generateAccessibilityRequirements(figmaContext)
       },
 
       // Organization context (can be enhanced later)
@@ -210,6 +230,21 @@ export class TemplateManager {
         name: 'System Generated'
       }
     };
+
+    console.log('✅ TEMPLATE CONTEXT BUILT - Final Context Summary:');
+    console.log('  🎨 Figma context keys:', Object.keys(templateContext.figma));
+    console.log('  🏗️ Project context keys:', Object.keys(templateContext.project));
+    console.log('  📊 Calculated context keys:', Object.keys(templateContext.calculated));
+    console.log('  🏢 Org context:', templateContext.org.name);
+    console.log('  👥 Team context:', templateContext.team.name);
+    console.log('  📋 Key values for debugging:');
+    console.log(`    figma.live_link: "${templateContext.figma.live_link}"`);
+    console.log(`    project.repository_url: "${templateContext.project.repository_url || 'NOT SET'}"`);
+    console.log(`    project.storybook_url: "${templateContext.project.storybook_url || 'NOT SET'}"`);
+    console.log(`    project.wiki_url: "${templateContext.project.wiki_url || 'NOT SET'}"`);
+    console.log(`    project.analytics_url: "${templateContext.project.analytics_url || 'NOT SET'}"`);
+
+    return templateContext;
   }
 
   /**
@@ -672,13 +707,13 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
     if (nodeId) {
       // Fix node ID format: handle semicolon-separated IDs and proper encoding
       let formattedNodeId = nodeId;
-      
+
       // If nodeId contains semicolons, convert to comma-separated and take primary
       if (formattedNodeId.includes(';')) {
         const nodeIds = formattedNodeId.split(';');
         formattedNodeId = nodeIds[0]; // Use primary node ID for deep linking
       }
-      
+
       // Ensure proper URL encoding for node ID
       params.push(`node-id=${encodeURIComponent(formattedNodeId)}`);
     }
@@ -689,6 +724,9 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
 
     // Add mode parameter for better deep-linking
     params.push('mode=design');
+    
+    // Add scaling for better viewing
+    params.push('scaling=min-zoom');
 
     if (params.length > 0) {
       baseUrl += `?${params.join('&')}`;
@@ -742,6 +780,80 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
         `💡 For Jira: Open ${screenshotUrl} → Right-click → Save Image → Drag file to Jira ticket` :
         '💡 For Jira: Take screenshot in Figma → Save as PNG → Drag file to Jira ticket'
     };
+  }
+
+  /**
+   * Calculate priority based on component complexity and tech stack
+   */
+  calculatePriority(figmaContext, techStack) {
+    const complexity = this.calculateComplexity(figmaContext);
+    const isComplexTech = Array.isArray(techStack) 
+      ? techStack.some(tech => tech.toLowerCase().includes('aem'))
+      : techStack.toLowerCase().includes('aem');
+
+    if (complexity === 'complex' || isComplexTech) {
+      return 'High';
+    }
+    if (complexity === 'medium') {
+      return 'Medium';
+    }
+    return 'Low';
+  }
+
+  /**
+   * Calculate story points based on complexity and estimated hours
+   */
+  calculateStoryPoints(figmaContext, techStack) {
+    const hours = this.estimateHours(figmaContext, techStack);
+    
+    if (hours <= 4) return '3';
+    if (hours <= 8) return '5';
+    if (hours <= 16) return '8';
+    return '13';
+  }
+
+  /**
+   * Generate implementation notes based on component analysis
+   */
+  generateImplementationNotes(figmaContext, techStack) {
+    const notes = [];
+    const complexity = this.calculateComplexity(figmaContext);
+    
+    if (complexity === 'complex') {
+      notes.push('Consider breaking down into smaller sub-components');
+      notes.push('Plan for comprehensive testing strategy');
+    }
+    
+    if (Array.isArray(techStack) && techStack.some(tech => tech.toLowerCase().includes('aem'))) {
+      notes.push('Follow AEM component development best practices');
+      notes.push('Ensure Touch UI compatibility');
+      notes.push('Implement proper Sling Model bindings');
+    }
+    
+    return notes.length > 0 ? notes : ['Standard component implementation approach'];
+  }
+
+  /**
+   * Generate accessibility requirements based on component type
+   */
+  generateAccessibilityRequirements(figmaContext) {
+    const requirements = [
+      'WCAG 2.1 AA compliance',
+      'Proper semantic HTML structure',
+      'Keyboard navigation support',
+      'Screen reader compatibility'
+    ];
+
+    // Add specific requirements based on component analysis
+    if (figmaContext?.components?.some(c => c.name.toLowerCase().includes('button'))) {
+      requirements.push('Proper button states and focus indicators');
+    }
+    
+    if (figmaContext?.components?.some(c => c.name.toLowerCase().includes('form'))) {
+      requirements.push('Form field labels and error messages');
+    }
+
+    return requirements;
   }
 
   /**

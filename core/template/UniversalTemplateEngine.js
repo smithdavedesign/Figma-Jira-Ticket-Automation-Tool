@@ -1,9 +1,9 @@
 /**
  * Universal Template Resolution Engine
- * 
+ *
  * Implements intelligent template resolution with fallback logic:
  * 1. platform-specific template (e.g., jira/component.yml)
- * 2. tech-stack-specific template (e.g., react/component.yml) 
+ * 2. tech-stack-specific template (e.g., react/component.yml)
  * 3. custom defaults (custom/defaults.yml)
  * 4. built-in defaults
  */
@@ -21,7 +21,7 @@ export class UniversalTemplateEngine {
     this.configDir = configDir || join(__dirname, '../../config/templates');
     this.templateCache = new Map();
     this.resolvedCache = new Map();
-    
+
     // Document type mapping for new file naming convention
     this.documentTypeMapping = {
       'component': 'comp',
@@ -33,7 +33,7 @@ export class UniversalTemplateEngine {
       'authoring': 'wiki' // Map authoring to wiki as they're similar
     };
   }
-  
+
   /**
    * Map document type to file name
    */
@@ -47,7 +47,7 @@ export class UniversalTemplateEngine {
   async resolveTemplate(platform, documentType, techStack = 'custom') {
     const mappedDocumentType = this.mapDocumentType(documentType);
     const cacheKey = `${platform}-${documentType}-${techStack}`;
-    
+
     if (this.resolvedCache.has(cacheKey)) {
       return this.resolvedCache.get(cacheKey);
     }
@@ -56,13 +56,13 @@ export class UniversalTemplateEngine {
     const resolutionPaths = [
       // 1. Platform-specific template
       `platforms/${platform}/${mappedDocumentType}.yml`,
-      
-      // 2. Tech-stack-specific template  
+
+      // 2. Tech-stack-specific template
       `tech-stacks/${techStack}/defaults.yml`,
-      
+
       // 3. Custom defaults
-      `tech-stacks/custom/defaults.yml`,
-      
+      'tech-stacks/custom/defaults.yml',
+
       // 4. Built-in fallback (we'll generate this)
     ];
 
@@ -73,10 +73,11 @@ export class UniversalTemplateEngine {
       try {
         const fullPath = join(this.configDir, path);
         await access(fullPath);
-        
+
         const template = await this.loadTemplate(fullPath);
         if (template && this.isValidTemplate(template, platform, documentType)) {
-          resolvedTemplate = template;
+          // Merge with base template if it inherits from base
+          resolvedTemplate = await this.mergeWithBase(template);
           resolutionPath = path;
           break;
         }
@@ -120,7 +121,7 @@ export class UniversalTemplateEngine {
     try {
       const content = await readFile(filePath, 'utf-8');
       const template = yaml.load(content);
-      
+
       this.templateCache.set(filePath, template);
       return template;
     } catch (error) {
@@ -139,13 +140,13 @@ export class UniversalTemplateEngine {
 
     // Check for required structure
     const hasValidMeta = template.meta && (
-      template.meta.platform === platform || 
+      template.meta.platform === platform ||
       template.meta.document_type === documentType ||
       template.meta.tech_stack
     );
 
     const hasTemplate = template.template || template.content;
-    
+
     return hasValidMeta || hasTemplate;
   }
 
@@ -159,7 +160,7 @@ export class UniversalTemplateEngine {
 
     // Extract the actual template content from different possible locations
     let templateContent = null;
-    
+
     if (template.template && typeof template.template === 'object' && template.template.content) {
       // Template has structured content: template.template.content
       templateContent = template.template.content;
@@ -176,10 +177,12 @@ export class UniversalTemplateEngine {
       // Template is an object structure - render as formatted output
       return this.processObjectTemplate(template.template, context, template);
     }
-    
+
     // If we found template content, process it
     if (templateContent && typeof templateContent === 'string') {
-      return this.substituteVariables(templateContent, context, template);
+      // Merge base template variables into context if available
+      const enrichedContext = this.enrichContextWithTemplate(context, template);
+      return this.substituteVariables(templateContent, enrichedContext, template);
     }
 
     // If it's an object template, process each field
@@ -202,8 +205,8 @@ export class UniversalTemplateEngine {
       if (typeof value === 'string') {
         result[key] = this.substituteVariables(value, context, template);
       } else if (Array.isArray(value)) {
-        result[key] = value.map(item => 
-          typeof item === 'string' 
+        result[key] = value.map(item =>
+          typeof item === 'string'
             ? this.substituteVariables(item, context, template)
             : item
         );
@@ -225,26 +228,28 @@ export class UniversalTemplateEngine {
 
     // 1. Handle Handlebars-style variables: {{ figma.component_name }}
     result = result.replace(/\{\{\s*([^}]+)\s*\}\}/g, (match, expression) => {
-      return this.evaluateExpression(expression, context, template) || match;
+      const value = this.evaluateExpression(expression, context, template);
+      // Return empty string if value is null/undefined, otherwise return the value or original match
+      return value !== null && value !== undefined ? String(value) : '';
     });
 
     // 2. Handle conditionals: {% if condition %} content {% endif %}
-    result = result.replace(/\{\%\s*if\s+([^%]+)\s*\%\}([\s\S]*?)\{\%\s*endif\s*\%\}/g, 
+    result = result.replace(/{%\s*if\s+([^%]+)\s*%}([\s\S]*?){%\s*endif\s*%}/g,
       (match, condition, content) => {
         const value = this.evaluateExpression(condition, context, template);
-        return this.isTruthy(value) ? content : '';
+        return this.isTruthy(value) ? this.substituteVariables(content, context, template) : '';
       }
     );
 
     // 3. Handle loops: {% for item in array %} content {% endfor %}
-    result = result.replace(/\{\%\s*for\s+(\w+)\s+in\s+([^%]+)\s*\%\}([\s\S]*?)\{\%\s*endfor\s*\%\}/g,
+    result = result.replace(/{%\s*for\s+(\w+)\s+in\s+([^%]+)\s*%}([\s\S]*?){%\s*endfor\s*%}/g,
       (match, itemVar, arrayExpr, content) => {
         const array = this.evaluateExpression(arrayExpr, context, template);
-        if (!Array.isArray(array)) return '';
-        
+        if (!Array.isArray(array) || array.length === 0) {return '';}
+
         return array.map((item, index) => {
-          const itemContext = { 
-            ...context, 
+          const itemContext = {
+            ...context,
             [itemVar]: item,
             loop: { index: index + 1, index0: index }
           };
@@ -254,10 +259,10 @@ export class UniversalTemplateEngine {
     );
 
     // 4. Handle default values with || syntax: {{value || 'default'}}
-    result = result.replace(/\{\{\s*([^}]+?)\s*\|\|\s*['"]([^'"]*)['"]\s*\}\}/g, 
+    result = result.replace(/\{\{\s*([^}]+?)\s*\|\|\s*['"]([^'"]*)['"]\s*\}\}/g,
       (match, expression, defaultValue) => {
         const value = this.evaluateExpression(expression, context, template);
-        return this.isTruthy(value) ? value : defaultValue;
+        return this.isTruthy(value) ? String(value) : defaultValue;
       }
     );
 
@@ -269,6 +274,25 @@ export class UniversalTemplateEngine {
    */
   evaluateExpression(expression, context, template) {
     const trimmed = expression.trim();
+
+    // Handle mathematical operations: "calculated.confidence * 100"
+    const mathMatch = trimmed.match(/^(.+?)\s*(\*|\+|\-|\/)\s*(\d+(?:\.\d+)?)$/);
+    if (mathMatch) {
+      const [, leftExpr, operator, rightValue] = mathMatch;
+      const leftValue = this.evaluateExpression(leftExpr, context, template);
+      const rightNum = parseFloat(rightValue);
+      const leftNum = parseFloat(leftValue);
+      
+      if (!isNaN(leftNum) && !isNaN(rightNum)) {
+        switch (operator) {
+        case '*': return Math.round(leftNum * rightNum);
+        case '+': return leftNum + rightNum;
+        case '-': return leftNum - rightNum;
+        case '/': return rightNum !== 0 ? leftNum / rightNum : 0;
+        }
+      }
+      return leftValue;
+    }
 
     // Handle default values: "value | default('fallback')"
     const defaultMatch = trimmed.match(/^(.+?)\s*\|\s*default\(['"]([^'"]*)['"]\)$/);
@@ -308,24 +332,43 @@ export class UniversalTemplateEngine {
    * Apply template filters
    */
   applyFilter(value, filterName, arg) {
-    if (!value) return value;
+    if (value === null || value === undefined) {return value;}
 
     switch (filterName) {
-      case 'lowercase':
-        return String(value).toLowerCase();
-      case 'uppercase':
-        return String(value).toUpperCase();
-      case 'capitalize':
-        return String(value).charAt(0).toUpperCase() + String(value).slice(1);
-      case 'join':
-        return Array.isArray(value) ? value.join(arg || ', ') : value;
-      case 'length':
-        return Array.isArray(value) ? value.length : String(value).length;
-      case 'replace':
-        // Simple replace - would need more complex parsing for full replace support
-        return String(value).replace(/ /g, arg || '-');
-      default:
-        return value;
+    case 'lowercase':
+      return String(value).toLowerCase();
+    case 'uppercase':
+      return String(value).toUpperCase();
+    case 'capitalize':
+      return String(value).charAt(0).toUpperCase() + String(value).slice(1);
+    case 'join':
+      return Array.isArray(value) ? value.join(arg || ', ') : value;
+    case 'length':
+      return Array.isArray(value) ? value.length : String(value).length;
+    case 'replace':
+      return String(value).replace(/ /g, arg || '-');
+    case 'date':
+      // Handle date formatting
+      if (value === 'now') {
+        const now = new Date();
+        return arg ? now.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        }) : now.toISOString().split('T')[0];
+      }
+      return value;
+    case 'multiply':
+      // Handle mathematical operations like confidence * 100
+      const multiplier = parseFloat(arg) || 100;
+      return Math.round(parseFloat(value) * multiplier);
+    case 'default':
+      // Handle default values
+      return this.isTruthy(value) ? value : arg;
+    default:
+      return value;
     }
   }
 
@@ -333,10 +376,10 @@ export class UniversalTemplateEngine {
    * Check if value is truthy for conditionals
    */
   isTruthy(value) {
-    if (value === null || value === undefined) return false;
-    if (typeof value === 'string') return value.trim().length > 0;
-    if (Array.isArray(value)) return value.length > 0;
-    if (typeof value === 'object') return Object.keys(value).length > 0;
+    if (value === null || value === undefined) {return false;}
+    if (typeof value === 'string') {return value.trim().length > 0;}
+    if (Array.isArray(value)) {return value.length > 0;}
+    if (typeof value === 'object') {return Object.keys(value).length > 0;}
     return Boolean(value);
   }
 
@@ -443,6 +486,152 @@ Please customize this template for your specific needs.
   clearCache() {
     this.templateCache.clear();
     this.resolvedCache.clear();
+  }
+
+  /**
+   * Enrich context with base template variables for rendering
+   */
+  enrichContextWithTemplate(context, template) {
+    // If template has merged base template data, add it to context
+    if (template?.template) {
+      const enrichedContext = { ...context };
+      
+      console.log('🔍 CONTEXT ENRICHMENT DEBUG - Input Context:');
+      console.log('  📊 Input context keys:', Object.keys(context));
+      console.log('  📋 Figma context:', JSON.stringify(context.figma || {}, null, 2));
+      console.log('  🏗️ Project context:', JSON.stringify(context.project || {}, null, 2));
+      console.log('  📊 Calculated context:', JSON.stringify(context.calculated || {}, null, 2));
+      console.log('  👥 Org context:', JSON.stringify(context.org || {}, null, 2));
+      console.log('  🔧 Base template keys:', Object.keys(template.template));
+      
+      // Add base template variables to context  
+      if (template.template.resources) {
+        console.log('  🔗 Processing base template resources...');
+        // Resolve template variables in resources
+        enrichedContext.resources = template.template.resources.map((resource, index) => {
+          const resolvedResource = {
+            ...resource,
+            link: this.substituteVariables(resource.link, context),
+            type: this.substituteVariables(resource.type, context),
+            notes: this.substituteVariables(resource.notes, context)
+          };
+          console.log(`    Resource ${index + 1}: ${resource.type} -> ${resolvedResource.link}`);
+          return resolvedResource;
+        });
+        console.log(`  ✅ Resolved ${enrichedContext.resources.length} resources`);
+      }
+      
+      if (template.template.variables) {
+        console.log('  📝 Processing base template variables...');
+        // Merge base template variables but don't override context data
+        enrichedContext.base_variables = template.template.variables;
+        console.log('  📝 Base variables keys:', Object.keys(template.template.variables));
+        
+        // Log some key variables for debugging
+        if (template.template.variables.figma_url) {
+          const resolved = this.substituteVariables(template.template.variables.figma_url, context);
+          console.log(`    figma_url: "${template.template.variables.figma_url}" -> "${resolved}"`);
+        }
+        if (template.template.variables.github_url) {
+          const resolved = this.substituteVariables(template.template.variables.github_url, context);
+          console.log(`    github_url: "${template.template.variables.github_url}" -> "${resolved}"`);
+        }
+      }
+      
+      if (template.template.design) {
+        console.log('  🎨 Adding base template design data...');
+        enrichedContext.design = template.template.design;
+        console.log('    Design keys:', Object.keys(template.template.design));
+      }
+      
+      if (template.template.authoring) {
+        console.log('  📝 Merging base template authoring data...');
+        enrichedContext.authoring = { 
+          ...template.template.authoring, 
+          ...enrichedContext.authoring 
+        };
+        console.log('    Authoring keys:', Object.keys(enrichedContext.authoring));
+      }
+      
+      console.log('🔄 CONTEXT ENRICHMENT COMPLETE');
+      console.log('  📊 Final enriched context keys:', Object.keys(enrichedContext));
+      console.log('  🔗 Resources count:', enrichedContext.resources?.length || 0);
+      console.log('  📝 Base variables available:', !!enrichedContext.base_variables);
+      console.log('  🎨 Design data available:', !!enrichedContext.design);
+      console.log('  📝 Authoring data available:', !!enrichedContext.authoring);
+      
+      return enrichedContext;
+    }
+    
+    console.log('⚠️ No base template data found for enrichment');
+    return context;
+  }
+
+  /**
+   * Merge template with base template if it inherits from base
+   */
+  async mergeWithBase(template) {
+    // Check if template inherits from base
+    if (!template?.meta?.inherits_from || template.meta.inherits_from !== 'base.yml') {
+      return template;
+    }
+
+    try {
+      // Load base template
+      const basePath = join(this.configDir, 'template_configs/base.yml');
+      const baseTemplate = await this.loadTemplate(basePath);
+      
+      if (!baseTemplate?.template) {
+        console.warn('Base template not found or invalid structure, using template as-is');
+        return template;
+      }
+
+      console.log('🔄 Merging template with base template');
+      console.log('Base template keys:', Object.keys(baseTemplate.template));
+      console.log('Platform template keys:', Object.keys(template.template || {}));
+
+      // Deep merge base template with current template
+      const mergedTemplate = {
+        ...template,
+        template: this.deepMerge(
+          baseTemplate.template,
+          template.template || {}
+        )
+      };
+
+      console.log('✅ Template merge completed');
+      console.log('Merged template keys:', Object.keys(mergedTemplate.template));
+
+      return mergedTemplate;
+    } catch (error) {
+      console.error('❌ Failed to merge with base template:', error.message);
+      console.error('Error details:', error);
+      return template;
+    }
+  }
+
+  /**
+   * Deep merge two objects
+   */
+  deepMerge(target, source) {
+    // Handle null/undefined cases
+    if (!target && !source) return {};
+    if (!target) return { ...source };
+    if (!source) return { ...target };
+    
+    const result = { ...target };
+    
+    for (const key in source) {
+      if (source.hasOwnProperty(key)) {
+        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          result[key] = this.deepMerge(result[key] || {}, source[key]);
+        } else {
+          result[key] = source[key];
+        }
+      }
+    }
+    
+    return result;
   }
 
   /**

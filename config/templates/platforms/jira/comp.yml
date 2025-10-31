@@ -6,7 +6,7 @@ meta:
   status: stable
   inherits_from: base.yml
 
-# Template with base variable references
+# Template with base variables merged automatically by the engine
 template:
   
   # Jira-specific overrides
@@ -39,6 +39,10 @@ template:
     {% endif %}
     {% if figma.extracted_typography %}
     - **Typography**: {{ figma.extracted_typography }}
+    {% endif %}
+    {% if calculated.design_analysis %}
+    
+    **🎯 Design Analysis**: {{ calculated.design_analysis }}
     {% endif %}
     
     ## ✅ Acceptance Criteria
@@ -113,4 +117,4 @@ template:
     
     **Generated**: {{ 'now' | date('%Y-%m-%d %H:%M') }} via Universal Template System  
     **Template**: jira/component.yml → base.yml  
-    **Confidence**: {{ calculated.confidence * 100 }}% | **Estimated Hours**: {{ calculated.hours }}
+        **Confidence**: {{ calculated.confidence * 100 }}% | **Estimated Hours**: {{ calculated.hours }}
