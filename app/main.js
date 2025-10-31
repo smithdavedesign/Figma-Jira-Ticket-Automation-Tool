@@ -211,7 +211,7 @@ class MCPServer {
 
     // Error handling middleware (must be last)
     this.app.use(errorLogger);
-    this.app.use((err, req, res, next) => {
+    this.app.use((err, req, res, _next) => {
       this.errorHandler.handleServerError(err, req, res);
     });
 
@@ -1619,7 +1619,7 @@ Analysis completed at ${new Date().toISOString()}`;
   /**
    * Check compliance
    */
-  async checkCompliance(params) {
+  async checkCompliance(_params) {
     return {
       compliance: {
         score: 85,

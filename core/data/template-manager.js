@@ -59,6 +59,9 @@ export class TemplateManager {
 
     this.logger.info(`🎫 Generating ${platform} ticket for ${componentName} using Universal Template System`);
 
+    // Build context for template rendering (moved outside try block for error logging)
+    let templateContext;
+
     try {
       // Create cache key for this specific ticket configuration
       const cacheKey = this.createTicketCacheKey(params);
@@ -75,7 +78,7 @@ export class TemplateManager {
       }
 
       // Build context for template rendering
-      const templateContext = this.buildTemplateContext({
+      templateContext = this.buildTemplateContext({
         componentName,
         techStack,
         figmaContext,
@@ -486,7 +489,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
               available: true,
               description: `${platform} ${documentType} template with intelligent fallback`
             });
-          } catch (error) {
+          } catch (_error) {
             // Template resolution failed, but we can still list it as unavailable
             templates.push({
               template_id: `${platform}-${documentType}`,
