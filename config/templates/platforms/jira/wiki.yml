@@ -1,0 +1,151 @@
+meta:
+  platform: jira
+  document_type: wiki
+  version: 1.0.0
+  last_updated: 2025-10-30
+  status: stable
+  inherits_from: base.yml
+
+# Template with base variable references
+template:
+  
+  # Jira-specific overrides for wiki documentation tasks
+  title: "[{{ project.wiki_prefix | default('WIKI') }}] {{ figma.component_name }} - Documentation Task"
+  issue_type: Task
+  priority: "{{ calculated.priority | default('Low') }}"
+  labels: ["documentation", "wiki", "knowledge-base", "{{ project.tech_stack.0 | lowercase }}"]
+  
+  # Content template for Jira wiki documentation tasks
+  content: |
+    ## 📚 Documentation Task
+    
+    Create comprehensive documentation for **{{ figma.component_name }}** in the project wiki.
+    
+    **📋 Quick Details:**
+    - **Documentation Type**: {{ figma.component_type | default('Technical Documentation') }}
+    - **Tech Stack**: {{ project.tech_stack | join(', ') | default('React, TypeScript') }}
+    - **Priority**: {{ calculated.priority | default('Low') }}
+    - **Story Points**: {{ calculated.story_points | default('2') }}
+    - **Status**: {{ figma.design_status | default('Ready for Documentation') }}
+    
+    ## 📖 Documentation Scope
+    
+    **🔗 Design Reference**: [View Component]({{ figma.live_link }})
+    **📸 Visual Reference**: {{ figma.screenshot_markdown.jira | default('!screenshot.png|thumbnail!') }}
+    
+    {% if figma.extracted_colors %}
+    **🎨 Design Elements to Document**:
+    - **Colors**: {{ figma.extracted_colors }}
+    {% endif %}
+    {% if figma.extracted_typography %}
+    - **Typography**: {{ figma.extracted_typography }}
+    {% endif %}
+    
+    ## ✅ Documentation Requirements
+    
+    - [ ] **Overview**: Component purpose and use cases
+    - [ ] **API Documentation**: Props, methods, and interfaces
+    - [ ] **Usage Examples**: Code snippets and implementation guides
+    - [ ] **Design Guidelines**: Visual specifications and variants
+    - [ ] **Accessibility**: ARIA labels and keyboard navigation
+    - [ ] **Browser Support**: Compatibility matrix
+    - [ ] **Troubleshooting**: Common issues and solutions
+    - [ ] **Migration Guide**: Upgrading from previous versions (if applicable)
+    
+    ## 📝 Documentation Structure
+    
+    **Wiki Page Structure:**
+    ```
+    {{ figma.component_name }} Documentation
+    ├── Overview & Purpose
+    ├── Design Specifications
+    │   ├── Visual Examples
+    │   ├── States & Variants
+    │   └── Design Tokens
+    ├── Technical Implementation
+    │   ├── API Reference
+    │   ├── Props & Configuration
+    │   └── Usage Examples
+    ├── Accessibility Guidelines
+    ├── Browser Support
+    ├── Troubleshooting
+    └── Related Components
+    ```
+    
+    {% if calculated.complexity == 'complex' %}
+    ## ⚠️  Documentation Complexity
+    
+    **Complex Documentation Required** ({{ calculated.hours }} hours estimated)
+    - **Confidence Level**: {{ calculated.confidence * 100 }}%
+    {% if calculated.risk_factors %}
+    - **Risk Factors**: {{ calculated.risk_factors | join(', ') }}
+    {% endif %}
+    {% if calculated.similar_components %}
+    - **Reference Documentation**: {{ calculated.similar_components | join(', ') }}
+    {% endif %}
+    {% endif %}
+    
+    ## 📋 Documentation Tasks
+    
+    - [ ] **Research**: Gather all technical specifications and requirements
+    - [ ] **Structure**: Create documentation outline and page structure
+    - [ ] **Content**: Write comprehensive documentation sections
+    - [ ] **Examples**: Create code examples and usage snippets
+    - [ ] **Screenshots**: Capture visual examples and states
+    - [ ] **Review**: Technical review for accuracy
+    - [ ] **Publish**: Upload to wiki and create cross-references
+    - [ ] **Maintenance**: Set up documentation update schedule
+    
+    ## 📊 Content Checklist
+    
+    ### Technical Documentation
+    - [ ] Component API and props
+    - [ ] Installation and setup instructions
+    - [ ] Configuration options
+    - [ ] Event handling and callbacks
+    - [ ] Error states and handling
+    
+    ### Design Documentation
+    - [ ] Visual specifications and measurements
+    - [ ] Color palette and typography
+    - [ ] Component states (hover, focus, active, disabled)
+    - [ ] Responsive behavior and breakpoints
+    - [ ] Animation and transition details
+    
+    ### Usage Documentation
+    - [ ] Basic usage examples
+    - [ ] Advanced use cases
+    - [ ] Integration with other components
+    - [ ] Best practices and patterns
+    - [ ] Do's and don'ts
+    
+    {% if authoring.notes != 'Authoring Notes Not Found' %}
+    ## 📝 AEM Documentation Notes
+    
+    {{ authoring.notes }}
+    
+    **Technical Details:**
+    - **Component Path**: {{ authoring.component_path }}
+    - **CQ Template**: {{ authoring.cq_template }}
+    - **Touch UI Required**: {{ authoring.touch_ui_required }}
+    {% endif %}
+    
+    ## 🔗 Resources
+    
+    {% for resource in resources %}
+    - **{{ resource.type }}**: [{{ resource.notes }}]({{ resource.link }})
+    {% endfor %}
+    
+    ## 📋 Wiki Pages to Create/Update
+    
+    - [ ] **Main Component Page**: `/wiki/components/{{ figma.component_name | kebabCase }}`
+    - [ ] **API Reference**: `/wiki/api/{{ figma.component_name | kebabCase }}`
+    - [ ] **Usage Examples**: `/wiki/examples/{{ figma.component_name | kebabCase }}`
+    - [ ] **Design Guidelines**: `/wiki/design/{{ figma.component_name | kebabCase }}`
+    - [ ] **Update Component Index**: Add to main components list
+    
+    ---
+    
+    **Generated**: {{ 'now' | date('%Y-%m-%d %H:%M') }} via Universal Template System  
+    **Template**: jira/wiki.yml → base.yml  
+    **Confidence**: {{ calculated.confidence * 100 }}% | **Estimated Hours**: {{ calculated.hours }}

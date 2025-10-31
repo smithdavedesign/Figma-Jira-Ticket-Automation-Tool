@@ -1,0 +1,180 @@
+meta:
+  platform: jira
+  document_type: components
+  tech_stack: react
+  version: 1.0.0
+  last_updated: 2025-10-30
+  owner: frontend-team
+  status: stable
+
+structure:
+  title: "React Component Implementation"
+  description: "Jira ticket for implementing React components with proper testing and documentation"
+  applies_to:
+    - component_development
+    - ui_implementation
+    - design_system_work
+
+fields:
+  - name: summary
+    type: string
+    description: "Brief component title"
+    example: "[COMP] Implement Button Component with Variants"
+    
+  - name: component_type
+    type: enum
+    values: [Atom, Molecule, Organism, Template, Page]
+    default: Molecule
+    description: "Atomic design classification"
+    
+  - name: description
+    type: markdown
+    description: "Detailed component requirements"
+    template: |
+      ## Component Overview
+      {{ component_purpose }}
+      
+      ## Design Specifications
+      - **Figma File**: {{ figma.file_url }}
+      - **Component Library**: {{ figma.component_name }}
+      - **Variants**: {{ figma.variants | join(', ') }}
+      
+      ## Technical Requirements
+      - **Framework**: React {{ react.version }}
+      - **TypeScript**: Required
+      - **Testing**: Jest + React Testing Library
+      - **Storybook**: Component stories required
+      
+      ## Acceptance Criteria
+      {{ acceptance_criteria | bulletList }}
+      
+  - name: acceptance_criteria
+    type: array
+    description: "Component completion criteria"
+    default:
+      - "Component matches Figma design specifications"
+      - "All variants are implemented and functional"
+      - "Component is fully accessible (WCAG 2.1 AA)"
+      - "Unit tests achieve 90%+ coverage"
+      - "Storybook stories demonstrate all use cases"
+      - "TypeScript interfaces are properly defined"
+      - "Component is documented in design system"
+      
+  - name: technical_specifications
+    type: yaml_block
+    description: "React-specific implementation details"
+    template: |
+      component_props:
+        - name: variant
+          type: enum
+          values: {{ figma.variants }}
+          default: primary
+        - name: size
+          type: enum  
+          values: [small, medium, large]
+          default: medium
+        - name: disabled
+          type: boolean
+          default: false
+        - name: onClick
+          type: function
+          required: false
+          
+      styling_approach: {{ tech_stack.styling_framework }}
+      state_management: {{ tech_stack.state_management }}
+      testing_framework: "Jest + React Testing Library"
+      
+      performance_requirements:
+        - bundle_size_impact: "< 5KB gzipped"
+        - render_time: "< 16ms for 60fps"
+        - re_render_optimization: "React.memo if expensive"
+        
+  - name: dependencies
+    type: array
+    description: "Required dependencies and related work"
+    
+  - name: design_tokens
+    type: object
+    description: "Design system tokens used"
+    template:
+      colors: "{{ design_system.colors }}"
+      typography: "{{ design_system.typography }}"
+      spacing: "{{ design_system.spacing }}"
+      
+  - name: story_points
+    type: integer
+    range: [1, 13]
+    description: "Development effort estimate"
+    
+  - name: labels
+    type: array
+    default:
+      - "component"
+      - "react"
+      - "frontend"
+      - "{{ figma.component_name | lowercase }}"
+      
+  - name: components
+    type: array
+    description: "Jira project components"
+    default: ["Frontend", "Design System"]
+
+validation_rules:
+  required_fields: [summary, description, acceptance_criteria, technical_specifications]
+  
+  conditional_requirements:
+    complex_component:
+      condition: "story_points > 5"
+      requires: [technical_design_document, performance_considerations]
+      
+    form_component:
+      condition: "component_type in ['input', 'select', 'textarea', 'form']"
+      requires: [validation_requirements, accessibility_requirements]
+
+automation_hooks:
+  figma_integration:
+    auto_populate:
+      - component_name: "{{ figma.selected_component.name }}"
+      - variants: "{{ figma.selected_component.variants }}"
+      - design_tokens: "{{ figma.selected_component.tokens }}"
+      
+  github_integration:
+    auto_create:
+      - branch_name: "feature/{{ component_name | kebabCase }}"
+      - pr_template: "React Component Implementation"
+      
+  storybook_integration:
+    auto_generate:
+      - story_template: "Component.stories.tsx"
+      - addon_configurations: ["controls", "docs", "a11y"]
+
+quality_checklist:
+  implementation:
+    - [ ] Component follows React best practices
+    - [ ] TypeScript interfaces are comprehensive
+    - [ ] Props are properly validated
+    - [ ] Error boundaries are implemented where needed
+    
+  testing:
+    - [ ] Unit tests cover all component variants
+    - [ ] Integration tests validate user interactions
+    - [ ] Accessibility tests pass automated checks
+    - [ ] Visual regression tests are configured
+    
+  documentation:
+    - [ ] Storybook stories demonstrate all use cases
+    - [ ] Props are documented with JSDoc
+    - [ ] Usage examples are provided
+    - [ ] Migration guide exists if replacing existing component
+
+links:
+  figma_design: "{{ figma.file_url }}"
+  component_library: "{{ figma.library_url }}"
+  storybook: "{{ project.storybook_url }}"
+  design_system_docs: "{{ project.design_system_url }}"
+
+references:
+  related_docs:
+    - /tech-stacks/react/component-standards.yml
+    - /platforms/jira/template-guide.yml
+    - /templates/components/default.yml

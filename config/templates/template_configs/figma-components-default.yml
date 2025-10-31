@@ -1,0 +1,302 @@
+meta:
+  platform: figma
+  document_type: components
+  tech_stack: default
+  version: 1.0.0
+  last_updated: 2025-10-30
+  owner: design-team
+  status: stable
+
+structure:
+  title: "Component Design Specification"
+  description: "Comprehensive design documentation for UI components in Figma"
+  applies_to:
+    - component_design
+    - design_system_work
+    - ui_specifications
+
+fields:
+  - name: component_name
+    type: string
+    description: "Name of the component being designed"
+    example: "Primary Button"
+    
+  - name: component_category
+    type: enum
+    values: [Atoms, Molecules, Organisms, Templates, Pages]
+    default: Molecules
+    description: "Atomic design classification"
+    
+  - name: design_overview
+    type: markdown
+    description: "Component purpose and design rationale"
+    template: |
+      ## Component Purpose
+      {{ component_purpose }}
+      
+      ## Design Rationale
+      {{ design_rationale }}
+      
+      ## User Experience Goals
+      {{ ux_goals | bulletList }}
+      
+      ## Design Principles Applied
+      {{ design_principles | bulletList }}
+      
+  - name: visual_specifications
+    type: object
+    description: "Detailed visual design specifications"
+    template:
+      dimensions:
+        width: "{{ component_width }}"
+        height: "{{ component_height }}"
+        padding: "{{ component_padding }}"
+        margin: "{{ component_margin }}"
+        
+      colors:
+        primary: "{{ colors.primary }}"
+        secondary: "{{ colors.secondary }}"
+        text: "{{ colors.text }}"
+        background: "{{ colors.background }}"
+        border: "{{ colors.border }}"
+        
+      typography:
+        font_family: "{{ typography.font_family }}"
+        font_size: "{{ typography.font_size }}"
+        font_weight: "{{ typography.font_weight }}"
+        line_height: "{{ typography.line_height }}"
+        letter_spacing: "{{ typography.letter_spacing }}"
+        
+      borders:
+        border_radius: "{{ borders.radius }}"
+        border_width: "{{ borders.width }}"
+        border_style: "{{ borders.style }}"
+        
+  - name: component_variants
+    type: array
+    description: "Different variations of the component"
+    schema:
+      name: string
+      description: string
+      use_cases: array
+      visual_differences: string
+      
+  - name: component_states
+    type: array
+    description: "Interactive states of the component"
+    default:
+      - name: "Default"
+        description: "Normal state of the component"
+        trigger: "Initial render"
+        
+      - name: "Hover"
+        description: "Mouse over interaction"
+        trigger: "Mouse hover"
+        visual_changes: "Subtle color or elevation change"
+        
+      - name: "Active/Pressed"
+        description: "Component being clicked"
+        trigger: "Mouse down or touch"
+        visual_changes: "Pressed appearance"
+        
+      - name: "Focus"
+        description: "Keyboard focus state"
+        trigger: "Tab navigation or programmatic focus"
+        visual_changes: "Focus ring or outline"
+        
+      - name: "Disabled"
+        description: "Non-interactive state"
+        trigger: "Disabled prop set to true"
+        visual_changes: "Reduced opacity and no interactions"
+        
+  - name: responsive_behavior
+    type: object
+    description: "How component adapts to different screen sizes"
+    template:
+      mobile: "{{ responsive.mobile }}"
+      tablet: "{{ responsive.tablet }}"
+      desktop: "{{ responsive.desktop }}"
+      breakpoints: "{{ responsive.breakpoints }}"
+      scaling_strategy: "{{ responsive.scaling_strategy }}"
+      
+  - name: accessibility_requirements
+    type: object
+    description: "Accessibility considerations and requirements"
+    template:
+      aria_roles: "{{ accessibility.aria_roles }}"
+      aria_labels: "{{ accessibility.aria_labels }}"
+      keyboard_navigation: "{{ accessibility.keyboard_navigation }}"
+      screen_reader_support: "{{ accessibility.screen_reader_support }}"
+      color_contrast_ratio: "{{ accessibility.color_contrast_ratio }}"
+      focus_management: "{{ accessibility.focus_management }}"
+      
+  - name: usage_guidelines
+    type: markdown
+    description: "When and how to use this component"
+    template: |
+      ## When to Use
+      {{ usage_when_to_use }}
+      
+      ## When Not to Use
+      {{ usage_when_not_to_use }}
+      
+      ## Content Guidelines
+      {{ content_guidelines }}
+      
+      ## Layout Considerations
+      {{ layout_considerations }}
+      
+  - name: interaction_specifications
+    type: array
+    description: "Detailed interaction behaviors"
+    schema:
+      interaction: string
+      trigger: string
+      animation: string
+      duration: string
+      easing: string
+      
+  - name: design_tokens
+    type: object
+    description: "Design system tokens used in this component"
+    template:
+      color_tokens: "{{ design_tokens.colors }}"
+      spacing_tokens: "{{ design_tokens.spacing }}"
+      typography_tokens: "{{ design_tokens.typography }}"
+      shadow_tokens: "{{ design_tokens.shadows }}"
+      border_tokens: "{{ design_tokens.borders }}"
+      
+  - name: component_properties
+    type: array
+    description: "Configurable properties/props of the component"
+    schema:
+      property_name: string
+      type: string
+      default_value: string
+      description: string
+      options: array
+      
+  - name: related_components
+    type: array
+    description: "Other components that work with or relate to this one"
+    
+  - name: design_decisions
+    type: markdown
+    description: "Key design decisions and their rationale"
+    
+  - name: user_testing_notes
+    type: markdown
+    description: "Results from user testing and validation"
+
+figma_specific_fields:
+  - name: figma_file_url
+    type: string
+    description: "Link to the Figma file containing this component"
+    
+  - name: figma_component_key
+    type: string
+    description: "Figma component key for API access"
+    
+  - name: master_component_location
+    type: string
+    description: "Location of the master component in Figma"
+    
+  - name: component_instances
+    type: array
+    description: "Instances of this component in various screens"
+    
+  - name: auto_layout_configuration
+    type: object
+    description: "Figma Auto Layout settings"
+    template:
+      direction: "{{ auto_layout.direction }}"
+      spacing: "{{ auto_layout.spacing }}"
+      padding: "{{ auto_layout.padding }}"
+      alignment: "{{ auto_layout.alignment }}"
+      
+  - name: constraints_configuration
+    type: object
+    description: "Figma constraints for responsive behavior"
+    template:
+      horizontal: "{{ constraints.horizontal }}"
+      vertical: "{{ constraints.vertical }}"
+
+validation_rules:
+  required_fields: [component_name, component_category, design_overview, visual_specifications]
+  
+  conditional_requirements:
+    interactive_component:
+      condition: "component_states.length > 1"
+      requires: [interaction_specifications, accessibility_requirements]
+      
+    form_component:
+      condition: "component_category in ['input', 'select', 'form']"
+      requires: [validation_states, error_handling_design]
+
+quality_checklist:
+  design_quality:
+    - [ ] Component follows design system principles
+    - [ ] Visual hierarchy is clear and intentional
+    - [ ] Color choices meet accessibility standards
+    - [ ] Typography is consistent with design system
+    
+  specification_completeness:
+    - [ ] All variants are documented with use cases
+    - [ ] All interactive states are specified
+    - [ ] Responsive behavior is clearly defined
+    - [ ] Accessibility requirements are comprehensive
+    
+  usability:
+    - [ ] Usage guidelines are clear and actionable
+    - [ ] Component purpose is well-articulated
+    - [ ] Edge cases and limitations are documented
+    - [ ] Content guidelines help with implementation
+    
+  technical_readiness:
+    - [ ] Design tokens are properly defined
+    - [ ] Component properties map to implementation needs
+    - [ ] Interaction specifications are implementable
+    - [ ] Performance implications are considered
+
+handoff_checklist:
+  design_assets:
+    - [ ] All component variants are finalized
+    - [ ] Asset exports are prepared in required formats
+    - [ ] Icon assets are optimized and named consistently
+    - [ ] Image assets include multiple densities (1x, 2x, 3x)
+    
+  specifications:
+    - [ ] Measurements are accurate and complete
+    - [ ] Color values are specified in multiple formats
+    - [ ] Animation specifications include timing and easing
+    - [ ] Responsive breakpoints are clearly defined
+    
+  documentation:
+    - [ ] Component is documented in design system
+    - [ ] Usage examples are provided
+    - [ ] Do's and don'ts are illustrated
+    - [ ] Related components are cross-referenced
+
+collaboration_notes:
+  stakeholder_feedback:
+    - product_manager: "{{ feedback.product_manager }}"
+    - ux_researcher: "{{ feedback.ux_researcher }}"
+    - engineering_lead: "{{ feedback.engineering_lead }}"
+    - accessibility_expert: "{{ feedback.accessibility_expert }}"
+    
+  design_iterations:
+    - iteration_1: "{{ iterations.iteration_1 }}"
+    - iteration_2: "{{ iterations.iteration_2 }}"
+    - final_version: "{{ iterations.final_version }}"
+
+links:
+  figma_file: "{{ figma.file_url }}"
+  design_system: "{{ project.design_system_url }}"
+  prototype: "{{ figma.prototype_url }}"
+  user_research: "{{ project.research_url }}"
+
+references:
+  related_docs:
+    - /platforms/figma/template-guide.yml
+    - /templates/components/default.yml
+    - /tech-stacks/design/component-standards.yml

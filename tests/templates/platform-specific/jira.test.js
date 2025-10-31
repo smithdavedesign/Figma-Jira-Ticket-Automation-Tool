@@ -8,7 +8,7 @@ import { validateYamlFile } from '../yaml-validation.test.js';
 import { testTemplateVariableSubstitution } from '../variable-substitution.test.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const jiraTemplatePath = join(__dirname, '../../../core/data/templates/jira/component.yml');
+const jiraTemplatePath = join(__dirname, '../../../config/templates/platforms/jira/comp.yml');
 
 /**
  * Enhanced context data specifically for Jira testing

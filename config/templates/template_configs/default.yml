@@ -1,0 +1,287 @@
+meta:
+  platform: default
+  document_type: default
+  tech_stack: default
+  version: 1.0.0
+  last_updated: 2025-10-30
+  owner: platform-team
+  status: stable
+
+structure:
+  title: "Universal Documentation Template"
+  description: "Fallback template that provides basic structure for any documentation type"
+  applies_to:
+    - any_documentation_need
+    - fallback_scenarios
+    - custom_configurations
+
+universal_fields:
+  - name: title
+    type: string
+    required: true
+    description: "Clear, descriptive title for the document"
+    
+  - name: description
+    type: markdown
+    required: true
+    description: "Detailed description of what this document covers"
+    template: |
+      ## Overview
+      {{ overview }}
+      
+      ## Purpose
+      {{ purpose }}
+      
+      ## Scope
+      {{ scope }}
+      
+      ## Key Information
+      {{ key_information | bulletList }}
+      
+  - name: document_type
+    type: enum
+    values: [Component, Feature, Code, Service, Wiki, Custom]
+    default: Custom
+    description: "Type of documentation being created"
+    
+  - name: target_audience
+    type: array
+    description: "Who this documentation is intended for"
+    default: ["Developers", "Team Members"]
+    
+  - name: requirements
+    type: array
+    description: "Key requirements or criteria"
+    
+  - name: technical_details
+    type: yaml_block
+    description: "Technical specifications and details"
+    template: |
+      technology_stack: "{{ tech_stack }}"
+      dependencies: {{ dependencies | yamlList }}
+      configuration: {{ configuration }}
+      
+  - name: acceptance_criteria
+    type: array
+    description: "Conditions that must be met for completion"
+    default:
+      - "Requirements are clearly defined"
+      - "Implementation approach is documented"
+      - "Quality standards are met"
+      - "Documentation is complete and accurate"
+      
+  - name: resources
+    type: object
+    description: "Links to related resources and documentation"
+    template:
+      documentation: "{{ resources.documentation }}"
+      repositories: "{{ resources.repositories }}"
+      tools: "{{ resources.tools }}"
+      references: "{{ resources.references }}"
+      
+  - name: notes
+    type: markdown
+    description: "Additional notes, considerations, or context"
+    
+  - name: attachments
+    type: array
+    description: "Supporting files, diagrams, or resources"
+    
+  - name: tags
+    type: array
+    description: "Keywords for categorization and search"
+    
+  - name: priority
+    type: enum
+    values: [Critical, High, Medium, Low]
+    default: Medium
+    description: "Priority level for this work"
+    
+  - name: status
+    type: enum
+    values: [Draft, In Review, Approved, In Progress, Completed, On Hold]
+    default: Draft
+    description: "Current status of the work"
+
+platform_adaptations:
+  jira_fields:
+    - name: issue_type
+      type: enum
+      values: [Epic, Story, Task, Bug, Improvement]
+      default: Task
+      
+    - name: story_points
+      type: integer
+      range: [1, 21]
+      
+    - name: labels
+      type: array
+      
+    - name: components
+      type: array
+      
+  confluence_fields:
+    - name: space_key
+      type: string
+      
+    - name: page_template
+      type: string
+      
+    - name: related_pages
+      type: array
+      
+  figma_fields:
+    - name: design_file_url
+      type: string
+      
+    - name: prototype_url
+      type: string
+      
+    - name: design_specs
+      type: object
+      
+  wiki_fields:
+    - name: article_type
+      type: enum
+      values: [How-To, Reference, Explanation, Tutorial]
+      
+    - name: maintenance_schedule
+      type: string
+      
+    - name: content_owner
+      type: string
+
+validation_rules:
+  required_combinations:
+    - [title, description]
+    
+  minimum_content:
+    - title: "Must be at least 10 characters"
+    - description: "Must be at least 50 characters"
+    - requirements: "Must have at least 1 requirement"
+
+quality_checklist:
+  content_quality:
+    - [ ] Title clearly describes the content
+    - [ ] Description provides sufficient context
+    - [ ] Requirements are specific and measurable
+    - [ ] Technical details are accurate and complete
+    
+  completeness:
+    - [ ] All required fields are filled
+    - [ ] Acceptance criteria are testable
+    - [ ] Resources and links are valid
+    - [ ] Target audience is clearly identified
+    
+  usability:
+    - [ ] Content is well-organized and scannable
+    - [ ] Language is appropriate for target audience
+    - [ ] Next steps or actions are clear
+    - [ ] Contact information is provided where needed
+
+template_customization:
+  field_overrides:
+    description: "Platform-specific templates can override any universal field"
+    example: |
+      # In jira-specific config:
+      fields:
+        - name: description
+          type: markdown
+          jira_specific_formatting: true
+          
+  additional_fields:
+    description: "Platform-specific templates can add fields to universal ones"
+    example: |
+      # In react-specific config:
+      additional_fields:
+        - name: component_props
+          type: object
+          description: "React component properties"
+          
+  field_removal:
+    description: "Platform-specific templates can hide universal fields"
+    example: |
+      # In simple wiki config:
+      hidden_fields: [technical_details, story_points]
+
+automation_hooks:
+  template_variables:
+    context_aware:
+      - "{{ project.name }}": Current project name
+      - "{{ user.name }}": Current user
+      - "{{ date.today }}": Current date
+      - "{{ team.current }}": Current team context
+      
+    dynamic_content:
+      - "{{ requirements | length }}": Number of requirements
+      - "{{ tags | join(', ') }}": Comma-separated tags
+      - "{{ priority | lowercase }}": Priority in lowercase
+      
+  auto_population:
+    - created_by: "{{ user.name }}"
+    - created_date: "{{ date.today }}"
+    - last_updated: "{{ date.today }}"
+    - project_context: "{{ project.name }}"
+
+examples:
+  basic_task:
+    title: "Update Documentation for Authentication Flow"
+    description: |
+      ## Overview
+      Update the existing authentication flow documentation to reflect
+      recent changes in the OAuth2 implementation.
+      
+      ## Purpose
+      Ensure developers have accurate information about the current
+      authentication process and integration steps.
+      
+      ## Scope
+      - API documentation updates
+      - Code example updates  
+      - Integration guide revisions
+      
+    document_type: "Wiki"
+    target_audience: ["Backend Developers", "Integration Partners"]
+    requirements:
+      - "Document OAuth2 flow changes"
+      - "Update code examples"
+      - "Validate integration steps"
+      
+  feature_specification:
+    title: "User Profile Management Feature"
+    description: |
+      ## Overview
+      Implement comprehensive user profile management functionality
+      allowing users to view, edit, and manage their account information.
+      
+      ## Purpose
+      Provide users with self-service capabilities for profile management
+      while maintaining security and data integrity.
+      
+    document_type: "Feature"
+    requirements:
+      - "User can view current profile information"
+      - "User can edit profile fields"
+      - "Changes are validated and saved securely"
+      - "Audit trail is maintained for changes"
+
+fallback_behavior:
+  missing_platform_config:
+    description: "When platform-specific config is missing, use this template"
+    
+  missing_tech_stack:
+    description: "When tech stack standards are unavailable, provide generic structure"
+    
+  partial_configuration:
+    description: "Merge available configurations with this default template"
+
+links:
+  documentation: "{{ project.documentation_url || 'https://docs.company.com' }}"
+  support: "{{ project.support_url || 'https://support.company.com' }}"
+  repository: "{{ project.repository_url || 'https://github.com/company' }}"
+
+references:
+  related_docs:
+    - /platforms/*/template-guide.yml
+    - /templates/*/default.yml
+    - /tech-stacks/*/defaults.yml

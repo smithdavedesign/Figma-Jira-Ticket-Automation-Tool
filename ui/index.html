@@ -986,11 +986,9 @@ Examples:
         <label for="platform">Target Platform</label>
         <select id="platform" onchange="updateTemplateContext()">
           <option value="jira">🎫 Jira</option>
-          <option value="github">🐙 GitHub Issues</option>
           <option value="confluence">📄 Confluence</option>
-          <option value="linear">📏 Linear</option>
-          <option value="notion">📝 Notion</option>
-          <option value="wiki">📚 Wiki</option>
+          <option value="wiki">� Wiki</option>
+          <option value="figma">🎨 Figma</option>
         </select>
       </div>
 
@@ -1012,11 +1010,9 @@ Examples:
         <select id="documentType" onchange="updateTemplateContext()">
           <option value="component">🧩 Component</option>
           <option value="feature">✨ Feature</option>
-          <option value="code-simple">💻 Code (Simple)</option>
+          <option value="code">💻 Code</option>
           <option value="service">⚙️ Service</option>
-          <option value="page">📄 Page Template</option>
-          <option value="bug">🐛 Bug Fix</option>
-          <option value="epic">🎯 Epic</option>
+          <option value="wiki">� Wiki</option>
         </select>
       </div>
 
@@ -3357,7 +3353,7 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
       btn.disabled = true;
       
       try {
-        const platforms = ['jira', 'linear', 'github', 'notion', 'ui'];
+        const platforms = ['jira', 'confluence', 'wiki', 'figma'];
         const documentTypes = ['component', 'feature', 'code-simple'];
         const techStacks = ['react', 'vue', 'aem'];
         

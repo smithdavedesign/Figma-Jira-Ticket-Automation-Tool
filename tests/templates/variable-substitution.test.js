@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { findYamlFiles, validateYamlFile } from './yaml-validation.test.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const templatesDir = join(__dirname, '../../core/data/templates');
+const templatesDir = join(__dirname, '../../config/templates/platforms');
 
 /**
  * Mock context data for testing variable substitution

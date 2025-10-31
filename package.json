@@ -15,7 +15,6 @@
     "build:ts": "tsc -p config/tsconfig.json",
     "clean": "rm -f code.js",
     "lint": "eslint . --fix",
-    
     "test": "vitest",
     "test:run": "vitest run",
     "test:watch": "vitest watch",
@@ -27,16 +26,13 @@
     "test:mcp": "node tests/integration/test-standalone.mjs",
     "test:templates": "node scripts/test-orchestrator.js templates",
     "test:ai": "node scripts/test-orchestrator.js ai",
-    
     "monitor": "node scripts/monitor-dashboard.js",
     "health": "./scripts/health-check.sh",
     "validate": "npm run test && npm run build && echo '✅ All validation passed'",
-    
     "test:browser:full": "node scripts/browser-test-suite.js full",
     "test:browser:visual": "node scripts/browser-test-suite.js visual",
     "test:all:full": "node scripts/test-orchestrator.js all --full",
     "test:reports": "echo '📊 Opening test reports...' && find tests/test-results -name 'index.html' -exec open {} \\;",
-    
     "deploy": "./scripts/deploy-production.sh",
     "deploy:prod": "./scripts/deploy-production-comprehensive.sh production false false",
     "deploy:dev": "./scripts/deploy-production-comprehensive.sh development false true",
@@ -65,6 +61,10 @@
     "@eslint/js": "^9.37.0",
     "@figma/plugin-typings": "^1.118.0",
     "@playwright/test": "^1.56.1",
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.9",
+    "@types/js-yaml": "^4.0.9",
+    "@types/lodash": "^4.17.20",
     "@types/node": "^24.9.1",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
@@ -86,9 +86,15 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.2",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "fs-extra": "^11.3.2",
+    "inquirer": "^12.10.0",
     "ioredis": "^5.8.2",
+    "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21",
     "node-fetch": "^3.3.2"
   }
 }

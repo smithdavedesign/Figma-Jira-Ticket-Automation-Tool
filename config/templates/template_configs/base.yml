@@ -1,0 +1,136 @@
+# ======================================================
+# UNIVERSAL BASE TEMPLATE - YAML ANCHORS & INHERITANCE
+# Single source of truth for all template variables and structure
+# Works with any tech stack, platform, and document type
+# ======================================================
+
+# Base template definition - referenced by all other templates
+base: &base
+  variables:
+    # -----------------------------
+    # Project & component context
+    # -----------------------------
+    project_name: "{{ project.name || 'Project Name Not Found' }}"
+    component_name: "{{ figma.component_name || 'Component Name Not Found' }}"
+    component_type: "{{ figma.component_type || 'Component Type Not Found' }}"
+    issue_type: "{{ issue.type || 'Issue Type Not Found' }}"
+    priority: "{{ calculated.priority || 'Priority Not Found' }}"
+    labels: "{{ project.labels || ['Labels Not Found'] }}"
+    technologies: "{{ project.tech_stack || 'Technologies Not Found' }}"
+    story_points: "{{ calculated.story_points || 'Story Points Not Found' }}"
+    design_status: "{{ figma.design_status || 'Design Status Not Found' }}"
+
+    # -----------------------------
+    # Design / visual references
+    # -----------------------------
+    figma_url: "{{ figma.live_link || 'Figma URL Not Found' }}"
+    storybook_url: "{{ project.storybook_url || 'Storybook URL Not Found' }}"
+    wiki_url: "{{ project.wiki_url || 'Wiki URL Not Found' }}"
+    github_url: "{{ project.repository_url || 'GitHub URL Not Found' }}"
+    analytics_doc: "{{ project.analytics_url || 'Analytics Doc Not Found' }}"
+    screenshot_filename: "{{ figma.screenshot_filename || 'Screenshot Not Found' }}"
+    colors: "{{ figma.extracted_colors || 'Colors Not Found' }}"
+    typography: "{{ figma.extracted_typography || 'Typography Not Found' }}"
+
+    # -----------------------------
+    # Authoring / AEM context
+    # -----------------------------
+    authoring_notes: "{{ authoring.notes || 'Authoring Notes Not Found' }}"
+    touch_ui: "{{ authoring.touch_ui_required || 'Touch UI Info Not Found' }}"
+    cq_template: "{{ authoring.cq_template || 'CQ Template Not Found' }}"
+    component_path: "{{ authoring.component_path || 'Component Path Not Found' }}"
+
+  design:
+    figma_url: "{{ figma.live_link || 'Figma URL Not Found' }}"
+    storybook_url: "{{ project.storybook_url || 'Storybook URL Not Found' }}"
+    wiki_url: "{{ project.wiki_url || 'Wiki URL Not Found' }}"
+    github_url: "{{ project.repository_url || 'GitHub URL Not Found' }}"
+    screenshot: "{{ figma.screenshot_filename || 'Screenshot Not Found' }}"
+    design_status: "{{ figma.design_status || 'Design Status Not Found' }}"
+
+    # -----------------------------
+    # Core design tokens
+    # -----------------------------
+    colors: "{{ figma.extracted_colors || 'Colors Not Found' }}"
+    typography: "{{ figma.extracted_typography || 'Typography Not Found' }}"
+
+    # -----------------------------
+    # Layout / spacing
+    # -----------------------------
+    spacing:
+      base_unit: "{{ design.spacing.base_unit || 'Base Unit Not Found' }}"
+      margins: "{{ design.spacing.margins || ['Margins Not Found'] }}"
+      paddings: "{{ design.spacing.paddings || ['Paddings Not Found'] }}"
+      grid_columns: "{{ design.spacing.grid_columns || 'Grid Columns Not Found' }}"
+      grid_gutter: "{{ design.spacing.grid_gutter || 'Grid Gutter Not Found' }}"
+
+    # -----------------------------
+    # Component states / interactions
+    # -----------------------------
+    states:
+      hover: "{{ design.states.hover || 'Hover State Not Found' }}"
+      focus: "{{ design.states.focus || 'Focus State Not Found' }}"
+      active: "{{ design.states.active || 'Active State Not Found' }}"
+      disabled: "{{ design.states.disabled || 'Disabled State Not Found' }}"
+      error: "{{ design.states.error || 'Error State Not Found' }}"
+      success: "{{ design.states.success || 'Success State Not Found' }}"
+
+    # -----------------------------
+    # Accessibility guidance
+    # -----------------------------
+    accessibility:
+      contrast_ratio: "{{ design.accessibility.contrast_ratio || 'Contrast Ratio Not Found' }}"
+      keyboard_nav: "{{ design.accessibility.keyboard_nav || 'Keyboard Nav Info Not Found' }}"
+      aria_roles: "{{ design.accessibility.aria_roles || ['ARIA Roles Not Found'] }}"
+      screen_reader: "{{ design.accessibility.screen_reader || 'Screen Reader Info Not Found' }}"
+
+    # -----------------------------
+    # Motion / animation
+    # -----------------------------
+    motion:
+      duration: "{{ design.motion.duration || 'Motion Duration Not Found' }}"
+      easing: "{{ design.motion.easing || 'Motion Easing Not Found' }}"
+
+    # -----------------------------
+    # Responsive / breakpoints
+    # -----------------------------
+    breakpoints:
+      mobile: "{{ design.breakpoints.mobile || 'Mobile Breakpoint Not Found' }}"
+      tablet: "{{ design.breakpoints.tablet || 'Tablet Breakpoint Not Found' }}"
+      desktop: "{{ design.breakpoints.desktop || 'Desktop Breakpoint Not Found' }}"
+
+  resources:
+    - type: Figma
+      link: "{{ figma.live_link || 'Figma URL Not Found' }}"
+      notes: "Final design source"
+    - type: Storybook
+      link: "{{ project.storybook_url || 'Storybook URL Not Found' }}"
+      notes: "Reference for component states and interactions"
+    - type: Wiki / Technical Doc
+      link: "{{ project.wiki_url || 'Wiki URL Not Found' }}"
+      notes: "AEM field mapping, templates, and tech spec"
+    - type: GitHub
+      link: "{{ project.repository_url || 'GitHub URL Not Found' }}"
+      notes: "Feature branch or repo reference"
+    - type: Analytics / Tagging Spec
+      link: "{{ project.analytics_url || 'Analytics Doc Not Found' }}"
+      notes: "Add if tracking or data layer required"
+
+  authoring:
+    notes: "{{ authoring.notes || 'Authoring Notes Not Found' }}"
+    touch_ui_required: "{{ authoring.touch_ui_required || 'Touch UI Info Not Found' }}"
+    cq_template: "{{ authoring.cq_template || 'CQ Template Not Found' }}"
+    component_path: "{{ authoring.component_path || 'Component Path Not Found' }}"
+
+  # -----------------------------
+  # Logging / Validation Section
+  # -----------------------------
+  logging:
+    enabled: true
+    check_variables: true
+    check_design: true
+    check_authoring: true
+    message_if_missing: "⚠️ Field not filled in or missing"
+
+# Export base for inheritance
+template: *base

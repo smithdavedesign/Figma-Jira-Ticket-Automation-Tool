@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const templatesDir = join(__dirname, '../../core/data/templates');
+const templatesDir = join(__dirname, '../../config/templates/platforms');
 
 /**
  * Recursively find all .yaml and .yml files in templates directory

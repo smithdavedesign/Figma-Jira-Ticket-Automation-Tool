@@ -14,7 +14,7 @@
 import { Logger } from '../utils/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 import { RedisClient } from './redis-client.js';
-import { AdvancedTemplateEngine } from './templates/template-config.js';
+import { UniversalTemplateEngine } from '../template/UniversalTemplateEngine.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -28,9 +28,9 @@ export class TemplateManager {
     this.errorHandler = new ErrorHandler();
     this.redis = new RedisClient();
 
-    // Initialize template engine with templates directory
-    const templatesDir = join(__dirname, 'templates');
-    this.templateEngine = new AdvancedTemplateEngine(templatesDir);
+    // Initialize Universal Template Engine with config directory
+    const configDir = join(__dirname, '../../config/templates');
+    this.templateEngine = new UniversalTemplateEngine(configDir);
 
     this.config = {
       cacheTemplates: true,
@@ -51,13 +51,13 @@ export class TemplateManager {
   }
 
   /**
-   * Generate ticket using template system with Figma context
+   * Generate ticket using Universal Template System with Figma context
    */
   async generateTicket(params) {
     const { platform, documentType, componentName, techStack, figmaContext, requestData } = params;
     const startTime = Date.now();
 
-    this.logger.info(`🎫 Generating ${platform} ticket for ${componentName} using template system`);
+    this.logger.info(`🎫 Generating ${platform} ticket for ${componentName} using Universal Template System`);
 
     try {
       // Create cache key for this specific ticket configuration
@@ -74,9 +74,6 @@ export class TemplateManager {
         }
       }
 
-      // Load appropriate template
-      const template = await this.templateEngine.loadTemplate(platform, documentType);
-
       // Build context for template rendering
       const templateContext = this.buildTemplateContext({
         componentName,
@@ -87,11 +84,13 @@ export class TemplateManager {
         documentType
       });
 
-      // Render ticket using template
-      const renderedTicket = await this.templateEngine.renderTemplate(template, templateContext);
+      // Use Universal Template Engine to resolve and render template
+      const resolvedTemplate = await this.templateEngine.resolveTemplate(platform, documentType, techStack);
+      const renderedTicket = await this.templateEngine.renderTemplate(resolvedTemplate, templateContext);
 
-      this.logger.info('🔍 Template generated ticket:', {
-        template_id: template.template_id,
+      this.logger.info('🔍 Universal Template System generated ticket:', {
+        template_id: resolvedTemplate._meta?.cacheKey || `${platform}-${documentType}`,
+        resolution_path: resolvedTemplate._meta?.resolutionPath || 'fallback',
         contentLength: renderedTicket.length,
         preview: renderedTicket.substring(0, 200) + '...',
         contextKeys: Object.keys(templateContext)
@@ -101,13 +100,14 @@ export class TemplateManager {
       const ticket = {
         content: renderedTicket,
         metadata: {
-          template_id: template.template_id,
+          template_id: resolvedTemplate._meta?.cacheKey || `${platform}-${documentType}`,
+          resolution_path: resolvedTemplate._meta?.resolutionPath,
           platform,
           documentType,
           componentName,
           techStack,
           generatedAt: new Date().toISOString(),
-          source: 'template-manager'
+          source: 'universal-template-manager'
         }
       };
 
@@ -425,11 +425,42 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
   }
 
   /**
-   * List available templates
+   * List available templates from Universal Template System
    */
   async listTemplates() {
     try {
-      return await this.templateEngine.listAvailableTemplates();
+      // Get available templates from the Universal Template System
+      const platforms = ['jira', 'wiki', 'figma', 'storybook'];
+      const documentTypes = ['component', 'feature', 'service', 'authoring'];
+      const templates = [];
+
+      for (const platform of platforms) {
+        for (const documentType of documentTypes) {
+          try {
+            const resolvedTemplate = await this.templateEngine.resolveTemplate(platform, documentType, 'custom');
+            templates.push({
+              template_id: `${platform}-${documentType}`,
+              platform,
+              document_type: documentType,
+              resolution_path: resolvedTemplate._meta?.resolutionPath || 'fallback',
+              available: true,
+              description: `${platform} ${documentType} template with intelligent fallback`
+            });
+          } catch (error) {
+            // Template resolution failed, but we can still list it as unavailable
+            templates.push({
+              template_id: `${platform}-${documentType}`,
+              platform,
+              document_type: documentType,
+              resolution_path: 'error',
+              available: false,
+              description: `${platform} ${documentType} template (resolution failed)`
+            });
+          }
+        }
+      }
+
+      return templates;
     } catch (error) {
       this.logger.error('Failed to list templates:', error);
       return [];
@@ -679,7 +710,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
         markdown: `![${componentName} Component](${screenshotUrl})`,
         html: `<img src="${screenshotUrl}" alt="${componentName} Component" style="max-width: 100%; height: auto;" />`,
         jira: `!${screenshotUrl}|thumbnail!`,
-        notion: `![${componentName} Component](${screenshotUrl})`,
+        confluence: `!${screenshotUrl}|thumbnail!`,
         wiki: `[[File:${filename}|thumb|${componentName} Component]]`
       };
     }
@@ -688,7 +719,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
       markdown: `![${componentName} Component](${filename})`,
       html: `<img src="${filename}" alt="${componentName} Component" style="max-width: 100%; height: auto;" />`,
       jira: `!${filename}|thumbnail!`,
-      notion: `![${componentName} Component](${filename})`,
+      confluence: `!${filename}|thumbnail!`,
       wiki: `[[File:${filename}|thumb|${componentName} Component]]`
     };
   }

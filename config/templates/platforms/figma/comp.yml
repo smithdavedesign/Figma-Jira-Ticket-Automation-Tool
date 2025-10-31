@@ -1,0 +1,179 @@
+meta:
+  platform: figma
+  document_type: component
+  version: 1.0.0
+  last_updated: 2025-10-30
+  status: stable
+  inherits_from: base.yml
+
+# Template with base variable references
+template:
+  
+  # Wiki-specific overrides for components
+  title: "{{ figma.component_name }} Component Documentation"
+  document_type: "Component Guide"
+  tags: ["component", "ui", "{{ project.tech_stack.0 | lowercase }}"]
+  
+  # Content template for Wiki component documentation
+  content: |
+    # {{ figma.component_name }} Component
+    
+    > **Component Type**: {{ figma.component_type | default('UI Component') }}  
+    > **Tech Stack**: {{ project.tech_stack | join(', ') | default('React, TypeScript') }}  
+    > **Status**: {{ figma.design_status | default('Ready for Development') }}  
+    > **Last Updated**: {{ 'now' | date('%Y-%m-%d') }}
+    
+    ## Overview
+    
+    The **{{ figma.component_name }}** component provides [brief description of component purpose and functionality].
+    
+    ![Component Preview]({{ figma.screenshot_filename | default('component-preview.png') }})
+    
+    ### Quick Links
+    - 🎨 [Figma Design]({{ figma.live_link }})
+    - 📚 [Storybook Documentation]({{ storybook_url }})
+    - 💻 [GitHub Repository]({{ github_url }})
+    
+    ## Design Specifications
+    
+    {% if figma.extracted_colors %}
+    ### Color Palette
+    {{ figma.extracted_colors }}
+    {% endif %}
+    
+    {% if figma.extracted_typography %}
+    ### Typography
+    {{ figma.extracted_typography }}
+    {% endif %}
+    
+    ### Component States
+    - **Default**: Base component appearance
+    - **Hover**: Interactive feedback on mouse over
+    - **Focus**: Keyboard navigation state
+    - **Active**: Currently selected/pressed state
+    - **Disabled**: Non-interactive state
+    - **Error**: Error validation state
+    
+    ## Technical Implementation
+    
+    ### Installation
+    ```bash
+    npm install @{{ project.name | kebabCase }}/{{ figma.component_name | kebabCase }}
+    ```
+    
+    ### Basic Usage
+    ```tsx
+    import { {{ figma.component_name }} } from '@{{ project.name | kebabCase }}/{{ figma.component_name | kebabCase }}';
+    
+    function App() {
+      return (
+        <{{ figma.component_name }}
+          // Add common props here
+        />
+      );
+    }
+    ```
+    
+    ### Props API
+    
+    | Prop | Type | Default | Description |
+    |------|------|---------|-------------|
+    | `variant` | `string` | `'default'` | Visual variant of the component |
+    | `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | Component size |
+    | `disabled` | `boolean` | `false` | Disable component interactions |
+    | `className` | `string` | - | Additional CSS classes |
+    
+    ### Advanced Usage
+    ```tsx
+    <{{ figma.component_name }}
+      variant="primary"
+      size="large"
+      disabled={false}
+      className="custom-class"
+      onClick={(event) => console.log('Clicked!')}
+    />
+    ```
+    
+    ## Accessibility
+    
+    The {{ figma.component_name }} component follows WCAG 2.1 AA guidelines:
+    
+    - ✅ **Keyboard Navigation**: Full keyboard support
+    - ✅ **Screen Readers**: Proper ARIA attributes
+    - ✅ **Color Contrast**: Meets minimum contrast ratios
+    - ✅ **Focus Management**: Clear focus indicators
+    
+    ### ARIA Attributes
+    - `role`: Defines the component's semantic role
+    - `aria-label`: Provides accessible name
+    - `aria-describedby`: Links to description text
+    
+    ## Browser Support
+    
+    | Browser | Version | Support |
+    |---------|---------|---------|
+    | Chrome | 90+ | ✅ Full |
+    | Firefox | 88+ | ✅ Full |
+    | Safari | 14+ | ✅ Full |
+    | Edge | 90+ | ✅ Full |
+    | IE | 11 | ❌ Not Supported |
+    
+    ## Examples
+    
+    ### Basic Example
+    ```tsx
+    <{{ figma.component_name }}>
+      Basic component usage
+    </{{ figma.component_name }}>
+    ```
+    
+    ### With Custom Styling
+    ```tsx
+    <{{ figma.component_name }} 
+      className="my-custom-class"
+      style={{ marginBottom: '20px' }}
+    >
+      Custom styled component
+    </{{ figma.component_name }}>
+    ```
+    
+    ## Troubleshooting
+    
+    ### Common Issues
+    
+    **Issue**: Component not rendering correctly  
+    **Solution**: Check that all required props are provided and valid
+    
+    **Issue**: Styles not applying  
+    **Solution**: Ensure CSS imports are included in your build process
+    
+    **Issue**: TypeScript errors  
+    **Solution**: Verify prop types match the component's interface
+    
+    ## Related Components
+    
+    - [Button Component](../button/README.md) - For interactive actions
+    - [Input Component](../input/README.md) - For form controls
+    - [Card Component](../card/README.md) - For content containers
+    
+    {% if authoring.notes != 'Authoring Notes Not Found' %}
+    ## AEM Implementation
+    
+    {{ authoring.notes }}
+    
+    **AEM Configuration:**
+    - **Component Path**: {{ authoring.component_path }}
+    - **Template**: {{ authoring.cq_template }}
+    - **Touch UI**: {{ authoring.touch_ui_required }}
+    {% endif %}
+    
+    ## Resources
+    
+    {% for resource in resources %}
+    - [{{ resource.type }}]({{ resource.link }}) - {{ resource.notes }}
+    {% endfor %}
+    
+    ---
+    
+    **Generated**: {{ 'now' | date('%Y-%m-%d %H:%M') }} via Universal Template System  
+    **Template**: wiki/comp.yml → base.yml

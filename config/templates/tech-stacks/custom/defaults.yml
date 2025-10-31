@@ -1,0 +1,477 @@
+meta:
+  tech_stack: custom
+  version: 1.0.0
+  last_updated: 2025-10-30
+  status: stable
+
+standards:
+  overview:
+    name: "Custom Technology Stack"
+    description: "Flexible configuration for custom or mixed technology stacks"
+    approach: "Adaptable standards that can be customized per project"
+    
+  customization_options:
+    frontend_frameworks:
+      - "React"
+      - "Vue.js"
+      - "Angular"
+      - "Svelte"
+      - "Vanilla JavaScript"
+      - "Custom Framework"
+      
+    backend_technologies:
+      - "Node.js"
+      - "Python (Django/Flask)"
+      - "Java (Spring Boot)"
+      - "C# (.NET)"
+      - "Ruby on Rails"
+      - "PHP (Laravel/Symfony)"
+      - "Go"
+      - "Rust"
+      
+    styling_approaches:
+      - "CSS Modules"
+      - "Styled Components"
+      - "Tailwind CSS"
+      - "SCSS/Sass"
+      - "CSS-in-JS"
+      - "Vanilla CSS"
+      
+    testing_frameworks:
+      - "Jest"
+      - "Vitest"
+      - "Cypress"
+      - "Playwright"
+      - "Testing Library"
+      - "Custom Testing Setup"
+      
+  configuration_template:
+    project_setup:
+      name: "{{ project.name }}"
+      tech_stack:
+        frontend: "{{ project.frontend_framework | default('React') }}"
+        backend: "{{ project.backend_framework | default('Node.js') }}"
+        styling: "{{ project.styling_approach | default('CSS Modules') }}"
+        testing: "{{ project.testing_framework | default('Jest') }}"
+        database: "{{ project.database | default('PostgreSQL') }}"
+        
+      standards:
+        code_style: "{{ project.code_style | default('Prettier + ESLint') }}"
+        file_naming: "{{ project.file_naming | default('kebab-case') }}"
+        component_structure: "{{ project.component_structure | default('Feature-based') }}"
+        
+  best_practices:
+    universal_principles:
+      - "Consistent code formatting and style"
+      - "Comprehensive testing coverage"
+      - "Accessibility-first development"
+      - "Performance optimization"
+      - "Security best practices"
+      - "Documentation and comments"
+      
+    adaptable_patterns:
+      - "Component-based architecture"
+      - "Separation of concerns"
+      - "Error handling and user feedback"
+      - "Responsive design implementation"
+      - "State management patterns"
+      - "API integration standards"
+
+# Universal Component Template
+component_template:
+  generic_component: |
+    <!-- Generic component template - adapt based on your framework -->
+    
+    {% if project.frontend_framework == 'React' %}
+    // React Component
+    import React from 'react';
+    import styles from './{{ figma.component_name }}.module.css';
+    
+    export interface {{ figma.component_name }}Props {
+    {% for prop in figma.properties %}
+      {{ prop.name }}{{ prop.required ? '' : '?' }}: {{ prop.type | default('string') }};
+    {% endfor %}
+    }
+    
+    export const {{ figma.component_name }}: React.FC<{{ figma.component_name }}Props> = ({
+    {% for prop in figma.properties %}
+      {{ prop.name }},
+    {% endfor %}
+    }) => {
+      return (
+        <div className={styles.{{ figma.component_name | lowercase }}}>
+          {/* Component content */}
+        </div>
+      );
+    };
+    
+    {% elif project.frontend_framework == 'Vue.js' %}
+    <!-- Vue Component -->
+    <template>
+      <div class="{{ figma.component_name | lowercase }}">
+        <!-- Component content -->
+      </div>
+    </template>
+    
+    <script setup lang="ts">
+    interface Props {
+    {% for prop in figma.properties %}
+      {{ prop.name }}{{ prop.required ? '' : '?' }}: {{ prop.type | default('string') }};
+    {% endfor %}
+    }
+    
+    const props = defineProps<Props>();
+    </script>
+    
+    <style scoped>
+    .{{ figma.component_name | lowercase }} {
+      /* Component styles */
+    }
+    </style>
+    
+    {% elif project.frontend_framework == 'Angular' %}
+    // Angular Component
+    import { Component, Input } from '@angular/core';
+    
+    @Component({
+      selector: 'app-{{ figma.component_name | lowercase }}',
+      template: `
+        <div class="{{ figma.component_name | lowercase }}">
+          <!-- Component content -->
+        </div>
+      `,
+      styleUrls: ['./{{ figma.component_name | lowercase }}.component.css']
+    })
+    export class {{ figma.component_name }}Component {
+    {% for prop in figma.properties %}
+      @Input() {{ prop.name }}{{ prop.required ? '' : '?' }}: {{ prop.type | default('string') }};
+    {% endfor %}
+    }
+    
+    {% else %}
+    // Custom Framework Component Template
+    // Adapt this template based on your specific framework requirements
+    
+    class {{ figma.component_name }} {
+      constructor(props) {
+    {% for prop in figma.properties %}
+        this.{{ prop.name }} = props.{{ prop.name }};
+    {% endfor %}
+      }
+      
+      render() {
+        return `
+          <div class="{{ figma.component_name | lowercase }}">
+            <!-- Component content -->
+          </div>
+        `;
+      }
+    }
+    {% endif %}
+    
+  generic_styles: |
+    /* Universal CSS - adapt based on your styling approach */
+    
+    {% if project.styling_approach == 'CSS Modules' %}
+    .{{ figma.component_name | lowercase }} {
+      /* Component styles using CSS Modules */
+    {% for token in design_tokens.spacing %}
+      --{{ token.name }}: {{ token.value }}px;
+    {% endfor %}
+    {% for token in design_tokens.colors %}
+      --{{ token.name }}: {{ token.value }};
+    {% endfor %}
+    }
+    
+    {% elif project.styling_approach == 'Styled Components' %}
+    import styled from 'styled-components';
+    
+    export const {{ figma.component_name }}Wrapper = styled.div`
+      /* Component styles using Styled Components */
+    {% for token in design_tokens.spacing %}
+      --{{ token.name }}: {{ token.value }}px;
+    {% endfor %}
+    {% for token in design_tokens.colors %}
+      --{{ token.name }}: {{ token.value }};
+    {% endfor %}
+    `;
+    
+    {% elif project.styling_approach == 'Tailwind CSS' %}
+    <!-- Use Tailwind utility classes -->
+    <div class="
+      {{ tailwind.base_classes | default('p-4 rounded-lg') }}
+      {{ tailwind.responsive_classes | default('md:p-6 lg:p-8') }}
+      {{ tailwind.color_classes | default('bg-white text-gray-900') }}
+    ">
+      <!-- Component content -->
+    </div>
+    
+    {% else %}
+    /* Custom styling approach */
+    .{{ figma.component_name | lowercase }} {
+      /* Adapt these styles to your preferred approach */
+      display: {{ css.display | default('block') }};
+      padding: {{ design_tokens.spacing.md | default('16px') }};
+      background-color: {{ design_tokens.colors.background | default('#ffffff') }};
+      border-radius: {{ design_tokens.borders.radius | default('4px') }};
+    }
+    {% endif %}
+    
+  generic_test: |
+    {% if project.testing_framework == 'Jest' %}
+    // Jest Testing
+    import { {{ figma.component_name }} } from './{{ figma.component_name }}';
+    
+    describe('{{ figma.component_name }}', () => {
+      test('renders correctly', () => {
+        // Test implementation based on your framework
+      });
+      
+      test('handles props correctly', () => {
+        // Props testing
+      });
+      
+      test('meets accessibility requirements', () => {
+        // Accessibility testing
+      });
+    });
+    
+    {% elif project.testing_framework == 'Vitest' %}
+    // Vitest Testing
+    import { describe, test, expect } from 'vitest';
+    import { {{ figma.component_name }} } from './{{ figma.component_name }}';
+    
+    describe('{{ figma.component_name }}', () => {
+      test('renders correctly', () => {
+        // Test implementation
+      });
+    });
+    
+    {% elif project.testing_framework == 'Cypress' %}
+    // Cypress E2E Testing
+    describe('{{ figma.component_name }} Component', () => {
+      beforeEach(() => {
+        cy.visit('/components/{{ figma.component_name | lowercase }}');
+      });
+      
+      it('displays correctly', () => {
+        cy.get('[data-testid="{{ figma.component_name | lowercase }}"]')
+          .should('be.visible');
+      });
+      
+      it('handles user interactions', () => {
+        // Interaction testing
+      });
+    });
+    
+    {% else %}
+    // Custom Testing Framework
+    // Adapt this template to your testing setup
+    
+    test('{{ figma.component_name }} component', () => {
+      // Your custom test implementation
+    });
+    {% endif %}
+
+# Documentation Templates
+documentation_template:
+  readme: |
+    # {{ figma.component_name }} Component
+    
+    ## Overview
+    {{ figma.description | default('Component description') }}
+    
+    ## Tech Stack
+    - **Frontend**: {{ project.frontend_framework }}
+    - **Styling**: {{ project.styling_approach }}
+    - **Testing**: {{ project.testing_framework }}
+    
+    ## Installation
+    ```bash
+    # Install dependencies
+    {{ project.package_manager | default('npm') }} install
+    
+    # Run development server
+    {{ project.package_manager | default('npm') }} run dev
+    
+    # Run tests
+    {{ project.package_manager | default('npm') }} test
+    ```
+    
+    ## Usage
+    ```{{ project.frontend_framework | lowercase }}
+    {% if project.frontend_framework == 'React' %}
+    import { {{ figma.component_name }} } from './components/{{ figma.component_name }}';
+    
+    function App() {
+      return (
+        <{{ figma.component_name }}
+    {% for prop in figma.properties %}
+          {{ prop.name }}={{ prop.example_value | default('"example"') }}
+    {% endfor %}
+        />
+      );
+    }
+    {% else %}
+    // Usage example for {{ project.frontend_framework }}
+    // Adapt based on your framework
+    {% endif %}
+    ```
+    
+    ## Props/Configuration
+    {% for prop in figma.properties %}
+    ### `{{ prop.name }}`
+    - **Type**: `{{ prop.type | default('string') }}`
+    - **Required**: {{ prop.required | default('false') }}
+    - **Default**: `{{ prop.default | default('undefined') }}`
+    - **Description**: {{ prop.description | default('Property description') }}
+    {% endfor %}
+    
+    ## Development
+    
+    ### File Structure
+    ```
+    {{ figma.component_name | lowercase }}/
+    ├── {{ figma.component_name }}.{{ project.file_extension | default('jsx') }}
+    ├── {{ figma.component_name }}.{{ project.style_extension | default('css') }}
+    ├── {{ figma.component_name }}.test.{{ project.test_extension | default('js') }}
+    └── README.md
+    ```
+    
+    ### Customization
+    This component can be customized by:
+    - Modifying the CSS variables for styling
+    - Extending the props interface for additional functionality  
+    - Adding new variants through the style system
+    
+    ## Accessibility
+    - ✅ Keyboard navigation support
+    - ✅ Screen reader compatibility
+    - ✅ WCAG 2.1 AA compliance
+    - ✅ Focus management
+    
+    ## Browser Support
+    - Chrome (latest)
+    - Firefox (latest)
+    - Safari (latest)
+    - Edge (latest)
+    {{ project.additional_browsers | default('') }}
+    
+    ## Contributing
+    1. Fork the repository
+    2. Create a feature branch
+    3. Make your changes
+    4. Add tests for new functionality
+    5. Run the test suite
+    6. Submit a pull request
+    
+    ## License
+    {{ project.license | default('MIT') }}
+    
+  configuration_guide: |
+    # Custom Stack Configuration Guide
+    
+    ## Setting Up Your Project
+    
+    ### 1. Define Your Tech Stack
+    Update your project configuration:
+    
+    ```yaml
+    # config/project.yml
+    project:
+      name: "{{ project.name }}"
+      frontend_framework: "{{ project.frontend_framework }}"
+      backend_framework: "{{ project.backend_framework }}"
+      styling_approach: "{{ project.styling_approach }}"
+      testing_framework: "{{ project.testing_framework }}"
+    ```
+    
+    ### 2. Customize Component Templates
+    Modify the templates to match your coding standards:
+    
+    - Update file naming conventions
+    - Adjust code formatting preferences
+    - Configure linting and formatting rules
+    - Set up project-specific patterns
+    
+    ### 3. Configure Design Tokens
+    ```yaml
+    # config/design-tokens.yml
+    design_tokens:
+      colors:
+        primary: "{{ design_tokens.colors.primary }}"
+        secondary: "{{ design_tokens.colors.secondary }}"
+      spacing:
+        sm: "{{ design_tokens.spacing.sm }}"
+        md: "{{ design_tokens.spacing.md }}"
+        lg: "{{ design_tokens.spacing.lg }}"
+    ```
+    
+    ## Framework-Specific Setup
+    
+    ### React Setup
+    - Configure Create React App or Vite
+    - Set up TypeScript configuration
+    - Install testing dependencies
+    - Configure Storybook (optional)
+    
+    ### Vue.js Setup
+    - Configure Vue CLI or Vite
+    - Set up TypeScript/JavaScript preference
+    - Install Vue Testing Library
+    - Configure component documentation
+    
+    ### Angular Setup
+    - Use Angular CLI for project setup
+    - Configure component and service generation
+    - Set up unit and e2e testing
+    - Configure Angular Material (optional)
+    
+    ### Custom Framework Setup
+    - Define your build pipeline
+    - Set up development server
+    - Configure testing environment
+    - Document custom patterns and conventions
+    
+    ## Best Practices for Custom Stacks
+    
+    ### Code Organization
+    - Keep related files together
+    - Use consistent naming conventions
+    - Separate concerns appropriately
+    - Document architectural decisions
+    
+    ### Testing Strategy
+    - Write tests that focus on behavior
+    - Mock external dependencies
+    - Test accessibility requirements
+    - Maintain good test coverage
+    
+    ### Performance Considerations
+    - Optimize bundle size
+    - Implement lazy loading where appropriate
+    - Use efficient rendering techniques
+    - Monitor performance metrics
+    
+    ## Extending the Template System
+    
+    ### Adding New Frameworks
+    1. Create framework-specific templates
+    2. Update the configuration options
+    3. Add framework-specific best practices
+    4. Test with real projects
+    
+    ### Custom Template Variables
+    ```yaml
+    # Add custom variables to your templates
+    custom_variables:
+      api_base_url: "{{ project.api_base_url }}"
+      theme_provider: "{{ project.theme_provider }}"
+      analytics_tracking: "{{ project.analytics_tracking }}"
+    ```
+    
+    ### Integration with CI/CD
+    - Automate template generation
+    - Include in build pipelines
+    - Set up quality gates
+    - Deploy documentation automatically

@@ -1,0 +1,108 @@
+meta:
+  platform: wiki
+  document_type: code
+  version: 1.0.0
+  last_updated: 2025-10-30
+  status: stable
+  inherits_from: base.yml
+
+template:
+  title: "{{ figma.component_name }} Code Documentation"
+  document_type: "Technical Guide"
+  tags: ["code", "implementation", "{{ project.tech_stack.0 | lowercase }}"]
+  
+  content: |
+    # {{ figma.component_name }} Implementation Guide
+    
+    > **Implementation**: {{ figma.component_type | default('Code Implementation') }}  
+    > **Tech Stack**: {{ project.tech_stack | join(', ') | default('React, TypeScript') }}  
+    > **Status**: {{ figma.design_status | default('Ready for Implementation') }}
+    
+    ## Code Overview
+    
+    Technical implementation guide for the **{{ figma.component_name }}** component/feature.
+    
+    ## Architecture
+    
+    ### File Structure
+    ```
+    src/{{ figma.component_name | kebabCase }}/
+    ├── index.ts                    # Main exports
+    ├── {{ figma.component_name }}.tsx # Implementation
+    ├── {{ figma.component_name }}.styles.ts # Styles
+    ├── {{ figma.component_name }}.test.tsx  # Tests
+    ├── hooks/                      # Custom hooks
+    ├── utils/                      # Utilities
+    └── types.ts                    # TypeScript types
+    ```
+    
+    ### Core Implementation
+    ```tsx
+    import React from 'react';
+    import { {{ figma.component_name }}Props } from './types';
+    import { Styled{{ figma.component_name }} } from './{{ figma.component_name }}.styles';
+    
+    export const {{ figma.component_name }}: React.FC<{{ figma.component_name }}Props> = ({
+      // props
+    }) => {
+      return (
+        <Styled{{ figma.component_name }}>
+          {/* Implementation */}
+        </Styled{{ figma.component_name }}>
+      );
+    };
+    ```
+    
+    ### Type Definitions
+    ```tsx
+    export interface {{ figma.component_name }}Props {
+      variant?: 'default' | 'primary' | 'secondary';
+      size?: 'small' | 'medium' | 'large';
+      disabled?: boolean;
+      className?: string;
+    }
+    ```
+    
+    ### Styling Implementation
+    ```tsx
+    import styled from 'styled-components';
+    
+    export const Styled{{ figma.component_name }} = styled.div`
+      /* Component styles using design tokens */
+    `;
+    ```
+    
+    ## Testing
+    
+    ### Unit Tests
+    ```tsx
+    import { render, screen } from '@testing-library/react';
+    import { {{ figma.component_name }} } from './{{ figma.component_name }}';
+    
+    describe('{{ figma.component_name }}', () => {
+      it('renders correctly', () => {
+        render(<{{ figma.component_name }} />);
+        // Test assertions
+      });
+    });
+    ```
+    
+    ### Integration Tests
+    ```tsx
+    // Integration test examples
+    ```
+    
+    ## Performance Considerations
+    
+    - Code splitting strategies
+    - Bundle size optimization
+    - Runtime performance tips
+    
+    ## Resources
+    
+    {% for resource in resources %}
+    - [{{ resource.type }}]({{ resource.link }}) - {{ resource.notes }}
+    {% endfor %}
+    
+    ---
+    **Generated**: {{ 'now' | date('%Y-%m-%d %H:%M') }} via Universal Template System

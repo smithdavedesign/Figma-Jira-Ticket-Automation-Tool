@@ -1,0 +1,248 @@
+meta:
+  platform: jira
+  document_type: services
+  tech_stack: aem
+  version: 1.0.0
+  last_updated: 2025-10-30
+  owner: aem-team
+  status: stable
+
+structure:
+  title: "AEM OSGi Service Implementation"
+  description: "Jira ticket for implementing AEM OSGi services with proper configuration and testing"
+  applies_to:
+    - service_development
+    - backend_implementation
+    - osgi_components
+
+fields:
+  - name: summary
+    type: string
+    description: "Brief service description"
+    example: "[SERVICE] Implement User Profile Management Service"
+    
+  - name: service_type
+    type: enum
+    values: [Business Service, Integration Service, Utility Service, Event Handler, Workflow Process]
+    default: Business Service
+    description: "Type of OSGi service being implemented"
+    
+  - name: description
+    type: markdown
+    description: "Detailed service requirements and implementation plan"
+    template: |
+      ## Service Overview
+      {{ service_purpose }}
+      
+      ## Business Requirements
+      {{ business_requirements }}
+      
+      ## Technical Architecture
+      - **Service Interface**: `{{ service_package }}.{{ service_name }}`
+      - **Implementation Class**: `{{ service_package }}.impl.{{ service_name }}Impl`
+      - **Configuration Interface**: `{{ service_package }}.config.{{ service_name }}Configuration`
+      - **OSGi Annotations**: Component, Service, Reference, Activate
+      
+      ## Integration Points
+      {{ integration_points | bulletList }}
+      
+      ## Configuration Requirements
+      {{ configuration_requirements | bulletList }}
+      
+      ## Acceptance Criteria
+      {{ acceptance_criteria | bulletList }}
+      
+  - name: acceptance_criteria
+    type: array
+    description: "Service completion criteria"
+    default:
+      - "Service interface is properly defined with JavaDoc"
+      - "Implementation follows AEM OSGi best practices"
+      - "Configuration interface includes all required properties"
+      - "Service is properly registered and activated"
+      - "Unit tests achieve 95%+ coverage"
+      - "Integration tests validate service behavior"
+      - "Service handles errors gracefully with proper logging"
+      - "Performance requirements are met"
+      - "Service is documented in technical wiki"
+      
+  - name: technical_specifications
+    type: yaml_block
+    description: "AEM-specific implementation details"
+    template: |
+      service_registration:
+        interface: "{{ service_package }}.{{ service_name }}"
+        immediate: true
+        configuration_policy: "REQUIRE"
+        service_ranking: 0
+        
+      osgi_dependencies:
+        - ResourceResolverFactory: "Required for JCR access"
+        - SlingSettingsService: "Environment detection"
+        - QueryBuilder: "JCR queries if needed"
+        - EventAdmin: "Event publishing if needed"
+        
+      configuration_properties:
+        - name: service_enabled
+          type: boolean
+          default: true
+          description: "Enable/disable service"
+        - name: cache_ttl_seconds
+          type: int
+          default: 300
+          description: "Cache time-to-live"
+          
+      performance_requirements:
+        - response_time: "< 100ms for cached operations"
+        - throughput: "> 1000 operations/second"
+        - memory_usage: "< 50MB heap allocation"
+        
+      error_handling:
+        - exception_hierarchy: "{{ service_name }}Exception hierarchy"
+        - fallback_strategy: "Graceful degradation approach"
+        - retry_logic: "Exponential backoff for transient failures"
+        
+  - name: dependencies
+    type: array
+    description: "Service dependencies and prerequisites"
+    
+  - name: external_integrations
+    type: array
+    description: "External systems or APIs this service integrates with"
+    
+  - name: data_access_patterns
+    type: object
+    description: "JCR/database access patterns"
+    template:
+      repository_access: "{{ repository_access_type }}"
+      query_patterns: "{{ query_patterns }}"
+      caching_strategy: "{{ caching_strategy }}"
+      
+  - name: story_points
+    type: integer
+    range: [2, 21]
+    description: "Development effort estimate"
+    
+  - name: labels
+    type: array
+    default:
+      - "service"
+      - "aem"
+      - "osgi"
+      - "backend"
+      - "{{ service_name | lowercase }}"
+      
+  - name: components
+    type: array
+    description: "Jira project components"
+    default: ["Backend", "AEM Services"]
+    
+  - name: fix_versions
+    type: array
+    description: "Target release versions"
+
+validation_rules:
+  required_fields: [summary, description, acceptance_criteria, technical_specifications]
+  
+  conditional_requirements:
+    integration_service:
+      condition: "service_type == 'Integration Service'"
+      requires: [external_integrations, circuit_breaker_config, monitoring_requirements]
+      
+    workflow_process:
+      condition: "service_type == 'Workflow Process'"
+      requires: [workflow_model_config, payload_processing_logic]
+
+automation_hooks:
+  aem_integration:
+    auto_populate:
+      - service_package: "{{ project.base_package }}.services"
+      - bundle_symbolic_name: "{{ project.artifact_id }}.core"
+      
+  maven_integration:
+    auto_generate:
+      - service_interface: "Java interface with proper annotations"
+      - implementation_class: "OSGi component implementation"
+      - configuration_interface: "ObjectClassDefinition for configuration"
+      - unit_test_template: "JUnit 5 test class with mocks"
+      
+  jenkins_integration:
+    auto_trigger:
+      - code_quality_check: "SonarQube analysis"
+      - integration_tests: "AEM testing client validation"
+
+quality_checklist:
+  implementation:
+    - [ ] Service follows AEM OSGi development patterns
+    - [ ] All dependencies are properly injected via @Reference
+    - [ ] Configuration is externalized and documented
+    - [ ] Service lifecycle is properly managed
+    
+  error_handling:
+    - [ ] All checked exceptions are properly handled
+    - [ ] Unchecked exceptions are caught and logged
+    - [ ] Service degradation is graceful
+    - [ ] Resource cleanup is implemented
+    
+  performance:
+    - [ ] Service operations are optimized for performance
+    - [ ] Caching is implemented where appropriate
+    - [ ] Database queries are efficient
+    - [ ] Memory usage is monitored and controlled
+    
+  testing:
+    - [ ] Unit tests cover all service methods
+    - [ ] Mock objects are used for dependencies
+    - [ ] Integration tests validate OSGi container behavior
+    - [ ] Performance tests validate SLA requirements
+    
+  documentation:
+    - [ ] Service interface is documented with JavaDoc
+    - [ ] Configuration options are documented
+    - [ ] Integration patterns are documented
+    - [ ] Troubleshooting guide is created
+
+monitoring_requirements:
+  metrics:
+    - service_invocation_count: "Number of service calls"
+    - service_response_time: "Response time percentiles"
+    - service_error_rate: "Percentage of failed calls"
+    - cache_hit_ratio: "Cache effectiveness metric"
+    
+  health_checks:
+    - service_availability: "Service registration and health"
+    - configuration_validity: "Configuration parameter validation"
+    - dependency_health: "External dependency availability"
+    
+  alerting:
+    - error_rate_threshold: "> 5% error rate over 5 minutes"
+    - response_time_threshold: "> 500ms P95 over 10 minutes"
+    - service_unavailable: "Service not registered in OSGi"
+
+deployment_considerations:
+  osgi_bundle:
+    - bundle_version: "Semantic versioning for bundle"
+    - package_imports: "Proper OSGi package imports"
+    - service_exports: "Exported service interfaces"
+    
+  configuration_deployment:
+    - config_locations: "/apps/{{ project.name }}/config/"
+    - environment_specific: "Author vs Publish configurations"
+    - configuration_validation: "Startup validation of config values"
+    
+  rollback_strategy:
+    - service_disabling: "Disable service via configuration"
+    - bundle_rollback: "Previous bundle version restoration"
+    - data_migration: "Rollback data changes if needed"
+
+links:
+  aem_documentation: "{{ project.aem_docs_url }}"
+  osgi_console: "{{ project.aem_url }}/system/console"
+  service_monitoring: "{{ project.monitoring_url }}"
+  confluence_design: "{{ project.confluence_url }}"
+
+references:
+  related_docs:
+    - /tech-stacks/aem/service-standards.yml
+    - /platforms/jira/template-guide.yml
+    - /templates/services/default.yml

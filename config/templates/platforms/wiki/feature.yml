@@ -1,0 +1,111 @@
+meta:
+  platform: wiki
+  document_type: feature
+  version: 1.0.0
+  last_updated: 2025-10-30
+  status: stable
+  inherits_from: base.yml
+
+template:
+  title: "{{ figma.component_name }} Feature Documentation"
+  document_type: "Feature Guide"
+  tags: ["feature", "functionality", "{{ project.tech_stack.0 | lowercase }}"]
+  
+  content: |
+    # {{ figma.component_name }} Feature
+    
+    > **Feature Type**: {{ figma.component_type | default('User Feature') }}  
+    > **Tech Stack**: {{ project.tech_stack | join(', ') | default('React, TypeScript') }}  
+    > **Status**: {{ figma.design_status | default('Ready for Development') }}
+    
+    ## Feature Overview
+    
+    The **{{ figma.component_name }}** feature enables users to [feature description and primary value proposition].
+    
+    ![Feature Flow]({{ figma.screenshot_filename | default('feature-flow.png') }})
+    
+    ### User Story
+    **As a** [user type]  
+    **I want** to use the {{ figma.component_name }} feature  
+    **So that** I can [achieve specific goal]
+    
+    ## Feature Specifications
+    
+    ### Core Functionality
+    - Primary feature capability
+    - Secondary feature capabilities  
+    - Integration points with existing features
+    
+    ### User Experience Flow
+    1. User initiates feature interaction
+    2. System processes user input
+    3. Feature provides feedback/results
+    4. User completes desired action
+    
+    ### Technical Architecture
+    ```
+    {{ figma.component_name }}/
+    ├── components/     # UI components
+    ├── hooks/         # React hooks
+    ├── services/      # API services
+    ├── utils/         # Utilities
+    └── types/         # TypeScript types
+    ```
+    
+    ## Implementation Guide
+    
+    ### Prerequisites
+    - List required dependencies
+    - System requirements
+    - Access permissions needed
+    
+    ### Setup Instructions
+    ```bash
+    # Installation steps
+    npm install @{{ project.name }}/{{ figma.component_name | kebabCase }}
+    ```
+    
+    ### Configuration
+    ```tsx
+    // Configuration example
+    const featureConfig = {
+      enabled: true,
+      options: {
+        // feature options
+      }
+    };
+    ```
+    
+    ## API Reference
+    
+    ### Main Functions
+    | Function | Parameters | Returns | Description |
+    |----------|------------|---------|-------------|
+    | `initialize()` | `config: Config` | `Promise<void>` | Initialize feature |
+    | `execute()` | `params: Params` | `Promise<Result>` | Execute main functionality |
+    
+    ## Examples
+    
+    ### Basic Usage
+    ```tsx
+    import { {{ figma.component_name }}Feature } from '@{{ project.name }}/features';
+    
+    function MyComponent() {
+      const feature = use{{ figma.component_name }}Feature();
+      
+      return (
+        <div>
+          {/* Feature implementation */}
+        </div>
+      );
+    }
+    ```
+    
+    ## Resources
+    
+    {% for resource in resources %}
+    - [{{ resource.type }}]({{ resource.link }}) - {{ resource.notes }}
+    {% endfor %}
+    
+    ---
+    **Generated**: {{ 'now' | date('%Y-%m-%d %H:%M') }} via Universal Template System
