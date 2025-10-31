@@ -150,22 +150,24 @@ automation_hooks:
 
 quality_checklist:
   implementation:
-    - [ ] Component follows React best practices
-    - [ ] TypeScript interfaces are comprehensive
-    - [ ] Props are properly validated
-    - [ ] Error boundaries are implemented where needed
+    - "Component follows React best practices"
+    - "TypeScript interfaces are comprehensive"
+    - "Props are properly validated"
+    - "Error boundaries are implemented where needed"
     
   testing:
-    - [ ] Unit tests cover all component variants
-    - [ ] Integration tests validate user interactions
-    - [ ] Accessibility tests pass automated checks
-    - [ ] Visual regression tests are configured
+    
+    - "Unit tests cover all component variants"
+    - "Integration tests validate user interactions"
+    - "Accessibility tests pass automated checks"
+    - "Visual regression tests are configured"
     
   documentation:
-    - [ ] Storybook stories demonstrate all use cases
-    - [ ] Props are documented with JSDoc
-    - [ ] Usage examples are provided
-    - [ ] Migration guide exists if replacing existing component
+    
+    - "Storybook stories demonstrate all use cases"
+    - "Props are documented with JSDoc"
+    - "Usage examples are provided"
+    - "Migration guide exists if replacing existing component"
 
 links:
   figma_design: "{{ figma.file_url }}"

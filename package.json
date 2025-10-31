@@ -23,7 +23,9 @@
     "test:ai": "node scripts/test-orchestrator.js ai",
     "monitor": "node scripts/monitor-dashboard.js",
     "health": "./scripts/health-check.sh",
-    "validate": "npm run test && npm run build && echo '✅ All validation passed'",
+    "validate": "npm run test && npm run build && npm run validate:yaml && echo '✅ All validation passed'",
+    "validate:yaml": "node scripts/validate-yaml.js",
+    "fix:yaml": "node scripts/fix-yaml.js",
     "package": "npm run build && echo '🚀 Plugin ready for Figma Desktop'",
     "release": "npm run build && npm run test && echo '🎉 Plugin tested and ready!'"
   },
@@ -58,7 +60,8 @@
     "nodemon": "^3.1.10",
     "playwright": "^1.56.1",
     "typescript": "^5.0.0",
-    "vitest": "^4.0.2"
+    "vitest": "^4.0.2",
+    "yaml-lint": "^1.7.0"
   },
   "figma": {
     "manifest": "manifest.json",

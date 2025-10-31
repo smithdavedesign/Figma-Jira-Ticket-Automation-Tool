@@ -162,22 +162,24 @@ validation_rules:
 
 quality_checklist:
   content_quality:
-    - [ ] Title clearly describes the content
-    - [ ] Description provides sufficient context
-    - [ ] Requirements are specific and measurable
-    - [ ] Technical details are accurate and complete
+    - "Title clearly describes the content"
+    - "Description provides sufficient context"
+    - "Requirements are specific and measurable"
+    - "Technical details are accurate and complete"
     
   completeness:
-    - [ ] All required fields are filled
-    - [ ] Acceptance criteria are testable
-    - [ ] Resources and links are valid
-    - [ ] Target audience is clearly identified
+    
+    - "All required fields are filled"
+    - "Acceptance criteria are testable"
+    - "Resources and links are valid"
+    - "Target audience is clearly identified"
     
   usability:
-    - [ ] Content is well-organized and scannable
-    - [ ] Language is appropriate for target audience
-    - [ ] Next steps or actions are clear
-    - [ ] Contact information is provided where needed
+    
+    - "Content is well-organized and scannable"
+    - "Language is appropriate for target audience"
+    - "Next steps or actions are clear"
+    - "Contact information is provided where needed"
 
 template_customization:
   field_overrides:
