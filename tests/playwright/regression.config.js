@@ -19,7 +19,7 @@ export default defineConfig({
     ['junit', { outputFile: '../test-results/playwright-reports/regression-results.xml' }]
   ],
   use: {
-    baseURL: 'http://localhost:8101',
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure'

@@ -33,7 +33,11 @@ const mockContextData = {
     tech_stack: ['React', 'TypeScript'],
     component_prefix: 'UI',
     testing_framework: 'Jest',
-    community_url: 'https://community.example.com'
+    community_url: 'https://community.example.com',
+    // Add missing URL variables that templates expect
+    component_library_url: 'https://storybook.company.com',
+    accessibility_url: 'https://accessibility.company.com',
+    testing_standards_url: 'https://testing.company.com'
   },
   
   // Calculated values
@@ -41,9 +45,12 @@ const mockContextData = {
     priority: 'High',
     story_points: 5,
     hours: 8,
-    confidence: 'High',
+    confidence: 0.85,
     risk_factors: ['Complex state management'],
-    similar_components: ['Button', 'Input']
+    similar_components: ['Button', 'Input'],
+    // Add missing calculated variables that templates expect
+    complexity: 'medium',
+    design_analysis: 'Interactive component with multiple states and click handling requiring structured implementation.'
   },
   
   // Authoring data

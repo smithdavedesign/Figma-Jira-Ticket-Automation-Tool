@@ -122,7 +122,12 @@ export class TemplateManager {
       return result;
 
     } catch (error) {
-      this.logger.error('❌ Template ticket generation failed:', error);
+      this.logger.error('❌ Template ticket generation failed:', {
+        error: error.message,
+        stack: error.stack,
+        params: { platform, documentType, componentName },
+        contextKeys: Object.keys(templateContext || {})
+      });
 
       // Fallback to basic template
       return this.generateFallbackTicket(params, error);
