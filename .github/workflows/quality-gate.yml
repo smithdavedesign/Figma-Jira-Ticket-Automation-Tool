@@ -61,7 +61,7 @@ jobs:
       run: npm run build:ts
 
     - name: Smoke tests
-      run: npm run test:browser:smoke
+      run: npm run test:browser
       env:
         CI: true
         NODE_ENV: test

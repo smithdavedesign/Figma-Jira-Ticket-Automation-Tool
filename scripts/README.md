@@ -19,7 +19,7 @@ This directory contains essential build and testing scripts for the Figma AI Tic
   - Supports: `npm run test:templates`, `npm run test:ai`
 
 - **`browser-test-suite.js`** - Browser-based integration tests
-  - Usage: `npm run test:browser` or `npm run test:browser:smoke`
+  - Usage: `npm run test:browser` (runs smoke tests by default)
   - Tests live Figma plugin functionality
 
 ### Monitoring
