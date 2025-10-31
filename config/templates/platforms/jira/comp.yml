@@ -23,7 +23,7 @@ template:
     
     **📋 Quick Details:**
     - **Component Type**: {{ figma.component_type | default('UI Component') }}
-    - **Tech Stack**: {{ project.tech_stack | join(', ') | default('React, TypeScript') }}
+    - **Tech Stack**: {% if project.tech_stack %}{{ project.tech_stack | join(', ') }}{% else %}🔧 *Enhancement Needed: Tech stack not specified*{% endif %}
     - **Priority**: {{ calculated.priority | default('Medium') }}
     - **Story Points**: {{ calculated.story_points | default('5') }}
     - **Design Status**: {{ figma.design_status | default('Ready for Development') }}
@@ -33,16 +33,23 @@ template:
     **🔗 Figma Design**: [View Component]({{ figma.live_link }})
     **📸 Screenshot**: {{ figma.screenshot_markdown.jira | default('!screenshot.png|thumbnail!') }}
     
-    {% if figma.extracted_colors %}
     **🎨 Design Tokens**:
+    {% if figma.extracted_colors %}
     - **Colors**: {{ figma.extracted_colors }}
+    {% else %}
+    - **Colors**: 🔧 *Enhancement Needed: Run enhanced context extraction for color tokens*
     {% endif %}
     {% if figma.extracted_typography %}
     - **Typography**: {{ figma.extracted_typography }}
+    {% else %}
+    - **Typography**: 🔧 *Enhancement Needed: Run enhanced context extraction for typography*
     {% endif %}
     {% if calculated.design_analysis %}
     
     **🎯 Design Analysis**: {{ calculated.design_analysis }}
+    {% else %}
+    
+    **🎯 Design Analysis**: 🔧 *Enhancement Needed: Use AI-powered analysis or enhanced context extraction for detailed design insights*
     {% endif %}
     
     ## ✅ Acceptance Criteria
@@ -58,9 +65,15 @@ template:
     ## 🔧 Technical Requirements
     
     **Implementation Stack:**
+    {% if project.tech_stack %}
     {% for tech in project.tech_stack %}
     - {{ tech }}
     {% endfor %}
+    {% else %}
+    - 🔧 *Enhancement Needed: Specify tech stack in request*
+    - React (assumed)
+    - TypeScript (recommended)
+    {% endif %}
     
     **Component Structure:**
     ```
@@ -80,10 +93,20 @@ template:
     - **Confidence Level**: {{ calculated.confidence * 100 }}%
     {% if calculated.risk_factors %}
     - **Risk Factors**: {{ calculated.risk_factors | join(', ') }}
+    {% else %}
+    - **Risk Factors**: 🔧 *Enhancement Needed: Use AI analysis for risk assessment*
     {% endif %}
     {% if calculated.similar_components %}
     - **Similar Components**: {{ calculated.similar_components | join(', ') }}
+    {% else %}
+    - **Similar Components**: 🔧 *Enhancement Needed: Component similarity analysis not available*
     {% endif %}
+    {% else %}
+    ## 📊 Complexity Analysis
+    
+    **{{ calculated.complexity | capitalize | default('Medium') }} Complexity Component** ({{ calculated.hours | default('4-6') }} hours estimated)
+    - **Confidence Level**: {{ calculated.confidence * 100 | default('75') }}%
+    - **Analysis**: 🔧 *Enhancement Available: Use AI-powered analysis for detailed complexity assessment*
     {% endif %}
     
     ## 📋 Implementation Tasks
