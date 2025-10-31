@@ -5,9 +5,10 @@
   "type": "module",
   "main": "code.js",
   "scripts": {
-    "start": "node app/main.js",
-    "start:dev": "nodemon --watch app/ --watch core/ --watch config/ --ext js app/main.js",
-    "start:mvc": "node app/main.js",
+    "start": "node app/server.js",
+    "start:dev": "nodemon --watch app/ --watch core/ --watch config/ --ext js app/server.js",
+    "start:legacy": "node app/archive/main.js.legacy",
+    "start:legacy:dev": "nodemon --watch app/ --watch core/ --watch config/ --ext js app/archive/main.js.legacy",
     "start:test-server": "node tests/playwright/test-server.cjs",
     "dev": "npm run start:dev",
     "build": "./scripts/build-simple.sh",
