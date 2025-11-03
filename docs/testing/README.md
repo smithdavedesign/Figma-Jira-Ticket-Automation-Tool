@@ -15,13 +15,11 @@
 
 | **File** | **Purpose** | **Testing Scope** | **Status** |
 |----------|-------------|-------------------|------------|
-| **`TESTING_GUIDE.md`** | **🆕 ENHANCED** Complete testing guide with comprehensive runner & live monitoring | All Testing Types | ✅ Production Ready |
-| **`COMPREHENSIVE_TESTING_GUIDE.md`** | Complete testing methodology and procedures | All Testing Types | ✅ Production Ready |
-| **`TESTING_INFRASTRUCTURE_UPDATE.md`** | **🆕** Latest testing infrastructure enhancements and organized structure | Infrastructure | ✅ Complete |
-| **`CI_CD_VALIDATION_REPORT.md`** | CI/CD pipeline validation and automation testing | DevOps Testing | ✅ Verified |
-| **`PRODUCTION_TESTING_GUIDE.md`** | Production environment testing and validation | Production Testing | ✅ Active |
-| **`COMPREHENSIVE_TEST_REPORT_2025-10-23.md`** | Latest comprehensive test execution report | Full System Testing | ✅ Complete |
-| **`FIGMA_LIVE_TEST_SUCCESS.md`** | Live Figma integration testing results | Figma Integration | ✅ Verified |
+| **`COMPREHENSIVE_TESTING_GUIDE.md`** | **🆕 ENHANCED** Complete testing methodology with Figma setup | All Testing Types + Figma | ✅ Production Ready |
+| **`FIGMA_TESTING_GUIDE.md`** | Figma Desktop plugin testing setup and procedures | Figma Plugin Testing | ✅ Available |
+| **`COMPREHENSIVE_TEST_RESULTS_NOV_2025.md`** | Latest comprehensive test execution results | Full System Testing | ✅ Current |
+| **`PRODUCTION_TESTING_STRATEGY.md`** | Production environment testing and validation | Production Testing | ✅ Active |
+| **`VALIDATION_QUALITY_ASSURANCE.md`** | Quality assurance and validation procedures | QA & Validation | ✅ Complete |
 
 ---
 

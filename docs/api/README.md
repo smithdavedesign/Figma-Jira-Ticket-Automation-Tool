@@ -15,6 +15,7 @@
 |----------|-------------|--------------|------------|
 | **`DESIGN_INTELLIGENCE_API.md`** | Design intelligence and AI orchestration API | Internal API | ✅ Active |
 | **`MCP_SERVER_API.md`** | Model Context Protocol server API | External Integration | ✅ Active |
+| **`UNIFIED_GENERATE_API_SUCCESS.md`** | **🆕** Unified ticket generation API consolidation report | Core API | ✅ Complete |
 
 ---
 

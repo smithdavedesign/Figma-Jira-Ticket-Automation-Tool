@@ -178,17 +178,51 @@ docs/testing/archive/                          # Historical documentation
 
 ---
 
+## 🎯 **Live Figma Plugin Testing**
+
+### **Prerequisites for Figma Desktop Testing:**
+- ✅ **Server Running**: http://localhost:3000 (health: healthy)
+- ✅ **Plugin Built**: code.js (46KB) and ui/index.html ready
+- ✅ **Manifest Configured**: Proper permissions and localhost:3000 access
+- ✅ **Test Suites Passing**: Browser (100%), E2E (75%+)
+
+### **Quick Figma Setup:**
+1. **Open Figma Desktop** (required for plugin development)
+2. **Import Plugin**: Plugins → Development → Import plugin from manifest
+3. **Select File**: Choose `manifest.json` from project root
+4. **Start Server**: Ensure `npm start` is running in terminal
+5. **Run Plugin**: Right-click → Plugins → Design Intelligence Platform
+
+### **Plugin Testing Checklist:**
+- [ ] Plugin loads without errors
+- [ ] Server connection established (check console)
+- [ ] Component selection works
+- [ ] Screenshot capture functions
+- [ ] Ticket generation produces output
+- [ ] UI is responsive and functional
+
+### **Plugin Functionality Tests:**
+- 🎨 **Design Analysis**: Automatically analyzes selected components
+- 🤖 **AI Ticket Generation**: Creates Jira tickets using AI
+- 📸 **Screenshot Capture**: Takes high-quality screenshots
+- 🔄 **Multiple Strategies**: AI, Template, Enhanced, Legacy modes
+- 📊 **Real-time Preview**: Shows generated tickets before saving
+
 ## 🔧 **Troubleshooting**
 
 ### **Common Issues**
 1. **Server not running:** `npm run health:start`
 2. **Port conflicts:** Check if port 3000 is available
 3. **Test failures:** Check server status in Ultimate Test Suite → System Tab
+4. **Plugin won't load**: Check console for TypeScript/JavaScript errors
+5. **Network errors**: Verify localhost:3000 in manifest devAllowedDomains
+6. **No screenshots**: Ensure Figma API permissions are granted
 
 ### **Getting Help**
 - **Documentation:** `docs/testing/` folder
 - **Test Reports:** Available in Ultimate Test Suite
 - **Historical Reference:** `tests/archive/` and `docs/testing/archive/`
+- **Figma-Specific**: `docs/testing/FIGMA_TESTING_GUIDE.md` for detailed setup
 
 ---
 
