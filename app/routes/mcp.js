@@ -32,6 +32,11 @@ export class MCPRoutes extends BaseRoute {
     router.get('/api/mcp/context', this.asyncHandler(this.handleMCPContext.bind(this)));
     router.post('/api/mcp/context/update', this.asyncHandler(this.handleMCPContextUpdate.bind(this)));
 
+    // Additional routes for Swagger UI compatibility (without /api prefix)
+    router.get('/mcp/status', this.asyncHandler(this.handleMCPStatus.bind(this)));
+    router.get('/mcp/tools', this.asyncHandler(this.handleMCPTools.bind(this)));
+    router.get('/mcp/resources', this.asyncHandler(this.handleMCPResources.bind(this)));
+
     this.logger.info('✅ MCP routes registered');
   }
 
@@ -43,40 +48,36 @@ export class MCPRoutes extends BaseRoute {
     this.logAccess(req, 'mcpStatus');
 
     try {
-      const mcpAdapter = this.getService('mcpAdapter');
-      const contextManager = this.getService('contextManager', false); // Optional for Phase 7
-      const memoryManager = this.getService('memoryManager', false); // Optional for Phase 8
+      // Get required services for design context
+      const screenshotService = this.getService('screenshotService', false);
+      const figmaSessionManager = this.getService('figmaSessionManager', false);
+      const visualAIService = this.getService('visualAIService', false);
 
       const statusData = {
         server: {
-          name: 'Figma AI Ticket Generator MCP Server',
+          name: 'Figma Design Context MCP Server',
           version: '1.0.0',
           protocol: 'Model Context Protocol',
-          architecture: 'Refactored Service Architecture',
+          architecture: 'Design Context Only - No Ticket Generation',
           phase: 'Phase 8: Server Architecture Refactoring',
           status: 'active'
         },
         capabilities: {
           tools: true,
           resources: true,
-          prompts: true,
-          contextManagement: !!contextManager, // Phase 7 feature
-          memoryPersistence: !!memoryManager, // Phase 8 feature
-          multiModalSupport: true,
-          visualAI: true
+          prompts: false, // Not used for design context
+          figmaIntegration: true,
+          screenshotCapture: true,
+          designContextExtraction: true,
+          designTokenAnalysis: true
         },
         services: {
-          mcpAdapter: !!mcpAdapter,
-          contextManager: !!contextManager,
-          memoryManager: !!memoryManager,
-          ticketService: !!this.getService('ticketService', false),
           screenshotService: !!this.getService('screenshotService', false),
-          visualAIService: !!this.getService('visualAIService', false)
+          figmaSessionManager: !!this.getService('figmaSessionManager', false),
+          visualAIService: !!this.getService('visualAIService', false) // For design analysis only
         },
         tools: await this.getMCPTools(),
         resources: await this.getMCPResources(),
-        context: contextManager ? await contextManager.getStatus() : null,
-        memory: memoryManager ? await memoryManager.getStatus() : null,
         timestamp: new Date().toISOString()
       };
 
@@ -84,7 +85,7 @@ export class MCPRoutes extends BaseRoute {
 
     } catch (error) {
       this.logger.error('Error getting MCP status:', error);
-      this.sendError(res, 500, 'Failed to get MCP status', error.message);
+      this.sendError(res, 'Failed to get MCP status', 500, { originalError: error.message });
     }
   }
 
@@ -98,18 +99,21 @@ export class MCPRoutes extends BaseRoute {
     const { clientCapabilities, protocolVersion } = req.body;
 
     try {
-      const mcpAdapter = this.getService('mcpAdapter');
-
-      const initResult = await mcpAdapter.initialize({
-        clientCapabilities: clientCapabilities || {},
-        protocolVersion: protocolVersion || '1.0.0',
-        serverCapabilities: {
+      // Initialize MCP server capabilities for design context only
+      const initResult = {
+        protocolVersion: protocolVersion || '2024-11-05',
+        capabilities: {
           tools: { listChanged: true },
           resources: { subscribe: true, listChanged: true },
-          prompts: { listChanged: true },
           logging: { level: 'info' }
-        }
-      });
+        },
+        serverInfo: {
+          name: 'Figma Design Context MCP Server',
+          version: '1.0.0',
+          description: 'Provides Figma design context and metadata for MCP clients'
+        },
+        instructions: 'This MCP server provides Figma design context only. Use capture_figma_screenshot and extract_figma_context tools for design analysis.'
+      };
 
       this.logger.info('✅ MCP server initialized successfully');
 
@@ -117,7 +121,7 @@ export class MCPRoutes extends BaseRoute {
 
     } catch (error) {
       this.logger.error('Error initializing MCP server:', error);
-      this.sendError(res, 500, 'Failed to initialize MCP server', error.message);
+      this.sendError(res, 'Failed to initialize MCP server', 500, { originalError: error.message });
     }
   }
 
@@ -134,36 +138,61 @@ export class MCPRoutes extends BaseRoute {
 
     } catch (error) {
       this.logger.error('Error getting MCP tools:', error);
-      this.sendError(res, 500, 'Failed to get MCP tools', error.message);
+      this.sendError(res, 'Failed to get MCP tools', 500, { originalError: error.message });
     }
   }
 
   /**
    * Handle MCP tool call requests
-   * Execute MCP tool with provided arguments
+   * Execute MCP tool with provided arguments - Design Context Only
    */
   async handleMCPToolCall(req, res) {
-    this.logAccess(req, 'mcpToolCall');
-
     const { tool, arguments: toolArgs } = req.body;
+    
+    this.logAccess(req, 'mcpToolCall', { 
+      mcpTool: tool,
+      hasArguments: !!toolArgs,
+      protocolVersion: 'MCP-2024-11-05'
+    });
 
     // Validate required fields
-    const validation = this.validateRequired(req.body, ['tool']);
-    if (!validation.valid) {
-      return this.sendError(res, 400, 'Validation failed', validation.errors);
+    try {
+      this.validateRequired(req.body, ['tool']);
+    } catch (error) {
+      return this.sendError(res, 'Validation failed: ' + error.message, 400);
     }
 
     try {
-      const mcpAdapter = this.getService('mcpAdapter');
-      const result = await mcpAdapter.callTool(tool, toolArgs || {});
+      let result;
 
-      this.logger.info(`✅ MCP tool '${tool}' executed successfully`);
+      // Execute design context tools directly
+      switch (tool) {
+      case 'capture_figma_screenshot':
+        result = await this.executeCaptureScreenshot(toolArgs);
+        break;
+      case 'extract_figma_context':
+        result = await this.executeExtractContext(toolArgs);
+        break;
+      case 'get_figma_design_tokens':
+        result = await this.executeGetDesignTokens(toolArgs);
+        break;
+      default:
+        return this.sendError(res, `Unknown MCP tool: ${tool}`, 400,
+          'Available tools: capture_figma_screenshot, extract_figma_context, get_figma_design_tokens');
+      }
 
+      this.logger.info(`✅ MCP tool '${tool}' executed successfully`, {
+        tool,
+        resultType: typeof result,
+        hasContent: result && (result.content || result.data || result.image),
+        protocolType: 'MCP',
+        executionTime: Date.now() - req.startTime || 0
+      });
       this.sendSuccess(res, result, `MCP tool '${tool}' executed successfully`);
 
     } catch (error) {
       this.logger.error(`Error executing MCP tool '${tool}':`, error);
-      this.sendError(res, 500, `Failed to execute MCP tool '${tool}'`, error.message);
+      this.sendError(res, `Failed to execute MCP tool '${tool}'`, 500, { originalError: error.message });
     }
   }
 
@@ -180,7 +209,7 @@ export class MCPRoutes extends BaseRoute {
 
     } catch (error) {
       this.logger.error('Error getting MCP resources:', error);
-      this.sendError(res, 500, 'Failed to get MCP resources', error.message);
+      this.sendError(res, 'Failed to get MCP resources', 500, { originalError: error.message });
     }
   }
 
@@ -205,7 +234,7 @@ export class MCPRoutes extends BaseRoute {
 
     } catch (error) {
       this.logger.error('Error getting MCP context:', error);
-      this.sendError(res, 500, 'Failed to get MCP context', error.message);
+      this.sendError(res, 'Failed to get MCP context', 500, { originalError: error.message });
     }
   }
 
@@ -232,38 +261,24 @@ export class MCPRoutes extends BaseRoute {
 
     } catch (error) {
       this.logger.error('Error updating MCP context:', error);
-      this.sendError(res, 500, 'Failed to update MCP context', error.message);
+      this.sendError(res, 'Failed to update MCP context', 500, { originalError: error.message });
     }
   }
 
   /**
-   * Get available MCP tools
-   * @returns {Array} Array of MCP tools
+   * Get available MCP tools (Design Context Only)
+   * @returns {Array} Array of MCP tools focused on Figma design context
    */
   async getMCPTools() {
     return [
       {
-        name: 'generate_ticket',
-        description: 'Generate JIRA tickets from Figma designs using AI',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            description: { type: 'string', description: 'Ticket description' },
-            strategy: { type: 'string', enum: ['AI', 'Template', 'Enhanced', 'Legacy'] },
-            includeScreenshot: { type: 'boolean', default: false },
-            figmaUrl: { type: 'string', description: 'Optional Figma URL for context' }
-          },
-          required: ['description']
-        }
-      },
-      {
         name: 'capture_figma_screenshot',
-        description: 'Capture screenshots from Figma URLs',
+        description: 'Capture screenshots from Figma URLs for design context',
         inputSchema: {
           type: 'object',
           properties: {
             figmaUrl: { type: 'string', description: 'Figma URL to capture' },
-            includeAnalysis: { type: 'boolean', default: false },
+            includeMetadata: { type: 'boolean', default: true, description: 'Include design metadata' },
             format: { type: 'string', enum: ['base64', 'buffer'], default: 'base64' },
             quality: { type: 'string', enum: ['low', 'medium', 'high'], default: 'high' }
           },
@@ -271,71 +286,204 @@ export class MCPRoutes extends BaseRoute {
         }
       },
       {
-        name: 'analyze_visual_design',
-        description: 'Perform AI-powered visual analysis of designs',
+        name: 'extract_figma_context',
+        description: 'Extract design context and metadata from Figma URLs',
         inputSchema: {
           type: 'object',
           properties: {
-            imageData: { type: 'string', description: 'Base64 encoded image data' },
-            analysisType: { type: 'string', enum: ['comprehensive', 'accessibility', 'design-insights'] },
-            includeElementDetails: { type: 'boolean', default: true }
+            figmaUrl: { type: 'string', description: 'Figma URL to analyze' },
+            contextType: { type: 'string', enum: ['design-tokens', 'components', 'structure', 'full'], default: 'full' },
+            includeFrameData: { type: 'boolean', default: true }
           },
-          required: ['imageData']
+          required: ['figmaUrl']
         }
       },
       {
-        name: 'test_ai_scenario',
-        description: 'Run AI testing scenarios for validation',
+        name: 'get_figma_design_tokens',
+        description: 'Extract design tokens and system variables from Figma',
         inputSchema: {
           type: 'object',
           properties: {
-            scenario: { type: 'string', description: 'Test scenario description' },
-            strategy: { type: 'string', enum: ['AI', 'Template', 'Enhanced', 'Legacy'] },
-            includeScreenshot: { type: 'boolean', default: false }
+            figmaUrl: { type: 'string', description: 'Figma URL to analyze' },
+            tokenTypes: {
+              type: 'array',
+              items: { type: 'string', enum: ['colors', 'typography', 'spacing', 'effects', 'all'] },
+              default: ['all']
+            }
           },
-          required: ['scenario']
+          required: ['figmaUrl']
         }
       }
     ];
   }
 
   /**
-   * Get available MCP resources
-   * @returns {Array} Array of MCP resources
+   * Get available MCP resources (Design Context Only)
+   * @returns {Array} Array of MCP resources focused on Figma design context
    */
   async getMCPResources() {
     return [
       {
-        uri: 'figma://templates',
-        name: 'Ticket Templates',
-        description: 'JIRA ticket templates for different scenarios',
+        uri: 'figma://design-system',
+        name: 'Design System Context',
+        description: 'Design system components, tokens, and guidelines',
         mimeType: 'application/json'
       },
       {
-        uri: 'figma://test-scenarios',
-        name: 'Test Scenarios',
-        description: 'AI testing scenarios and test cases',
+        uri: 'figma://component-library',
+        name: 'Component Library',
+        description: 'Figma component definitions and specifications',
         mimeType: 'application/json'
       },
       {
-        uri: 'figma://performance-metrics',
-        name: 'Performance Metrics',
-        description: 'System performance and usage metrics',
+        uri: 'figma://design-tokens',
+        name: 'Design Tokens',
+        description: 'Design system tokens (colors, typography, spacing)',
         mimeType: 'application/json'
       },
       {
-        uri: 'figma://context-intelligence',
-        name: 'Context Intelligence (Phase 7)',
-        description: 'Context management and intelligence features',
+        uri: 'figma://frame-metadata',
+        name: 'Frame Metadata',
+        description: 'Frame structure and component relationships',
         mimeType: 'application/json'
       },
       {
-        uri: 'figma://memory-persistence',
-        name: 'Memory Persistence (Phase 8)',
-        description: 'Long-term memory and learning capabilities',
+        uri: 'figma://accessibility-context',
+        name: 'Accessibility Context',
+        description: 'Design accessibility guidelines and annotations',
         mimeType: 'application/json'
       }
     ];
+  }
+
+  /**
+   * Execute capture screenshot tool
+   * @private
+   */
+  async executeCaptureScreenshot(args) {
+    const { figmaUrl, includeMetadata = true, format = 'base64', quality = 'high' } = args;
+
+    if (!figmaUrl) {
+      throw new Error('figmaUrl is required');
+    }
+
+    this.logger.info(`📸 [MCP PROTOCOL] Screenshot tool execution started`, {
+      protocol: 'MCP',
+      tool: 'capture_figma_screenshot',
+      figmaUrl: figmaUrl.substring(0, 50) + '...',
+      format,
+      quality
+    });
+
+    try {
+      const screenshotService = this.getService('screenshotService');
+      
+      // Use the correct API format for ScreenshotService
+      const result = await screenshotService.captureScreenshot(figmaUrl, null, {
+        format,
+        quality,
+        includeMetadata
+      });
+
+      return {
+        tool: 'capture_figma_screenshot',
+        success: true,
+        data: result,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      // Handle errors gracefully and provide meaningful feedback
+      return {
+        tool: 'capture_figma_screenshot',
+        success: false,
+        error: `Screenshot capture failed: ${error.message}`,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Execute extract context tool
+   * @private
+   */
+  async executeExtractContext(args) {
+    const { figmaUrl, contextType = 'full', includeFrameData = true } = args;
+
+    if (!figmaUrl) {
+      throw new Error('figmaUrl is required');
+    }
+
+    try {
+      const figmaSessionManager = this.getService('figmaSessionManager');
+      const visualAIService = this.getService('visualAIService', false);
+
+      // Extract basic Figma context
+      const context = await figmaSessionManager.extractContext({
+        url: figmaUrl,
+        contextType,
+        includeFrameData
+      });
+
+      // Add visual analysis if available
+      if (visualAIService && contextType === 'full') {
+        try {
+          const visualAnalysis = await visualAIService.analyzeDesign(context);
+          context.visualAnalysis = visualAnalysis;
+        } catch (error) {
+          this.logger.warn('Visual analysis failed, continuing without it:', error.message);
+        }
+      }
+
+      return {
+        tool: 'extract_figma_context',
+        success: true,
+        data: context,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      // Handle errors gracefully
+      return {
+        tool: 'extract_figma_context',
+        success: false,
+        error: `Context extraction failed: ${error.message}`,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Execute get design tokens tool
+   * @private
+   */
+  async executeGetDesignTokens(args) {
+    const { figmaUrl, tokenTypes = ['all'] } = args;
+
+    if (!figmaUrl) {
+      throw new Error('figmaUrl is required');
+    }
+
+    try {
+      const figmaSessionManager = this.getService('figmaSessionManager');
+      const tokens = await figmaSessionManager.extractDesignTokens({
+        url: figmaUrl,
+        tokenTypes
+      });
+
+      return {
+        tool: 'get_figma_design_tokens',
+        success: true,
+        data: tokens,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      // Handle errors gracefully
+      return {
+        tool: 'get_figma_design_tokens',
+        success: false,
+        error: `Design token extraction failed: ${error.message}`,
+        timestamp: new Date().toISOString()
+      };
+    }
   }
 
   /**
@@ -357,21 +505,18 @@ export class MCPRoutes extends BaseRoute {
         '/api/mcp/context/update'
       ],
       serviceRequirements: [
-        'mcpAdapter',
-        'ticketService',
         'screenshotService',
-        'visualAIService'
+        'figmaSessionManager'
       ],
       optionalServices: [
-        'contextManager', // Phase 7
-        'memoryManager' // Phase 8
+        'visualAIService' // For design analysis only
       ],
       capabilities: [
-        'mcp-protocol-support',
-        'tool-execution',
-        'resource-management',
-        'context-intelligence-ready', // Phase 7 preparation
-        'memory-persistence-ready' // Phase 8 preparation
+        'figma-screenshot-capture',
+        'design-context-extraction',
+        'design-token-analysis',
+        'component-metadata-extraction',
+        'accessibility-context-support'
       ],
       protocolVersion: '1.0.0',
       roadmapPhases: {

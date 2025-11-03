@@ -210,13 +210,40 @@ export class FigmaSessionManager {
           sessionManager.logger.info('🔍 [Session Manager] Screenshot request:', { fileKey, nodeId, options });
           sessionManager.logger.info(`� Capturing screenshot for node ${nodeId} in file ${fileKey}`);
 
+          // If no node ID provided, get the first page from the file
+          let targetNodeId = nodeId;
+          if (!nodeId || nodeId === 'null') {
+            sessionManager.logger.info('🔍 No node ID provided, fetching file structure to get first page...');
+
+            // Fetch file structure to get the first page
+            const fileResponse = await fetch(`https://api.figma.com/v1/files/${fileKey}`, {
+              method: 'GET',
+              headers: {
+                'X-Figma-Token': sessionManager.figmaApiKey || process.env.FIGMA_API_KEY || ''
+              }
+            });
+
+            if (!fileResponse.ok) {
+              throw new Error(`Figma API error: ${fileResponse.status} ${fileResponse.statusText}`);
+            }
+
+            const fileData = await fileResponse.json();
+            if (fileData.document && fileData.document.children && fileData.document.children.length > 0) {
+              targetNodeId = fileData.document.children[0].id;
+              sessionManager.logger.info(`🔍 Using first page ID: ${targetNodeId}`);
+            } else {
+              throw new Error('No pages found in Figma file');
+            }
+          }
+
           // Prepare Figma API screenshot request
-          const screenshotParams = new URLSearchParams({
-            ids: nodeId,
-            format: options.format || 'png',
-            scale: options.scale || '2',
-            ...(options.use_absolute_bounds && { use_absolute_bounds: 'true' })
-          });
+          const screenshotParams = new URLSearchParams();
+          screenshotParams.set('ids', targetNodeId);
+          screenshotParams.set('format', options.format || 'png');
+          screenshotParams.set('scale', options.scale || '2');
+          if (options.use_absolute_bounds) {
+            screenshotParams.set('use_absolute_bounds', 'true');
+          }
 
           const screenshotUrl = `https://api.figma.com/v1/images/${fileKey}?${screenshotParams}`;
           sessionManager.logger.info('🔍 [Session Manager] Calling Figma API:', { screenshotUrl });

@@ -226,10 +226,10 @@ export class RouteRegistry {
 
     // Check if this route extends BaseRoute by checking if it expects serviceContainer
     const constructorString = RouteClass.toString();
-    const isBaseRoute = constructorString.includes('super(') || 
+    const isBaseRoute = constructorString.includes('super(') ||
                        constructorString.includes('serviceContainer') ||
                        RouteClass.name.includes('Route');
-    
+
     if (isBaseRoute) {
       // For BaseRoute descendants, pass serviceContainer directly
       return new RouteClass(this.serviceContainer);
@@ -307,10 +307,10 @@ export class RouteRegistry {
       if (typeof routeInstance.registerRoutes === 'function') {
         // Create a router for this route group
         const router = this.app;
-        
+
         // Call registerRoutes to let the route define its own endpoints
         routeInstance.registerRoutes(router);
-        
+
         // Store route information
         this.routes.set(name, {
           instance: routeInstance,
@@ -318,18 +318,18 @@ export class RouteRegistry {
           registeredAt: new Date(),
           type: 'BaseRoute'
         });
-        
+
         // Add to route group
         this.addToRouteGroup(group, name);
         this.metrics.routesRegistered++;
-        
+
         this.logger.debug(`BaseRoute registered: ${name}`);
       } else {
         // Fallback to old method for non-BaseRoute classes
         const routeConfig = this.getRouteConfiguration(routeInstance, name, group);
         const middlewareStack = this.buildMiddlewareStack(routeConfig);
         this.registerExpressRoute(routeConfig, routeInstance, middlewareStack);
-        
+
         this.routes.set(name, {
           instance: routeInstance,
           config: routeConfig,
@@ -337,11 +337,11 @@ export class RouteRegistry {
           registeredAt: new Date(),
           type: 'Legacy'
         });
-        
+
         // Add to route group
         this.addToRouteGroup(group, name);
         this.metrics.routesRegistered++;
-        
+
         this.logger.debug(`Legacy route registered: ${routeConfig.method} ${routeConfig.path}`);
       }
 

@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Layer Live Testing - Figma Ticket Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 120px;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .status-success { color: #27ae60; }
+        .status-warning { color: #f39c12; }
+        .status-error { color: #e74c3c; }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #34495e;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+
+        .panel-content {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background: #d68910;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .results {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .result-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .result-content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            background: #f1f3f4;
+            border-left: 3px solid #3498db;
+        }
+
+        .log-success {
+            border-left-color: #27ae60;
+            background: #d5f4e6;
+        }
+
+        .log-error {
+            border-left-color: #e74c3c;
+            background: #fdeaea;
+        }
+
+        .log-warning {
+            border-left-color: #f39c12;
+            background: #fef5e7;
+        }
+
+        .tabs {
+            display: flex;
+            background: #ecf0f1;
+            border-radius: 6px 6px 0 0;
+            overflow: hidden;
+        }
+
+        .tab {
+            flex: 1;
+            background: #ecf0f1;
+            border: none;
+            padding: 12px 15px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #2c3e50;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .context-preview {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .confidence-bar {
+            background: #e9ecef;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(to right, #e74c3c, #f39c12, #27ae60);
+            transition: width 0.3s ease;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        .screenshot-preview {
+            max-width: 100%;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-top: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Context Layer Live Testing</h1>
+            <p>Test and validate context layer population from Figma API responses</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-label">Server Status</div>
+                <div class="status-value" id="serverStatus">Checking...</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Context Layer</div>
+                <div class="status-value" id="contextStatus">Checking...</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Processor</div>
+                <div class="status-value" id="processorStatus">Ready</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Last Updated</div>
+                <div class="status-value" id="lastUpdated">Never</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel: File Processing -->
+            <div class="panel">
+                <div class="panel-header">File Processing & Context Extraction</div>
+                <div class="panel-content">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="process">Process File</button>
+                        <button class="tab" data-tab="screenshot">Screenshot</button>
+                        <button class="tab" data-tab="batch">Batch Process</button>
+                    </div>
+
+                    <!-- Process File Tab -->
+                    <div class="tab-content active" id="process">
+                        <div class="quick-actions">
+                            <button class="btn btn-success" onclick="quickSetup()">Quick Setup</button>
+                            <button class="btn btn-warning" onclick="clearLogs()">Clear Logs</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fileKey">Figma File Key</label>
+                            <input type="text" id="fileKey" placeholder="Enter Figma file key..." value="">
+                        </div>
+
+                        <div class="grid-2">
+                            <button class="btn" onclick="processFile()">Process File</button>
+                            <button class="btn" onclick="getContext()">Get Context</button>
+                        </div>
+
+                        <div class="results" id="processResults">
+                            <div class="log-entry">Ready to process Figma files. Enter a file key above.</div>
+                        </div>
+                    </div>
+
+                    <!-- Screenshot Tab -->
+                    <div class="tab-content" id="screenshot">
+                        <div class="form-group">
+                            <label for="screenshotFileKey">File Key</label>
+                            <input type="text" id="screenshotFileKey" placeholder="Enter file key...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nodeId">Node ID (optional)</label>
+                            <input type="text" id="nodeId" placeholder="Leave empty for entire file">
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="format">Format</label>
+                                <select id="format">
+                                    <option value="png">PNG</option>
+                                    <option value="jpg">JPG</option>
+                                    <option value="svg">SVG</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="scale">Scale</label>
+                                <select id="scale">
+                                    <option value="1">1x</option>
+                                    <option value="2">2x</option>
+                                    <option value="4">4x</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button class="btn" onclick="captureScreenshot()">Capture Screenshot</button>
+
+                        <div class="results" id="screenshotResults">
+                            <div class="log-entry">Ready to capture screenshots.</div>
+                        </div>
+                    </div>
+
+                    <!-- Batch Processing Tab -->
+                    <div class="tab-content" id="batch">
+                        <div class="form-group">
+                            <label for="batchFiles">File Keys (one per line)</label>
+                            <textarea id="batchFiles" placeholder="Enter file keys, one per line..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="maxConcurrent">Max Concurrent</label>
+                            <select id="maxConcurrent">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+
+                        <button class="btn" onclick="processBatch()">Process Batch</button>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="batchProgress"></div>
+                        </div>
+
+                        <div class="results" id="batchResults">
+                            <div class="log-entry">Ready to process multiple files.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Context Data & Search -->
+            <div class="panel">
+                <div class="panel-header">Context Data & Search</div>
+                <div class="panel-content">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="search">Search</button>
+                        <button class="tab" data-tab="context">View Context</button>
+                        <button class="tab" data-tab="summary">Summary</button>
+                    </div>
+
+                    <!-- Search Tab -->
+                    <div class="tab-content active" id="search">
+                        <div class="form-group">
+                            <label for="searchQuery">Search Query</label>
+                            <input type="text" id="searchQuery" placeholder="Search for components, text, styles...">
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="searchType">Type Filter</label>
+                                <select id="searchType">
+                                    <option value="">All Types</option>
+                                    <option value="component">Components</option>
+                                    <option value="text">Text</option>
+                                    <option value="frame">Frames</option>
+                                    <option value="style">Styles</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="maxResults">Max Results</label>
+                                <select id="maxResults">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button class="btn" onclick="searchContext()">Search Context</button>
+
+                        <div class="results" id="searchResults">
+                            <div class="log-entry">Enter a search query to find context data.</div>
+                        </div>
+                    </div>
+
+                    <!-- View Context Tab -->
+                    <div class="tab-content" id="context">
+                        <div class="form-group">
+                            <label for="contextFileKey">File Key</label>
+                            <input type="text" id="contextFileKey" placeholder="Enter file key to view context...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contextNodeId">Node ID (optional)</label>
+                            <input type="text" id="contextNodeId" placeholder="Leave empty for file context">
+                        </div>
+
+                        <button class="btn" onclick="viewContext()">View Context</button>
+
+                        <div id="contextPreview" class="context-preview" style="display: none;">
+                            <!-- Context data will be displayed here -->
+                        </div>
+
+                        <div class="results" id="contextResults">
+                            <div class="log-entry">Enter a file key to view stored context data.</div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Tab -->
+                    <div class="tab-content" id="summary">
+                        <div class="form-group">
+                            <label for="summaryFileKey">File Key</label>
+                            <input type="text" id="summaryFileKey" placeholder="Enter file key for summary...">
+                        </div>
+
+                        <button class="btn" onclick="getContextSummary()">Get Summary</button>
+
+                        <div class="results" id="summaryResults">
+                            <div class="log-entry">Enter a file key to get context summary.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Width Log Panel -->
+        <div class="panel" style="margin-top: 20px;">
+            <div class="panel-header">System Logs</div>
+            <div class="panel-content">
+                <div class="results" id="systemLogs">
+                    <div class="log-entry">System initialized. Ready for testing.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="js/context-layer-client.js"></script>
+    <script src="js/context-processor.js"></script>
+    <script src="js/context-api-helper.js"></script>
+
+    <script>
+        // Global variables
+        let contextHelper;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Initialize context helper
+                contextHelper = new ContextAPIHelper();
+                
+                // Setup tab switching
+                setupTabs();
+                
+                // Initial health check
+                await performHealthCheck();
+                
+                // Start status monitoring
+                setInterval(performHealthCheck, 30000); // Every 30 seconds
+                
+            } catch (error) {
+                logError('Initialization failed: ' + error.message);
+            }
+        });
+
+        // Tab switching functionality
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    const panel = this.closest('.panel');
+                    
+                    // Update tab buttons
+                    panel.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update tab content
+                    panel.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    panel.querySelector(`#${tabName}`).classList.add('active');
+                });
+            });
+        }
+
+        // Health check
+        async function performHealthCheck() {
+            try {
+                const health = await contextHelper.healthCheck();
+                
+                updateStatus('serverStatus', health.server?.success ? 'Online' : 'Offline', 
+                           health.server?.success ? 'success' : 'error');
+                
+                updateStatus('contextStatus', health.contextLayer?.success ? 'Active' : 'Inactive',
+                           health.contextLayer?.success ? 'success' : 'error');
+                
+                updateStatus('lastUpdated', new Date().toLocaleTimeString(), 'success');
+                
+                if (health.success) {
+                    logSuccess('Health check passed');
+                } else {
+                    logError('Health check failed: ' + health.error);
+                }
+                
+            } catch (error) {
+                logError('Health check error: ' + error.message);
+                updateStatus('serverStatus', 'Error', 'error');
+                updateStatus('contextStatus', 'Error', 'error');
+            }
+        }
+
+        // Update status display
+        function updateStatus(elementId, value, type) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = value;
+                element.className = 'status-value status-' + type;
+            }
+        }
+
+        // Process file
+        async function processFile() {
+            const fileKey = document.getElementById('fileKey').value.trim();
+            if (!fileKey) {
+                logError('Please enter a file key');
+                return;
+            }
+
+            logInfo(`Processing file: ${fileKey}`);
+            
+            try {
+                const result = await contextHelper.processFigmaFile(fileKey);
+                
+                if (result.success) {
+                    logSuccess(`File processed successfully. Confidence: ${(result.confidence * 100).toFixed(1)}%`);
+                    displayProcessResult(result);
+                } else {
+                    logError(`Processing failed: ${result.error}`);
+                }
+            } catch (error) {
+                logError(`Processing error: ${error.message}`);
+            }
+        }
+
+        // Get context
+        async function getContext() {
+            const fileKey = document.getElementById('fileKey').value.trim();
+            if (!fileKey) {
+                logError('Please enter a file key');
+                return;
+            }
+
+            logInfo(`Getting context for: ${fileKey}`);
+            
+            try {
+                const result = await contextHelper.getEnrichedContext(fileKey);
+                
+                if (result.success) {
+                    logSuccess('Context retrieved successfully');
+                    displayContextData(result.data);
+                } else {
+                    logError(`Context retrieval failed: ${result.error}`);
+                }
+            } catch (error) {
+                logError(`Context error: ${error.message}`);
+            }
+        }
+
+        // Capture screenshot
+        async function captureScreenshot() {
+            const fileKey = document.getElementById('screenshotFileKey').value.trim();
+            const nodeId = document.getElementById('nodeId').value.trim() || null;
+            const format = document.getElementById('format').value;
+            const scale = parseInt(document.getElementById('scale').value);
+
+            if (!fileKey) {
+                logError('Please enter a file key');
+                return;
+            }
+
+            logInfo(`Capturing screenshot: ${fileKey}${nodeId ? ':' + nodeId : ''}`);
+            
+            try {
+                const result = await contextHelper.captureAndProcessScreenshot(fileKey, nodeId, {
+                    format, scale
+                });
+                
+                if (result.success) {
+                    logSuccess('Screenshot captured and context stored');
+                    displayScreenshotResult(result);
+                } else {
+                    logError(`Screenshot failed: ${result.error}`);
+                }
+            } catch (error) {
+                logError(`Screenshot error: ${error.message}`);
+            }
+        }
+
+        // Process batch
+        async function processBatch() {
+            const batchText = document.getElementById('batchFiles').value.trim();
+            const maxConcurrent = parseInt(document.getElementById('maxConcurrent').value);
+            
+            if (!batchText) {
+                logError('Please enter file keys');
+                return;
+            }
+
+            const fileKeys = batchText.split('\n').map(key => key.trim()).filter(key => key);
+            
+            logInfo(`Processing batch of ${fileKeys.length} files`);
+            
+            try {
+                const result = await contextHelper.processBatch(fileKeys, { maxConcurrent });
+                
+                logSuccess(`Batch complete: ${result.successful}/${result.total} successful`);
+                displayBatchResults(result);
+                
+            } catch (error) {
+                logError(`Batch processing error: ${error.message}`);
+            }
+        }
+
+        // Search context
+        async function searchContext() {
+            const query = document.getElementById('searchQuery').value.trim();
+            const type = document.getElementById('searchType').value;
+            const maxResults = parseInt(document.getElementById('maxResults').value);
+
+            if (!query) {
+                logError('Please enter a search query');
+                return;
+            }
+
+            logInfo(`Searching for: ${query}`);
+            
+            try {
+                const result = await contextHelper.searchWithFallback(query, {
+                    type: type || undefined,
+                    maxResults
+                });
+                
+                if (result.success) {
+                    logSuccess(`Search complete: ${result.data.totalResults} results`);
+                    displaySearchResults(result.data);
+                } else {
+                    logError(`Search failed: ${result.error}`);
+                }
+            } catch (error) {
+                logError(`Search error: ${error.message}`);
+            }
+        }
+
+        // View context
+        async function viewContext() {
+            const fileKey = document.getElementById('contextFileKey').value.trim();
+            const nodeId = document.getElementById('contextNodeId').value.trim() || null;
+
+            if (!fileKey) {
+                logError('Please enter a file key');
+                return;
+            }
+
+            logInfo(`Viewing context: ${fileKey}${nodeId ? ':' + nodeId : ''}`);
+            
+            try {
+                const result = await contextHelper.contextClient.getContext(fileKey, nodeId);
+                
+                if (result.success) {
+                    logSuccess('Context data retrieved');
+                    displayContextPreview(result.data);
+                } else {
+                    logError(`Context retrieval failed: ${result.error || result.message}`);
+                }
+            } catch (error) {
+                logError(`Context error: ${error.message}`);
+            }
+        }
+
+        // Get context summary
+        async function getContextSummary() {
+            const fileKey = document.getElementById('summaryFileKey').value.trim();
+
+            if (!fileKey) {
+                logError('Please enter a file key');
+                return;
+            }
+
+            logInfo(`Getting summary for: ${fileKey}`);
+            
+            try {
+                const result = await contextHelper.getContextSummary(fileKey);
+                
+                if (result.success) {
+                    logSuccess('Summary retrieved');
+                    displaySummaryResults(result.data);
+                } else {
+                    logError(`Summary failed: ${result.error}`);
+                }
+            } catch (error) {
+                logError(`Summary error: ${error.message}`);
+            }
+        }
+
+        // Quick setup
+        async function quickSetup() {
+            const fileKey = document.getElementById('fileKey').value.trim();
+            if (!fileKey) {
+                logError('Please enter a file key for quick setup');
+                return;
+            }
+
+            logInfo(`Running quick setup for: ${fileKey}`);
+            
+            try {
+                const result = await contextHelper.quickSetup(fileKey);
+                
+                if (result.success) {
+                    logSuccess('Quick setup completed successfully');
+                    displayQuickSetupResults(result);
+                } else {
+                    logError(`Quick setup failed: ${result.error}`);
+                }
+            } catch (error) {
+                logError(`Quick setup error: ${error.message}`);
+            }
+        }
+
+        // Display functions
+        function displayProcessResult(result) {
+            const html = `
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">File Processed: ${result.fileKey}</div>
+                        <div class="result-meta">Confidence: ${(result.confidence * 100).toFixed(1)}%</div>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${result.confidence * 100}%"></div>
+                    </div>
+                    <div class="result-content">
+                        Nodes: ${result.context?.nodes?.length || 0} |
+                        Components: ${result.context?.components?.length || 0} |
+                        Styles: ${result.context?.styles?.length || 0}
+                    </div>
+                </div>
+            `;
+            addToResults('processResults', html);
+        }
+
+        function displayScreenshotResult(result) {
+            const html = `
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">Screenshot: ${result.fileKey}</div>
+                        <div class="result-meta">${result.nodeId || 'Full File'}</div>
+                    </div>
+                    <div class="result-content">
+                        ${result.screenshot?.url ? `<img src="${result.screenshot.url}" class="screenshot-preview" />` : 'Screenshot captured successfully'}
+                    </div>
+                </div>
+            `;
+            addToResults('screenshotResults', html);
+        }
+
+        function displayBatchResults(result) {
+            const html = `
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">Batch Processing Complete</div>
+                        <div class="result-meta">${result.successful}/${result.total} successful</div>
+                    </div>
+                    <div class="result-content">
+                        ${result.results.map(r => 
+                            `<div>${r.fileKey}: ${r.success ? '✓' : '✗'} ${r.error || ''}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+            addToResults('batchResults', html);
+        }
+
+        function displaySearchResults(data) {
+            if (data.totalResults === 0) {
+                const html = `
+                    <div class="result-item">
+                        <div class="result-title">No Results Found</div>
+                        <div class="result-content">${data.suggestion || 'No context data matches your search.'}</div>
+                    </div>
+                `;
+                addToResults('searchResults', html);
+                return;
+            }
+
+            const html = data.results.map(result => `
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">${result.fileKey}</div>
+                        <div class="result-meta">Score: ${(result.score * 100).toFixed(1)}%</div>
+                    </div>
+                    <div class="result-content">${result.context || 'Context data available'}</div>
+                </div>
+            `).join('');
+            
+            setResults('searchResults', html);
+        }
+
+        function displayContextPreview(data) {
+            const preview = document.getElementById('contextPreview');
+            preview.style.display = 'block';
+            preview.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function displaySummaryResults(data) {
+            const html = `
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">Context Summary</div>
+                        <div class="result-meta">${data.fileKey}</div>
+                    </div>
+                    <div class="result-content">
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+            setResults('summaryResults', html);
+        }
+
+        function displayQuickSetupResults(result) {
+            const html = `
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">Quick Setup Complete</div>
+                        <div class="result-meta">${result.fileKey}</div>
+                    </div>
+                    <div class="result-content">
+                        File Processed: ${result.steps.fileProcessed ? '✓' : '✗'}<br>
+                        Screenshot: ${result.steps.screenshotCaptured ? '✓' : '✗'}<br>
+                        Summary: ${result.steps.summaryGenerated ? '✓' : '✗'}
+                    </div>
+                </div>
+            `;
+            addToResults('processResults', html);
+        }
+
+        // Utility functions
+        function addToResults(containerId, html) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = html + container.innerHTML;
+        }
+
+        function setResults(containerId, html) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = html;
+        }
+
+        function clearLogs() {
+            document.getElementById('systemLogs').innerHTML = '<div class="log-entry">Logs cleared.</div>';
+        }
+
+        // Logging functions
+        function logInfo(message) {
+            const html = `<div class="log-entry">[${new Date().toLocaleTimeString()}] ${message}</div>`;
+            addToResults('systemLogs', html);
+        }
+
+        function logSuccess(message) {
+            const html = `<div class="log-entry log-success">[${new Date().toLocaleTimeString()}] ✓ ${message}</div>`;
+            addToResults('systemLogs', html);
+        }
+
+        function logError(message) {
+            const html = `<div class="log-entry log-error">[${new Date().toLocaleTimeString()}] ✗ ${message}</div>`;
+            addToResults('systemLogs', html);
+        }
+
+        function logWarning(message) {
+            const html = `<div class="log-entry log-warning">[${new Date().toLocaleTimeString()}] ⚠ ${message}</div>`;
+            addToResults('systemLogs', html);
+        }
+    </script>
+</body>
+</html>

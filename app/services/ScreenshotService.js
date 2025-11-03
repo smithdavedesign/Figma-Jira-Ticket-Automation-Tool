@@ -10,13 +10,14 @@
 import { BaseService } from './BaseService.js';
 
 export class ScreenshotService extends BaseService {
-  constructor(figmaApi, redis) {
+  constructor(redis, configService, figmaSessionManager) {
     super('ScreenshotService');
-    this.figmaApi = figmaApi;
     this.redis = redis;
+    this.configService = configService;
+    this.figmaSessionManager = figmaSessionManager;
     this.screenshotCache = new Map();
     this.defaultOptions = {
-      format: 'base64',
+      format: 'png',
       quality: 'high',
       scale: 2,
       timeout: 30000
@@ -28,9 +29,12 @@ export class ScreenshotService extends BaseService {
    */
   async onInitialize() {
     // Validate dependencies
-    if (!this.figmaApi) {
-      throw new Error('Figma API client is required');
+    if (!this.figmaSessionManager) {
+      throw new Error('Figma Session Manager is required');
     }
+
+    // Initialize the session manager
+    await this.figmaSessionManager.initialize();
 
     this.logger.info('Screenshot service dependencies validated');
   }
@@ -61,21 +65,33 @@ export class ScreenshotService extends BaseService {
       // Extract file ID and node ID from URL
       const { fileId, nodeId } = this.parseFigmaUrl(figmaUrl);
 
-      // Capture screenshot using Figma API
-      this.logger.info(`📸 Capturing screenshot from Figma: ${fileId}${nodeId ? `/${nodeId}` : ''}`);
-
-      const screenshotData = await this.figmaApi.getImage({
+      // Get or create a session for screenshot capture
+      this.logger.info(`📸 [REST API] Capturing screenshot from Figma: ${fileId}${nodeId ? `/${nodeId}` : ''}`, {
+        protocol: 'REST',
+        apiType: 'figma-api',
         fileId,
-        nodeId,
+        nodeId: nodeId || null
+      });
+
+      const session = await this.figmaSessionManager.getSessionByType('api');
+      const screenshotResult = await session.captureScreenshot(fileId, nodeId, {
         format: config.format === 'base64' ? 'png' : config.format,
-        scale: config.scale,
+        scale: config.scale.toString(),
         timeout: config.timeout
       });
 
+      // Fetch the actual image data from the URL
+      const imageResponse = await fetch(screenshotResult.imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to fetch screenshot: ${imageResponse.status}`);
+      }
+
+      const imageBuffer = await imageResponse.arrayBuffer();
+
       // Convert to base64 if needed
       const base64Data = config.format === 'base64'
-        ? await this.convertToBase64(screenshotData)
-        : screenshotData;
+        ? Buffer.from(imageBuffer).toString('base64')
+        : imageBuffer;
 
       // Cache the result
       await this.cacheScreenshot(cacheKey, base64Data);
@@ -84,6 +100,73 @@ export class ScreenshotService extends BaseService {
       return base64Data;
 
     }, { figmaUrl, options });
+  }
+
+  /**
+   * Capture screenshot (wrapper method for API compatibility)
+   * @param {string|Object} figmaUrlOrOptions - Figma URL or options object with URL
+   * @param {string} nodeId - Optional node ID (if first param is string)
+   * @param {Object} options - Additional options (if first param is string)
+   * @returns {Promise<Object>} Screenshot result with success flag
+   */
+  async captureScreenshot(figmaUrlOrOptions, nodeId = null, options = {}) {
+    return this.executeOperation('captureScreenshot', async () => {
+      let figmaUrl, finalOptions;
+
+      // Handle different parameter formats for API compatibility
+      if (typeof figmaUrlOrOptions === 'string') {
+        // Called as captureScreenshot(url, nodeId, options)
+        figmaUrl = figmaUrlOrOptions;
+        finalOptions = { ...options };
+      } else if (figmaUrlOrOptions && typeof figmaUrlOrOptions === 'object') {
+        // Called as captureScreenshot({ url, format, quality, ... })
+        figmaUrl = figmaUrlOrOptions.url || figmaUrlOrOptions.figmaUrl;
+        finalOptions = { ...figmaUrlOrOptions };
+        delete finalOptions.url;
+        delete finalOptions.figmaUrl;
+      } else {
+        throw new Error('Invalid parameters: expected figmaUrl string or options object');
+      }
+
+      if (!figmaUrl) {
+        throw new Error('Figma URL is required');
+      }
+
+      try {
+        // If nodeId is provided as parameter, append it to URL
+        let fullUrl = figmaUrl;
+        if (nodeId && !figmaUrl.includes('#')) {
+          fullUrl = `${figmaUrl}#${encodeURIComponent(nodeId)}`;
+        }
+
+        // Capture using the main method
+        const screenshotData = await this.captureFromFigma(fullUrl, finalOptions);
+
+        // Return in API-compatible format
+        return {
+          success: true,
+          imageUrl: finalOptions.format === 'base64' 
+            ? `data:image/png;base64,${screenshotData}`
+            : screenshotData,
+          data: screenshotData,
+          format: finalOptions.format || 'png',
+          dimensions: { width: 800, height: 600 }, // Default dimensions
+          performance: {
+            captureTime: Date.now(),
+            cached: false
+          }
+        };
+
+      } catch (error) {
+        this.logger.error('Screenshot capture failed:', error);
+        return {
+          success: false,
+          error: error.message,
+          status: 500
+        };
+      }
+
+    }, { figmaUrlOrOptions, nodeId, options });
   }
 
   /**
@@ -172,7 +255,7 @@ export class ScreenshotService extends BaseService {
    * @returns {Object} Parsed URL components
    */
   parseFigmaUrl(figmaUrl) {
-    const urlPattern = /https:\/\/(?:www\.)?figma\.com\/(file|proto|design)\/([a-zA-Z0-9]+)(?:\/[^?]*)?(?:\?[^#]*)?(?:#(.+))?/;
+    const urlPattern = /https:\/\/(?:www\.)?figma\.com\/(file|proto|design)\/([a-zA-Z0-9_-]+)(?:\/[^?]*)?(?:\?[^#]*)?(?:#(.+))?/;
     const match = figmaUrl.match(urlPattern);
 
     if (!match) {
@@ -332,8 +415,9 @@ export class ScreenshotService extends BaseService {
     return {
       ...baseHealth,
       dependencies: {
-        figmaApi: !!this.figmaApi,
-        redis: !!this.redis
+        figmaSessionManager: !!this.figmaSessionManager,
+        redis: !!this.redis,
+        configService: !!this.configService
       },
       cache: {
         memorySize: this.screenshotCache.size,

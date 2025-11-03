@@ -186,7 +186,7 @@ export class UniversalTemplateEngine {
     }
 
     // If it's an object template, process each field
-    if (typeof templateContent === 'object') {
+    if (typeof templateContent === 'object' && templateContent !== null) {
       return this.processObjectTemplate(templateContent, context, template);
     }
 
@@ -200,6 +200,12 @@ export class UniversalTemplateEngine {
    */
   processObjectTemplate(templateObj, context, template) {
     const result = {};
+
+    // Safety check for null/undefined templateObj
+    if (!templateObj || typeof templateObj !== 'object') {
+      console.warn('Invalid templateObj in processObjectTemplate:', templateObj);
+      return `# ${context.figma?.component_name || 'Component'}\n\nTemplate object is invalid or missing.`;
+    }
 
     for (const [key, value] of Object.entries(templateObj)) {
       if (typeof value === 'string') {
@@ -369,6 +375,31 @@ export class UniversalTemplateEngine {
     case 'default':
       // Handle default values
       return this.isTruthy(value) ? value : arg;
+    case 'contextlayer': {
+      // Special filter for Context Layer data formatting
+      if (Array.isArray(value)) {
+        return value.map(item =>
+          typeof item === 'object' ? (item.name || item.type || item.value) : item
+        ).join(', ');
+      }
+      return value;
+    }
+    case 'designtokens': {
+      // Format design tokens from Context Layer
+      if (typeof value === 'object' && value.colors) {
+        const tokens = [];
+        if (value.colors?.length) {tokens.push(`${value.colors.length} colors`);}
+        if (value.spacing?.length) {tokens.push(`${value.spacing.length} spacing tokens`);}
+        if (value.typography?.families?.length) {tokens.push(`${value.typography.families.length} fonts`);}
+        return tokens.join(', ') || 'Design tokens available';
+      }
+      return value;
+    }
+    case 'confidence': {
+      // Format confidence scores as percentages
+      const num = parseFloat(value);
+      return isNaN(num) ? value : `${Math.round(num * 100)}%`;
+    }
     default:
       return value;
     }
@@ -492,19 +523,18 @@ Please customize this template for your specific needs.
 
   /**
    * Enrich context with base template variables for rendering
+   * Enhanced to work optimally with Context Layer JSON output
    */
   enrichContextWithTemplate(context, template) {
     // If template has merged base template data, add it to context
     if (template?.template) {
       const enrichedContext = { ...context };
 
-      console.log('🔍 CONTEXT ENRICHMENT DEBUG - Input Context:');
-      console.log('  📊 Input context keys:', Object.keys(context));
-      console.log('  📋 Figma context:', JSON.stringify(context.figma || {}, null, 2));
-      console.log('  🏗️ Project context:', JSON.stringify(context.project || {}, null, 2));
-      console.log('  📊 Calculated context:', JSON.stringify(context.calculated || {}, null, 2));
-      console.log('  👥 Org context:', JSON.stringify(context.org || {}, null, 2));
-      console.log('  🔧 Base template keys:', Object.keys(template.template));
+      // Enhanced logging for Context Layer integration
+      this._logContextEnrichment(context, template);
+
+      // Enhanced context processing for Context Layer output
+      this._processContextLayerData(enrichedContext, context);
 
       // Add base template variables to context
       if (template.template.resources) {
@@ -555,18 +585,192 @@ Please customize this template for your specific needs.
         console.log('    Authoring keys:', Object.keys(enrichedContext.authoring));
       }
 
-      console.log('🔄 CONTEXT ENRICHMENT COMPLETE');
-      console.log('  📊 Final enriched context keys:', Object.keys(enrichedContext));
-      console.log('  🔗 Resources count:', enrichedContext.resources?.length || 0);
-      console.log('  📝 Base variables available:', !!enrichedContext.base_variables);
-      console.log('  🎨 Design data available:', !!enrichedContext.design);
-      console.log('  📝 Authoring data available:', !!enrichedContext.authoring);
-
+      this._logEnrichmentCompletion(enrichedContext);
       return enrichedContext;
     }
 
     console.log('⚠️ No base template data found for enrichment');
     return context;
+  }
+
+  /**
+   * Enhanced logging for Context Layer integration
+   * @param {Object} context - Original context
+   * @param {Object} template - Template object
+   */
+  _logContextEnrichment(context, template) {
+    console.log('� CONTEXT ENRICHMENT DEBUG - Enhanced for Context Layer:');
+    console.log('  📊 Input context keys:', Object.keys(context));
+
+    // Enhanced logging for Context Layer data
+    if (context.figma) {
+      console.log('  🎨 Figma context (Context Layer enhanced):');
+      console.log('    - Component:', context.figma.component_name);
+      console.log('    - Design tokens:', !!context.figma.design_tokens);
+      console.log('    - Color palette:', context.figma.color_palette?.length || 0, 'colors');
+      console.log('    - Typography:', !!context.figma.typography);
+      console.log('    - Variants:', context.figma.variants?.length || 0);
+      console.log('    - Layout patterns:', context.figma.layout_patterns?.length || 0);
+      console.log('    - Interactions:', context.figma.interactions?.length || 0);
+    }
+
+    if (context.calculated) {
+      console.log('  📊 Calculated metrics (Context Layer):');
+      console.log('    - Complexity:', context.calculated.complexity);
+      console.log('    - Confidence:', context.calculated.confidence);
+      console.log('    - Story points:', context.calculated.story_points);
+      console.log('    - Risk factors:', context.calculated.risk_factors?.length || 0);
+    }
+
+    if (context.multiAgentAnalysis) {
+      console.log('  🤖 Multi-agent analysis (MCP enhanced):');
+      console.log('    - Accessibility score:', context.multiAgentAnalysis.accessibilityScore);
+      console.log('    - Performance recommendations:', context.multiAgentAnalysis.performanceRecommendations?.length || 0);
+      console.log('    - Agents consulted:', context.multiAgentAnalysis.agentsConsulted?.length || 0);
+    }
+
+    console.log('  🔧 Base template keys:', Object.keys(template.template));
+  }
+
+  /**
+   * Process Context Layer specific data for template consumption
+   * @param {Object} enrichedContext - Context being enriched
+   * @param {Object} originalContext - Original context data
+   */
+  _processContextLayerData(enrichedContext, originalContext) {
+    // Enhanced design token processing
+    if (originalContext.design_tokens) {
+      enrichedContext.design_tokens_formatted = this._formatDesignTokensForTemplate(originalContext.design_tokens);
+    }
+
+    // Enhanced figma data processing
+    if (originalContext.figma) {
+      enrichedContext.figma_enhanced = {
+        ...originalContext.figma,
+        // Format colors for template consumption
+        extracted_colors: this._formatColorsForDisplay(originalContext.figma.color_palette),
+        extracted_typography: this._formatTypographyForDisplay(originalContext.figma.typography),
+        // Format layout patterns
+        layout_summary: this._summarizeLayoutPatterns(originalContext.figma.layout_patterns),
+        // Format interactions
+        interaction_summary: this._summarizeInteractions(originalContext.figma.interactions)
+      };
+    }
+
+    // Process multi-agent analysis if available
+    if (originalContext.multiAgentAnalysis) {
+      enrichedContext.ai_insights = {
+        accessibility_recommendations: originalContext.multiAgentAnalysis.accessibilityScore,
+        performance_insights: originalContext.multiAgentAnalysis.performanceRecommendations,
+        design_system_compliance: originalContext.multiAgentAnalysis.designSystemCompliance,
+        enhanced_analysis: originalContext.designAnalysisEnhanced
+      };
+    }
+  }
+
+  /**
+   * Format design tokens for template display
+   * @param {Object} designTokens - Design tokens from Context Layer
+   * @returns {String} Formatted design tokens
+   */
+  _formatDesignTokensForTemplate(designTokens) {
+    const formatted = [];
+
+    if (designTokens.colors?.length > 0) {
+      const colorList = designTokens.colors.map(c => `${c.name}: ${c.value}`).join(', ');
+      formatted.push(`Colors: ${colorList}`);
+    }
+
+    if (designTokens.spacing?.length > 0) {
+      const spacingList = designTokens.spacing.map(s => `${s.name}: ${s.value}px`).join(', ');
+      formatted.push(`Spacing: ${spacingList}`);
+    }
+
+    return formatted.length > 0 ? formatted.join(' | ') : 'Design tokens available via Context Layer';
+  }
+
+  /**
+   * Format colors for template display
+   * @param {Array} colors - Color palette from Context Layer
+   * @returns {String} Formatted colors
+   */
+  _formatColorsForDisplay(colors) {
+    if (!Array.isArray(colors) || colors.length === 0) {
+      return 'Colors extracted via Context Layer analysis';
+    }
+
+    return colors.slice(0, 5).map(color =>
+      `${color.name || 'Color'}: ${color.hex || color.value || color}`
+    ).join(', ') + (colors.length > 5 ? ` (${colors.length - 5} more)` : '');
+  }
+
+  /**
+   * Format typography for template display
+   * @param {Object} typography - Typography data from Context Layer
+   * @returns {String} Formatted typography
+   */
+  _formatTypographyForDisplay(typography) {
+    if (!typography || typeof typography !== 'object') {
+      return 'Typography analyzed via Context Layer';
+    }
+
+    const parts = [];
+    if (typography.families) {
+      parts.push(`Fonts: ${typography.families.slice(0, 3).join(', ')}`);
+    }
+    if (typography.sizes) {
+      parts.push(`Sizes: ${typography.sizes.slice(0, 3).join(', ')}`);
+    }
+
+    return parts.length > 0 ? parts.join(' | ') : 'Typography system available';
+  }
+
+  /**
+   * Summarize layout patterns for template display
+   * @param {Array} patterns - Layout patterns from Context Layer
+   * @returns {String} Layout summary
+   */
+  _summarizeLayoutPatterns(patterns) {
+    if (!Array.isArray(patterns) || patterns.length === 0) {
+      return 'Standard layout patterns';
+    }
+
+    const patternTypes = patterns.map(p => p.type || p.name).filter(Boolean);
+    return patternTypes.length > 0
+      ? `Layout: ${patternTypes.slice(0, 3).join(', ')}`
+      : 'Layout patterns identified';
+  }
+
+  /**
+   * Summarize interactions for template display
+   * @param {Array} interactions - Interactions from Context Layer
+   * @returns {String} Interaction summary
+   */
+  _summarizeInteractions(interactions) {
+    if (!Array.isArray(interactions) || interactions.length === 0) {
+      return '';
+    }
+
+    const interactionTypes = interactions.map(i => i.type || i.trigger).filter(Boolean);
+    return interactionTypes.length > 0
+      ? `Interactions: ${interactionTypes.slice(0, 3).join(', ')}`
+      : `${interactions.length} interactions defined`;
+  }
+
+  /**
+   * Log enrichment completion with Context Layer awareness
+   * @param {Object} enrichedContext - Final enriched context
+   */
+  _logEnrichmentCompletion(enrichedContext) {
+    console.log('🔄 CONTEXT ENRICHMENT COMPLETE - Context Layer Enhanced:');
+    console.log('  📊 Final enriched context keys:', Object.keys(enrichedContext));
+    console.log('  🔗 Resources count:', enrichedContext.resources?.length || 0);
+    console.log('  📝 Base variables available:', !!enrichedContext.base_variables);
+    console.log('  🎨 Design data available:', !!enrichedContext.design);
+    console.log('  📝 Authoring data available:', !!enrichedContext.authoring);
+    console.log('  🎨 Enhanced figma data:', !!enrichedContext.figma_enhanced);
+    console.log('  🎯 Design tokens formatted:', !!enrichedContext.design_tokens_formatted);
+    console.log('  🤖 AI insights available:', !!enrichedContext.ai_insights);
   }
 
   /**

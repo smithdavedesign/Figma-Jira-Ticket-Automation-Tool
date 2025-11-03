@@ -21,11 +21,19 @@ export class BaseRoute {
    * @param {string} serviceName - Service name
    * @returns {*} Service instance
    */
-  getService(serviceName) {
+  getService(serviceName, required = true) {
     if (!this.services) {
       throw new Error(`Service container not available in ${this.routeName}`);
     }
-    return this.services.get(serviceName);
+
+    try {
+      return this.services.get(serviceName);
+    } catch (error) {
+      if (!required) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   /**
@@ -158,19 +166,52 @@ export class BaseRoute {
   }
 
   /**
-   * Log route access
+   * Log route access with metadata
    * @param {Object} req - Express request object
    * @param {string} action - Action being performed
    * @param {Object} context - Additional context
    */
   logAccess(req, action, context = {}) {
-    this.logger.info(`🔗 ${this.routeName} - ${action}`, {
+    // Determine API type for enhanced logging
+    const apiType = this.getAPIType(req);
+    const protocolIcon = this.getProtocolIcon(apiType);
+    
+    this.logger.info(`${protocolIcon} ${this.routeName} [${apiType}] - ${action}`, {
       method: req.method,
       url: req.url,
       ip: req.ip,
       userAgent: req.get('User-Agent'),
+      apiType,
       ...context
     });
+  }
+
+  /**
+   * Determine API type based on route and request
+   * @param {Object} req - Express request object
+   * @returns {string} API type identifier
+   */
+  getAPIType(req) {
+    if (req.url.includes('/api/mcp/')) return 'MCP';
+    if (req.url.includes('/api/figma/')) return 'REST';
+    if (req.url.includes('/api/screenshot')) return 'REST';
+    if (this.routeName === 'MCP') return 'MCP';
+    if (this.routeName === 'Figma') return 'REST';
+    return 'GENERIC';
+  }
+
+  /**
+   * Get protocol-specific icon for logging
+   * @param {string} apiType - API type
+   * @returns {string} Icon for protocol
+   */
+  getProtocolIcon(apiType) {
+    switch (apiType) {
+      case 'MCP': return '🔌'; // MCP Protocol
+      case 'REST': return '🌐'; // REST API
+      case 'GENERIC': return '🔗'; // Generic endpoint
+      default: return '🔗';
+    }
   }
 
   /**

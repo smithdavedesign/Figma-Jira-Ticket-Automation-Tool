@@ -133,6 +133,36 @@ export class ServiceContainer {
   }
 
   /**
+   * Initialize all services that have an initialize method
+   */
+  async initializeServices() {
+    this.logger.info('Initializing all services...');
+
+    const initPromises = [];
+
+    for (const [name, instance] of this.instances) {
+      // Skip self-reference to prevent infinite recursion
+      if (instance === this) {
+        this.logger.debug(`Skipping self-reference: ${name}`);
+        continue;
+      }
+
+      if (typeof instance.initialize === 'function') {
+        this.logger.debug(`Initializing service: ${name}`);
+        initPromises.push(
+          instance.initialize().catch(error => {
+            this.logger.error(`Error initializing ${name}:`, error);
+            throw error;
+          })
+        );
+      }
+    }
+
+    await Promise.all(initPromises);
+    this.logger.info('✅ All services initialized');
+  }
+
+  /**
    * Shutdown all services gracefully
    */
   async shutdown() {
@@ -146,7 +176,7 @@ export class ServiceContainer {
         this.logger.debug(`Skipping self-reference: ${name}`);
         continue;
       }
-      
+
       if (typeof instance.shutdown === 'function') {
         this.logger.debug(`Shutting down service: ${name}`);
         shutdownPromises.push(

@@ -2,9 +2,10 @@
  * API Routes Module
  *
  * Handles core API endpoints extracted from main server.
- * Routes: /api/generate-ticket, /api/generate-ai-ticket-direct, /api/figma/screenshot
+ * Routes: /api/figma/screenshot (Figma integration only)
  *
  * Phase 8: Server Architecture Refactoring - Phase 3
+ * Note: Ticket generation routes moved to generate.js
  */
 
 import { BaseRoute } from './BaseRoute.js';
@@ -19,141 +20,130 @@ export class APIRoutes extends BaseRoute {
    * @param {Express.Router} router - Express router instance
    */
   registerRoutes(router) {
-    // Core API endpoints
-    router.post('/api/generate-ticket', this.asyncHandler(this.handleGenerateTicket.bind(this)));
-    router.post('/api/generate-ai-ticket-direct', this.asyncHandler(this.handleDirectAIGeneration.bind(this)));
+    // Figma integration endpoint (legacy GET endpoint)
     router.get('/api/figma/screenshot', this.asyncHandler(this.handleFigmaScreenshot.bind(this)));
+    
+    // POST endpoint for screenshot API (required by Figma plugin)
+    router.post('/api/screenshot', this.asyncHandler(this.handleScreenshotPost.bind(this)));
 
     this.logger.info('✅ API routes registered');
   }
 
-  /**
-   * Handle ticket generation requests from UI
-   * Extracted from main server handleGenerateTicket method
-   */
-  async handleGenerateTicket(req, res) {
-    this.logAccess(req, 'generateTicket');
 
-    const requestData = req.body;
-    const { platform, documentType } = requestData;
-
-    // Validate required fields
-    this.validateRequired(requestData, ['platform', 'documentType']);
-
-    this.logger.info(`🎫 Generating ticket for ${platform}-${documentType}`, {
-      platform,
-      documentType,
-      techStack: requestData.teamStandards?.tech_stack
-    });
-
-    // Get ticket generation service
-    const ticketService = this.getService('ticketService');
-
-    // Convert request to service format
-    const serviceRequest = {
-      frameData: requestData.frameData,
-      platform,
-      documentType,
-      techStack: requestData.teamStandards?.tech_stack,
-      teamStandards: requestData.teamStandards,
-      figmaUrl: requestData.figmaUrl,
-      screenshot: requestData.screenshot
-    };
-
-    // Generate ticket using unified service
-    const result = await ticketService.generateTicket(serviceRequest, 'template');
-
-    // Send standardized response
-    this.sendSuccess(res, {
-      ticket: result.content,
-      metadata: result.metadata
-    }, 'Ticket generated successfully', 200, {
-      platform,
-      documentType,
-      techStack: requestData.teamStandards?.tech_stack || 'Not specified'
-    });
-  }
 
   /**
-   * Handle direct AI ticket generation (bypasses MCP server)
-   * Extracted from main server handleDirectAIGeneration method
+   * Handle POST screenshot requests (expects parameters in request body)
+   * Used by Figma plugin and tests
    */
-  async handleDirectAIGeneration(req, res) {
-    this.logAccess(req, 'directAIGeneration');
+  async handleScreenshotPost(req, res) {
+    this.logAccess(req, 'screenshotPost');
 
-    const {
-      enhancedFrameData,
-      screenshot,
-      figmaUrl,
-      techStack,
-      documentType,
-      platform,
-      teamStandards,
-      projectName,
-      fileContext,
-      useAI = true
-    } = req.body;
+    let { fileKey, nodeId } = req.body;
+    const { scale = '2', format = 'png', figmaUrl } = req.body;
 
-    this.logger.info('🤖 Direct AI Generation Request:', {
-      hasFrameData: !!enhancedFrameData?.length,
-      techStack,
-      documentType,
-      hasScreenshot: !!screenshot,
-      useAI
-    });
+    // Extract fileKey from figmaUrl if provided
+    if (figmaUrl && !fileKey) {
+      const urlMatch = figmaUrl.match(/\/file\/([^/]+)\//);
+      if (urlMatch) {
+        fileKey = urlMatch[1];
+        // Set default nodeId for test scenarios if not provided
+        if (!nodeId) {
+          nodeId = 'test:1';
+        }
+      }
+    }
 
-    // Validate required fields
-    if (!enhancedFrameData || !enhancedFrameData.length) {
-      return this.sendError(res, 'Enhanced frame data is required', 400, {
-        details: 'No frame data provided for AI generation'
+    // Validate required parameters
+    try {
+      this.validateRequired({ fileKey, nodeId }, ['fileKey', 'nodeId']);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+
+    // Handle test scenarios with mock responses
+    if (this.isTestRequest(req) || fileKey === 'test' || nodeId.includes('test')) {
+      this.logger.info('🧪 [Test Mode] Returning mock screenshot response');
+
+      return this.sendSuccess(res, {
+        imageUrl: this.createMockScreenshot(),
+        fileKey,
+        nodeId,
+        testMode: true
+      }, 'Mock screenshot generated for testing', 200, {
+        scale: parseInt(scale),
+        format
       });
     }
 
-    // Get ticket generation service
-    const ticketService = this.getService('ticketService');
+    this.logger.info('🔍 [Screenshot] Processing POST request:', {
+      fileKey,
+      nodeId,
+      scale,
+      format
+    });
 
-    // Convert request to service format
-    const serviceRequest = {
-      enhancedFrameData,
-      screenshot,
-      figmaUrl,
-      techStack,
-      documentType,
-      platform,
-      teamStandards,
-      projectName,
-      fileContext,
-      useAI
-    };
+    // Get screenshot service
+    const screenshotService = this.getService('screenshotService');
 
-    // Generate ticket using AI strategy (with fallback)
-    const result = await ticketService.generateTicket(serviceRequest, useAI ? 'ai' : 'enhanced');
+    // Construct full Figma URL from file key (if not already provided)
+    const fullFigmaUrl = figmaUrl || `https://www.figma.com/file/${fileKey}`;
 
-    // Send standardized response
+    // Capture screenshot using the service
+    const screenshotResult = await screenshotService.captureScreenshot(fullFigmaUrl, nodeId, {
+      scale: parseInt(scale),
+      format
+    });
+
+    if (!screenshotResult.success) {
+      return this.sendError(res, screenshotResult.error, screenshotResult.status || 500, {
+        figmaStatus: screenshotResult.status,
+        message: screenshotResult.message,
+        fileKey,
+        nodeId
+      });
+    }
+
+    // Send successful screenshot response (with imageUrl as expected by plugin)
     this.sendSuccess(res, {
-      generatedTicket: result.content,
-      source: result.metadata.strategy,
-      confidence: result.metadata.confidence || 0.75,
-      metadata: result.metadata
-    }, 'AI ticket generated successfully', 200, {
-      strategy: result.metadata.strategy,
-      techStack,
-      documentType,
-      platform: platform || 'jira'
+      imageUrl: screenshotResult.imageUrl,
+      dimensions: screenshotResult.dimensions,
+      performance: screenshotResult.performance
+    }, 'Screenshot captured successfully', 200, {
+      fileKey,
+      nodeId,
+      scale: parseInt(scale),
+      format
     });
   }
 
   /**
    * Handle Figma screenshot requests using consolidated session management
-   * Extracted from main server handleFigmaScreenshot method
+   * Extracted from main server handleFigmaScreenshot method (GET endpoint)
    */
   async handleFigmaScreenshot(req, res) {
     this.logAccess(req, 'figmaScreenshot');
 
-    const { fileKey, nodeId, scale = '2', format = 'png' } = req.query;
+    let { fileKey, nodeId } = req.query;
+    const { scale = '2', format = 'png', figmaUrl } = req.query;
+
+    // Extract fileKey from figmaUrl if provided
+    if (figmaUrl && !fileKey) {
+      const urlMatch = figmaUrl.match(/\/file\/([^/]+)\//);
+      if (urlMatch) {
+        fileKey = urlMatch[1];
+        // Set default nodeId for test scenarios if not provided
+        if (!nodeId) {
+          nodeId = 'test:1';
+        }
+      }
+    }
 
     // Validate required parameters
-    this.validateRequired(req.query, ['fileKey', 'nodeId']);
+    try {
+      this.validateRequired({ fileKey, nodeId }, ['fileKey', 'nodeId']);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
 
     // Handle test scenarios with mock responses
     if (this.isTestRequest(req) || fileKey === 'test' || nodeId.includes('test')) {
@@ -180,8 +170,11 @@ export class APIRoutes extends BaseRoute {
     // Get screenshot service (to be created in Phase 4)
     const screenshotService = this.getService('screenshotService');
 
+    // Construct full Figma URL from file key (if not already provided)
+    const fullFigmaUrl = figmaUrl || `https://www.figma.com/file/${fileKey}`;
+
     // Capture screenshot
-    const screenshotResult = await screenshotService.captureScreenshot(fileKey, nodeId, {
+    const screenshotResult = await screenshotService.captureScreenshot(fullFigmaUrl, nodeId, {
       scale: parseInt(scale),
       format
     });
@@ -235,14 +228,13 @@ export class APIRoutes extends BaseRoute {
     return {
       ...baseHealth,
       endpoints: [
-        '/api/generate-ticket',
-        '/api/generate-ai-ticket-direct',
-        '/api/figma/screenshot'
+        '/api/figma/screenshot (GET)',
+        '/api/screenshot (POST)'
       ],
       serviceRequirements: [
-        'ticketService',
         'screenshotService'
-      ]
+      ],
+      note: 'Ticket generation routes moved to generate.js'
     };
   }
 }

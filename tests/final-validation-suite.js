@@ -63,15 +63,15 @@ async function testServerEndpoints() {
   logTest('Health Endpoint', healthTest.success && healthTest.output.includes('"status": "healthy"'));
   
   // Test JIRA ticket generation
-  const jiraTest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate-ticket -H "Content-Type: application/json" -d '{"platform": "jira", "documentType": "component", "frameData": {"component_name": "Test Component"}, "teamStandards": {"tech_stack": "React"}}'`, 'JIRA ticket generation');
+  const jiraTest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate -H "Content-Type: application/json" -d '{"format": "jira", "strategy": "template", "documentType": "component", "frameData": [{"name": "Test Component"}], "techStack": "React"}'`, 'JIRA ticket generation');
   logTest('JIRA Ticket Generation', jiraTest.success && jiraTest.output.includes('"success": true'));
   
   // Test GitHub ticket generation
-  const githubTest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate-ticket -H "Content-Type: application/json" -d '{"platform": "github", "documentType": "feature", "frameData": {"component_name": "Auth System"}, "teamStandards": {"tech_stack": "Node.js"}}'`, 'GitHub ticket generation');
+  const githubTest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate -H "Content-Type: application/json" -d '{"format": "jira", "strategy": "template", "documentType": "feature", "frameData": [{"name": "Auth System"}], "techStack": "Node.js"}'`, 'GitHub ticket generation');
   logTest('GitHub Ticket Generation', githubTest.success && githubTest.output.includes('"success": true'));
   
   // Test Confluence ticket generation
-  const confluenceTest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate-ticket -H "Content-Type: application/json" -d '{"platform": "confluence", "documentType": "service", "frameData": {"component_name": "Payment API"}, "teamStandards": {"tech_stack": "Java"}}'`, 'Confluence ticket generation');
+  const confluenceTest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate -H "Content-Type: application/json" -d '{"format": "jira", "strategy": "template", "documentType": "service", "frameData": [{"name": "Payment API"}], "techStack": "Java"}'`, 'Confluence ticket generation');
   logTest('Confluence Ticket Generation', confluenceTest.success && confluenceTest.output.includes('"success": true'));
 }
 
@@ -86,14 +86,14 @@ async function testCachingBehavior() {
   };
   
   // First request (should cache)
-  const firstRequest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate-ticket -H "Content-Type: application/json" -d '${JSON.stringify(testData)}'`, 'First request (caching)');
+  const firstRequest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate -H "Content-Type: application/json" -d '${JSON.stringify({...testData, format: "jira", strategy: "template"})}'`, 'First request (caching)');
   logTest('First Request (Creates Cache)', firstRequest.success && firstRequest.output.includes('"success": true'));
   
   // Wait a moment
   await new Promise(resolve => setTimeout(resolve, 500));
   
   // Second identical request (should use cache)
-  const secondRequest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate-ticket -H "Content-Type: application/json" -d '${JSON.stringify(testData)}'`, 'Second request (cache hit)');
+  const secondRequest = await runCommand(`curl -s -X POST http://localhost:3000/api/generate -H "Content-Type: application/json" -d '${JSON.stringify({...testData, format: "jira", strategy: "template"})}'`, 'Second request (cache hit)');
   logTest('Second Request (Cache Hit)', secondRequest.success && secondRequest.output.includes('"success": true'));
   
   // Verify they have the same generated timestamp (indicating cache hit)

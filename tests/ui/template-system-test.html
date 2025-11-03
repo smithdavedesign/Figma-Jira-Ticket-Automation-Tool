@@ -1633,12 +1633,12 @@ ${testResults.passed === testResults.total ?
     async function testPlatformTemplateWithPreview(platform, documentType) {
       log(`Testing ${platform}/${documentType} template with live API...`);
       try {
-        // Call the actual API
-        const response = await fetch('http://localhost:3000/api/generate-ai-ticket-direct', {
+        // Call the unified generation API
+        const response = await fetch('http://localhost:3000/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            enhancedFrameData: [{
+            frameData: [{
               id: `test-${documentType}`,
               name: `Test${documentType.charAt(0).toUpperCase() + documentType.slice(1)}`,
               hierarchy: {
@@ -1648,14 +1648,17 @@ ${testResults.passed === testResults.total ?
             }],
             techStack: "React, TypeScript, Material-UI",
             documentType: documentType,
-            platform: platform,
-            useAI: false
+            format: platform || 'jira',
+            strategy: 'template'
           })
         });
 
         if (response.ok) {
           const result = await response.json();
-          const ticket = result.generatedTicket || generateMockTicket(platform, documentType);
+          // Handle unified response format
+          const ticket = (result.success && result.data && result.data.content) 
+            ? result.data.content 
+            : (result.generatedTicket || generateMockTicket(platform, documentType));
           
           showResult(`${platform}-${documentType}-result`, 
             `✅ ${documentType} template generated successfully`, 'success', 

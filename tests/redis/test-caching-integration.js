@@ -9,16 +9,15 @@ import { setTimeout } from 'timers/promises';
 
 // Mock request data for testing
 const testRequestData = {
-  frameData: {
-    component_name: 'Button Component',
+  frameData: [{
+    name: 'Button Component',
     nodeCount: 15,
     dimensions: { width: 200, height: 50 }
-  },
-  platform: 'jira',
+  }],
+  format: 'jira',
+  strategy: 'template',
   documentType: 'component',
-  teamStandards: {
-    tech_stack: 'React TypeScript'
-  }
+  techStack: 'React TypeScript'
 };
 
 async function testTicketCaching() {
@@ -50,10 +49,10 @@ async function testTicketCaching() {
     console.log('\n3. Making request with different component name...');
     const differentRequest = {
       ...testRequestData,
-      frameData: {
-        ...testRequestData.frameData,
-        component_name: 'Card Component'
-      }
+      frameData: [{
+        ...testRequestData.frameData[0],
+        name: 'Card Component'
+      }]
     };
     
     const response3 = await makeTicketRequest(differentRequest);
@@ -78,7 +77,7 @@ async function testTicketCaching() {
  * Make a ticket generation request to the server
  */
 async function makeTicketRequest(requestData) {
-  const response = await fetch('http://localhost:3000/api/generate-ticket', {
+  const response = await fetch('http://localhost:3000/api/generate', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

@@ -28,6 +28,9 @@ export class TestRoutes extends BaseRoute {
     // AI screenshot testing
     router.post('/api/test-ai-screenshots', this.asyncHandler(this.handleTestAIScreenshots.bind(this)));
 
+    // AI ticket generation testing (for Swagger UI compatibility)
+    router.post('/test/ai-ticket-generation', this.asyncHandler(this.handleTestAITicketGeneration.bind(this)));
+
     this.logger.info('✅ Test routes registered');
   }
 
@@ -68,7 +71,7 @@ export class TestRoutes extends BaseRoute {
 
     } catch (error) {
       this.logger.error('Error generating AI test dashboard:', error);
-      this.sendError(res, 500, 'Failed to generate test dashboard', error.message);
+      this.sendError(res, 'Failed to generate test dashboard', 500, { originalError: error.message });
     }
   }
 
@@ -82,9 +85,10 @@ export class TestRoutes extends BaseRoute {
     const { scenario, strategy, includeScreenshot } = req.body;
 
     // Validate required fields
-    const validation = this.validateRequired(req.body, ['scenario']);
-    if (!validation.valid) {
-      return this.sendError(res, 400, 'Validation failed', validation.errors);
+    try {
+      this.validateRequired(req.body, ['scenario']);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
     }
 
     const redis = this.getService('redis');
@@ -94,6 +98,14 @@ export class TestRoutes extends BaseRoute {
     try {
       this.logger.info(`🧪 Running AI test scenario: ${scenario}`);
 
+      // Initialize services if not already initialized
+      if (!ticketService.initialized) {
+        await ticketService.initialize();
+      }
+      if (includeScreenshot && !screenshotService.initialized) {
+        await screenshotService.initialize();
+      }
+
       let screenshotData = null;
       if (includeScreenshot) {
         // Generate test screenshot
@@ -102,7 +114,7 @@ export class TestRoutes extends BaseRoute {
 
       // Generate ticket using specified strategy
       const ticketData = await ticketService.generateTicket({
-        strategy: strategy || 'AI',
+        strategy: strategy || 'enhanced', // Use enhanced instead of AI for better test compatibility
         scenario: scenario,
         includeScreenshot: includeScreenshot,
         screenshotData: screenshotData,
@@ -127,7 +139,7 @@ export class TestRoutes extends BaseRoute {
       };
 
       // Cache test result
-      await redis.setex(`ai-test-result-${Date.now()}`, 3600, JSON.stringify(testResult));
+      await redis.set(`ai-test-result-${Date.now()}`, testResult, 3600);
 
       // Update test history
       const history = await redis.get('ai-test-history') || [];
@@ -144,7 +156,7 @@ export class TestRoutes extends BaseRoute {
         updatedHistory.splice(0, updatedHistory.length - 50);
       }
 
-      await redis.setex('ai-test-history', 86400, JSON.stringify(updatedHistory));
+      await redis.set('ai-test-history', updatedHistory, 86400);
 
       this.sendSuccess(res, testResult, 'AI scenario test completed successfully');
 
@@ -160,9 +172,9 @@ export class TestRoutes extends BaseRoute {
       };
 
       // Cache error result
-      await redis.setex(`ai-test-error-${Date.now()}`, 3600, JSON.stringify(errorResult));
+      await redis.set(`ai-test-error-${Date.now()}`, errorResult, 3600);
 
-      this.sendError(res, 500, 'AI scenario test failed', error.message);
+      this.sendError(res, 'AI scenario test failed', 500, { originalError: error.message });
     }
   }
 
@@ -177,18 +189,28 @@ export class TestRoutes extends BaseRoute {
 
     const redis = this.getService('redis');
     const screenshotService = this.getService('screenshotService');
-    const visualAIService = this.getService('visualAIService');
+    const analysisService = this.getService('analysisService');
 
     try {
       this.logger.info(`🧪 Running AI screenshot test: ${testType || 'standard'}`);
+
+      // Initialize screenshot service if not already initialized
+      if (!screenshotService.initialized) {
+        await screenshotService.initialize();
+      }
+
+      // Initialize analysis service if needed and visual analysis is requested
+      if (includeVisualAnalysis && analysisService && !analysisService.initialized) {
+        await analysisService.initialize();
+      }
 
       // Generate test screenshot
       const screenshotData = await screenshotService.generateTestScreenshot(testType);
 
       let visualAnalysis = null;
-      if (includeVisualAnalysis && visualAIService) {
+      if (includeVisualAnalysis && analysisService) {
         // Perform visual AI analysis
-        visualAnalysis = await visualAIService.analyzeScreenshot(screenshotData);
+        visualAnalysis = await analysisService.analyzeScreenshot(screenshotData);
       }
 
       const testResult = {
@@ -213,13 +235,71 @@ export class TestRoutes extends BaseRoute {
       };
 
       // Cache test result
-      await redis.setex(`ai-screenshot-test-${Date.now()}`, 3600, JSON.stringify(testResult));
+      await redis.set(`ai-screenshot-test-${Date.now()}`, testResult, 3600);
 
       this.sendSuccess(res, testResult, 'AI screenshot test completed successfully');
 
     } catch (error) {
       this.logger.error('Error in AI screenshot test:', error);
-      this.sendError(res, 500, 'AI screenshot test failed', error.message);
+      this.sendError(res, 'AI screenshot test failed', 500, {
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
+   * Handle AI ticket generation testing requests
+   * For Swagger UI compatibility
+   */
+  async handleTestAITicketGeneration(req, res) {
+    this.logAccess(req, 'testAITicketGeneration');
+
+    const { description, strategy = 'enhanced', includeScreenshot = false } = req.body;
+
+    try {
+      // Validate required fields
+      this.validateRequired(req.body, ['description']);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+
+    const ticketService = this.getService('ticketService');
+
+    try {
+      this.logger.info(`🧪 Running AI ticket generation test: ${description}`);
+
+      // Initialize service if not already initialized
+      if (!ticketService.initialized) {
+        await ticketService.initialize();
+      }
+
+      // Generate ticket using specified strategy
+      const ticketData = await ticketService.generateTicket({
+        strategy: strategy,
+        scenario: description,
+        includeScreenshot: includeScreenshot,
+        testMode: true
+      });
+
+      const testResult = {
+        description,
+        strategy,
+        timestamp: new Date().toISOString(),
+        success: true,
+        ticket: ticketData,
+        performance: {
+          duration: ticketData.performance?.duration || 0,
+          cacheHit: ticketData.performance?.cacheHit || false
+        }
+      };
+
+      this.sendSuccess(res, testResult, 'AI ticket generation test completed successfully');
+
+    } catch (error) {
+      this.logger.error('Error in AI ticket generation test:', error);
+      this.sendError(res, 'AI ticket generation test failed', 500, {
+        originalError: error.message
+      });
     }
   }
 

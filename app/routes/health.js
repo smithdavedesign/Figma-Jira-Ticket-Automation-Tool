@@ -102,13 +102,16 @@ export class HealthRoutes extends BaseRoute {
     try {
       const aiOrchestrator = this.getService('aiOrchestrator');
       const visualAIService = this.getService('visualAIService');
-      const geminiAdapter = this.getService('geminiAdapter');
+
+      // Get provider status from AI orchestrator instead of separate geminiAdapter service
+      const providerStatus = aiOrchestrator?.getProviderStatus?.() || {};
+      const geminiProvider = providerStatus.gemini || {};
 
       return {
         geminiModel: 'gemini-2.0-flash',
         visualEnhancedAI: !!visualAIService,
         aiOrchestrator: !!aiOrchestrator,
-        geminiAdapter: !!geminiAdapter,
+        geminiAdapter: geminiProvider.available || false,
         providers: ['gemini', 'gpt4', 'claude'],
         capabilities: [
           'multimodal-analysis',

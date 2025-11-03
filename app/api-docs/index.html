@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Figma AI Ticket Generator - API Documentation</title>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+  <style>
+    html {
+      box-sizing: border-box;
+      overflow: -moz-scrollbars-vertical;
+      overflow-y: scroll;
+    }
+
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+
+    body {
+      margin: 0;
+      background: #fafafa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .swagger-ui .topbar {
+      background-color: #1976d2;
+    }
+
+    .swagger-ui .topbar .download-url-wrapper {
+      display: none;
+    }
+
+    /* Custom header */
+    .api-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem 0;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .api-header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      font-weight: 300;
+    }
+
+    .api-header p {
+      margin: 0.5rem 0 0 0;
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .api-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+
+    .api-stat {
+      text-align: center;
+    }
+
+    .api-stat-number {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .api-stat-label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    /* Quick actions */
+    .quick-actions {
+      max-width: 1200px;
+      margin: 0 auto 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .quick-actions h3 {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .action-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .action-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 4px solid #1976d2;
+    }
+
+    .action-card h4 {
+      margin: 0 0 0.5rem 0;
+      color: #1976d2;
+    }
+
+    .action-card p {
+      margin: 0 0 1rem 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .action-card code {
+      background: #f5f5f5;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.8rem;
+    }
+
+    .try-button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .try-button:hover {
+      background: #1565c0;
+    }
+
+    /* Swagger UI container */
+    #swagger-ui {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Custom Header -->
+  <div class="api-header">
+    <h1>🎯 Figma AI Ticket Generator API</h1>
+    <p>Unified Documentation Generation Platform</p>
+    <div class="api-stats">
+      <div class="api-stat">
+        <div class="api-stat-number">1</div>
+        <div class="api-stat-label">Unified Endpoint</div>
+      </div>
+      <div class="api-stat">
+        <div class="api-stat-number">4</div>
+        <div class="api-stat-label">Output Formats</div>
+      </div>
+      <div class="api-stat">
+        <div class="api-stat-number">5</div>
+        <div class="api-stat-label">AI Strategies</div>
+      </div>
+      <div class="api-stat">
+        <div class="api-stat-number">7</div>
+        <div class="api-stat-label">API Routes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <h3>🚀 Quick Start Examples</h3>
+    <div class="action-cards">
+      <div class="action-card">
+        <h4>🎯 Generate JIRA Ticket</h4>
+        <p>Use the unified endpoint to generate a JIRA ticket with AI strategy.</p>
+        <code>POST /api/generate</code>
+        <br><br>
+        <button class="try-button" onclick="scrollToEndpoint('/api/generate')">Try It Out</button>
+      </div>
+      
+      <div class="action-card">
+        <h4>🧠 Auto-Strategy Detection</h4>
+        <p>Let the system automatically choose the best generation strategy.</p>
+        <code>strategy: "auto"</code>
+        <br><br>
+        <button class="try-button" onclick="scrollToEndpoint('/api/generate')">Try Auto-Detect</button>
+      </div>
+      
+      <div class="action-card">
+        <h4>🏥 System Health</h4>
+        <p>Check the health status of all services and components.</p>
+        <code>GET /</code>
+        <br><br>
+        <button class="try-button" onclick="scrollToEndpoint('/')">Check Health</button>
+      </div>
+      
+      <div class="action-card">
+        <h4>📸 Figma Screenshot</h4>
+        <p>Capture and analyze screenshots from Figma URLs.</p>
+        <code>GET /api/figma/screenshot</code>
+        <br><br>
+        <button class="try-button" onclick="scrollToEndpoint('/api/figma/screenshot')">Capture Screenshot</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Swagger UI -->
+  <div id="swagger-ui"></div>
+
+  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function() {
+      // Determine if we're running locally or on a server
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const baseUrl = isLocal ? 'http://localhost:3000' : window.location.origin;
+      
+      // Initialize Swagger UI
+      const ui = SwaggerUIBundle({
+        url: window.location.origin + '/api-docs/swagger.yaml',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout",
+        defaultModelsExpandDepth: 1,
+        defaultModelExpandDepth: 1,
+        docExpansion: "list",
+        filter: true,
+        showExtensions: true,
+        showCommonExtensions: true,
+        tryItOutEnabled: true,
+        requestInterceptor: (request) => {
+          // Update server URL for local development
+          if (isLocal && request.url.includes('localhost')) {
+            request.url = request.url.replace(/https?:\/\/[^\/]+/, baseUrl);
+          }
+          return request;
+        },
+        onComplete: () => {
+          console.log('🎯 Swagger UI loaded successfully!');
+          console.log('📡 Server URL:', baseUrl);
+          
+          // Add custom styling
+          const style = document.createElement('style');
+          style.textContent = `
+            .swagger-ui .scheme-container {
+              background: #f8f9fa;
+              border-radius: 4px;
+              padding: 10px;
+              margin: 10px 0;
+            }
+            
+            .swagger-ui .btn.execute {
+              background: #1976d2;
+              border-color: #1976d2;
+            }
+            
+            .swagger-ui .btn.execute:hover {
+              background: #1565c0;
+              border-color: #1565c0;
+            }
+          `;
+          document.head.appendChild(style);
+        }
+      });
+
+      // Store UI instance globally for helper functions
+      window.swaggerUI = ui;
+    };
+
+    // Helper function to scroll to a specific endpoint
+    function scrollToEndpoint(path) {
+      setTimeout(() => {
+        const element = document.querySelector(`[data-path="${path}"]`) || 
+                        document.querySelector(`[id*="${path.replace(/\//g, '_').replace(/[{}]/g, '')}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+          // Try to expand the endpoint
+          const toggleButton = element.querySelector('.opblock-summary');
+          if (toggleButton) {
+            toggleButton.click();
+          }
+        } else {
+          // Fallback: scroll to the operations section
+          const operations = document.querySelector('.swagger-ui');
+          if (operations) {
+            operations.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }, 1000);
+    }
+
+    // Add some helpful console messages
+    console.log('🎯 Figma AI Ticket Generator API Documentation');
+    console.log('📚 Available endpoints:');
+    console.log('  - POST /api/generate (Unified generation)');
+    console.log('  - GET / (Health check)');
+    console.log('  - GET /api/figma/screenshot (Figma integration)');
+    console.log('  - GET /mcp/status (MCP server status)');
+    console.log('🚀 Use the "Try it out" buttons to test endpoints!');
+  </script>
+</body>
+</html>

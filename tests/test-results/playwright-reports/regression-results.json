@@ -73,7 +73,7 @@
     "version": "1.56.1",
     "workers": 7,
     "webServer": {
-      "command": "npm run start:mvc",
+      "command": "npm start",
       "port": 3000,
       "reuseExistingServer": true
     }
@@ -86,8 +86,8 @@
     }
   ],
   "stats": {
-    "startTime": "2025-10-24T21:20:11.691Z",
-    "duration": 4.5750000000000455,
+    "startTime": "2025-11-02T01:53:58.079Z",
+    "duration": 367.32300000000004,
     "expected": 0,
     "skipped": 0,
     "unexpected": 0,

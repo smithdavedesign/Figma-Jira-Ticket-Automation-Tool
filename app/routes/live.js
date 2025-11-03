@@ -618,7 +618,7 @@ export class LiveRoutes extends BaseRoute {
         const serviceContainer = this.serviceContainer;
         result.passed = !!serviceContainer;
         result.message = 'Service container is operational';
-        result.details = { 
+        result.details = {
           registeredServices: serviceContainer.instances ? serviceContainer.instances.size : 0,
           containerActive: !!serviceContainer.logger
         };

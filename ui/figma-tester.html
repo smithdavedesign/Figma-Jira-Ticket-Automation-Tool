@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Figma API Tester</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      padding: 16px; 
+      background: #f8f8f8; 
+      margin: 0;
+    }
+    h2 { color: #333; margin-bottom: 20px; }
+    label { 
+      display: block; 
+      font-weight: 500; 
+      margin-top: 12px; 
+      margin-bottom: 4px; 
+      color: #555;
+    }
+    input, select, button { 
+      margin: 4px 0; 
+      padding: 8px 12px; 
+      width: calc(100% - 24px); 
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      background: #0d99ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      padding: 10px 12px;
+      margin-top: 16px;
+    }
+    button:hover { background: #0084e6; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .response { 
+      background: white; 
+      padding: 12px; 
+      border: 1px solid #ddd; 
+      border-radius: 4px;
+      margin-top: 16px; 
+    }
+    .response h3 { margin-top: 0; color: #333; }
+    textarea { 
+      width: calc(100% - 24px); 
+      height: 300px; 
+      margin-top: 8px; 
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 8px;
+      resize: vertical;
+    }
+    .status { 
+      padding: 8px 12px; 
+      border-radius: 4px; 
+      margin: 8px 0; 
+      font-size: 14px;
+    }
+    .status.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+    .status.error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+    .status.loading { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
+    .endpoint-info {
+      background: #f0f9ff;
+      border: 1px solid #0ea5e9;
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #0c4a6e;
+    }
+    .quick-fills {
+      margin-top: 8px;
+    }
+    .quick-fill-btn {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      padding: 4px 8px;
+      margin: 2px;
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 3px;
+      display: inline-block;
+      width: auto;
+    }
+    .quick-fill-btn:hover { background: #e5e7eb; }
+  </style>
+</head>
+<body>
+  <h2>🧪 Figma API Tester</h2>
+  
+  <div class="endpoint-info">
+    <strong>Server:</strong> http://localhost:3000/api/figma<br>
+    <strong>Status:</strong> <span id="serverStatus">Checking...</span>
+  </div>
+
+  <label>File Key / Figma URL</label>
+  <input id="fileKey" placeholder="Enter File Key (abc123def456) or Full URL (https://figma.com/...)" />
+  <div class="quick-fills">
+    <button class="quick-fill-btn" onclick="fillSample('fileKey', 'test123def456')">Sample File Key</button>
+    <button class="quick-fill-btn" onclick="fillSample('fileKey', 'https://www.figma.com/file/testFileKey123/Design-System')">Sample Full URL</button>
+  </div>
+
+  <label>Node ID (optional)</label>
+  <input id="nodeId" placeholder="e.g., 12:34, 56:78" />
+  <div class="quick-fills">
+    <button class="quick-fill-btn" onclick="fillSample('nodeId', '12:34')">Sample Node ID</button>
+  </div>
+
+  <label>Endpoint</label>
+  <select id="endpoint" onchange="updateEndpointInfo()">
+    <option value="health">GET /health - Server health check</option>
+    <option value="file">GET /file/:fileKey - Get file metadata</option>
+    <option value="file-from-url">GET /file-from-url?url=... - Get file from full URL</option>
+    <option value="node">GET /node/:fileKey/:nodeId - Get specific node</option>
+    <option value="node-from-url">GET /node-from-url?url=...&nodeId=... - Get node from full URL</option>
+    <option value="screenshot">POST /screenshot - Take screenshot (New API)</option>
+    <option value="figma-screenshot">POST /figma/screenshot - Enhanced Figma screenshot</option>
+    <option value="extract-context">POST /extract-context - Extract design context</option>
+    <option value="enhanced-capture">POST /enhanced-capture - Enhanced capture</option>
+    <option value="styles">GET /styles/:fileKey - Get file styles</option>
+    <option value="styles-from-url">GET /styles-from-url?url=... - Get styles from full URL</option>
+    <option value="components">GET /components/:fileKey - Get components</option>
+    <option value="components-from-url">GET /components-from-url?url=... - Get components from full URL</option>
+    <option value="comments">GET /comments/:fileKey - Get comments</option>
+    <option value="comments-from-url">GET /comments-from-url?url=... - Get comments from full URL</option>
+    <option value="versions">GET /versions/:fileKey - Get file versions</option>
+    <option value="versions-from-url">GET /versions-from-url?url=... - Get versions from full URL</option>
+    <option value="mock">GET /mock - Mock data for testing</option>
+  </select>
+
+  <div id="endpointHelp" class="endpoint-info" style="margin-top: 8px;">
+    Select an endpoint to see details
+  </div>
+
+  <button id="runTest">Run Test</button>
+
+  <div id="statusDiv"></div>
+
+  <div class="response">
+    <h3>Response</h3>
+    <textarea id="response" placeholder="API response will appear here..."></textarea>
+  </div>
+
+  <script>
+    // Check server status on load
+    window.onload = checkServerStatus;
+
+    async function checkServerStatus() {
+      try {
+        const response = await fetch('http://localhost:3000/');
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById('serverStatus').textContent = `✅ ${data.server || 'Running'}`;
+        } else {
+          document.getElementById('serverStatus').textContent = `❌ HTTP ${response.status}`;
+        }
+      } catch (error) {
+        document.getElementById('serverStatus').textContent = `❌ Not reachable (${error.message})`;
+      }
+    }
+
+    function fillSample(fieldId, value) {
+      document.getElementById(fieldId).value = value;
+    }
+
+    function updateEndpointInfo() {
+      const endpoint = document.getElementById('endpoint').value;
+      const helpDiv = document.getElementById('endpointHelp');
+      
+      const info = {
+        'health': 'Tests if the server is running and healthy. No parameters needed.',
+        'file': 'Gets metadata for a Figma file. Requires: File Key',
+        'file-from-url': 'Gets file metadata from full Figma URL. Enter full URL in File Key field.',
+        'node': 'Gets data for a specific node in a file. Requires: File Key, Node ID',
+        'node-from-url': 'Gets node data from full Figma URL. Enter full URL in File Key field + Node ID.',
+        'screenshot': 'NEW API: Takes screenshot with proper JSON response. Requires: File Key + Node ID',
+        'figma-screenshot': 'Enhanced Figma screenshot with Context Layer. Requires: Full URL in File Key field',
+        'extract-context': 'Extracts design context from Figma. Requires: figmaUrl in request body',
+        'enhanced-capture': 'Enhanced capture with AI analysis. Requires: figmaUrl in request body',
+        'styles': 'Gets all styles from a Figma file. Requires: File Key',
+        'styles-from-url': 'Gets styles from full Figma URL. Enter full URL in File Key field.',
+        'components': 'Gets all components from a Figma file. Requires: File Key',
+        'components-from-url': 'Gets components from full Figma URL. Enter full URL in File Key field.',
+        'comments': 'Gets comments from a Figma file. Requires: File Key',
+        'comments-from-url': 'Gets comments from full Figma URL. Enter full URL in File Key field.',
+        'versions': 'Gets version history of a Figma file. Requires: File Key',
+        'versions-from-url': 'Gets versions from full Figma URL. Enter full URL in File Key field.',
+        'mock': 'Returns comprehensive mock data for testing. No parameters needed.'
+      };
+
+      helpDiv.textContent = info[endpoint] || 'Select an endpoint to see details';
+    }
+
+    function showStatus(message, type = 'loading') {
+      const statusDiv = document.getElementById('statusDiv');
+      statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+    }
+
+    function clearStatus() {
+      document.getElementById('statusDiv').innerHTML = '';
+    }
+
+    const btn = document.getElementById('runTest');
+    btn.onclick = async () => {
+      const fileKey = document.getElementById('fileKey').value.trim();
+      const nodeId = document.getElementById('nodeId').value.trim();
+      const endpoint = document.getElementById('endpoint').value;
+      const base = 'http://localhost:3000/api/figma';
+
+      // Clear previous response
+      document.getElementById('response').value = '';
+      
+      // Show loading status
+      showStatus('🔄 Making API request...', 'loading');
+      btn.disabled = true;
+
+      let url = '';
+      let options = { method: 'GET' };
+
+      try {
+        // Build URL and options based on endpoint
+        switch (endpoint) {
+          case 'health':
+            url = `${base}/health`;
+            break;
+          case 'file':
+            if (!fileKey) throw new Error('File Key is required for this endpoint');
+            url = `${base}/file/${fileKey}`;
+            break;
+          case 'file-from-url':
+            if (!fileKey) throw new Error('Full Figma URL is required for this endpoint');
+            const figmaUrl = fileKey.startsWith('http') ? fileKey : `https://www.figma.com/file/${fileKey}/Test`;
+            url = `${base}/file-from-url?url=${encodeURIComponent(figmaUrl)}`;
+            break;
+          case 'node':
+            if (!fileKey || !nodeId) throw new Error('File Key and Node ID are required for this endpoint');
+            url = `${base}/node/${fileKey}/${nodeId}`;
+            break;
+          case 'node-from-url':
+            if (!fileKey) throw new Error('Full Figma URL is required for this endpoint');
+            const nodeFigmaUrl = fileKey.startsWith('http') ? fileKey : `https://www.figma.com/file/${fileKey}/Test`;
+            url = `${base}/node-from-url?url=${encodeURIComponent(nodeFigmaUrl)}${nodeId ? `&nodeId=${nodeId}` : ''}`;
+            break;
+          case 'styles':
+            if (!fileKey) throw new Error('File Key is required for this endpoint');
+            url = `${base}/styles/${fileKey}`;
+            break;
+          case 'styles-from-url':
+            if (!fileKey) throw new Error('Full Figma URL is required for this endpoint');
+            const stylesFigmaUrl = fileKey.startsWith('http') ? fileKey : `https://www.figma.com/file/${fileKey}/Test`;
+            url = `${base}/styles-from-url?url=${encodeURIComponent(stylesFigmaUrl)}`;
+            break;
+          case 'components':
+            if (!fileKey) throw new Error('File Key is required for this endpoint');
+            url = `${base}/components/${fileKey}`;
+            break;
+          case 'components-from-url':
+            if (!fileKey) throw new Error('Full Figma URL is required for this endpoint');
+            const compFigmaUrl = fileKey.startsWith('http') ? fileKey : `https://www.figma.com/file/${fileKey}/Test`;
+            url = `${base}/components-from-url?url=${encodeURIComponent(compFigmaUrl)}`;
+            break;
+          case 'comments':
+            if (!fileKey) throw new Error('File Key is required for this endpoint');
+            url = `${base}/comments/${fileKey}`;
+            break;
+          case 'comments-from-url':
+            if (!fileKey) throw new Error('Full Figma URL is required for this endpoint');
+            const commentsFigmaUrl = fileKey.startsWith('http') ? fileKey : `https://www.figma.com/file/${fileKey}/Test`;
+            url = `${base}/comments-from-url?url=${encodeURIComponent(commentsFigmaUrl)}`;
+            break;
+          case 'versions':
+            if (!fileKey) throw new Error('File Key is required for this endpoint');
+            url = `${base}/versions/${fileKey}`;
+            break;
+          case 'versions-from-url':
+            if (!fileKey) throw new Error('Full Figma URL is required for this endpoint');
+            const versionsFigmaUrl = fileKey.startsWith('http') ? fileKey : `https://www.figma.com/file/${fileKey}/Test`;
+            url = `${base}/versions-from-url?url=${encodeURIComponent(versionsFigmaUrl)}`;
+            break;
+          case 'mock':
+            url = `${base}/mock`;
+            break;
+          case 'screenshot':
+            // NEW API: POST /api/screenshot (proper JSON response with imageUrl)
+            url = 'http://localhost:3000/api/screenshot';
+            options = {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ 
+                fileKey: fileKey || 'test',
+                nodeId: nodeId || 'test:1',
+                scale: '2',
+                format: 'png'
+              })
+            };
+            break;
+          case 'figma-screenshot':
+            // Enhanced Figma screenshot with Context Layer
+            url = `${base}/screenshot`;
+            options = {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ 
+                figmaUrl: fileKey.startsWith('http') ? fileKey : `https://www.figma.com/file/${fileKey}/Test`,
+                includeAnalysis: true,
+                testMode: !fileKey.startsWith('http'),
+                format: 'base64',
+                quality: 'high'
+              })
+            };
+            break;
+          case 'extract-context':
+            url = `${base}/extract-context`;
+            options = {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ 
+                figmaUrl: fileKey.startsWith('http') ? fileKey : `https://www.figma.com/file/${fileKey}/Test`,
+                options: {
+                  includeDesignTokens: true,
+                  includeComponents: true,
+                  includeAccessibility: true
+                }
+              })
+            };
+            break;
+          case 'enhanced-capture':
+            url = `${base}/enhanced-capture`;
+            options = {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ 
+                figmaUrl: fileKey.startsWith('http') ? fileKey : `https://www.figma.com/file/${fileKey}/Test`,
+                includeScreenshot: true,
+                includeContext: true,
+                includeVisualAI: false,
+                format: 'base64',
+                quality: 'high'
+              })
+            };
+            break;
+          default:
+            throw new Error('Unknown endpoint selected');
+        }
+
+        console.log('Making request to:', url, 'with options:', options);
+
+        const res = await fetch(url, options);
+        const responseText = await res.text();
+        
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          data = { rawResponse: responseText };
+        }
+
+        // Show response
+        document.getElementById('response').value = JSON.stringify(data, null, 2);
+        
+        if (res.ok) {
+          showStatus(`✅ Success (${res.status}): ${endpoint} completed`, 'success');
+        } else {
+          showStatus(`❌ Error (${res.status}): ${data.error || data.message || 'Request failed'}`, 'error');
+        }
+
+      } catch (err) {
+        document.getElementById('response').value = `Error: ${err.message}`;
+        showStatus(`❌ ${err.message}`, 'error');
+        console.error('API Test Error:', err);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    // Initialize endpoint info
+    updateEndpointInfo();
+  </script>
+</body>
+</html>

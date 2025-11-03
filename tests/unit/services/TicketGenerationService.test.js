@@ -20,7 +20,9 @@ describe('TicketGenerationService', () => {
     mockTemplateManager = {
       generateTicket: vi.fn().mockResolvedValue({
         content: 'Template generated ticket',
-        templateId: 'test-template'
+        metadata: {
+          template_id: 'test-template'
+        }
       })
     };
 

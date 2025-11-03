@@ -286,11 +286,11 @@ export class TemplateManager {
   /**
    * Estimate development hours
    */
-  estimateHours(figmaContext, techStack) {
+  estimateHours(figmaContext, documentType, techStack) {
     const complexity = this.calculateComplexity(figmaContext);
     const isComplexTech = Array.isArray(techStack)
-      ? techStack.some(tech => tech.toLowerCase().includes('aem'))
-      : techStack.toLowerCase().includes('aem');
+      ? techStack.some(tech => tech && tech.toLowerCase().includes('aem'))
+      : techStack && techStack.toLowerCase().includes('aem');
 
     let baseHours = 4; // Simple component
 
@@ -796,8 +796,8 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
   calculatePriority(figmaContext, techStack) {
     const complexity = this.calculateComplexity(figmaContext);
     const isComplexTech = Array.isArray(techStack)
-      ? techStack.some(tech => tech.toLowerCase().includes('aem'))
-      : techStack.toLowerCase().includes('aem');
+      ? techStack.some(tech => tech && tech.toLowerCase().includes('aem'))
+      : techStack && techStack.toLowerCase().includes('aem');
 
     if (complexity === 'complex' || isComplexTech) {
       return 'High';

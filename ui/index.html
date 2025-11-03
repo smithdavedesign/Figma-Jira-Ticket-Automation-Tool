@@ -1040,7 +1040,7 @@ Examples:
       <div class="context-preview">
         <div class="context-preview-header">
           <h3 class="context-preview-title">
-            🔌 MCP Server Status
+            🔌 Figma Design Context MCP Server
             <span id="server-status-badge" class="context-preview-badge">Checking...</span>
           </h3>
           <p class="context-preview-subtitle">Model Context Protocol server connection</p>
@@ -1057,7 +1057,7 @@ Examples:
             <div class="section-content" id="server-connection-content">
               <div class="empty-state">
                 <span class="empty-icon">🔌</span>
-                <p>Checking MCP server connection...</p>
+                <p>Checking Figma Design Context MCP server connection...</p>
               </div>
             </div>
           </div>
@@ -1201,7 +1201,7 @@ Examples:
       
       <div style="text-align: center; margin: 10px 0;">
         <button id="showAdvancedDebug" class="button button-success">🔬 Advanced Context Dashboard</button>
-        <button id="showDebug" class="button-debug">🔍 Show MCP Data Debug</button>
+        <button id="showDebug" class="button-debug">🔍 Show Design Context Debug</button>
       </div>
 
       <!-- Comprehensive Test Suite -->
@@ -1220,7 +1220,7 @@ Examples:
       <!-- Debug Panel for Data Layer Validation -->
       <div id="debugPanel" class="debug-panel hidden">
         <div class="debug-header">
-          <h3>🔍 MCP Data Layer Debug</h3>
+          <h3>🔍 Figma Design Context Debug</h3>
           <button id="openAdvancedDashboard" class="button-debug">📊 Advanced Dashboard</button>
           <button id="toggleDebug" class="button-debug">Hide Debug</button>
         </div>
@@ -1234,7 +1234,7 @@ Examples:
             <div id="debugValidation" class="debug-validation"></div>
           </div>
           <div class="debug-section">
-            <h4>📡 MCP Server Communication</h4>
+            <h4>📡 Figma Design Context Server Communication</h4>
             <div id="debugMCP" class="debug-mcp"></div>
           </div>
         </div>
@@ -1420,7 +1420,7 @@ Examples:
       design: "Figma design system with design tokens, component library, style guide, accessibility standards, responsive breakpoints"
     };
 
-    // MCP Server Configuration
+    // Figma Design Context MCP Server Configuration
     const MCP_SERVER_URL = 'http://localhost:3000';
     let mcpServerStatus = {
       connected: false,
@@ -1494,7 +1494,7 @@ Examples:
               ).join('')}
             </div>
             <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #166534; margin-top: 8px;">
-              🚀 MCP Server Ready - AI-powered design analysis available
+              🚀 Figma Design Context Server Ready - Design context extraction available
             </div>
           </div>
         `;
@@ -1513,7 +1513,7 @@ Examples:
           <div style="font-size: 13px; color: #dc2626;">
             <div><strong>Error:</strong> ${info.error}</div>
             <div style="margin-top: 8px; font-size: 12px; color: #6b7280;">
-              Make sure the MCP server is running:<br>
+              Make sure the Figma Design Context server is running:<br>
               <code style="background: #f3f4f6; padding: 2px 4px; border-radius: 3px;">cd server && npm start</code>
             </div>
           </div>
@@ -1560,13 +1560,17 @@ Examples:
       console.log('🤖 Starting direct AI generation with Visual Enhanced AI Service...');
       
       try {
-        // Call the server's direct AI generation endpoint
-        const response = await fetch(`${MCP_SERVER_URL}/api/generate-ai-ticket-direct`, {
+        // Call the server's unified generation endpoint
+        const response = await fetch(`${MCP_SERVER_URL}/api/generate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(params)
+          body: JSON.stringify({
+            ...params,
+            format: 'jira',
+            strategy: 'ai'
+          })
         });
 
         if (!response.ok) {
@@ -1576,8 +1580,10 @@ Examples:
         const result = await response.json();
         console.log('✅ Direct AI generation completed:', result);
         
-        // Return the generated ticket content
-        if (result.content && Array.isArray(result.content)) {
+        // Return the generated ticket content (unified response format)
+        if (result.success && result.data && result.data.content) {
+          return typeof result.data.content === 'string' ? result.data.content : JSON.stringify(result.data.content);
+        } else if (result.content && Array.isArray(result.content)) {
           return result.content
             .filter(item => item.type === 'text')
             .map(item => typeof item.text === 'string' ? item.text : JSON.stringify(item.text))
@@ -3397,14 +3403,18 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
                   }
                 };
                 
-                // Call the template generation endpoint
+                // Call the unified generation endpoint
                 const startTime = Date.now();
-                const response = await fetch('http://localhost:3000/api/generate-ticket', {
+                const response = await fetch('http://localhost:3000/api/generate', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'
                   },
-                  body: JSON.stringify(testParams)
+                  body: JSON.stringify({
+                    ...testParams,
+                    format: 'jira',
+                    strategy: 'template'
+                  })
                 });
                 
                 const endTime = Date.now();
@@ -3414,11 +3424,16 @@ All tests completed successfully at ${new Date().toLocaleString()}`;
                   const result = await response.json();
                   successfulTests++;
                   
+                  // Handle unified response format
+                  const contentLength = result.success && result.data && result.data.content 
+                    ? result.data.content.length 
+                    : (result.content?.[0]?.text?.length || 0);
+                  
                   results.push({
                     combination: `${platform}-${documentType}-${techStack}`,
                     status: 'SUCCESS',
                     duration: duration + 'ms',
-                    contentLength: (result.content?.[0]?.text?.length || 0) + ' chars'
+                    contentLength: contentLength + ' chars'
                   });
                   
                   console.log(`✅ SUCCESS: ${platform}-${documentType}-${techStack} (${duration}ms)`);

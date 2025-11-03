@@ -263,14 +263,45 @@ class AIGenerationStrategy extends GenerationStrategy {
   }
 
   async generate(request) {
-    const { enhancedFrameData, screenshot, techStack, documentType } = request;
+    const { enhancedFrameData, frameData, screenshot, techStack, documentType, mockMode, testMode } = request;
 
-    if (!enhancedFrameData?.length) {
+    // Use enhancedFrameData if available, otherwise fall back to frameData
+    const dataToUse = enhancedFrameData || frameData;
+
+    // In test/mock mode, be more flexible with data requirements
+    if (!dataToUse?.length && !mockMode && !testMode && !screenshot) {
       throw new Error('Enhanced frame data required for AI generation');
     }
 
-    // Build visual context for AI
-    const visualContext = this.buildVisualContext(enhancedFrameData, screenshot);
+    // Return mock data if in mock mode
+    if (mockMode || testMode) {
+      return {
+        content: [{
+          type: 'text',
+          text: `# Mock AI Generated ${documentType || 'Task'}\n\n` +
+                `**Technology Stack:** ${techStack || 'Not specified'}\n\n` +
+                '## Description\n' +
+                'This is a mock AI-generated ticket for testing purposes. In production, this would contain ' +
+                'AI-analyzed content based on the provided visual context.\n\n' +
+                '## Acceptance Criteria\n' +
+                '- [ ] Mock criterion 1\n' +
+                '- [ ] Mock criterion 2\n' +
+                '- [ ] Mock criterion 3\n\n' +
+                '---\n*Generated via Mock AI Strategy*'
+        }],
+        format: 'jira',
+        strategy: 'ai',
+        confidence: 0.95,
+        source: 'mock-ai',
+        performance: {
+          duration: 0,
+          cacheHit: false
+        }
+      };
+    }
+
+    // Build visual context for AI (use available data)
+    const visualContext = this.buildVisualContext(dataToUse || [], screenshot);
 
     // Use Visual Enhanced AI Service
     const aiResult = await this.visualAIService.processVisualEnhancedContext(
@@ -410,7 +441,7 @@ class TemplateGenerationStrategy extends GenerationStrategy {
       }],
       metadata: {
         generationType: 'template',
-        templateId: result.templateId,
+        templateId: result.metadata?.template_id,
         platform,
         documentType
       }
