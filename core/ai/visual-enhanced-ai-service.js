@@ -171,31 +171,41 @@ Based on your analysis, determine:
 
 ## Expected Professional Output
 
-Generate a **comprehensive professional ticket** that includes:
+Generate a **comprehensive professional ticket** using **JIRA MARKUP FORMAT** that includes:
 
-### 🎯 Executive Summary
+**CRITICAL FORMAT REQUIREMENT**: Use Jira markup syntax, NOT markdown:
+- Headers: h1. h2. h3. (not # ## ###)
+- Bold: *bold text* (not **bold**)
+- Lists: * item (same as markdown)
+- Code: {{code}} (not \`code\`)
+- Links: [Link text|URL] (not [text](url))
+- Panels: {panel:title=Title}content{panel}
+- Color: {color:red}text{color}
+- Line breaks: Use actual line breaks, not \\n
+
+h1. 🎯 Executive Summary
 - Clear description of what this component does and why it's needed
 - Business value and user impact
 
-### 📋 Technical Analysis & Approach
+h2. 📋 Technical Analysis & Approach
 - Specific implementation strategy for ${techStack}
 - Component architecture and data flow
 - Integration with existing design system
 - Performance and accessibility considerations
 
-### 🎨 Design Implementation Details
+h2. 🎨 Design Implementation Details
 - Specific color values, typography specs, and spacing measurements
 - Responsive behavior and breakpoint considerations
 - Interactive states and micro-interactions
 - Error states and edge cases
 
-### ✅ Acceptance Criteria (Specific & Testable)
+h2. ✅ Acceptance Criteria (Specific & Testable)
 - Functional requirements based on the actual design
 - Visual accuracy requirements
 - Performance benchmarks
 - Accessibility compliance specifics
 
-### 🔧 Development Guidance
+h2. 🔧 Development Guidance
 - Code organization and file structure recommendations
 - Testing strategy tailored to this component type
 - Potential gotchas and implementation challenges
@@ -203,7 +213,7 @@ Generate a **comprehensive professional ticket** that includes:
 
 ---
 
-**REMEMBER**: You're not just filling out a template. You're providing expert analysis of a real design that developers will use to build production software. Be specific, be smart, and provide real value.`;
+*REMEMBER*: You're not just filling out a template. You're providing expert analysis of a real design that developers will use to build production software. Be specific, be smart, and provide real value. *USE JIRA MARKUP FORMAT ONLY*`;
 
     return prompt;
   }
