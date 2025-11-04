@@ -84,6 +84,12 @@ const jiraTestContext = {
   assignee: 'developer@company.com',
   reporter: 'designer@company.com',
   labels: ['frontend', 'component', 'ui'],
+  acceptanceCriteria: [
+    'Button should be clickable',
+    'Button should show loading state',
+    'Button should be accessible via keyboard'
+  ],
+  colors: ['#007bff', '#ffffff', '#f8f9fa'],
   
   // Current timestamp as string literal
   "'now'": new Date().toISOString()

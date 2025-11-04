@@ -153,8 +153,8 @@ export class Server {
       this.serviceContainer.register('analysisService', (container, redis, configService, screenshotService) =>
         new AnalysisService(redis, configService, screenshotService), true, ['redis', 'configurationService', 'screenshotService']);
 
-      this.serviceContainer.register('testingService', (container, redis, configService, screenshotService, analysisService) =>
-        new TestingService(redis, configService, screenshotService, analysisService), true, ['redis', 'configurationService', 'screenshotService', 'analysisService']);
+      this.serviceContainer.register('testingService', (container, redis, configService, screenshotService, analysisService, ticketService) =>
+        new TestingService(ticketService, screenshotService, analysisService, redis), true, ['redis', 'configurationService', 'screenshotService', 'analysisService', 'ticketService']);
 
       // Register ticket generation service with correct dependencies
       this.serviceContainer.register('ticketGenerationService', (container, templateManager, visualAIService, aiOrchestrator, redis) =>
@@ -233,6 +233,7 @@ export class Server {
     this.app.use('/docs', express.static('docs'));
     this.app.use('/api-docs', express.static('app/api-docs'));
     this.app.use('/ui', express.static('ui'));
+    this.app.use('/tests', express.static('tests'));
 
     // Request logging middleware
     this.app.use((req, res, next) => {

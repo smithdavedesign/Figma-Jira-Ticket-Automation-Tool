@@ -2,7 +2,7 @@
 
 /**
  * 🎯 Figma AI Ticket Generator - Live Demo Script
- * 
+ *
  * Tests the complete workflow:
  * 1. Server health check
  * 2. Template-based ticket generation
@@ -39,21 +39,21 @@ function logStep(step, message) {
 
 async function makeRequest(endpoint, method = 'GET', data = null) {
   const startTime = Date.now();
-  
+
   try {
     let curlCmd = `curl -s -w "\\n%{http_code}" -X ${method} ${SERVER_URL}${endpoint}`;
-    
+
     if (data) {
       curlCmd += ` -H "Content-Type: application/json" -d '${JSON.stringify(data)}'`;
     }
-    
+
     const { stdout } = await execAsync(curlCmd);
     const lines = stdout.trim().split('\n');
     const statusCode = lines.pop();
     const response = lines.join('\n');
-    
+
     const duration = Date.now() - startTime;
-    
+
     return {
       statusCode: parseInt(statusCode),
       response: response || '{}',
@@ -70,13 +70,13 @@ async function makeRequest(endpoint, method = 'GET', data = null) {
 
 async function checkServerHealth() {
   logStep(1, 'Checking Server Health');
-  
+
   const result = await makeRequest('/health');
-  
+
   if (result.statusCode === 200) {
     log('✅ Server is healthy', 'green');
     log(`   Response time: ${result.duration}ms`);
-    
+
     try {
       const health = JSON.parse(result.response);
       log(`   Services: ${health.services || 'N/A'}`);
@@ -89,13 +89,13 @@ async function checkServerHealth() {
     log(`   Response: ${result.response}`);
     return false;
   }
-  
+
   return true;
 }
 
 async function testTemplateGeneration() {
   logStep(2, 'Testing Template-Based Generation');
-  
+
   const requestData = {
     figmaUrl: DEMO_FIGMA_URL,
     nodeId: DEMO_NODE_ID,
@@ -106,13 +106,13 @@ async function testTemplateGeneration() {
       tech_stack: ['react', 'typescript']
     }
   };
-  
+
   const result = await makeRequest('/generate/template', 'POST', requestData);
-  
+
   if (result.statusCode === 200) {
     log('✅ Template generation successful', 'green');
     log(`   Response time: ${result.duration}ms`);
-    
+
     try {
       const ticket = JSON.parse(result.response);
       log(`   Generated ticket length: ${ticket.content?.length || 0} chars`);
@@ -131,20 +131,20 @@ async function testTemplateGeneration() {
 
 async function testAIGeneration() {
   logStep(3, 'Testing AI-Enhanced Generation');
-  
+
   const requestData = {
     figmaUrl: DEMO_FIGMA_URL,
     nodeId: DEMO_NODE_ID,
     platform: 'jira',
     useVisualAnalysis: true
   };
-  
+
   const result = await makeRequest('/generate/ai', 'POST', requestData);
-  
+
   if (result.statusCode === 200) {
     log('✅ AI generation successful', 'green');
     log(`   Response time: ${result.duration}ms`);
-    
+
     try {
       const ticket = JSON.parse(result.response);
       log(`   AI analysis included: ${ticket.aiAnalysis ? 'Yes' : 'No'}`);
@@ -163,16 +163,16 @@ async function testAIGeneration() {
 
 async function testAPIEndpoints() {
   logStep(4, 'Testing Available API Endpoints');
-  
+
   const endpoints = [
     '/api/health',
-    '/figma/health', 
+    '/figma/health',
     '/test/health'
   ];
-  
+
   for (const endpoint of endpoints) {
     const result = await makeRequest(endpoint);
-    
+
     if (result.statusCode === 200) {
       log(`✅ ${endpoint} - OK (${result.duration}ms)`, 'green');
     } else if (result.statusCode === 404) {
@@ -185,7 +185,7 @@ async function testAPIEndpoints() {
 
 async function showSystemMetrics() {
   logStep(5, 'System Performance Metrics');
-  
+
   try {
     const { stdout } = await execAsync('ps -p $$ -o pid,vsz,rss,pcpu,comm');
     log('Process metrics:');
@@ -193,7 +193,7 @@ async function showSystemMetrics() {
   } catch (e) {
     log('Could not retrieve process metrics');
   }
-  
+
   // Test template system
   try {
     const { stdout } = await execAsync('find core/ai/templates -name "*.yml" | wc -l');
@@ -208,21 +208,21 @@ async function main() {
   log(`${colors.bold}🎯 Figma AI Ticket Generator - Live Demo${colors.reset}`, 'blue');
   log(`Testing server at: ${SERVER_URL}`);
   log('='.repeat(60));
-  
+
   // Check if server is running
   const isHealthy = await checkServerHealth();
-  
+
   if (!isHealthy) {
     log('\n❌ Server is not responding. Please start it with: npm start', 'red');
     process.exit(1);
   }
-  
+
   // Run all tests
   await testTemplateGeneration();
   await testAIGeneration();
   await testAPIEndpoints();
   await showSystemMetrics();
-  
+
   log(`\n${'='.repeat(60)}`);
   log('🎉 Demo completed! Check results above.', 'green');
   log('\n💡 Next steps:');

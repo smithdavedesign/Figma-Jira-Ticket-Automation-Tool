@@ -62,15 +62,16 @@ async function testDirectAIGeneration() {
   try {
     const startTime = Date.now();
     
-    const response = await fetch('http://localhost:3000/api/generate-ai-ticket-direct', {
+    const response = await fetch('http://localhost:3000/api/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        platform: 'jira',
+        format: 'jira',
+        strategy: 'ai',
         documentType: 'component',
-        enhancedFrameData: mockEnhancedFrameData
+        frameData: mockEnhancedFrameData
       })
     });
     
@@ -117,15 +118,16 @@ async function testTemplateFallback() {
     const startTime = Date.now();
     
     // Test with minimal data to potentially trigger fallback
-    const response = await fetch('http://localhost:3000/api/generate-ai-ticket-direct', {
+    const response = await fetch('http://localhost:3000/api/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        platform: 'jira',
+        format: 'jira',
+        strategy: 'ai',
         documentType: 'component',
-        enhancedFrameData: [
+        frameData: [
           {
             name: 'Simple Component',
             type: 'FRAME'
@@ -223,14 +225,16 @@ async function testMultiplePlatforms() {
     };
     
     try {
-      const response = await fetch('http://localhost:3000/api/generate-ai-ticket-direct', {
+      const response = await fetch('http://localhost:3000/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...config,
-          enhancedFrameData: mockEnhancedFrameData
+          format: config.platform || 'jira',
+          strategy: 'ai',
+          documentType: config.documentType,
+          frameData: mockEnhancedFrameData
         })
       });
       

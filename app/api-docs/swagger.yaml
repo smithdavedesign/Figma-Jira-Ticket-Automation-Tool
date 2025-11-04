@@ -51,6 +51,150 @@ tags:
     description: 📡 Live data and real-time features
 
 paths:
+  /api/generate/strategy-info:
+    get:
+      tags: [generate]
+      summary: 🧠 Strategy Selection Information
+      description: |
+        **Get detailed information about strategy selection logic.**
+        
+        This endpoint explains how the system intelligently chooses between strategies
+        based on user input and component complexity, without requiring users to 
+        understand the internal strategy system.
+        
+        ### 🎯 Strategy Decision Matrix:
+        
+        | User Input | Component Complexity | Final Strategy | Reason |
+        |------------|---------------------|----------------|---------|
+        | `strategy: "ai"` | ≤5 frames | `ai` | Pure AI analysis for simple components |
+        | `strategy: "ai"` | >5 frames + screenshot | `enhanced` | Template reliability + AI insights |
+        | `strategy: "template"` | Any | `template` | Fast, reliable template generation |
+        | `strategy: "enhanced"` | Any | `enhanced` | Template + AI hybrid approach |
+        | `strategy: "auto"` | Complex | Best match | Intelligent auto-selection |
+        
+        ### 🔄 Processing Flow:
+        1. User clicks "Generate AI Ticket" in Figma UI
+        2. System receives `strategy: "ai"` from hardcoded UI
+        3. System analyzes component complexity (frameData.length, screenshot presence)
+        4. System intelligently selects optimal strategy (`ai` vs `enhanced`)
+        5. System executes chosen strategy and returns results
+        6. User receives optimal results without complexity exposure
+      responses:
+        '200':
+          description: Strategy information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      strategies:
+                        type: object
+                        properties:
+                          available:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                description:
+                                  type: string
+                                userSelectable:
+                                  type: boolean
+                                performance:
+                                  type: object
+                                  properties:
+                                    speed:
+                                      type: string
+                                      enum: [fast, medium, slow]
+                                    accuracy:
+                                      type: string
+                                      enum: [good, better, best]
+                            example:
+                              - name: "ai"
+                                description: "Pure AI analysis - intelligent insights"
+                                userSelectable: true
+                                performance: { speed: "slow", accuracy: "best" }
+                              - name: "enhanced" 
+                                description: "Template + AI hybrid - reliability + insights"
+                                userSelectable: false
+                                performance: { speed: "medium", accuracy: "better" }
+                              - name: "template"
+                                description: "Fast template generation"
+                                userSelectable: true
+                                performance: { speed: "fast", accuracy: "good" }
+                      decisionLogic:
+                        type: object
+                        properties:
+                          aiStrategyRules:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                condition:
+                                  type: string
+                                result:
+                                  type: string
+                                reason:
+                                  type: string
+                            example:
+                              - condition: "frameData.length > 5 && screenshot exists"
+                                result: "enhanced"
+                                reason: "Complex components benefit from template reliability with AI enhancement"
+                              - condition: "frameData.length <= 5"
+                                result: "ai"  
+                                reason: "Simple components work well with pure AI analysis"
+                      userExperience:
+                        type: object
+                        properties:
+                          figmaUI:
+                            type: string
+                            example: "Users click 'Generate AI Ticket' button"
+                          systemBehavior:
+                            type: string
+                            example: "Intelligent strategy selection happens automatically"
+                          resultQuality:
+                            type: string
+                            example: "Optimal results without exposing complexity"
+              examples:
+                strategy_info:
+                  summary: Complete Strategy Information
+                  value:
+                    success: true
+                    data:
+                      strategies:
+                        available:
+                          - name: "ai"
+                            description: "Pure AI analysis with intelligent insights"
+                            userSelectable: true
+                            performance: { speed: "slow", accuracy: "best" }
+                          - name: "enhanced"
+                            description: "Template + AI hybrid for complex components" 
+                            userSelectable: false
+                            performance: { speed: "medium", accuracy: "better" }
+                          - name: "template"
+                            description: "Fast, reliable template generation"
+                            userSelectable: true
+                            performance: { speed: "fast", accuracy: "good" }
+                      decisionLogic:
+                        aiStrategyRules:
+                          - condition: "frameData.length > 5 && screenshot"
+                            result: "enhanced"
+                            reason: "Complex components get template reliability + AI insights"
+                          - condition: "frameData.length <= 5"
+                            result: "ai"
+                            reason: "Simple components work well with pure AI"
+                      userExperience:
+                        figmaUI: "Single 'Generate AI Ticket' button"
+                        systemBehavior: "Automatic intelligent strategy selection"
+                        resultQuality: "Optimal results without complexity"
+
   /api/generate:
     post:
       tags: [generate]
@@ -60,17 +204,27 @@ paths:
         
         Supports multiple formats (JIRA, Wiki, Code, Markdown) and strategies (AI, Template, Enhanced, Legacy, Auto).
         
-        ### 🧠 Auto-Strategy Detection:
+        ### 🧠 Intelligent Strategy Selection:
+        
+        **When users request AI strategy (`strategy: "ai"`):**
+        - **Complex components** (>5 frames + screenshot) → `enhanced` strategy (Template + AI hybrid) 🏆
+        - **Simple components** (≤5 frames) → `ai` strategy (pure AI analysis) 🤖
+        
+        **Auto-Detection (`strategy: "auto"`):**
         - **Rich data** (10+ frames + screenshot) → AI strategy
         - **Medium data** (5+ frames) → Enhanced strategy  
         - **Basic data** (1+ frames) → Template strategy
         - **Minimal data** → Legacy strategy
+        
+        **💡 User Experience:**
+        Users simply click "Generate AI Ticket" in Figma, system intelligently selects optimal approach without exposing complexity.
         
         ### 📝 Format Support:
         - `jira` - JIRA tickets (✅ Active)
         - `wiki` - Wiki pages (🔜 Planned)
         - `code` - Code documentation (🔜 Planned)
         - `markdown` - Markdown files (🔜 Planned)
+
       requestBody:
         required: true
         content:
@@ -78,8 +232,11 @@ paths:
             schema:
               $ref: '#/components/schemas/GenerateRequest'
             examples:
-              jira_ai:
-                summary: JIRA Ticket with AI Strategy (Test Mode)
+              ai_simple_component:
+                summary: Simple Component → Pure AI Strategy
+                description: |
+                  When user requests AI strategy with simple components (≤5 frames), 
+                  system uses pure AI analysis for focused, intelligent insights.
                 value:
                   frameData:
                     - type: "button"
@@ -92,7 +249,31 @@ paths:
                   strategy: "ai"
                   documentType: "story"
                   techStack: "React, TypeScript"
-                  includeScreenshot: true
+                  mockMode: true
+              ai_complex_component:
+                summary: Complex Component → Enhanced Strategy (Template + AI)
+                description: |
+                  When user requests AI strategy with complex components (>5 frames + screenshot), 
+                  system intelligently upgrades to Enhanced strategy for optimal reliability + insights.
+                value:
+                  frameData:
+                    - name: "Header Component"
+                      type: "INSTANCE"
+                    - name: "Navigation Menu"
+                      type: "FRAME"
+                    - name: "Search Bar"
+                      type: "COMPONENT"
+                    - name: "User Avatar"
+                      type: "ELLIPSE"
+                    - name: "Notification Icon"
+                      type: "VECTOR"
+                    - name: "Settings Dropdown"
+                      type: "FRAME"
+                  screenshot: "data:image/png;base64,iVBORw0KGgoAAAANS..."
+                  format: "jira"
+                  strategy: "ai"
+                  documentType: "component"
+                  techStack: "React, TypeScript"
                   mockMode: true
               auto_detect:
                 summary: Auto-Strategy Detection (Test Mode)

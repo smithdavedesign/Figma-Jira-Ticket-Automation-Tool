@@ -3,8 +3,8 @@
 
 import { runYamlValidationTests } from './yaml-validation.test.js';
 import { runVariableSubstitutionTests } from './variable-substitution.test.js';
-import { runJiraTemplateTests } from './platform-specific/jira.test.js';
-import { runAITemplateIntegrationTests } from './integration/ai-template-flow.test.js';
+import { runJiraTemplateTests } from '../archive/templates-platform-specific/jira.test.js';
+import { runAITemplateIntegrationTests } from '../archive/templates-integration/ai-template-flow.test.js';
 
 /**
  * Run all template tests in sequence

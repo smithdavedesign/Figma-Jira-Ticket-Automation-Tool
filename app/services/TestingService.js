@@ -32,8 +32,22 @@ export class TestingService extends BaseService {
 
     this.logger.info('Testing service dependencies validated');
 
-    // Load test history from cache
-    await this.loadTestHistory();
+    // Defer loading test history until after Redis is fully connected
+    this.deferredInit();
+  }
+
+  /**
+   * Deferred initialization after Redis connection
+   */
+  async deferredInit() {
+    // Use setTimeout to defer until after full service initialization
+    setTimeout(async () => {
+      try {
+        await this.loadTestHistory();
+      } catch (error) {
+        this.logger.warn('Deferred test history loading failed:', error.message);
+      }
+    }, 1000); // Wait 1 second for all services to initialize
   }
 
   /**

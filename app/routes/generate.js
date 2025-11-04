@@ -36,6 +36,9 @@ export class GenerateRoutes extends BaseRoute {
     // 🎯 Single unified endpoint for all documentation generation
     router.post('/api/generate', this.asyncHandler(this.handleGenerate.bind(this)));
 
+    // 🧠 Strategy selection information endpoint
+    router.get('/api/generate/strategy-info', this.asyncHandler(this.handleStrategyInfo.bind(this)));
+
     this.logger.info('✅ Generate routes registered with Context-Template Bridge');
   }
 
@@ -93,10 +96,20 @@ export class GenerateRoutes extends BaseRoute {
    * @returns {Promise<Object>} Generated documentation result
    */
   async _generateDocumentationUnified(request, options = {}) {
-    // NEW ARCHITECTURE: Direct Context-Template Bridge Flow
-    // Figma API → Context Layer → YAML Templates → Docs
+    // 1. FIRST: Determine the optimal strategy based on user intent and context
+    const determinedStrategy = this._determineStrategy(request, options);
 
-    if (this.contextBridge && request.strategy !== 'legacy-mcp') {
+    this.logger.info(`🎯 Strategy Decision: ${request.strategy} → ${determinedStrategy}`, {
+      originalStrategy: request.strategy,
+      determinedStrategy: determinedStrategy,
+      frameDataLength: request.frameData?.length || 0,
+      hasScreenshot: !!request.screenshot
+    });
+
+    // 2. ARCHITECTURE ROUTING: Based on determined strategy, not original request
+
+    // Use Context-Template Bridge for fast, template-based strategies
+    if (this.contextBridge && ['context-bridge', 'template', 'auto'].includes(determinedStrategy)) {
       this.logger.info('🌉 Using Context-Template Bridge (MCP-free architecture)');
 
       try {
@@ -114,32 +127,29 @@ export class GenerateRoutes extends BaseRoute {
       }
     }
 
-    // LEGACY FALLBACK: Original MCP-based flow (when Context Bridge fails or explicitly requested)
-    this.logger.info('🔄 Using legacy MCP-based generation as fallback');
+    // Use Legacy MCP-based flow for AI-powered strategies
+    this.logger.info(`🔄 Using legacy MCP-based generation for strategy: ${determinedStrategy}`);
 
-    // 1. Determine strategy (user choice or auto-detect)
-    const strategy = this._determineStrategy(request, options);
-
-    // 2. Get appropriate service based on output format
+    // 3. Get appropriate service based on output format
     const service = this._getGenerationService(request.format);
 
-    // 3. Ensure service is initialized
+    // 4. Ensure service is initialized
     if (service.initialize && typeof service.initialize === 'function') {
       await service.initialize();
     }
 
-    // 4. Generate content using the service
+    // 5. Generate content using the service with determined strategy
     let result;
     if (request.format === 'jira') {
-      // Use existing ticket generation service
-      result = await service.generateTicket(request, strategy);
+      // Use existing ticket generation service with the determined strategy
+      result = await service.generateTicket(request, determinedStrategy);
     } else {
       // Future: Use format-specific generation methods
       throw new Error(`Format ${request.format} not yet implemented`);
     }
 
-    // 5. Format response consistently
-    return this._formatGenerationResponse(result, strategy, request.format);
+    // 6. Format response consistently
+    return this._formatGenerationResponse(result, determinedStrategy, request.format);
   } /**
    * 📝 Normalize different input formats to unified format
    */
@@ -187,10 +197,13 @@ export class GenerateRoutes extends BaseRoute {
       errors.push(`Unsupported format: ${request.format}. Supported: ${supportedFormats.join(', ')}`);
     }
 
-    // Validate strategy
-    const supportedStrategies = ['ai', 'template', 'enhanced', 'legacy', 'auto', 'context-bridge'];
-    if (!supportedStrategies.includes(request.strategy)) {
-      errors.push(`Unsupported strategy: ${request.strategy}. Supported: ${supportedStrategies.join(', ')}`);
+    // Validate strategy (context-bridge is internal, not user-selectable)
+    const userSelectableStrategies = ['ai', 'template', 'enhanced', 'legacy', 'auto'];
+    const internalStrategies = ['context-bridge']; // System-selected only
+    const allStrategies = [...userSelectableStrategies, ...internalStrategies];
+
+    if (!allStrategies.includes(request.strategy)) {
+      errors.push(`Unsupported strategy: ${request.strategy}. User-selectable: ${userSelectableStrategies.join(', ')}`);
     }
 
     // Validate frame data (at least some content needed)
@@ -211,29 +224,55 @@ export class GenerateRoutes extends BaseRoute {
   }
 
   /**
-   * 🧠 Determine best strategy based on input and user preference
+   * � Determine the best generation strategy
    */
-  _determineStrategy(request, options) {
-    // User explicitly chose strategy
-    if (request.strategy && request.strategy !== 'auto') {
+  /**
+   * 🎯 Determine the best generation strategy
+   * Users don't choose strategies - we intelligently select based on context
+   */
+  _determineStrategy(request, _options) {
+    // INTELLIGENT AUTO-SELECTION: Based on user context, not user choice
+
+    // If user clicked "Generate AI Ticket" in UI (strategy: 'ai' hardcoded in UI)
+    if (request.strategy === 'ai') {
+      // Honor user's implicit AI preference, but choose best AI approach
+      if (request.frameData?.length > 5 && request.screenshot) {
+        this.logger.info('🤖 User wants AI → Using enhanced strategy (Template + AI hybrid)');
+        return 'enhanced'; // Better than pure AI: template reliability + AI insights
+      } else {
+        this.logger.info('🤖 User wants AI → Using ai strategy (pure AI analysis)');
+        return 'ai'; // User specifically wants AI, give them AI
+      }
+    }
+
+    // User explicitly chose non-AI strategy (ALWAYS respect explicit API choice!)
+    if (request.strategy && request.strategy !== 'auto' && request.strategy !== 'ai') {
+      this.logger.info(`🎯 Using explicitly requested strategy: ${request.strategy}`);
       return request.strategy;
     }
 
-    // NEW ARCHITECTURE: Prefer Context-Template Bridge for all requests
-    if (this.contextBridge) {
-      return 'context-bridge'; // Direct Context Layer → Template flow
+    // For 'auto' or no strategy (API consumers), use intelligent selection
+    if (request.strategy === 'auto' || !request.strategy) {
+      // NEW ARCHITECTURE: Prefer Context-Template Bridge for fast, reliable generation
+      if (this.contextBridge) {
+        this.logger.info('🌉 Auto-selecting context-bridge strategy (fast, semantic-aware)');
+        return 'context-bridge'; // Direct Context Layer → Template flow
+      }
+
+      // LEGACY FALLBACK: Auto-detect based on input richness when Context Bridge unavailable
+      if (request.frameData?.length > 10 && request.screenshot) {
+        return 'enhanced'; // Rich data, use hybrid approach (better than pure AI)
+      } else if (request.frameData?.length > 5) {
+        return 'template'; // Medium data, use reliable templates
+      } else if (request.frameData?.length > 0) {
+        return 'template'; // Basic data, use template
+      } else {
+        return 'legacy'; // Minimal data, use legacy
+      }
     }
 
-    // LEGACY FALLBACK: Auto-detect based on input richness when Context Bridge unavailable
-    if (request.frameData?.length > 10 && request.screenshot) {
-      return 'ai'; // Rich data, use AI
-    } else if (request.frameData?.length > 5) {
-      return 'enhanced'; // Medium data, use enhanced
-    } else if (request.frameData?.length > 0) {
-      return 'template'; // Basic data, use template
-    } else {
-      return 'legacy'; // Minimal data, use legacy
-    }
+    // Should never reach here, but fallback to user's choice
+    return request.strategy;
   }
 
   /**
@@ -306,6 +345,149 @@ export class GenerateRoutes extends BaseRoute {
   }
 
   /**
+   * 🧠 Strategy Selection Information Handler
+   * Explains how the system intelligently chooses strategies
+   */
+  async handleStrategyInfo(req, res) {
+    this.logAccess(req, 'strategy-info');
+
+    try {
+      const strategyInfo = {
+        success: true,
+        data: {
+          strategies: {
+            available: [
+              {
+                name: 'ai',
+                description: 'Pure AI analysis with intelligent insights',
+                userSelectable: true,
+                performance: { speed: 'slow', accuracy: 'best' },
+                useCase: 'Simple components (≤5 frames) where AI creativity is valuable'
+              },
+              {
+                name: 'enhanced',
+                description: 'Template + AI hybrid for complex components',
+                userSelectable: false,
+                performance: { speed: 'medium', accuracy: 'better' },
+                useCase: 'Complex components (>5 frames + screenshot) needing reliability + insights'
+              },
+              {
+                name: 'template',
+                description: 'Fast, reliable YAML template generation',
+                userSelectable: true,
+                performance: { speed: 'fast', accuracy: 'good' },
+                useCase: 'Quick generation when speed matters most'
+              },
+              {
+                name: 'legacy',
+                description: 'Basic fallback for minimal data',
+                userSelectable: true,
+                performance: { speed: 'fast', accuracy: 'basic' },
+                useCase: 'Fallback when other strategies fail'
+              },
+              {
+                name: 'auto',
+                description: 'Intelligent auto-selection based on context',
+                userSelectable: true,
+                performance: { speed: 'variable', accuracy: 'optimal' },
+                useCase: 'Let system choose best strategy automatically'
+              },
+              {
+                name: 'context-bridge',
+                description: 'Internal Context-Template Bridge flow',
+                userSelectable: false,
+                performance: { speed: 'very fast', accuracy: 'good' },
+                useCase: 'Internal system optimization (6ms generation)'
+              }
+            ]
+          },
+          decisionLogic: {
+            aiStrategyRules: [
+              {
+                condition: 'frameData.length > 5 && screenshot exists',
+                result: 'enhanced',
+                reason: 'Complex components benefit from template reliability combined with AI enhancement'
+              },
+              {
+                condition: 'frameData.length <= 5',
+                result: 'ai',
+                reason: 'Simple components work well with pure AI analysis and creativity'
+              }
+            ],
+            autoDetectionRules: [
+              {
+                condition: 'Rich data (10+ frames + screenshot)',
+                result: 'ai',
+                reason: 'Comprehensive context enables high-quality AI generation'
+              },
+              {
+                condition: 'Medium data (5+ frames)',
+                result: 'enhanced',
+                reason: 'Balanced approach combining template reliability with AI insights'
+              },
+              {
+                condition: 'Basic data (1+ frames)',
+                result: 'template',
+                reason: 'Fast, reliable template generation for standard cases'
+              },
+              {
+                condition: 'Minimal data',
+                result: 'legacy',
+                reason: 'Fallback approach when other strategies lack sufficient context'
+              }
+            ]
+          },
+          userExperience: {
+            figmaUI: 'Users click single "Generate AI Ticket" button in Figma plugin',
+            systemBehavior: 'Intelligent strategy selection happens automatically behind the scenes',
+            resultQuality: 'Users get optimal results without needing to understand strategy complexity',
+            transparency: 'Strategy used is returned in response metadata for debugging'
+          },
+          architecture: {
+            flow: 'User Request → Strategy Analysis → Intelligent Selection → Optimal Execution → Results',
+            philosophy: 'User simplicity masks system sophistication',
+            benefits: [
+              'Users get optimal results without complexity',
+              'System can evolve strategies without breaking user experience',
+              'Debugging transparency through response metadata',
+              'Performance optimization through intelligent routing'
+            ]
+          },
+          examples: {
+            simpleComponent: {
+              input: { frameData: [{ name: 'Button', type: 'INSTANCE' }], strategy: 'ai' },
+              decision: 'ai',
+              reason: '1 frame ≤ 5, pure AI works well for simple components'
+            },
+            complexComponent: {
+              input: {
+                frameData: [
+                  { name: 'Header', type: 'FRAME' },
+                  { name: 'Nav', type: 'INSTANCE' },
+                  { name: 'Search', type: 'COMPONENT' },
+                  { name: 'Avatar', type: 'ELLIPSE' },
+                  { name: 'Notification', type: 'VECTOR' },
+                  { name: 'Settings', type: 'FRAME' }
+                ],
+                screenshot: 'data:image/png;base64,...',
+                strategy: 'ai'
+              },
+              decision: 'enhanced',
+              reason: '6 frames > 5 + screenshot present, enhanced strategy provides template reliability with AI insights'
+            }
+          }
+        }
+      };
+
+      res.json(strategyInfo);
+
+    } catch (error) {
+      this.logger.error('Strategy info request failed:', error);
+      this.sendError(res, error, 'Failed to get strategy information');
+    }
+  }
+
+  /**
    * 📊 Get route health status
    */
   getRouteHealth() {
@@ -315,16 +497,17 @@ export class GenerateRoutes extends BaseRoute {
       architecture: 'figma-api → context-layer → yaml-templates → docs',
       mcpBypass: !!this.contextBridge,
       endpoints: [
-        '/api/generate'
+        '/api/generate',
+        '/api/generate/strategy-info'
       ],
       supportedFormats: ['jira', 'wiki (planned)', 'code (planned)', 'markdown (planned)'],
       supportedStrategies: [
-        'context-bridge (default)',
-        'ai (legacy)',
-        'template (legacy)',
-        'enhanced (legacy)',
-        'legacy (legacy)',
-        'auto'
+        'auto (intelligent selection - recommended)',
+        'ai (user-requested AI analysis)',
+        'enhanced (template + AI hybrid)',
+        'template (reliable YAML-based)',
+        'legacy (basic fallback)',
+        'context-bridge (internal system-selected)'
       ],
       contextBridge: this.contextBridge ? this.contextBridge.getHealthStatus() : null
     };

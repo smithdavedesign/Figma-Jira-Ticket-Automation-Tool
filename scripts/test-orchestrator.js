@@ -95,10 +95,10 @@ class TestOrchestrator {
       
       'templates': {
         tests: [
-          'node tests/templates/yaml-validation.test.js',
-          'node tests/templates/variable-substitution.test.js',
-          'node tests/templates/platform-specific/jira.test.js',
-          'node tests/templates/integration/ai-template-flow.test.js'
+          'node tests/integration/yaml-validation.test.js',
+          'node tests/integration/variable-substitution.test.js',
+          'node tests/integration/template-system-tests.js',
+          'node tests/integration/template-test-runner.js'
         ],
         parallel: true,
         timeout: 120000
@@ -115,7 +115,7 @@ class TestOrchestrator {
       
       'integration': {
         tests: [
-          'node tests/integration/test-standalone.mjs',
+          'node tests/integration/test-mcp-server.js',
           'node tests/integration/design-system-compliance-tests.mjs'
         ],
         parallel: false,
@@ -132,8 +132,8 @@ class TestOrchestrator {
       'all': {
         tests: [
           'vitest run',
-          'node tests/integration/test-standalone.mjs',
-          'node tests/templates/template-test-runner.js',
+          'node tests/integration/test-mcp-server.js',
+          'node tests/integration/template-test-runner.js',
           'playwright test --config=tests/playwright/smoke.config.js',
           ...(options.full ? [
             'node tests/ai/ai-architecture-test-suite.js',

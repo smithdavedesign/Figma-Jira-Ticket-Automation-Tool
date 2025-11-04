@@ -391,6 +391,114 @@ export class RedisClient {
   }
 
   // ==========================================
+  // REDIS METHOD DELEGATION
+  // Direct access to Redis methods for services
+  // ==========================================
+
+  /**
+   * Set with expiration (Redis SETEX command)
+   * @param {string} key - The key
+   * @param {number} seconds - Expiration in seconds
+   * @param {string} value - The value
+   * @returns {Promise<string>} - Redis response
+   */
+  async setex(key, seconds, value) {
+    if (this.connected && this.client) {
+      try {
+        return await this.client.setex(key, seconds, value);
+      } catch (error) {
+        this.logger.error(`Redis SETEX error: ${error.message}`);
+        // Fallback to memory cache
+        this.setMemoryCache(key, JSON.parse(value), seconds);
+        return 'OK';
+      }
+    } else {
+      // Memory cache fallback
+      this.setMemoryCache(key, JSON.parse(value), seconds);
+      return 'OK';
+    }
+  }
+
+  /**
+   * List push (Redis LPUSH command)
+   * @param {string} key - The list key
+   * @param {...string} values - Values to push
+   * @returns {Promise<number>} - List length after push
+   */
+  async lpush(key, ...values) {
+    if (this.connected && this.client) {
+      try {
+        return await this.client.lpush(key, ...values);
+      } catch (error) {
+        this.logger.error(`Redis LPUSH error: ${error.message}`);
+        // Memory fallback: simulate list push
+        const list = this.getMemoryCache(key) || [];
+        list.unshift(...values);
+        this.setMemoryCache(key, list, 3600);
+        return list.length;
+      }
+    } else {
+      // Memory fallback: simulate list push
+      const list = this.getMemoryCache(key) || [];
+      list.unshift(...values);
+      this.setMemoryCache(key, list, 3600);
+      return list.length;
+    }
+  }
+
+  /**
+   * List trim (Redis LTRIM command)
+   * @param {string} key - The list key
+   * @param {number} start - Start index
+   * @param {number} stop - Stop index
+   * @returns {Promise<string>} - Redis response
+   */
+  async ltrim(key, start, stop) {
+    if (this.connected && this.client) {
+      try {
+        return await this.client.ltrim(key, start, stop);
+      } catch (error) {
+        this.logger.error(`Redis LTRIM error: ${error.message}`);
+        // Memory fallback: simulate list trim
+        const list = this.getMemoryCache(key) || [];
+        const trimmed = list.slice(start, stop + 1);
+        this.setMemoryCache(key, trimmed, 3600);
+        return 'OK';
+      }
+    } else {
+      // Memory fallback: simulate list trim
+      const list = this.getMemoryCache(key) || [];
+      const trimmed = list.slice(start, stop + 1);
+      this.setMemoryCache(key, trimmed, 3600);
+      return 'OK';
+    }
+  }
+
+  /**
+   * List range (Redis LRANGE command)
+   * @param {string} key - The list key
+   * @param {number} start - Start index
+   * @param {number} stop - Stop index
+   * @returns {Promise<string[]>} - List elements
+   */
+  async lrange(key, start, stop) {
+    if (this.connected && this.client) {
+      try {
+        return await this.client.lrange(key, start, stop);
+      } catch (error) {
+        this.logger.error(`Redis LRANGE error: ${error.message}`);
+        // Memory fallback: simulate list range
+        const list = this.getMemoryCache(key) || [];
+        return list.slice(start, stop + 1);
+      }
+    } else {
+      // Memory fallback: simulate list range
+      const list = this.getMemoryCache(key) || [];
+      return list.slice(start, stop + 1);
+    }
+  }
+
+  // ==========================================
   // HYBRID CACHING: Memory Cache Fallback
   // ==========================================
 
