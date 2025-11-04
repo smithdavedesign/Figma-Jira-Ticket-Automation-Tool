@@ -20,17 +20,17 @@ export class VisualEnhancedAIService {
   constructor(apiKey) {
     this.geminiClient = null;
     this.model = null;
+    this.maxRetries = 2;
+    this.compressionThreshold = 10000; // chars
 
-
-
-    if (apiKey) {
-      // Initialize Gemini client and model with Gemini 2.0 Flash
-      this.geminiClient = new GoogleGenerativeAI(apiKey);
-      this.model = this.geminiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
-      console.log('✅ Visual Enhanced AI Service initialized with Gemini 2.0 Flash');
-    } else {
-      console.log('⚠️ Visual Enhanced AI Service initialized without API key');
+    if (!apiKey) {
+      throw new Error('Missing Gemini API key. Cannot initialize Visual Enhanced AI Service.');
     }
+
+    // Initialize Gemini client and model with Gemini 2.0 Flash
+    this.geminiClient = new GoogleGenerativeAI(apiKey);
+    this.model = this.geminiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    console.log('✅ Visual Enhanced AI Service initialized with Gemini 2.0 Flash');
   }
 
   /**
@@ -42,43 +42,54 @@ export class VisualEnhancedAIService {
     }
 
     console.log('🎨 Processing visual-enhanced context with Gemini Vision...');
+    const startTime = Date.now();
 
     try {
-      // Build enhanced prompt combining visual and structured data
-      const prompt = this.buildEnhancedPrompt(context, options);
+      // Compress context if needed
+      const compressedContext = this.compressContextIfNeeded(context);
+      
+      // Build enhanced prompt with modular composition
+      const prompt = this.buildEnhancedPrompt(compressedContext, options);
 
       // Prepare multimodal input
       const parts = [{ text: prompt }];
 
       // Add screenshot if available
-      if (context.screenshot?.base64) {
-        const format = context.screenshot.format || 'png';
+      if (compressedContext.screenshot?.base64) {
+        const format = compressedContext.screenshot.format || 'png';
         parts.push({
           inlineData: {
             mimeType: `image/${format.toLowerCase()}`,
-            data: context.screenshot.base64
+            data: compressedContext.screenshot.base64
           }
         });
-        console.log(`📸 Including ${context.screenshot.format} screenshot (${context.screenshot.size} bytes)`);
+        console.log(`📸 Including ${compressedContext.screenshot.format} screenshot (${compressedContext.screenshot.size} bytes)`);
       }
 
-      // Generate response with visual understanding
-      const result = await this.model.generateContent(parts);
-      const response = await result.response;
-      const generatedText = response.text();
-
+      // Generate with retry logic
+      const generatedText = await this.generateWithRetry(parts, options);
+      
       // Parse and structure the response
       const analysis = this.parseAIResponse(generatedText);
+      const processingTime = Date.now() - startTime;
 
+      // Return structured output
       return {
-        analysis,
         ticket: generatedText,
-        confidence: this.calculateConfidence(context, generatedText),
-        processingMetrics: {
-          screenshotProcessed: !!context.screenshot,
-          dataStructuresAnalyzed: this.countDataStructures(context),
-          promptTokens: prompt.length / 4, // Rough estimate
-          responseTokens: generatedText.length / 4
+        structured: {
+          summary: analysis.visualUnderstanding,
+          implementation: analysis.componentAnalysis,
+          recommendations: analysis.recommendationSummary,
+          designSystem: analysis.designSystemCompliance
+        },
+        metadata: {
+          confidence: this.calculateConfidence(compressedContext, generatedText),
+          processingTime,
+          contextCompressed: JSON.stringify(context).length > this.compressionThreshold,
+          screenshotProcessed: !!compressedContext.screenshot,
+          dataStructuresAnalyzed: this.countDataStructures(compressedContext),
+          promptTokens: Math.ceil(prompt.length / 4),
+          responseTokens: Math.ceil(generatedText.length / 4)
         }
       };
 
@@ -89,15 +100,120 @@ export class VisualEnhancedAIService {
   }
 
   /**
-   * Build enhanced prompt combining visual and structured data
+   * Generate content with retry logic and validation
+   */
+  async generateWithRetry(parts, options = {}, attempt = 1) {
+    try {
+      const result = await this.model.generateContent(parts);
+      const response = await result.response;
+      const generatedText = response.text();
+
+      // Validate output quality
+      if (!this.validateOutput(generatedText) && attempt <= this.maxRetries) {
+        console.warn(`⚠️ Weak output detected (attempt ${attempt}/${this.maxRetries}), retrying with reinforced prompt`);
+        
+        // Enhance prompt for retry
+        const enhancedParts = [...parts];
+        enhancedParts[0].text += '\n\nIMPORTANT: Ensure output uses proper Jira markup (h1. h2. h3.) and includes comprehensive technical details. Minimum 500 words required.';
+        
+        return this.generateWithRetry(enhancedParts, options, attempt + 1);
+      }
+
+      return generatedText;
+    } catch (error) {
+      if (attempt <= this.maxRetries) {
+        console.warn(`⚠️ API error (attempt ${attempt}/${this.maxRetries}), retrying:`, error.message);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+        return this.generateWithRetry(parts, options, attempt + 1);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Validate AI output quality
+   */
+  validateOutput(text) {
+    return text.includes('h1.') && 
+           text.includes('h2.') && 
+           text.length >= 300 &&
+           !text.includes('# ') && // No markdown headers
+           !text.includes('**'); // No markdown bold
+  }
+
+  /**
+   * Compress context if it exceeds threshold
+   */
+  compressContextIfNeeded(context) {
+    const contextStr = JSON.stringify(context);
+    if (contextStr.length <= this.compressionThreshold) {
+      return context;
+    }
+
+    console.log(`🗜️ Compressing context from ${contextStr.length} to reduce token usage`);
+    
+    return {
+      ...context,
+      visualDesignContext: this.summarizeContext(context.visualDesignContext),
+      hierarchicalData: this.summarizeHierarchy(context.hierarchicalData)
+    };
+  }
+
+  /**
+   * Summarize visual design context
+   */
+  summarizeContext(visualContext) {
+    if (!visualContext) return visualContext;
+
+    return {
+      colorPalette: visualContext.colorPalette?.slice(0, 10) || [], // Top 10 colors
+      typography: {
+        fonts: visualContext.typography?.fonts?.slice(0, 5) || [],
+        sizes: visualContext.typography?.sizes?.slice(0, 8) || [],
+        hierarchy: visualContext.typography?.hierarchy?.slice(0, 4) || []
+      },
+      spacing: {
+        patterns: visualContext.spacing?.patterns?.slice(0, 6) || [],
+        measurements: visualContext.spacing?.measurements?.slice(0, 8) || []
+      },
+      layout: visualContext.layout || {}
+    };
+  }
+
+  /**
+   * Summarize hierarchical data
+   */
+  summarizeHierarchy(hierarchyData) {
+    if (!hierarchyData) return hierarchyData;
+
+    return {
+      components: hierarchyData.components?.slice(0, 15) || [], // Top 15 components
+      designSystemLinks: hierarchyData.designSystemLinks || null
+    };
+  }
+
+  /**
+   * Build enhanced prompt with modular composition
    */
   buildEnhancedPrompt(context, options) {
-    const { documentType = 'jira', techStack = 'React TypeScript', instructions = '' } = options;
+    const sections = [
+      this.promptHeaders(context, options),
+      this.promptDesignAnalysis(context),
+      this.promptImplementationGuidance(context, options), 
+      this.promptExpectedOutput(options)
+    ];
 
-    // Extract intelligent insights from the context
+    return sections.join('\n\n');
+  }
+
+  /**
+   * Generate prompt headers and context
+   */
+  promptHeaders(context, options) {
+    const { documentType = 'jira', techStack = 'React TypeScript', instructions = '' } = options;
     const designInsights = this.analyzeDesignContext(context);
 
-    const prompt = `# Intelligent Design Analysis for Professional ${documentType.toUpperCase()} Ticket
+    return `# Intelligent Design Analysis for Professional ${documentType.toUpperCase()} Ticket
 
 ## Context
 You are an expert UI/UX implementation analyst with deep experience in ${techStack}. Analyze the provided Figma design and generate a professional, detailed development ticket that demonstrates real understanding of the design requirements.
@@ -114,9 +230,16 @@ You are an expert UI/UX implementation analyst with deep experience in ${techSta
 - **File**: ${context.figmaContext?.fileName || 'Unknown File'}
 - **Type**: ${designInsights.componentType}
 - **Complexity**: ${designInsights.complexity}
-- **Primary Function**: ${designInsights.inferredPurpose}
+- **Primary Function**: ${designInsights.inferredPurpose}`;
+  }
 
-${context.screenshot ? `### 📸 Visual Screenshot Analysis
+  /**
+   * Generate design analysis section
+   */
+  promptDesignAnalysis(context) {
+    const designInsights = this.analyzeDesignContext(context);
+
+    return `${context.screenshot ? `### 📸 Visual Screenshot Analysis
 - **Resolution**: ${context.screenshot.resolution ? `${context.screenshot.resolution.width}×${context.screenshot.resolution.height}px` : 'Available'}
 - **Format**: ${context.screenshot.format}
 - **URL**: Available for analysis
@@ -149,11 +272,17 @@ ${context.hierarchicalData?.components?.map(comp =>
 ` : `
 **Limited Design Context Available** - Focus on structured implementation approach
 - Component name: ${context.componentName}
-- Tech stack: ${techStack}
 - Basic responsive requirements apply
-`}
+`}`;
+  }
 
-### 🔧 Technical Implementation Context
+  /**
+   * Generate implementation guidance section  
+   */
+  promptImplementationGuidance(context, options) {
+    const { techStack = 'React TypeScript' } = options;
+
+    return `### 🔧 Technical Implementation Context
 - **Target Framework**: ${techStack}
 - **File Key**: ${context.figmaContext?.fileKey || context.fileKey || 'Not available'}
 - **Live Design URL**: ${context.figmaContext?.fileKey ? `https://www.figma.com/file/${context.figmaContext.fileKey}` : 'Not available'}
@@ -167,9 +296,16 @@ Based on your analysis, determine:
 3. **State Management**: Does it need local state, form handling, or external state?
 4. **Accessibility Considerations**: What specific ARIA attributes and keyboard interactions are needed?
 5. **Performance Implications**: Any specific optimization needs (lazy loading, virtualization, etc.)?
-6. **Integration Challenges**: How does this fit into the existing design system?
+6. **Integration Challenges**: How does this fit into the existing design system?`;
+  }
 
-## Expected Professional Output
+  /**
+   * Generate expected output format section
+   */
+  promptExpectedOutput(options) {
+    const { techStack = 'React TypeScript' } = options;
+
+    return `## Expected Professional Output
 
 Generate a **comprehensive professional ticket** using **JIRA MARKUP FORMAT** that includes:
 
@@ -180,8 +316,6 @@ Generate a **comprehensive professional ticket** using **JIRA MARKUP FORMAT** th
 - Code: {{code}} (not \`code\`)
 - Links: [Link text|URL] (not [text](url))
 - Panels: {panel:title=Title}content{panel}
-- Color: {color:red}text{color}
-- Line breaks: Use actual line breaks, not \\n
 
 h1. 🎯 Executive Summary
 - Clear description of what this component does and why it's needed
@@ -197,25 +331,20 @@ h2. 🎨 Design Implementation Details
 - Specific color values, typography specs, and spacing measurements
 - Responsive behavior and breakpoint considerations
 - Interactive states and micro-interactions
-- Error states and edge cases
 
 h2. ✅ Acceptance Criteria (Specific & Testable)
 - Functional requirements based on the actual design
 - Visual accuracy requirements
 - Performance benchmarks
-- Accessibility compliance specifics
 
 h2. 🔧 Development Guidance
 - Code organization and file structure recommendations
 - Testing strategy tailored to this component type
 - Potential gotchas and implementation challenges
-- Documentation and example requirements
 
 ---
 
-*REMEMBER*: You're not just filling out a template. You're providing expert analysis of a real design that developers will use to build production software. Be specific, be smart, and provide real value. *USE JIRA MARKUP FORMAT ONLY*`;
-
-    return prompt;
+*REMEMBER*: You're providing expert analysis of a real design that developers will use to build production software. Be specific, be smart, and provide real value. *USE JIRA MARKUP FORMAT ONLY*`;
   }
 
   /**
@@ -371,6 +500,86 @@ h2. 🔧 Development Guidance
   }
 
   /**
+   * Process visual-enhanced context with streaming for better UX
+   */
+  async processVisualEnhancedContextStream(context, options = {}, onChunk = null) {
+    if (!this.model) {
+      throw new Error('Gemini API not configured');
+    }
+
+    console.log('🎨 Processing visual-enhanced context with streaming...');
+    const startTime = Date.now();
+
+    try {
+      // Compress context if needed
+      const compressedContext = this.compressContextIfNeeded(context);
+      
+      // Build enhanced prompt with modular composition
+      const prompt = this.buildEnhancedPrompt(compressedContext, options);
+
+      // Prepare multimodal input
+      const parts = [{ text: prompt }];
+
+      // Add screenshot if available
+      if (compressedContext.screenshot?.base64) {
+        const format = compressedContext.screenshot.format || 'png';
+        parts.push({
+          inlineData: {
+            mimeType: `image/${format.toLowerCase()}`,
+            data: compressedContext.screenshot.base64
+          }
+        });
+      }
+
+      // Generate with streaming
+      const stream = await this.model.generateContentStream(parts);
+      let fullText = '';
+
+      for await (const chunk of stream) {
+        const chunkText = chunk.text();
+        fullText += chunkText;
+        
+        if (onChunk) {
+          onChunk(chunkText, fullText);
+        }
+      }
+
+      // Validate and retry if needed
+      if (!this.validateOutput(fullText)) {
+        console.warn('⚠️ Streaming output failed validation, falling back to retry logic');
+        return this.processVisualEnhancedContext(compressedContext, options);
+      }
+
+      // Parse and structure the response
+      const analysis = this.parseAIResponse(fullText);
+      const processingTime = Date.now() - startTime;
+
+      return {
+        ticket: fullText,
+        structured: {
+          summary: analysis.visualUnderstanding,
+          implementation: analysis.componentAnalysis,
+          recommendations: analysis.recommendationSummary,
+          designSystem: analysis.designSystemCompliance
+        },
+        metadata: {
+          confidence: this.calculateConfidence(compressedContext, fullText),
+          processingTime,
+          contextCompressed: JSON.stringify(context).length > this.compressionThreshold,
+          screenshotProcessed: !!compressedContext.screenshot,
+          streaming: true,
+          promptTokens: Math.ceil(prompt.length / 4),
+          responseTokens: Math.ceil(fullText.length / 4)
+        }
+      };
+
+    } catch (error) {
+      console.error('❌ Streaming AI processing failed:', error);
+      throw new Error(`Streaming AI processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
    * Test service configuration
    */
   async testConfiguration() {
@@ -378,24 +587,35 @@ h2. 🔧 Development Guidance
       return {
         available: false,
         model: 'none',
-        capabilities: []
+        capabilities: [],
+        error: 'Service not initialized'
       };
     }
 
     try {
       // Test basic generation
-      await this.model.generateContent('Test');
+      const testResult = await this.model.generateContent('Test response');
+      const response = await testResult.response;
+      const text = response.text();
 
       return {
         available: true,
-        model: 'gemini-1.5-flash',
-        capabilities: ['text', 'vision', 'multimodal']
+        model: 'gemini-2.0-flash',
+        capabilities: ['text', 'vision', 'multimodal', 'streaming'],
+        features: {
+          retry: this.maxRetries,
+          compression: this.compressionThreshold,
+          modularPrompts: true,
+          structuredOutput: true
+        },
+        testResponse: text?.substring(0, 50) + '...'
       };
     } catch (error) {
       return {
         available: false,
-        model: 'gemini-1.5-flash',
-        capabilities: []
+        model: 'gemini-2.0-flash',
+        capabilities: [],
+        error: error.message
       };
     }
   }
