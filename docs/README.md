@@ -10,7 +10,7 @@ Complete project overview, architecture, current status, and AI assistant rules.
 **� [Clean Documentation Structure](#-documentation-structure)** - **ORGANIZED!**  
 All documentation properly categorized and organized into focused directories
 
-## 🧪 **CONSOLIDATED TESTING FRAMEWORK - October 2025**
+### **🧪 CONSOLIDATED TESTING FRAMEWORK - October 2025**
 
 **🎉 COMPREHENSIVE TEST VALIDATION COMPLETE - October 30, 2025**
 - **✅ Perfect Code Quality**: ESLint 0 errors/warnings (95.9% improvement from 122→0)
@@ -25,6 +25,22 @@ All documentation properly categorized and organized into focused directories
 - **65% Command Reduction**: 23→8 essential test commands 
 - **Master Orchestrator Scripts**: 3 unified scripts for intelligent test routing
 - **Enhanced Workflow**: Single-command testing with `npm run test:all`
+
+**🎯 PLANNED TEST DIRECTORY REORGANIZATION - November 2025**
+```
+tests/
+├── hybrid/                    # Core hybrid architecture tests (100% functional)
+│   ├── focused-hybrid.js      # Production-ready hybrid validation
+│   ├── comprehensive.js       # Full system hybrid testing
+│   └── basic-validation.js    # Quick hybrid smoke tests
+├── integration/               # End-to-end workflow tests (consolidated)
+├── unit/                      # Unit tests (tech stack, parsing)
+├── performance/               # Performance benchmarks
+├── system/                    # System validation (streamlined)
+├── redis/                     # Redis integration tests
+└── final-validation-suite.js  # Master validation orchestrator
+```
+**Target**: 40% file reduction, improved maintainability, preserved functionality
 
 ## 🚀 **MODULAR ARCHITECTURE OPTIMIZATION - November 3, 2025**
 

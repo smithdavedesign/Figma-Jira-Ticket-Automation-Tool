@@ -14,6 +14,23 @@
  */
 
 import { spawn, exec } from 'child_process';
+
+// Handle EPIPE errors gracefully when output is piped
+process.on('EPIPE', () => {
+  process.exit(0);
+});
+
+process.stdout.on('error', (error) => {
+  if (error.code === 'EPIPE') {
+    process.exit(0);
+  }
+});
+
+process.stderr.on('error', (error) => {
+  if (error.code === 'EPIPE') {
+    process.exit(0);
+  }
+});
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -193,16 +210,30 @@ class TestOrchestrator {
 
       child.stdout?.on('data', (data) => {
         stdout += data;
-        // Real-time output for long-running tests
+        // Real-time output for long-running tests with error handling
         if (process.env.VERBOSE || command.includes('vitest')) {
-          process.stdout.write(data);
+          try {
+            process.stdout.write(data);
+          } catch (error) {
+            // Ignore EPIPE errors when output is piped
+            if (error.code !== 'EPIPE') {
+              console.error('Stdout write error:', error.message);
+            }
+          }
         }
       });
 
       child.stderr?.on('data', (data) => {
         stderr += data;
         if (process.env.VERBOSE) {
-          process.stderr.write(data);
+          try {
+            process.stderr.write(data);
+          } catch (error) {
+            // Ignore EPIPE errors when output is piped
+            if (error.code !== 'EPIPE') {
+              console.error('Stderr write error:', error.message);
+            }
+          }
         }
       });
 

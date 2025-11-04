@@ -458,7 +458,7 @@ class TemplateGenerationStrategy extends GenerationStrategy {
 }
 
 /**
- * Enhanced Generation Strategy - Template + context enhancement
+ * Enhanced Generation Strategy - Template + AI integration
  */
 class EnhancedGenerationStrategy extends GenerationStrategy {
   constructor(templateManager, visualAIService, logger) {
@@ -468,22 +468,209 @@ class EnhancedGenerationStrategy extends GenerationStrategy {
   }
 
   async generate(request) {
-    // Try AI enhancement first, fallback to template
-    if (this.visualAIService && request.enhancedFrameData) {
-      try {
-        const aiStrategy = new AIGenerationStrategy(this.visualAIService, null, this.logger);
-        return await aiStrategy.generate(request);
-      } catch (error) {
-        this.logger.warn('AI enhancement failed, falling back to template:', error.message);
+    const { frameData, platform, documentType, techStack, screenshot } = request;
+
+    this.logger.info('🚀 Enhanced generation: Template-AI hybrid approach');
+
+    try {
+      // Phase 1: Generate base ticket using template system
+      const templateResult = await this.templateManager.generateTicket({
+        platform: platform || 'jira',
+        documentType: documentType || 'component',
+        componentName: frameData?.[0]?.name || 'Component',
+        techStack,
+        requestData: request
+      });
+
+      // Phase 2: If AI service available and enhanced data exists, use AI for improvement
+      if (this.visualAIService && (request.enhancedFrameData || screenshot)) {
+        try {
+          this.logger.info('🤖 Enhancing template output with AI analysis...');
+
+          // Build visual context for AI enhancement
+          const visualContext = this.buildVisualContext(request.enhancedFrameData || [], screenshot);
+
+          // Get AI enhancement (using template-integrated prompts if available)
+          const aiResult = await this.visualAIService.processVisualEnhancedContext(
+            visualContext,
+            {
+              documentType,
+              techStack: Array.isArray(techStack) ? techStack.join(', ') : techStack,
+              instructions: `Enhance the following template-generated ticket with visual analysis insights: ${templateResult.content.substring(0, 500)}...`
+            }
+          );
+
+          // Combine template structure with AI insights
+          const enhancedContent = this.combineTemplateAndAI(templateResult.content, aiResult.ticket);
+
+          return {
+            content: [{
+              type: 'text',
+              text: enhancedContent
+            }],
+            metadata: {
+              generationType: 'enhanced-template-ai-hybrid',
+              templateId: templateResult.metadata?.template_id,
+              aiModel: 'gemini-2.0-flash',
+              confidence: aiResult.metadata?.confidence || 0.8,
+              processingApproach: 'template-first-ai-enhanced',
+              platform,
+              documentType
+            }
+          };
+
+        } catch (aiError) {
+          this.logger.warn('AI enhancement failed, using template result:', aiError.message);
+        }
       }
+
+      // Return template result if AI enhancement not available or failed
+      return {
+        content: [{
+          type: 'text',
+          text: templateResult.content
+        }],
+        metadata: {
+          generationType: 'enhanced-template-only',
+          templateId: templateResult.metadata?.template_id,
+          platform,
+          documentType,
+          note: 'AI enhancement not available or failed'
+        }
+      };
+
+    } catch (error) {
+      this.logger.error('Enhanced generation failed completely:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Build visual context for AI service
+   */
+  buildVisualContext(enhancedFrameData, screenshot) {
+    // Extract design context from frame data
+    const colors = this.extractColors(enhancedFrameData);
+    const typography = this.extractTypography(enhancedFrameData);
+    const components = enhancedFrameData.map(frame => ({
+      name: frame.name || 'Component',
+      type: frame.type || 'FRAME',
+      id: frame.id
+    }));
+
+    return {
+      screenshot: screenshot ? {
+        url: screenshot,
+        format: 'png',
+        base64: this.extractBase64FromScreenshot(screenshot)
+      } : null,
+      visualDesignContext: {
+        colorPalette: colors,
+        typography,
+        spacing: { patterns: ['8px', '16px', '24px', '32px'] },
+        layout: { structure: 'Component-based' },
+        designPatterns: ['Component System', 'Design Tokens']
+      },
+      hierarchicalData: { components },
+      figmaContext: {
+        selection: { name: components[0]?.name || 'Component' },
+        fileName: 'Design File'
+      }
+    };
+  }
+
+  /**
+   * Combine template structure with AI insights
+   */
+  combineTemplateAndAI(templateContent, aiContent) {
+    // Strategy: Use template structure but enhance with AI insights
+    const sections = templateContent.split(/(?=##\s|\*\*|h[1-6]\.)/);
+    const aiSections = aiContent.split(/(?=##\s|\*\*|h[1-6]\.)/);
+
+    // Find AI insights that can enhance template sections
+    let enhanced = templateContent;
+
+    // Look for AI analysis that adds value
+    if (aiContent.includes('complexity') || aiContent.includes('implementation')) {
+      enhanced += '\n\n---\n**AI-Enhanced Analysis:**\n\n';
+
+      // Extract key AI insights
+      const aiInsights = this.extractKeyInsights(aiContent);
+      enhanced += aiInsights;
     }
 
-    // Fallback to template generation
-    const templateStrategy = new TemplateGenerationStrategy(this.templateManager, this.logger);
-    const result = await templateStrategy.generate(request);
+    return enhanced;
+  }
 
-    result.metadata.generationType = 'enhanced-template-fallback';
-    return result;
+  /**
+   * Extract key insights from AI response
+   */
+  extractKeyInsights(aiContent) {
+    const insights = [];
+
+    // Extract complexity analysis
+    const complexityMatch = aiContent.match(/complexity[^.]*\./i);
+    if (complexityMatch) {
+      insights.push(`• ${complexityMatch[0]}`);
+    }
+
+    // Extract implementation recommendations
+    const implMatches = aiContent.match(/implementation[^.]*\./gi);
+    if (implMatches) {
+      insights.push(...implMatches.slice(0, 2).map(match => `• ${match}`));
+    }
+
+    return insights.join('\n') || 'Additional analysis insights integrated from AI review.';
+  }
+
+  /**
+   * Extract colors from enhanced frame data
+   */
+  extractColors(enhancedFrameData) {
+    const colors = [];
+    enhancedFrameData.forEach(frame => {
+      if (frame.hierarchy?.designTokens?.colors) {
+        colors.push(...frame.hierarchy.designTokens.colors.map(color => ({
+          name: color,
+          hex: color,
+          usage: ['UI element']
+        })));
+      }
+    });
+    return colors.slice(0, 10); // Limit to top 10
+  }
+
+  /**
+   * Extract typography from enhanced frame data
+   */
+  extractTypography(enhancedFrameData) {
+    const typography = { fonts: [], sizes: [], hierarchy: [] };
+
+    enhancedFrameData.forEach(frame => {
+      if (frame.hierarchy?.designTokens?.typography) {
+        const typoTokens = frame.hierarchy.designTokens.typography;
+        const fonts = typoTokens.map(token => token.split('-')[0]).filter(Boolean);
+        typography.fonts.push(...fonts);
+      }
+    });
+
+    // Remove duplicates and limit
+    typography.fonts = [...new Set(typography.fonts)].slice(0, 5);
+    typography.sizes = ['14', '16', '18', '24', '32'];
+    typography.hierarchy = ['Title', 'Heading', 'Body', 'Caption'];
+
+    return typography;
+  }
+
+  /**
+   * Extract base64 from screenshot URL if possible
+   */
+  extractBase64FromScreenshot(screenshot) {
+    if (typeof screenshot === 'string' && screenshot.startsWith('data:image')) {
+      const base64Match = screenshot.match(/base64,(.+)/);
+      return base64Match ? base64Match[1] : null;
+    }
+    return null;
   }
 
   healthCheck() {

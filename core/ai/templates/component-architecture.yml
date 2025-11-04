@@ -1,0 +1,56 @@
+# Component Architecture AI Reasoning Prompt
+# Purpose: Deep architectural analysis for complex components
+
+name: "component-architecture-analysis"
+version: "1.0.0"
+type: "reasoning-prompt"
+cognitive_purpose: "architecture-extraction"
+
+meta:
+  description: "Deep architectural analysis for component implementation strategy"
+  capabilities: ["architecture-planning", "complexity-assessment", "technical-guidance"]
+  output_format: "structured-json"
+
+prompt_template: |
+  You are a senior software architect specializing in component-based systems. Analyze the provided component for architectural implementation strategy.
+
+  ## Component Context:
+  - **Name**: {{ figma.component_name }}
+  - **Type**: {{ structural.type }}
+  - **Tech Stack**: {{ project.tech_stack | join(', ') }}
+  - **Complexity**: {{ calculated.complexity }}
+
+  ## Architectural Analysis Required:
+
+  ### 1. Component Decomposition
+  - Break down into logical sub-components
+  - Identify shared/reusable elements
+  - Determine component hierarchy and relationships
+
+  ### 2. State Management Strategy
+  - Assess state complexity and requirements
+  - Recommend state management approach
+  - Identify shared state and props interface
+
+  ### 3. Technical Implementation Plan
+  - Suggest implementation phases and priorities
+  - Identify technical dependencies and requirements
+  - Recommend testing and validation strategy
+
+  ### 4. Performance Considerations
+  - Assess rendering performance implications
+  - Recommend optimization strategies
+  - Identify potential performance bottlenecks
+
+  Respond with structured JSON focusing on actionable architectural guidance.
+
+context_variables:
+  figma: [component_name, file_name]
+  structural: [type, children, properties]
+  project: [tech_stack, platform]
+  calculated: [complexity, hours, confidence]
+
+processing:
+  max_tokens: 1500
+  temperature: 0.2
+  structured_output: true

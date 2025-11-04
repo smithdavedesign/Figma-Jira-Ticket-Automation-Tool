@@ -5,7 +5,6 @@
  * Handles enhanced capture, context extraction, and AI analysis.
  */
 
-import crypto from 'crypto';
 import { z } from 'zod';
 import { BaseFigmaRoute } from './base.js';
 
@@ -64,7 +63,9 @@ export class FigmaEnhancedRoutes extends BaseFigmaRoute {
     });
 
     try {
-      const { figmaUrl, frameData, options = {} } = req.body;
+      // Validate input
+      const validatedData = ContextExtractionSchema.parse(req.body);
+      const { figmaUrl, frameData, options = {} } = validatedData;
 
       this.validateServices(['contextManager']);
       const contextManager = this.getService('contextManager');
@@ -73,6 +74,16 @@ export class FigmaEnhancedRoutes extends BaseFigmaRoute {
       let screenshotData;
       let analysisData = null;
       let contextData = null;
+
+      // Extract request parameters
+      const testMode = options.testMode || false;
+      const format = options.format || 'png';
+      const quality = options.quality || 'high';
+      const includeAnalysis = options.includeAnalysis || false;
+
+      // Get services
+      const screenshotService = this.getService('screenshotService');
+
       this.logger.debug(`📸 Processing enhanced Figma screenshot request - testMode: ${testMode}`);
 
       if (testMode) {
@@ -94,7 +105,6 @@ export class FigmaEnhancedRoutes extends BaseFigmaRoute {
       if (includeAnalysis) {
         try {
           // 1. Context Layer analysis (semantic understanding)
-          const contextManager = this.getContextManager();
           if (contextManager && !testMode) {
             contextData = await this._extractFigmaContext(figmaUrl, screenshotData);
             this.logger.debug('✅ Context Layer analysis completed');
@@ -165,6 +175,7 @@ export class FigmaEnhancedRoutes extends BaseFigmaRoute {
 
       // Enhanced caching with secure keys
       if (!testMode) {
+        const redis = this.getService('redis');
         const cacheKey = this.generateCacheKey('figma-enhanced', figmaUrl);
         await redis.set(cacheKey, JSON.stringify({
           screenshot: screenshotData,
@@ -182,63 +193,7 @@ export class FigmaEnhancedRoutes extends BaseFigmaRoute {
     }
   }
 
-  /**
-   * Handle advanced context extraction from Figma data
-   */
-  async handleContextExtraction(req, res) {
-    try {
-      const validatedBody = ContextExtractionSchema.parse(req.body);
-      const { figmaUrl, frameData, options } = validatedBody;
 
-      this.logAccess(req, 'contextExtraction', {
-        figmaUrl: `${figmaUrl.substring(0, 50)}...`,
-        hasFrameData: !!frameData,
-        protocolType: 'REST',
-        endpoint: 'contextExtraction'
-      });
-
-      const contextManager = this.getContextManager();
-      if (!contextManager) {
-        return this.sendError(res, 'Context Layer unavailable - Context Manager not initialized', 503);
-      }
-
-      this.logger.debug('🎨 Processing Figma context extraction request');
-      const startTime = Date.now();
-
-      // Extract context using Context Layer
-      const contextData = await this._extractFigmaContext(figmaUrl, null, frameData, options);
-      const processingTime = Date.now() - startTime;
-
-      const responseData = {
-        context: contextData,
-        source: 'context-layer',
-        figmaUrl: figmaUrl,
-        architecture: 'figma-api → context-layer → semantic-analysis',
-        metadata: {
-          timestamp: new Date().toISOString(),
-          processingTime: processingTime,
-          contextVersion: '2.0',
-          extractorCount: 5
-        }
-      };
-
-      // Cache context result with secure key
-      const redis = this.getService('redis');
-      const cacheKey = this.generateCacheKey('figma-context', figmaUrl);
-      await redis.set(cacheKey, JSON.stringify({
-        context: contextData,
-        timestamp: new Date().toISOString()
-      }), 1800);
-
-      this.sendSuccess(res, responseData, 'Context extraction completed successfully');
-
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return this.sendError(res, `Validation failed: ${error.errors.map(e => e.message).join(', ')}`, 400);
-      }
-      this.handleFigmaError(error, res, 'extract context');
-    }
-  }
 
   /**
    * Handle enhanced capture (screenshot + context extraction) with fixed dependencies

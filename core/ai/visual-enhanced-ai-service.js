@@ -47,7 +47,7 @@ export class VisualEnhancedAIService {
     try {
       // Compress context if needed
       const compressedContext = this.compressContextIfNeeded(context);
-      
+
       // Build enhanced prompt with modular composition
       const prompt = this.buildEnhancedPrompt(compressedContext, options);
 
@@ -68,7 +68,7 @@ export class VisualEnhancedAIService {
 
       // Generate with retry logic
       const generatedText = await this.generateWithRetry(parts, options);
-      
+
       // Parse and structure the response
       const analysis = this.parseAIResponse(generatedText);
       const processingTime = Date.now() - startTime;
@@ -111,11 +111,11 @@ export class VisualEnhancedAIService {
       // Validate output quality
       if (!this.validateOutput(generatedText) && attempt <= this.maxRetries) {
         console.warn(`⚠️ Weak output detected (attempt ${attempt}/${this.maxRetries}), retrying with reinforced prompt`);
-        
+
         // Enhance prompt for retry
         const enhancedParts = [...parts];
         enhancedParts[0].text += '\n\nIMPORTANT: Ensure output uses proper Jira markup (h1. h2. h3.) and includes comprehensive technical details. Minimum 500 words required.';
-        
+
         return this.generateWithRetry(enhancedParts, options, attempt + 1);
       }
 
@@ -134,8 +134,8 @@ export class VisualEnhancedAIService {
    * Validate AI output quality
    */
   validateOutput(text) {
-    return text.includes('h1.') && 
-           text.includes('h2.') && 
+    return text.includes('h1.') &&
+           text.includes('h2.') &&
            text.length >= 300 &&
            !text.includes('# ') && // No markdown headers
            !text.includes('**'); // No markdown bold
@@ -151,7 +151,7 @@ export class VisualEnhancedAIService {
     }
 
     console.log(`🗜️ Compressing context from ${contextStr.length} to reduce token usage`);
-    
+
     return {
       ...context,
       visualDesignContext: this.summarizeContext(context.visualDesignContext),
@@ -163,7 +163,7 @@ export class VisualEnhancedAIService {
    * Summarize visual design context
    */
   summarizeContext(visualContext) {
-    if (!visualContext) return visualContext;
+    if (!visualContext) {return visualContext;}
 
     return {
       colorPalette: visualContext.colorPalette?.slice(0, 10) || [], // Top 10 colors
@@ -184,7 +184,7 @@ export class VisualEnhancedAIService {
    * Summarize hierarchical data
    */
   summarizeHierarchy(hierarchyData) {
-    if (!hierarchyData) return hierarchyData;
+    if (!hierarchyData) {return hierarchyData;}
 
     return {
       components: hierarchyData.components?.slice(0, 15) || [], // Top 15 components
@@ -199,7 +199,7 @@ export class VisualEnhancedAIService {
     const sections = [
       this.promptHeaders(context, options),
       this.promptDesignAnalysis(context),
-      this.promptImplementationGuidance(context, options), 
+      this.promptImplementationGuidance(context, options),
       this.promptExpectedOutput(options)
     ];
 
@@ -277,7 +277,7 @@ ${context.hierarchicalData?.components?.map(comp =>
   }
 
   /**
-   * Generate implementation guidance section  
+   * Generate implementation guidance section
    */
   promptImplementationGuidance(context, options) {
     const { techStack = 'React TypeScript' } = options;
@@ -513,7 +513,7 @@ h2. 🔧 Development Guidance
     try {
       // Compress context if needed
       const compressedContext = this.compressContextIfNeeded(context);
-      
+
       // Build enhanced prompt with modular composition
       const prompt = this.buildEnhancedPrompt(compressedContext, options);
 
@@ -538,7 +538,7 @@ h2. 🔧 Development Guidance
       for await (const chunk of stream) {
         const chunkText = chunk.text();
         fullText += chunkText;
-        
+
         if (onChunk) {
           onChunk(chunkText, fullText);
         }

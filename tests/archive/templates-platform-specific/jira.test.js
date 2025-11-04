@@ -4,11 +4,11 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
-import { validateYamlFile } from '../yaml-validation.test.js';
-import { testTemplateVariableSubstitution } from '../variable-substitution.test.js';
+import { validateYamlFile } from '../../integration/yaml-validation.test.js';
+import { testTemplateVariableSubstitution } from '../../integration/variable-substitution.test.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const jiraTemplatePath = join(__dirname, '../../../config/templates/platforms/jira/comp.yml');
+const jiraTemplatePath = join(__dirname, '../../../core/ai/templates/platforms/jira/comp.yml');
 
 /**
  * Enhanced context data specifically for Jira testing

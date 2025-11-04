@@ -1,0 +1,101 @@
+# Visual Analysis AI Reasoning Prompt
+# Purpose: Pure cognitive extraction - intelligence gathering, not output formatting
+# Architecture: Hybrid AI-Template (AI = reasoning, Templates = structure)
+
+name: "comprehensive-visual-analysis"
+version: "2.0.0"
+type: "reasoning-prompt"
+cognitive_purpose: "intelligence-extraction"
+
+# Meta information
+meta:
+  description: "Comprehensive visual and structural analysis for design component intelligence"
+  capabilities: ["visual-understanding", "component-analysis", "design-compliance", "recommendation-generation"]
+  output_format: "structured-json"
+  separation_notes: "AI reasoning only - templates handle final formatting"
+
+# Core reasoning prompt for intelligence extraction
+prompt_template: |
+  You are an expert design system analyst and software architect. Analyze the provided Figma component screenshot and metadata to extract intelligence for development implementation.
+
+  CONTEXT INFORMATION:
+  - Component: {{ figma.component_name || 'Unknown Component' }}
+  - Tech Stack: {{ project.tech_stack | join(', ') }}
+  - Platform: {{ project.platform || 'web' }}
+  - File: {{ figma.file_name || 'Design File' }}
+  
+  VISUAL CONTEXT:
+  The component screenshot shows: {{ figma.screenshot_url ? 'Visual provided' : 'No visual available' }}
+  
+  STRUCTURAL CONTEXT:
+  {% if structural.children %}
+  - Element Count: {{ structural.children | length }}
+  - Component Type: {{ structural.type }}
+  {% endif %}
+  
+  ANALYSIS INSTRUCTIONS:
+  Extract intelligence in these areas:
+
+  1. Visual Understanding Analysis
+  - Describe the component's visual design and layout
+  - Identify key UI patterns and element relationships  
+  - Note color usage, typography, spacing, and visual hierarchy
+  - Assess responsiveness and state variations
+
+  2. Component Architecture Analysis  
+  - Determine appropriate component structure and composition
+  - Identify reusable sub-components and patterns
+  - Assess complexity and implementation approach
+  - Consider state management and data flow requirements
+
+  3. Design System Compliance Analysis
+  - Evaluate adherence to design token systems
+  - Check consistency with established patterns
+  - Identify potential design system extensions needed
+  - Note accessibility and usability considerations
+
+  4. Implementation Recommendations
+  - Suggest optimal implementation strategy
+  - Identify potential technical challenges
+  - Recommend testing approaches and edge cases
+  - Provide guidance on performance and maintainability
+
+  OUTPUT FORMAT:
+  Respond with a structured JSON object containing:
+  {
+    "visualUnderstanding": "Detailed visual analysis...",
+    "componentAnalysis": "Architecture and implementation insights...", 
+    "designSystemCompliance": "Design system alignment assessment...",
+    "recommendationSummary": "Key recommendations and guidance..."
+  }
+
+  Focus on providing actionable intelligence that developers can use to implement the component effectively. Be specific and technical in your analysis.
+
+# Context variables for prompt rendering
+context_variables:
+  figma:
+    - component_name
+    - file_name
+    - screenshot_url
+    - live_link
+  project:
+    - tech_stack
+    - platform
+    - name
+  structural:
+    - type
+    - children
+    - properties
+
+# Processing parameters  
+processing:
+  max_tokens: 2000
+  temperature: 0.3
+  structured_output: true
+  response_format: "json"
+
+# Quality assurance
+validation:
+  required_sections: ["visualUnderstanding", "componentAnalysis", "designSystemCompliance", "recommendationSummary"]
+  min_length_per_section: 50
+  ensure_actionable: true

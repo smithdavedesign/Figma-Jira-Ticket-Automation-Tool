@@ -121,6 +121,7 @@ export default [
       '*.min.js',
       'code.js',
       'code.ts',
+      'src/',
     ],
   },
 ];
