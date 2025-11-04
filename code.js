@@ -14,6 +14,7 @@ const SCREENSHOT_CONFIG = {
 };
 // Screenshot utility functions
 async function fetchScreenshot(fileKey, nodeId, options = {}) {
+    var _a, _b, _c, _d, _e;
     const { format = SCREENSHOT_CONFIG.DEFAULT_FORMAT, scale = SCREENSHOT_CONFIG.DEFAULT_SCALE, timeout = SCREENSHOT_CONFIG.TIMEOUT_MS, retries = SCREENSHOT_CONFIG.MAX_RETRIES } = options;
     const baseUrl = SCREENSHOT_CONFIG.DEVELOPMENT_API; // For now, use development endpoint
     // Manual parameter building for Figma plugin compatibility (no URLSearchParams)
@@ -48,23 +49,26 @@ async function fetchScreenshot(fileKey, nodeId, options = {}) {
                         errorMessage = 'Figma API key not configured properly on server';
                     }
                 }
-                catch (_a) {
+                catch (_f) {
                     // Ignore JSON parse errors for error responses
                 }
                 throw new Error(errorMessage);
             }
-            const data = await response.json();
-            if (!data.imageUrl) {
+            const response_data = await response.json();
+            // Handle both direct and nested response formats
+            const imageUrl = ((_a = response_data.data) === null || _a === void 0 ? void 0 : _a.imageUrl) || response_data.imageUrl;
+            if (!imageUrl) {
+                console.error('❌ Screenshot API response structure:', response_data);
                 throw new Error('No image URL returned from screenshot API');
             }
             console.log(`✅ Screenshot fetched successfully:`, {
                 nodeId,
                 fileKey,
-                cached: data.cached,
-                imageUrl: data.imageUrl.substring(0, 50) + '...',
-                requestTime: data.metadata && data.metadata.requestTime
+                cached: ((_c = (_b = response_data.data) === null || _b === void 0 ? void 0 : _b.performance) === null || _c === void 0 ? void 0 : _c.cached) || response_data.cached,
+                imageUrl: imageUrl.substring(0, 50) + '...',
+                requestTime: ((_d = response_data.metadata) === null || _d === void 0 ? void 0 : _d.timestamp) || ((_e = response_data.metadata) === null || _e === void 0 ? void 0 : _e.requestTime)
             });
-            return data.imageUrl;
+            return imageUrl;
         }
         catch (error) {
             lastError = error instanceof Error ? error : new Error('Unknown error');
@@ -251,9 +255,7 @@ async function handleGetContext() {
             fileKey: fileKey,
             fileName: figma.root.name || 'Figma Design',
             pageId: figma.currentPage.id,
-            pageName: figma.currentPage.name,
-            // Team parameter will be captured from UI input
-            teamParam: null
+            pageName: figma.currentPage.name
         };
         figma.ui.postMessage({
             type: 'file-context',

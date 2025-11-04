@@ -67,21 +67,25 @@ async function fetchScreenshot(fileKey: string, nodeId: string, options: any = {
         throw new Error(errorMessage);
       }
       
-      const data = await response.json();
+      const response_data = await response.json();
       
-      if (!data.imageUrl) {
+      // Handle both direct and nested response formats
+      const imageUrl = response_data.data?.imageUrl || response_data.imageUrl;
+      
+      if (!imageUrl) {
+        console.error('❌ Screenshot API response structure:', response_data);
         throw new Error('No image URL returned from screenshot API');
       }
       
       console.log(`✅ Screenshot fetched successfully:`, {
         nodeId,
         fileKey,
-        cached: data.cached,
-        imageUrl: data.imageUrl.substring(0, 50) + '...',
-        requestTime: data.metadata && data.metadata.requestTime
+        cached: response_data.data?.performance?.cached || response_data.cached,
+        imageUrl: imageUrl.substring(0, 50) + '...',
+        requestTime: response_data.metadata?.timestamp || response_data.metadata?.requestTime
       });
       
-      return data.imageUrl;
+      return imageUrl;
       
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Unknown error');
@@ -280,9 +284,7 @@ async function handleGetContext() {
       fileKey: fileKey,
       fileName: figma.root.name || 'Figma Design',
       pageId: figma.currentPage.id,
-      pageName: figma.currentPage.name,
-      // Team parameter will be captured from UI input
-      teamParam: null
+      pageName: figma.currentPage.name
     };
 
     figma.ui.postMessage({

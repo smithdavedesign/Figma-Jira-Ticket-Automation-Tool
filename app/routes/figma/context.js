@@ -1,6 +1,6 @@
 /**
  * Figma Context Routes Module
- * 
+ *
  * Context Layer CRUD operations and search endpoints.
  * Handles context storage, retrieval, and advanced search capabilities.
  */
@@ -36,18 +36,18 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
 
   /**
    * Register context management routes
-   * @param {Express.Router} router - Express router instance  
+   * @param {Express.Router} router - Express router instance
    */
   registerRoutes(router) {
     // Context Layer Management Endpoints for UI
-    router.get('/api/figma/context/:fileKey', this.asyncHandler(this.handleGetContextData.bind(this)));
-    router.post('/api/figma/context/:fileKey', this.asyncHandler(this.handleStoreContextData.bind(this)));
-    router.put('/api/figma/context/:fileKey', this.asyncHandler(this.handleUpdateContextData.bind(this)));
-    router.delete('/api/figma/context/:fileKey', this.asyncHandler(this.handleDeleteContextData.bind(this)));
+    router.get('/api/figma/context/:fileKey', this.handleGetContextData.bind(this));
+    router.post('/api/figma/context/:fileKey', this.handleStoreContextData.bind(this));
+    router.put('/api/figma/context/:fileKey', this.handleUpdateContextData.bind(this));
+    router.delete('/api/figma/context/:fileKey', this.handleDeleteContextData.bind(this));
 
     // Context Layer Utilities
-    router.get('/api/figma/context-summary/:fileKey', this.asyncHandler(this.handleGetContextSummary.bind(this)));
-    router.post('/api/figma/context-search', this.asyncHandler(this.handleSearchContext.bind(this)));
+    router.get('/api/figma/context-summary/:fileKey', this.handleGetContextSummary.bind(this));
+    router.post('/api/figma/context-search', this.handleSearchContext.bind(this));
 
     this.logger.info('✅ Figma context routes registered');
   }
@@ -115,7 +115,7 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
   async handleStoreContextData(req, res) {
     try {
       const validatedBody = StoreContextSchema.parse(req.body);
-      
+
       this.logAccess(req, 'storeContextData');
 
       const { fileKey } = req.params;
@@ -166,7 +166,7 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
   async handleUpdateContextData(req, res) {
     try {
       const validatedBody = UpdateContextSchema.parse(req.body);
-      
+
       this.logAccess(req, 'updateContextData');
 
       const { fileKey } = req.params;
@@ -310,7 +310,7 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
   async handleSearchContext(req, res) {
     try {
       const validatedBody = SearchContextSchema.parse(req.body);
-      
+
       this.logAccess(req, 'searchContext');
 
       const { query, fileKeys, nodeTypes, limit } = validatedBody;
@@ -325,7 +325,7 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
       for (const pattern of patterns) {
         const keys = await redis.keys(pattern);
         const limitedKeys = keys.slice(0, limit);
-        
+
         // Batch fetch all data at once (optimized)
         const contextDataList = await this.batchRedisGet(limitedKeys);
 
@@ -334,7 +334,7 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
           if (parsed) {
             // Enhanced relevance calculation
             const relevance = this._calculateEnhancedRelevance(parsed.context, query);
-            
+
             if (relevance > 0) {
               results.push({
                 fileKey: parsed.fileKey,
@@ -396,7 +396,7 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
       if (fieldValue) {
         const fieldText = JSON.stringify(fieldValue).toLowerCase();
         const occurrences = (fieldText.match(new RegExp(queryLower, 'gi')) || []).length;
-        
+
         if (occurrences > 0) {
           const fieldRelevance = (occurrences / fieldText.length * 1000) * weight;
           totalRelevance += fieldRelevance;
@@ -430,7 +430,7 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
     const contextStr = JSON.stringify(context, null, 2);
     const queryIndex = contextStr.toLowerCase().indexOf(query.toLowerCase());
 
-    if (queryIndex === -1) return '';
+    if (queryIndex === -1) {return '';}
 
     const start = Math.max(0, queryIndex - 50);
     const end = Math.min(contextStr.length, queryIndex + maxLength);
@@ -455,7 +455,7 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
       };
 
       const contextResult = await contextManager.extractContext(figmaData);
-      
+
       this.logger.debug('✅ Context extraction successful for context routes');
       return contextResult;
 

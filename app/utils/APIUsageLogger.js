@@ -1,6 +1,6 @@
 /**
  * API Usage Logging Utility
- * 
+ *
  * Enhanced logging utilities to differentiate between MCP server and REST API usage.
  * Provides analytics and monitoring for different protocol types.
  */
@@ -23,7 +23,7 @@ export class APIUsageLogger {
   logAPIRequest(protocol, action, context = {}) {
     const timestamp = new Date().toISOString();
     const protocolIcon = protocol === 'MCP' ? '🔌' : '🌐';
-    
+
     this.logger.info(`${protocolIcon} [${protocol}] ${action}`, {
       timestamp,
       protocol,
@@ -81,10 +81,10 @@ export class APIUsageLogger {
   updateMetrics(protocol, action, context) {
     if (protocol === 'MCP') {
       this.metrics.mcp.requests++;
-      if (context.error) this.metrics.mcp.errors++;
+      if (context.error) {this.metrics.mcp.errors++;}
     } else if (protocol === 'REST') {
       this.metrics.rest.requests++;
-      if (context.error) this.metrics.rest.errors++;
+      if (context.error) {this.metrics.rest.errors++;}
     }
   }
 
@@ -98,9 +98,9 @@ export class APIUsageLogger {
         totalRequests: this.metrics.mcp.requests + this.metrics.rest.requests,
         mcpRequests: this.metrics.mcp.requests,
         restRequests: this.metrics.rest.requests,
-        mcpErrorRate: this.metrics.mcp.requests > 0 ? 
+        mcpErrorRate: this.metrics.mcp.requests > 0 ?
           (this.metrics.mcp.errors / this.metrics.mcp.requests * 100).toFixed(2) + '%' : '0%',
-        restErrorRate: this.metrics.rest.requests > 0 ? 
+        restErrorRate: this.metrics.rest.requests > 0 ?
           (this.metrics.rest.errors / this.metrics.rest.requests * 100).toFixed(2) + '%' : '0%'
       },
       mcp: {
@@ -133,7 +133,7 @@ export class APIUsageLogger {
    */
   logUsageSummary() {
     const metrics = this.getMetrics();
-    
+
     this.logger.info('📊 API Usage Summary', {
       totalRequests: metrics.summary.totalRequests,
       protocolDistribution: {

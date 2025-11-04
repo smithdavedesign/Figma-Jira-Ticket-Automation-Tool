@@ -175,7 +175,7 @@ export class BaseRoute {
     // Determine API type for enhanced logging
     const apiType = this.getAPIType(req);
     const protocolIcon = this.getProtocolIcon(apiType);
-    
+
     this.logger.info(`${protocolIcon} ${this.routeName} [${apiType}] - ${action}`, {
       method: req.method,
       url: req.url,
@@ -192,11 +192,11 @@ export class BaseRoute {
    * @returns {string} API type identifier
    */
   getAPIType(req) {
-    if (req.url.includes('/api/mcp/')) return 'MCP';
-    if (req.url.includes('/api/figma/')) return 'REST';
-    if (req.url.includes('/api/screenshot')) return 'REST';
-    if (this.routeName === 'MCP') return 'MCP';
-    if (this.routeName === 'Figma') return 'REST';
+    if (req.url.includes('/api/mcp/')) {return 'MCP';}
+    if (req.url.includes('/api/figma/')) {return 'REST';}
+    if (req.url.includes('/api/screenshot')) {return 'REST';}
+    if (this.routeName === 'MCP') {return 'MCP';}
+    if (this.routeName === 'Figma') {return 'REST';}
     return 'GENERIC';
   }
 
@@ -207,10 +207,10 @@ export class BaseRoute {
    */
   getProtocolIcon(apiType) {
     switch (apiType) {
-      case 'MCP': return '🔌'; // MCP Protocol
-      case 'REST': return '🌐'; // REST API
-      case 'GENERIC': return '🔗'; // Generic endpoint
-      default: return '🔗';
+    case 'MCP': return '🔌'; // MCP Protocol
+    case 'REST': return '🌐'; // REST API
+    case 'GENERIC': return '🔗'; // Generic endpoint
+    default: return '🔗';
     }
   }
 

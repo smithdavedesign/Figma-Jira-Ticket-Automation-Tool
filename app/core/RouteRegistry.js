@@ -734,7 +734,7 @@ export class RouteRegistry {
    */
   isValidRouteFile(filename) {
     const ext = extname(filename);
-    return (ext === '.js' || ext === '.mjs') && !filename.startsWith('.') && filename !== 'BaseRoute.js';
+    return (ext === '.js' || ext === '.mjs') && !filename.startsWith('.') && filename !== 'BaseRoute.js' && filename !== 'base.js' && filename !== 'mcp.js';
   }
 
   /**

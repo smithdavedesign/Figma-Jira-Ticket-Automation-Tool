@@ -7,7 +7,7 @@
  * Phase 8: Server Architecture Refactoring - Phase 3
  */
 
-import { BaseRoute } from './BaseRoute.js';
+import { BaseRoute } from '../BaseRoute.js';
 
 export class MCPRoutes extends BaseRoute {
   constructor(serviceContainer) {
@@ -148,8 +148,8 @@ export class MCPRoutes extends BaseRoute {
    */
   async handleMCPToolCall(req, res) {
     const { tool, arguments: toolArgs } = req.body;
-    
-    this.logAccess(req, 'mcpToolCall', { 
+
+    this.logAccess(req, 'mcpToolCall', {
       mcpTool: tool,
       hasArguments: !!toolArgs,
       protocolVersion: 'MCP-2024-11-05'
@@ -367,7 +367,7 @@ export class MCPRoutes extends BaseRoute {
       throw new Error('figmaUrl is required');
     }
 
-    this.logger.info(`📸 [MCP PROTOCOL] Screenshot tool execution started`, {
+    this.logger.info('📸 [MCP PROTOCOL] Screenshot tool execution started', {
       protocol: 'MCP',
       tool: 'capture_figma_screenshot',
       figmaUrl: figmaUrl.substring(0, 50) + '...',
@@ -377,7 +377,7 @@ export class MCPRoutes extends BaseRoute {
 
     try {
       const screenshotService = this.getService('screenshotService');
-      
+
       // Use the correct API format for ScreenshotService
       const result = await screenshotService.captureScreenshot(figmaUrl, null, {
         format,

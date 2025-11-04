@@ -11,7 +11,7 @@
     "outFile": "../code.js"
   },
   "include": [
-    "../src/code.ts"
+    "../code.ts"
   ],
   "exclude": [
     "node_modules",

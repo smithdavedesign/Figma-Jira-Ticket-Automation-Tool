@@ -80,18 +80,22 @@ export class ScreenshotService extends BaseService {
         timeout: config.timeout
       });
 
-      // Fetch the actual image data from the URL
+      // For API responses, we need to return the URL directly
+      if (config.format !== 'base64') {
+        // Cache the URL result
+        await this.cacheScreenshot(cacheKey, screenshotResult.imageUrl);
+        this.logger.info(`✅ Figma screenshot captured: ${screenshotResult.imageUrl?.substring(0, 50)}...`);
+        return screenshotResult.imageUrl;
+      }
+
+      // For base64 format, fetch the actual image data from the URL
       const imageResponse = await fetch(screenshotResult.imageUrl);
       if (!imageResponse.ok) {
         throw new Error(`Failed to fetch screenshot: ${imageResponse.status}`);
       }
 
       const imageBuffer = await imageResponse.arrayBuffer();
-
-      // Convert to base64 if needed
-      const base64Data = config.format === 'base64'
-        ? Buffer.from(imageBuffer).toString('base64')
-        : imageBuffer;
+      const base64Data = Buffer.from(imageBuffer).toString('base64');
 
       // Cache the result
       await this.cacheScreenshot(cacheKey, base64Data);
@@ -145,7 +149,7 @@ export class ScreenshotService extends BaseService {
         // Return in API-compatible format
         return {
           success: true,
-          imageUrl: finalOptions.format === 'base64' 
+          imageUrl: finalOptions.format === 'base64'
             ? `data:image/png;base64,${screenshotData}`
             : screenshotData,
           data: screenshotData,

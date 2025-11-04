@@ -22,7 +22,7 @@ export class APIRoutes extends BaseRoute {
   registerRoutes(router) {
     // Figma integration endpoint (legacy GET endpoint)
     router.get('/api/figma/screenshot', this.asyncHandler(this.handleFigmaScreenshot.bind(this)));
-    
+
     // POST endpoint for screenshot API (required by Figma plugin)
     router.post('/api/screenshot', this.asyncHandler(this.handleScreenshotPost.bind(this)));
 

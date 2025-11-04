@@ -1484,17 +1484,23 @@ Examples:
           <span class="status-text">Connected (v${info.version})</span>
         `;
 
+        const tools = info.tools || [];
+        const services = info.services ? Object.keys(info.services.services || {}) : [];
+        const capabilities = info.ai ? info.ai.capabilities || [] : [];
+        
         content.innerHTML = `
           <div style="font-size: 13px;">
             <div><strong>Server URL:</strong> ${MCP_SERVER_URL}</div>
-            <div><strong>Available Tools:</strong> ${info.tools.length}</div>
+            <div><strong>Services:</strong> ${services.length} active</div>
+            <div><strong>AI Capabilities:</strong> ${capabilities.length} available</div>
             <div style="margin-top: 8px;">
-              ${info.tools.map(tool => 
-                `<span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin: 2px 4px 2px 0;">${tool}</span>`
+              ${capabilities.slice(0, 5).map(cap => 
+                `<span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin: 2px 4px 2px 0;">${cap}</span>`
               ).join('')}
+              ${capabilities.length > 5 ? `<span style="font-size: 11px; color: #6b7280;">+${capabilities.length - 5} more</span>` : ''}
             </div>
             <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #166534; margin-top: 8px;">
-              🚀 Figma Design Context Server Ready - Design context extraction available
+              🚀 ${info.server || 'Figma Design Context Server'} Ready - Design context extraction available
             </div>
           </div>
         `;

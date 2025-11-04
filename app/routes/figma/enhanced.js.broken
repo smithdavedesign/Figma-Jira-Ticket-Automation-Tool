@@ -70,10 +70,13 @@ export class FigmaEnhancedRoutes extends BaseFigmaRoute {
       const contextManager = this.getService('contextManager');
 
       const startTime = Date.now();
+
+      this.logger.debug(`📸 Processing enhanced Figma screenshot request - testMode: ${testMode}`);
+
       let screenshotData;
       let analysisData = null;
       let contextData = null;
-      this.logger.debug(`📸 Processing enhanced Figma screenshot request - testMode: ${testMode}`);
+      const startTime = Date.now();
 
       if (testMode) {
         // Generate test screenshot for development/testing

@@ -1,6 +1,6 @@
 /**
  * Base Figma Routes Module
- * 
+ *
  * Shared functionality for all Figma route modules.
  * Provides common utilities, validation, and base endpoint handlers.
  */
@@ -31,28 +31,28 @@ export class BaseFigmaRoute extends BaseRoute {
    * @returns {string|null}
    */
   extractFileKeyFromURL(figmaUrl) {
-    if (!figmaUrl) return null;
-    
+    if (!figmaUrl) {return null;}
+
     if (figmaUrl.startsWith('https://www.figma.com')) {
       const match = figmaUrl.match(/\/(?:file|design)\/([A-Za-z0-9]+)/);
       return match ? match[1] : null;
     }
-    
+
     if (/^[A-Za-z0-9]+$/.test(figmaUrl)) {
       return figmaUrl;
     }
-    
+
     return null;
   }
 
   /**
    * Extract nodeId from Figma URL
-   * @param {string} figmaUrl - Full Figma URL  
+   * @param {string} figmaUrl - Full Figma URL
    * @returns {string|null}
    */
   extractNodeIdFromURL(figmaUrl) {
-    if (!figmaUrl) return null;
-    
+    if (!figmaUrl) {return null;}
+
     const match = figmaUrl.match(/node-id=([^&]+)/);
     return match ? decodeURIComponent(match[1]) : null;
   }
@@ -77,7 +77,7 @@ export class BaseFigmaRoute extends BaseRoute {
     const redis = this.getService('redis');
     const promises = keys.map(key => redis.get(key));
     const results = await Promise.all(promises);
-    
+
     return results.map((result, index) => {
       try {
         return result ? JSON.parse(result) : null;
@@ -123,7 +123,7 @@ export class BaseFigmaRoute extends BaseRoute {
    */
   validateServices(requiredServices = []) {
     const missing = [];
-    
+
     for (const serviceName of requiredServices) {
       try {
         this.getService(serviceName);
@@ -143,12 +143,12 @@ export class BaseFigmaRoute extends BaseRoute {
    */
   getFigmaHealthStatus() {
     const baseHealth = super.getHealthStatus();
-    
+
     return {
       ...baseHealth,
       architecture: 'figma-api → context-layer → semantic-analysis',
       contextLayerEnabled: !!this.getContextManager(),
-      
+
       serviceRequirements: [
         'screenshotService',
         'redis',
@@ -160,7 +160,7 @@ export class BaseFigmaRoute extends BaseRoute {
         extractors: 5,
         capabilities: [
           'node-parsing',
-          'style-extraction', 
+          'style-extraction',
           'component-mapping',
           'layout-analysis',
           'prototype-mapping'

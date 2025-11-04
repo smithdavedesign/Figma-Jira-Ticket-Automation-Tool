@@ -160,7 +160,7 @@ export class ContextTemplateBridge extends BaseService {
    */
   _prepareFigmaDataForContext(request) {
     const rawNodes = request.frameData || request.enhancedFrameData || [];
-    
+
     // Normalize node structure for proper Figma API format
     const normalizedNodes = Array.isArray(rawNodes) ? rawNodes.map(node => ({
       id: node.id || `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -204,9 +204,9 @@ export class ContextTemplateBridge extends BaseService {
    * @returns {string} File ID or fallback
    */
   extractFileIdFromUrl(figmaUrl) {
-    if (!figmaUrl) return 'mock-document';
-    
-    const match = figmaUrl.match(/\/file\/([^\/\?#]+)/);
+    if (!figmaUrl) {return 'mock-document';}
+
+    const match = figmaUrl.match(/\/file\/([^/?#]+)/);
     return match ? match[1] : 'mock-document';
   }
 

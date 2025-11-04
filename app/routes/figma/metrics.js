@@ -1,6 +1,6 @@
 /**
  * Figma Metrics Routes Module
- * 
+ *
  * Performance monitoring and metrics endpoints for Figma operations.
  * Uses Redis hashes for efficient atomic operations.
  */
@@ -43,7 +43,7 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
       // Update operation-specific metrics
       pipeline.hincrby(metricsKey, 'totalRequests', 1);
       pipeline.hincrby(metricsKey, 'totalDuration', duration);
-      
+
       if (success) {
         pipeline.hincrby(metricsKey, 'successfulRequests', 1);
       } else {
@@ -53,7 +53,7 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
       // Update global metrics
       pipeline.hincrby(globalKey, 'totalRequests', 1);
       pipeline.hincrby(globalKey, 'totalDuration', duration);
-      
+
       if (success) {
         pipeline.hincrby(globalKey, 'successfulRequests', 1);
       } else {
@@ -87,18 +87,18 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
 
       // Get global metrics
       const globalMetrics = await redis.hgetall('metrics:figma:global');
-      
+
       // Get all operation metrics
       const pattern = 'metrics:figma:*';
       const keys = await redis.keys(pattern);
       const operationKeys = keys.filter(key => !key.endsWith(':global'));
 
       const operationMetrics = {};
-      
+
       for (const key of operationKeys) {
         const operation = key.replace('metrics:figma:', '');
         const metrics = await redis.hgetall(key);
-        
+
         if (Object.keys(metrics).length > 0) {
           operationMetrics[operation] = this._processMetrics(metrics);
         }
@@ -142,7 +142,7 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
       const metricsKey = `metrics:figma:${operation}`;
 
       const metrics = await redis.hgetall(metricsKey);
-      
+
       if (Object.keys(metrics).length === 0) {
         return this.sendError(res, `No metrics found for operation: ${operation}`, 404);
       }
@@ -196,7 +196,7 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
         await pipeline.exec();
 
         this.logger.info(`🔄 Reset metrics for operations: ${operations.join(', ')}`);
-        
+
         return this.sendSuccess(res, {
           message: 'Operation metrics reset successfully',
           operations,
@@ -207,7 +207,7 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
         // Reset all metrics
         const pattern = 'metrics:figma:*';
         const keys = await redis.keys(pattern);
-        
+
         if (keys.length > 0) {
           await redis.del(...keys);
         }
@@ -265,12 +265,12 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
 
     for (const [operation, metrics] of Object.entries(operationMetrics)) {
       const successRate = parseFloat(metrics.successRate);
-      
+
       if (successRate > bestSuccessRate) {
         bestSuccessRate = successRate;
         bestOperation = operation;
       }
-      
+
       if (successRate < worstSuccessRate) {
         worstSuccessRate = successRate;
         worstOperation = operation;
@@ -301,33 +301,33 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
     const avgDuration = parseFloat(processed.averageDuration);
 
     let healthScore = 0;
-    
+
     // Success rate component (0-50 points)
-    if (successRate >= 99) healthScore += 50;
-    else if (successRate >= 95) healthScore += 40;
-    else if (successRate >= 90) healthScore += 30;
-    else if (successRate >= 80) healthScore += 20;
-    else healthScore += 10;
+    if (successRate >= 99) {healthScore += 50;}
+    else if (successRate >= 95) {healthScore += 40;}
+    else if (successRate >= 90) {healthScore += 30;}
+    else if (successRate >= 80) {healthScore += 20;}
+    else {healthScore += 10;}
 
     // Performance component (0-30 points)
-    if (avgDuration <= 500) healthScore += 30;
-    else if (avgDuration <= 1000) healthScore += 25;
-    else if (avgDuration <= 2000) healthScore += 20;
-    else if (avgDuration <= 5000) healthScore += 15;
-    else healthScore += 10;
+    if (avgDuration <= 500) {healthScore += 30;}
+    else if (avgDuration <= 1000) {healthScore += 25;}
+    else if (avgDuration <= 2000) {healthScore += 20;}
+    else if (avgDuration <= 5000) {healthScore += 15;}
+    else {healthScore += 10;}
 
     // Volume component (0-20 points)
     const totalRequests = parseInt(globalMetrics.totalRequests || 0);
-    if (totalRequests > 1000) healthScore += 20;
-    else if (totalRequests > 100) healthScore += 15;
-    else if (totalRequests > 10) healthScore += 10;
-    else healthScore += 5;
+    if (totalRequests > 1000) {healthScore += 20;}
+    else if (totalRequests > 100) {healthScore += 15;}
+    else if (totalRequests > 10) {healthScore += 10;}
+    else {healthScore += 5;}
 
     // Convert to grade
-    if (healthScore >= 90) return { grade: 'A', score: healthScore, status: 'excellent' };
-    if (healthScore >= 80) return { grade: 'B', score: healthScore, status: 'good' };
-    if (healthScore >= 70) return { grade: 'C', score: healthScore, status: 'fair' };
-    if (healthScore >= 60) return { grade: 'D', score: healthScore, status: 'poor' };
+    if (healthScore >= 90) {return { grade: 'A', score: healthScore, status: 'excellent' };}
+    if (healthScore >= 80) {return { grade: 'B', score: healthScore, status: 'good' };}
+    if (healthScore >= 70) {return { grade: 'C', score: healthScore, status: 'fair' };}
+    if (healthScore >= 60) {return { grade: 'D', score: healthScore, status: 'poor' };}
     return { grade: 'F', score: healthScore, status: 'critical' };
   }
 
@@ -339,10 +339,10 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
     const successRate = parseFloat(metrics.successRate);
     const avgDuration = parseFloat(metrics.averageDuration);
 
-    if (successRate >= 99 && avgDuration <= 500) return 'A+';
-    if (successRate >= 95 && avgDuration <= 1000) return 'A';
-    if (successRate >= 90 && avgDuration <= 2000) return 'B';
-    if (successRate >= 80 && avgDuration <= 5000) return 'C';
+    if (successRate >= 99 && avgDuration <= 500) {return 'A+';}
+    if (successRate >= 95 && avgDuration <= 1000) {return 'A';}
+    if (successRate >= 90 && avgDuration <= 2000) {return 'B';}
+    if (successRate >= 80 && avgDuration <= 5000) {return 'C';}
     return 'D';
   }
 
@@ -358,11 +358,11 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
     if (successRate < 95) {
       recommendations.push('Consider implementing retry logic for failed requests');
     }
-    
+
     if (avgDuration > 2000) {
       recommendations.push('Optimize request processing time - consider caching or parallel processing');
     }
-    
+
     if (parseInt(metrics.totalRequests) < 10) {
       recommendations.push('Low usage detected - consider promoting this endpoint');
     }
@@ -388,7 +388,7 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
         // Calculate and store average duration
         const avgDuration = (totalDuration / totalRequests).toFixed(2);
         await redis.hset(metricsKey, 'averageDuration', avgDuration);
-        
+
         // Update last updated timestamp
         await redis.hset(metricsKey, 'lastUpdated', new Date().toISOString());
       }

@@ -1,6 +1,6 @@
 /**
  * Figma Core Routes Module
- * 
+ *
  * Core Figma API endpoints with consolidated screenshot logic.
  * Handles basic file operations, screenshots, and legacy compatibility.
  */
@@ -18,31 +18,12 @@ export class FigmaCoreRoutes extends BaseFigmaRoute {
    */
   registerRoutes(router) {
     // Health check endpoint
-    router.get('/api/figma/health', this.asyncHandler(this.handleHealthCheck.bind(this)));
-
-    // Mock endpoint for testing
-    router.get('/api/figma/mock', this.asyncHandler(this.handleMockData.bind(this)));
-
-    // Basic Figma API endpoints (fileKey-based)
-    router.get('/api/figma/file/:fileKey', this.asyncHandler(this.handleGetFile.bind(this)));
-    router.get('/api/figma/node/:fileKey/:nodeId', this.asyncHandler(this.handleGetNode.bind(this)));
-    router.get('/api/figma/styles/:fileKey', this.asyncHandler(this.handleGetStyles.bind(this)));
-    router.get('/api/figma/components/:fileKey', this.asyncHandler(this.handleGetComponents.bind(this)));
-    router.get('/api/figma/comments/:fileKey', this.asyncHandler(this.handleGetComments.bind(this)));
-    router.get('/api/figma/versions/:fileKey', this.asyncHandler(this.handleGetVersions.bind(this)));
-
-    // URL-based endpoints (accepts full Figma URLs via query parameters)
-    router.get('/api/figma/file-from-url', this.asyncHandler(this.handleGetFileFromURLQuery.bind(this)));
-    router.get('/api/figma/node-from-url', this.asyncHandler(this.handleGetNodeFromURLQuery.bind(this)));
-    router.get('/api/figma/styles-from-url', this.asyncHandler(this.handleGetStylesFromURLQuery.bind(this)));
-    router.get('/api/figma/components-from-url', this.asyncHandler(this.handleGetComponentsFromURLQuery.bind(this)));
-    router.get('/api/figma/comments-from-url', this.asyncHandler(this.handleGetCommentsFromURLQuery.bind(this)));
-    router.get('/api/figma/versions-from-url', this.asyncHandler(this.handleGetVersionsFromURLQuery.bind(this)));
+    router.get('/api/figma/health', this.handleHealthCheck.bind(this));
 
     // Consolidated Screenshot Endpoints
-    router.get('/api/figma/screenshot', this.asyncHandler(this.handleFigmaScreenshotGET.bind(this))); // Legacy
-    router.post('/api/figma/screenshot', this.asyncHandler(this.handleFigmaScreenshotPOST.bind(this)));
-    router.post('/api/screenshot', this.asyncHandler(this.handleScreenshotWrapper.bind(this))); // Simplified wrapper
+    router.get('/api/figma/screenshot', this.handleFigmaScreenshotGET.bind(this)); // Legacy
+    router.post('/api/figma/screenshot', this.handleFigmaScreenshotPOST.bind(this));
+    router.post('/api/screenshot', this.handleScreenshotWrapper.bind(this)); // Simplified wrapper
 
     this.logger.info('✅ Figma core routes registered');
   }
@@ -65,7 +46,7 @@ export class FigmaCoreRoutes extends BaseFigmaRoute {
     // Handle test scenarios
     if (isTestMode || fileKey === 'test' || nodeId?.includes('test')) {
       this.logger.debug('🧪 [Test Mode] Returning mock screenshot response');
-      
+
       return {
         success: true,
         imageUrl: this.createMockScreenshot(scale, format),
@@ -117,7 +98,7 @@ export class FigmaCoreRoutes extends BaseFigmaRoute {
     // Extract fileKey from figmaUrl if provided
     if (figmaUrl && !fileKey) {
       fileKey = this.extractFileKeyFromURL(figmaUrl);
-      
+
       // Extract nodeId from URL if not provided
       if (!nodeId) {
         nodeId = this.extractNodeIdFromURL(figmaUrl);
@@ -244,12 +225,12 @@ export class FigmaCoreRoutes extends BaseFigmaRoute {
   /**
    * Create mock screenshot for testing with scale and format support
    * @param {string} scale - Image scale
-   * @param {string} format - Image format  
+   * @param {string} format - Image format
    * @returns {string} Base64 encoded mock screenshot
    */
   createMockScreenshot(scale = '2', format = 'png') {
     const size = parseInt(scale) * 50; // Base size 50px
-    
+
     const mockSvg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
         <defs>
@@ -320,7 +301,7 @@ export class FigmaCoreRoutes extends BaseFigmaRoute {
 
   async handleGetFile(req, res) {
     this.logAccess(req, 'getFile');
-    // ... existing file logic  
+    // ... existing file logic
   }
 
   // ... other basic endpoints follow same pattern

@@ -53,27 +53,40 @@ export class FigmaEnhancedRoutes extends BaseFigmaRoute {
   }
 
   /**
-   * Handle advanced context extraction from Figma data
+   * Handle enhanced Figma screenshot requests
+   * NOTE: This method is not used since route conflicts were resolved
+   * The core.js now handles /api/figma/screenshot
    */
-  async handleContextExtraction(req, res) {
-    this.logAccess(req, 'contextExtraction', {
-      figmaUrl: req.body.figmaUrl,
-      hasFrameData: !!(req.body.frameData && req.body.frameData.length),
+  // async handleFigmaScreenshot(req, res) {
+    this.logAccess(req, 'figmaScreenshot', {
       protocolType: 'REST',
-      endpoint: 'contextExtraction'
+      endpoint: 'enhancedScreenshot'
     });
 
+    const {
+      figmaUrl,
+      includeAnalysis,
+      testMode,
+      format = 'base64',
+      quality = 'high'
+    } = req.body;
+
+    // Validate required fields
+    if (!testMode && !figmaUrl) {
+      return this.sendError(res, 'figmaUrl is required when testMode is not enabled', 400);
+    }
+
     try {
-      const { figmaUrl, frameData, options = {} } = req.body;
+      this.validateServices(['screenshotService', 'redis']);
+      const screenshotService = this.getService('screenshotService');
+      const redis = this.getService('redis');
 
-      this.validateServices(['contextManager']);
-      const contextManager = this.getService('contextManager');
+      this.logger.debug(`📸 Processing enhanced Figma screenshot request - testMode: ${testMode}`);
 
-      const startTime = Date.now();
       let screenshotData;
       let analysisData = null;
       let contextData = null;
-      this.logger.debug(`📸 Processing enhanced Figma screenshot request - testMode: ${testMode}`);
+      const startTime = Date.now();
 
       if (testMode) {
         // Generate test screenshot for development/testing
