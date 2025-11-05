@@ -114,7 +114,7 @@ npm run release                  # Complete release workflow
 
 #### **"MCP server not running"**
 ```bash
-npm run start:mvc               # Start MCP server
+npm run start:server               # Start MCP server
 # or
 npm run deploy:dev              # Deploy with auto-start
 ```
@@ -179,7 +179,7 @@ npm run release                 # Final release preparation
 - ✅ `npm run sync` - File synchronization
 - ✅ `npm run build` - Standard build process
 - ✅ `npm run test:*` - All testing scripts
-- ✅ `npm run start:mvc` - MCP server startup
+- ✅ `npm run start:server` - MCP server startup
 - ✅ `npm run health` - System health checking
 
 **File Structure:**

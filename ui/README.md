@@ -91,7 +91,7 @@ This directory contains **UI Views** (presentation layer) following proper MVC a
 ### **MCP Server Integration (localhost:3000):**
 ```bash
 # Start MCP server with UI serving
-npm run start:mvc          # Start app/server/main.js
+npm run start:server          # Start app/server/main.js
 curl http://localhost:3000/ # Verify server health
 
 # Test UI access

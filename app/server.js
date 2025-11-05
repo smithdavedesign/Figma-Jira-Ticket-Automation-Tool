@@ -19,6 +19,13 @@ import { ErrorHandler } from '../core/utils/error-handler.js';
 import { ServiceContainer } from './controllers/ServiceContainer.js';
 import { RouteRegistry } from './core/RouteRegistry.js';
 
+// Fix API Key Environment Variable Issue
+// Unset invalid system environment variable before loading .env
+if (process.env.GEMINI_API_KEY === 'AIzaSyCWGu1CMfzSVlg_04QbWUH6TNSxS_t39Ck') {
+  console.log('🔧 Removing invalid system GEMINI_API_KEY override...');
+  delete process.env.GEMINI_API_KEY;
+}
+
 // AI Services
 import { AIOrchestrator } from '../core/ai/orchestrator.js';
 
@@ -142,7 +149,13 @@ export class Server {
 
       // Import and register visual AI service
       const { VisualEnhancedAIService } = await import('../core/ai/visual-enhanced-ai-service.js');
-      this.serviceContainer.register('visualAIService', (container, redis, configService) => new VisualEnhancedAIService(redis, configService), true, ['redis', 'configurationService']);
+      this.serviceContainer.register('visualAIService', (container, redis, configService) => {
+        const geminiApiKey = configService?.get('ai.gemini.apiKey') || process.env.GEMINI_API_KEY;
+        if (!geminiApiKey) {
+          throw new Error('GEMINI_API_KEY not found in environment variables');
+        }
+        return new VisualEnhancedAIService(geminiApiKey);
+      }, true, ['redis', 'configurationService']);
 
       this.serviceContainer.register('screenshotService', (container, redis, configService, figmaSession) =>
         new ScreenshotService(redis, configService, figmaSession), true, ['redis', 'configurationService', 'figmaSessionManager']);

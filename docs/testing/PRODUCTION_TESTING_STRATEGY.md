@@ -320,7 +320,7 @@ jobs:
         run: npm test
         
       - name: Start MCP server
-        run: npm run start:mvc &
+        run: npm run start:server &
         
       - name: Run integration tests
         run: npm run test:integration:mcp
@@ -444,7 +444,7 @@ class TestingDiagnostics {
       return {
         status: 'error',
         error: error.message,
-        recommendation: 'Start MCP server with: npm run start:mvc'
+        recommendation: 'Start MCP server with: npm run start:server'
       };
     }
   }

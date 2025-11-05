@@ -18,11 +18,12 @@ const __dirname = dirname(__filename);
 
 export class TemplateIntegratedAIService {
   constructor(options = {}) {
-    const { apiKey, templateEngine, promptManager } = options;
+    const { apiKey, templateEngine, promptManager, testMode } = options;
 
     this.geminiClient = null;
     this.model = null;
     this.maxRetries = 2;
+    this.testMode = testMode || process.env.AI_TEST_MODE === 'true';
 
     // Initialize AI Prompt Manager for reasoning prompts
     if (promptManager) {
@@ -34,10 +35,13 @@ export class TemplateIntegratedAIService {
     // Template engine for output formatting (separate from AI reasoning)
     this.templateEngine = templateEngine;
 
-    if (apiKey) {
+    // Only initialize Gemini client if not in test mode
+    if (apiKey && !this.testMode) {
       // Initialize Gemini client
       this.geminiClient = new GoogleGenerativeAI(apiKey);
       this.model = this.geminiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    } else if (this.testMode) {
+      console.log('🧪 AI Service running in test mode - using mock responses');
     }
   }
 
@@ -47,7 +51,7 @@ export class TemplateIntegratedAIService {
   async initialize() {
     console.log('🚀 Initializing Template-Integrated AI Service...');
 
-    if (!this.geminiClient) {
+    if (!this.geminiClient && !this.testMode) {
       throw new Error('Missing Gemini API key. Cannot initialize AI Service.');
     }
 
@@ -215,6 +219,12 @@ export class TemplateIntegratedAIService {
    * Generate with retry logic and validation
    */
   async generateWithRetry(parts, options = {}, attempt = 1) {
+    // In test mode, return mock response
+    if (this.testMode) {
+      await new Promise(resolve => setTimeout(resolve, 50)); // Simulate processing time
+      return this.generateMockResponse(parts, options);
+    }
+
     try {
       const result = await this.model.generateContent(parts);
       const response = await result.response;
@@ -240,6 +250,39 @@ export class TemplateIntegratedAIService {
       }
       throw error;
     }
+  }
+
+  /**
+   * Generate mock response for testing
+   */
+  generateMockResponse(parts, options = {}) {
+    const mockResponse = `h1. Mock Generated Ticket
+
+h2. Overview
+This is a mock ticket generated during testing. Component implementation based on Figma design specifications.
+
+h2. Technical Requirements
+* Implement responsive design using CSS Grid/Flexbox
+* Follow accessibility guidelines (WCAG 2.1 AA)
+* Use design system tokens for consistency
+* Add proper TypeScript interfaces
+
+h2. Acceptance Criteria
+* Component matches Figma design specifications
+* Responsive behavior works across breakpoints
+* Unit tests achieve 90%+ coverage
+* Design system integration complete
+
+h2. Technical Notes
+Implementation should follow established patterns and use the component library where possible.
+
+h2. Story Points
+Estimated complexity: 3 points
+
+h2. Labels
+ui-implementation, react, component-library, design-tokens`;
+
+    return mockResponse;
   }
 
   /**

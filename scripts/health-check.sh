@@ -202,7 +202,7 @@ else
     echo -e "${RED}⚠️  $HEALTH_ISSUES issue(s) detected${NC}"
     echo
     echo "🚨 Recommendations:"
-    echo "   1. Ensure MCP server is running: npm run start:mvc"
+    echo "   1. Ensure MCP server is running: npm run start:server"
     echo "   2. Install missing dependencies: npm install"
     echo "   3. Check that port 3000 is available"
     echo "   4. Re-run with --start-servers to auto-start services"

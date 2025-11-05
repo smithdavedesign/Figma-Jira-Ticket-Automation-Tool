@@ -19,8 +19,9 @@ export class MCPRoutes extends BaseRoute {
    * @param {Express.Router} router - Express router instance
    */
   registerRoutes(router) {
-    // MCP status and initialization
+    // MCP status and health endpoints
     router.get('/api/mcp/status', this.asyncHandler(this.handleMCPStatus.bind(this)));
+    router.get('/api/mcp/health', this.asyncHandler(this.handleMCPHealth.bind(this)));
     router.post('/api/mcp/initialize', this.asyncHandler(this.handleMCPInitialize.bind(this)));
 
     // MCP tool and resource endpoints
@@ -86,6 +87,23 @@ export class MCPRoutes extends BaseRoute {
     } catch (error) {
       this.logger.error('Error getting MCP status:', error);
       this.sendError(res, 'Failed to get MCP status', 500, { originalError: error.message });
+    }
+  }
+
+  /**
+   * Handle MCP health check requests
+   * Provides health status information for dashboard monitoring
+   */
+  async handleMCPHealth(req, res) {
+    this.logAccess(req, 'mcpHealth');
+
+    try {
+      const healthData = this.getHealthStatus();
+      this.sendSuccess(res, healthData, 'MCP health status retrieved successfully');
+
+    } catch (error) {
+      this.logger.error('Error getting MCP health:', error);
+      this.sendError(res, 'Failed to get MCP health status', 500, { originalError: error.message });
     }
   }
 
@@ -497,6 +515,7 @@ export class MCPRoutes extends BaseRoute {
       ...baseHealth,
       endpoints: [
         '/api/mcp/status',
+        '/api/mcp/health',
         '/api/mcp/initialize',
         '/api/mcp/tools',
         '/api/mcp/tools/call',

@@ -19,8 +19,7 @@ The AI test dashboard is now **fully integrated** into the main test suite:
 
 ```bash
 # Start the MCP server
-npm run start:mvc
-
+npm run start:server
 # Open the consolidated test suite
 open http://localhost:3000/tests/integration/test-consolidated-suite.html
 ```
@@ -36,8 +35,7 @@ Direct access to the AI test dashboard:
 
 ```bash
 # Start the MCP server
-npm run start:mvc
-
+npm run start:server
 # Open the AI Test Dashboard directly
 npm run test:ai:dashboard
 ```

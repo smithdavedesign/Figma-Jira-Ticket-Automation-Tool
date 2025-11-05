@@ -126,10 +126,10 @@ class HealthMonitor {
     if (this.helpShown) return;
     
     console.log('\n💡 Connection Troubleshooting:');
-    console.log('   1. Check if MCP server is running: npm run start:mvc');
+    console.log('   1. Check if MCP server is running: npm run start:server');
     console.log('   2. Verify port 3000 is not blocked: lsof -i :3000');
     console.log('   3. Check server logs: tail -f server.log');
-    console.log('   4. Restart server: npm run start:mvc\n');
+    console.log('   4. Restart server: npm run start:server\n');
     
     this.helpShown = true;
   }

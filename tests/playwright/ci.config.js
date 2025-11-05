@@ -37,7 +37,7 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: 'npm run start:mvc',
+    command: 'npm run start:server',
     port: 3000,
     reuseExistingServer: true
   }

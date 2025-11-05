@@ -49,8 +49,7 @@ cp .env.example .env
 npm run build:plugin
 
 # 5. Start the MCP server
-npm run start:mvc
-```
+npm run start:server```
 
 #### **Figma Plugin Registration Process**
 ```javascript

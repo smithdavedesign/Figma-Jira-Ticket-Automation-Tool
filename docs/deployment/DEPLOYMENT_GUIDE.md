@@ -20,7 +20,7 @@
 npm install
 
 # Start MCP server (Controllers)
-npm run start:mvc        # Starts app/main.js on port 3000
+npm run start:server        # Starts app/main.js on port 3000
 
 # Build Figma plugin (Views)
 npm run build:plugin     # Compiles to dist/code.js
@@ -235,7 +235,7 @@ npm run test:integration:mcp | grep -i gemini
 - [ ] Build files generated (`npm run build:plugin`)
 
 ### **Deployment Steps**
-- [ ] Start MCP server (`npm run start:mvc`)
+- [ ] Start MCP server (`npm run start:server`)
 - [ ] Verify server health (`curl http://localhost:3000/`)
 - [ ] Load plugin in Figma Desktop
 - [ ] Test basic functionality in Figma

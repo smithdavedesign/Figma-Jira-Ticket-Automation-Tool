@@ -5,16 +5,16 @@
  * This replaces the monolithic figma.js with modular architecture.
  */
 
-import FigmaCoreRoutes from './figma/core.js';
-// import FigmaEnhancedRoutes from './figma/enhanced.js'; // Temporarily disabled
-import FigmaContextRoutes from './figma/context.js';
-import FigmaMetricsRoutes from './figma/metrics.js';
-import { BaseRoute } from './BaseRoute.js';
+import FigmaCoreRoutes from './core.js';
+// import FigmaEnhancedRoutes from './enhanced.js'; // Temporarily disabled
+import FigmaContextRoutes from './context.js';
+import FigmaMetricsRoutes from './metrics.js';
+import { BaseRoute } from '../BaseRoute.js';
 
 // Optional MCP module (can be enabled via environment variable)
 let FigmaMCPRoutes = null;
 try {
-  const { MCPRoutes } = await import('./figma/mcp.js');
+  const { MCPRoutes } = await import('./mcp.js');
   FigmaMCPRoutes = MCPRoutes;
 } catch (error) {
   // MCP module not available or disabled

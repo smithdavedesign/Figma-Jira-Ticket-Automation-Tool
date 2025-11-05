@@ -114,7 +114,7 @@ Legacy TypeScript source code (migrated to MVC structure):
 npm install
 
 # 2. Start MCP server (Controllers - Server Layer)
-npm run start:mvc     # Starts app/server/main.js
+npm run start:server     # Starts app/server/main.js
 # OR with development watching
 npm run start:dev
 
@@ -128,7 +128,7 @@ npm run build:plugin  # Compiles app/plugin/ → dist/code.js
 ```bash
 # Development
 npm start              # Start MCP server (app/server/main.js)
-npm run start:mvc      # Start MCP server
+npm run start:server      # Start MCP server
 npm run start:dev      # Start with file watching
 npm run dev            # Alias for start:dev
 

@@ -102,7 +102,7 @@ class MCPTool {
 
 ```bash
 # Production Startup Sequence
-npm run start:mvc                 # Start MCP server (app/main.js)
+npm run start:server                 # Start MCP server (app/main.js)
 npm run build:plugin             # Build Figma plugin
 npm run validate                 # System health validation
 ```

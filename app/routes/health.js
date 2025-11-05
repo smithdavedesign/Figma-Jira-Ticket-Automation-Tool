@@ -21,9 +21,11 @@ export class HealthRoutes extends BaseRoute {
   registerRoutes(router) {
     // Main health check endpoint
     router.get('/', this.asyncHandler(this.handleHealthCheck.bind(this)));
+    router.get('/health', this.asyncHandler(this.handleHealthCheck.bind(this)));
 
-    // Figma service health check
-    router.get('/api/figma/health', this.asyncHandler(this.handleFigmaHealth.bind(this)));
+    // Note: Figma health moved to routes/figma/core.js (/api/figma/health)
+    // Note: AI health moved to routes/ai/ai.js (/api/ai/health)
+    // Note: MCP health in routes/figma/mcp.js (/api/mcp/health)
 
     this.logger.info('✅ Health routes registered');
   }
@@ -72,27 +74,7 @@ export class HealthRoutes extends BaseRoute {
     res.end(JSON.stringify(healthData, null, 2));
   }
 
-  /**
-   * Handle Figma service health check
-   * Extracted from main server handleFigmaHealth method
-   */
-  async handleFigmaHealth(req, res) {
-    this.logAccess(req, 'figmaHealth');
-
-    const healthData = {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      service: 'Figma Screenshot API',
-      version: '1.0.0',
-      endpoints: {
-        screenshot: '/api/figma/screenshot',
-        health: '/api/figma/health'
-      },
-      architecture: 'Refactored Service Architecture'
-    };
-
-    this.sendSuccess(res, healthData, 'Figma service is healthy');
-  }
+  // handleFigmaHealth moved to routes/figma/core.js to avoid duplication
 
   /**
    * Get AI services health status
@@ -182,7 +164,7 @@ export class HealthRoutes extends BaseRoute {
       ...baseHealth,
       endpoints: [
         '/',
-        '/api/figma/health'
+        '/health'
       ],
       serviceRequirements: [
         'redis',

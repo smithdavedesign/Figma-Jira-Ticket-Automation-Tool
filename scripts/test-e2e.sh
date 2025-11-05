@@ -38,7 +38,7 @@ if lsof -i :3000 >/dev/null 2>&1; then
     SERVER_WAS_RUNNING=true
 else
     echo -e "${YELLOW}Starting server for testing...${NC}"
-    npm run start:mvc &
+    npm run start:server &
     SERVER_PID=$!
     SERVER_WAS_RUNNING=false
     
@@ -125,7 +125,7 @@ echo -e "${BLUE}🚀 Ready for Figma Desktop:${NC}"
 echo "1. Open Figma Desktop (not browser)"
 echo "2. Plugins → Development → Import plugin from manifest..."
 echo "3. Select manifest.json from this directory"
-echo "4. Start server: npm run start:mvc"
+echo "4. Start server: npm run start:server"
 echo "5. Test with real designs"
 echo ""
 echo -e "${BLUE}📦 Distribution ready:${NC}"

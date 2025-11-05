@@ -92,8 +92,7 @@ Expected Results:
 #### **Test 2.1: Plugin Integration**
 ```bash
 # Start MCP server and test plugin
-npm run start:mvc
-# Load manifest.json in Figma Desktop
+npm run start:server# Load manifest.json in Figma Desktop
 # Test component selection and ticket generation
 
 Expected Results:
@@ -191,7 +190,7 @@ Expected Results:
 
 ### **Phase 2: Live Figma Integration (45 minutes)**
 ```bash
-1. npm run start:mvc                 # Start MCP server
+1. npm run start:server                 # Start MCP server
 2. Load plugin in Figma Desktop      # Plugin integration
 3. Test component selection          # Real Figma context
 4. Test template generation          # End-to-end workflow
@@ -254,8 +253,7 @@ npm run test:all && npm run test:templates && npm run health
 node core/template/template-cli.js test --all
 
 # Live Figma testing
-npm run start:mvc
-# (Load plugin in Figma Desktop manually)
+npm run start:server# (Load plugin in Figma Desktop manually)
 ```
 
 ### **Comprehensive E2E Suite**
@@ -265,8 +263,7 @@ npm run health
 npm run test:all
 npm run test:templates  
 npm run test:performance
-npm run start:mvc
-```
+npm run start:server```
 
 ---
 

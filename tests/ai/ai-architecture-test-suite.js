@@ -282,12 +282,12 @@ class AIArchitectureTestSuite {
 
         testResult.success = true;
         testResult.aiResponse = aiResult.ticket;
-        testResult.processingMetrics = aiResult.processingMetrics;
-        testResult.confidence = aiResult.confidence;
+        testResult.processingMetrics = aiResult.processingMetrics || {};
+        testResult.confidence = aiResult.confidence || 0;
 
         console.log('   ✅ Visual Enhanced AI completed');
-        console.log(`   📊 Confidence: ${aiResult.confidence}%`);
-        console.log(`   📸 Screenshot processed: ${aiResult.processingMetrics.screenshotProcessed}`);
+        console.log(`   📊 Confidence: ${aiResult.confidence || 'N/A'}%`);
+        console.log(`   📸 Screenshot processed: ${aiResult.processingMetrics?.screenshotProcessed || 'N/A'}`);
         
       } else {
         // Test fallback behavior

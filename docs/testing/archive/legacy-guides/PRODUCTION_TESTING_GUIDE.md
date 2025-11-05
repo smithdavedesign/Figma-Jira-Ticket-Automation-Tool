@@ -33,7 +33,7 @@ With Phase 7.1 (Testing & CI Foundation) complete and all systems validated, we'
 
 ```bash
 # 1. Start MCP Server (CRITICAL)
-npm run start:mvc                 # Starts app/main.js on localhost:3000
+npm run start:server                 # Starts app/main.js on localhost:3000
 
 # 2. Verify MCP Server Health
 curl -s http://localhost:3000/ | jq '.status'  # Should return "healthy"
@@ -161,8 +161,7 @@ curl -s http://localhost:3000/ | jq '.'
 
 ```bash
 # Terminal 1: MCP Server with logs
-npm run start:mvc
-
+npm run start:server
 # Terminal 2: Real-time monitoring
 npm run monitor                  # Log monitoring
 npm run monitor:health           # Health status
@@ -201,8 +200,7 @@ curl -s http://localhost:3000/
 
 # Restart if needed
 pkill -f "node app/main.js"
-npm run start:mvc
-```
+npm run start:server```
 
 ### **Performance Issues**
 ```bash

@@ -381,7 +381,7 @@ const MULTI_AI_PLATFORM = {
 ```bash
 # Production Build Sequence
 npm run build:plugin           # Figma plugin compilation
-npm run start:mvc             # MCP server startup (app/main.js)
+npm run start:server             # MCP server startup (app/main.js)
 npm run validate              # System health validation
 npm run test:all              # Comprehensive testing
 ```

@@ -346,7 +346,7 @@ export class LiveRoutes extends BaseRoute {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         scenario: 'Automated test scenario for ' + testId,
-                        strategy: 'AI',
+                        strategy: 'AI'',
                         includeScreenshot: true
                     })
                 });

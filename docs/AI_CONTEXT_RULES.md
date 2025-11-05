@@ -188,7 +188,7 @@ The system successfully processes:
 #### **MCP Server (CRITICAL - Always Start First)**
 ```bash
 # Primary startup method (MVC ARCHITECTURE)
-npm run start:mvc                 # Start app/server/main.js (RECOMMENDED)
+npm run start:server                 # Start app/server/main.js (RECOMMENDED)
 
 # Alternative methods
 npm run start:dev                 # Development mode with file watching
@@ -318,7 +318,7 @@ npm run test:integration:mcp | grep -E "(✅|❌|Gemini)"
 ```bash
 cd /path/to/figma-ticket-generator
 git pull origin main                 # Latest changes
-npm run start:mvc &                  # Start MCP server (app/server/main.js)
+npm run start:server &                  # Start MCP server (app/server/main.js)
 npm run build:plugin                 # Build plugin for MVC Views
 npm run test:integration:mcp         # Verify MCP integration working
 npm run lint                         # Code quality check
@@ -349,7 +349,7 @@ npm run lint                         # Code quality validation
 npm run validate:quick               # Full MVC validation
 npm run build:plugin                 # Build production plugin
 npm run test:browser:smoke          # Final UI validation
-npm run start:mvc                    # Start production MCP server
+npm run start:server                    # Start production MCP server
 # Load manifest.json in Figma Desktop
 ```
 
@@ -358,7 +358,7 @@ npm run start:mvc                    # Start production MCP server
 # Reset everything
 kill $(lsof -t -i:3000) 2>/dev/null  # Kill MCP server
 npm run build:plugin                 # Rebuild plugin (MVC Views)
-npm run start:mvc &                  # Restart MCP server (app/server/main.js)
+npm run start:server &                  # Restart MCP server (app/server/main.js)
 sleep 3 && npm run test:integration:mcp    # Verify MCP integration
 npm run health                       # System health check
 ```

@@ -268,7 +268,7 @@ async function runAITemplateIntegrationTests() {
     const healthCheck = await fetch('http://localhost:3000', { timeout: 5000 });
     console.log('✅ MCP server is running');
   } catch (error) {
-    console.log('❌ MCP server not accessible - make sure to run: npm run start:mvc');
+    console.log('❌ MCP server not accessible - make sure to run: npm run start:server');
     return { success: false, error: 'Server not running' };
   }
   

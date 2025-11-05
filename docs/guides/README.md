@@ -228,7 +228,7 @@ Monthly Guide Usage Analytics
 ```bash
 # Quick Setup Commands
 npm install                    # Install dependencies
-npm run start:mvc             # Start MCP server
+npm run start:server             # Start MCP server
 curl http://localhost:3000/health  # Verify server health
 
 # Development Commands

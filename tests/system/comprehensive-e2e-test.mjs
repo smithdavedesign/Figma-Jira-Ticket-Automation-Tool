@@ -7,7 +7,7 @@
  * "Add design system compliance checking with tech stack validation"
  */
 
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import dotenv from 'dotenv';
 
@@ -128,7 +128,7 @@ class E2ETestSuite {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Start MCP server in background
-        const { spawn } = require('child_process');
+        // spawn is already imported at the top
         this.serverProcess = spawn('node', ['dist/server.js'], {
           cwd: process.cwd() + '/server',
           detached: false,
@@ -160,7 +160,7 @@ class E2ETestSuite {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Start frontend server
-        const { spawn } = require('child_process');
+        // spawn is already imported at the top
         this.frontendProcess = spawn('python3', ['-m', 'http.server', '8101'], {
           cwd: process.cwd(),
           detached: false,

@@ -3,7 +3,7 @@
 ## 🎯 **Essential Scripts to Keep**
 
 ### **Core Development**
-- `start` / `start:mvc` - Start MCP server
+- `start` / `start:server` - Start MCP server
 - `start:dev` - Development mode with file watching
 - `build` - Build plugin
 - `build:ts` - TypeScript compilation

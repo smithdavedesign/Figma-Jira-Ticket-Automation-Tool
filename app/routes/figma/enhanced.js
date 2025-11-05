@@ -91,14 +91,21 @@ export class FigmaEnhancedRoutes extends BaseFigmaRoute {
         screenshotData = await screenshotService.generateTestScreenshot();
         this.logger.debug('✅ Generated test screenshot for development');
       } else {
-        // Generate real screenshot from Figma URL
-        screenshotData = await screenshotService.captureFromFigma(figmaUrl, {
-          format,
-          quality,
-          waitForLoad: true,
-          viewport: { width: 1200, height: 800 }
-        });
-        this.logger.debug('✅ Captured screenshot from Figma URL');
+        // Try to capture screenshot from Figma URL, but make it optional
+        try {
+          screenshotData = await screenshotService.captureFromFigma(figmaUrl, {
+            format,
+            quality,
+            waitForLoad: true,
+            viewport: { width: 1200, height: 800 },
+            optional: true // Make screenshot optional for context extraction
+          });
+          this.logger.debug('✅ Captured screenshot from Figma URL');
+        } catch (screenshotError) {
+          this.logger.warn('⚠️ Screenshot capture failed, proceeding without screenshot:', screenshotError.message);
+          // Continue with context extraction even without a screenshot
+          screenshotData = null;
+        }
       }
 
       // Enhanced analysis using Context Layer + Visual AI

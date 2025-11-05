@@ -249,7 +249,7 @@ open tests/integration/test-consolidated-suite.html
 ### **⚡ Quick Development Testing**
 ```bash
 # Option 1: Traditional approach
-npm run start:mvc &         # Start MCP server
+npm run start:server &         # Start MCP server
 npm run test:unit           # Fast unit tests (2s)
 npm run test:integration:mcp # MCP integration (10s)
 

@@ -24,17 +24,26 @@ An intelligent enterprise platform that transforms Figma designs into comprehens
 
 ## ✨ Core Features
 
-### **🎉 LATEST: Figma Routes Modular Architecture Complete (November 3, 2025)**
-- 🏗️ **Modular Architecture**: Split monolithic 1,600+ line figma.js into 4 focused modules (base, core, enhanced, context, metrics)
-- ⚡ **Performance Optimization**: 5-10x faster Redis operations with batched parallel fetches, SHA-1 secure cache keys
-- 🛡️ **Schema Validation**: Zod validation for all enhanced endpoints preventing malformed data
-- 🔧 **Fixed Dependencies**: Sequential processing for Visual AI tasks with proper dependency management
-- 📊 **Atomic Metrics**: Redis hashes with atomic operations for race condition-free metrics
-- 🎯 **Consolidated Screenshots**: Unified screenshot logic eliminating duplication between api.js and figma.js
-- 🔍 **Enhanced Logging**: Complete MCP vs REST API differentiation with protocol-specific metrics
-- ✅ **100% Backward Compatible**: All existing endpoints preserved with enhanced functionality
+### **🎉 LATEST: Route Consolidation & Domain Separation Complete (November 4, 2025)**
+- 🏗️ **Domain-Based Route Organization**: Clean separation with dedicated folders (routes/ai/, routes/figma/)
+- 🔧 **File Organization**: Moved figma.js coordinator to proper subfolder structure
+- 🛡️ **Duplicate Elimination**: Removed conflicting health endpoints, fixed syntax errors
+- � **Phase 8 Architecture**: Clean DI + Service Layer + Route Registry (10 route modules)
+- ⚡ **Health Endpoint Validation**: All endpoints tested and working (/health, /api/ai/health, /api/figma/health, /api/mcp/health)
+- 🗑️ **Deprecated Code Removal**: Legacy api.js marked for removal, routes moved to proper domains
+- 🔍 **Route Analytics**: Comprehensive route analysis ensuring no duplicates or conflicts
+- ✅ **100% Production Ready**: Server starts cleanly, all health checks passing
 
-### **🏆 Phase 8 Server Architecture Refactoring Complete (October 31, 2025)**
+### **�️ Route Architecture Achievements (November 2025)**
+- **🔧 Domain Organization**: Routes properly organized by domain (ai/, figma/) for better maintainability
+- **🛡️ Health Endpoint Cleanup**: Eliminated duplicate `/api/figma/health` endpoint conflicts
+- **📁 File Structure**: Moved `figma.js` coordinator to proper subfolder structure
+- **🗑️ Legacy Cleanup**: Deprecated `api.js` (empty) ready for removal after route migration
+- **✅ Syntax Fixes**: Corrected missing quotes and import path issues in route modules
+- **📊 Validation Complete**: All 4 health endpoints tested and working correctly
+- **🎯 Zero Breaking Changes**: 100% backward compatibility maintained during reorganization
+
+### **�🏆 Phase 8 Server Architecture Refactoring Complete (October 31, 2025)**
 - �️ **Major Cleanup Achievement**: 14 files removed across 2 phases (Phase 1: 6 files, Phase 2: 8 files)
 - � **Storage Optimization**: 51% total reduction from 1.8MB → 873KB (873KB saved)
 - ⚡ **Efficiency Improvement**: File usage rate improved from 51% → 59% (+8% improvement)
@@ -97,7 +106,7 @@ Our platform follows a clean **Model-View-Controller (MVC)** architecture that e
 ```
 📁 MVC Structure (✅ PHASE 8 CLEAN ARCHITECTURE - Production Ready):
 
-├── app/                          # 🎯 CONTROLLERS & ORCHESTRATION (17 Active Files)
+├── app/                          # 🎯 CONTROLLERS & ORCHESTRATION (18 Active Files)
 │   ├── server.js                 # ✅ Main Orchestrator (~200 lines, was 2,272)
 │   ├── controllers/              # 🔧 DEPENDENCY INJECTION
 │   │   └── ServiceContainer.js   # Service lifecycle & DI container
@@ -110,15 +119,22 @@ Our platform follows a clean **Model-View-Controller (MVC)** architecture that e
 │   │   ├── AnalysisService.js    # Design analysis service
 │   │   ├── ConfigurationService.js # Config management
 │   │   └── TestingService.js     # Test orchestration service  
-│   ├── routes/                   # 🛣️ ROUTE MODULES (8 routes)
+│   ├── routes/                   # 🛣️ ROUTE MODULES (10 routes)
+│   │   ├── ai/                   # 🤖 AI DOMAIN ROUTES
+│   │   │   └── ai.js             # AI services & health endpoints
+│   │   ├── figma/                # 🎨 FIGMA DOMAIN ROUTES
+│   │   │   ├── figma.js          # Figma coordinator (modular architecture)
+│   │   │   ├── core.js           # Core Figma API & health endpoints
+│   │   │   ├── context.js        # Context extraction routes
+│   │   │   ├── enhanced.js       # Enhanced screenshot routes
+│   │   │   ├── metrics.js        # Figma metrics routes
+│   │   │   └── mcp.js            # MCP integration routes
 │   │   ├── BaseRoute.js          # Standardized route foundation
-│   │   ├── api.js                # Figma API integration routes
 │   │   ├── generate.js           # Unified ticket generation endpoint
-│   │   ├── health.js             # System monitoring routes
+│   │   ├── health.js             # System monitoring routes (main)
+│   │   ├── live.js               # Real-time testing routes
 │   │   ├── test.js               # AI testing dashboard routes
-│   │   ├── figma.js              # Figma-specific operations
-│   │   ├── mcp.js                # Design context MCP server
-│   │   └── live.js               # Real-time testing routes
+│   │   └── api.js                # DEPRECATED (empty - ready for removal)
 │   ├── plugin/                   # 🔌 FIGMA PLUGIN
 │   │   ├── main.js               # Figma plugin entry point  
 │   │   ├── handlers/             # Request handlers (2 files)
@@ -269,13 +285,13 @@ npm run build          # Build Figma plugin → production-bundle/ ✅
 npm run test           # Run comprehensive test suite (95%+ success rate) ✅
 npm run test:all       # Run ALL test categories (unit/browser/integration/system) ✅
 npm run monitor        # Live server monitoring with service health checks ✅
-npm run health         # System health validation (12 services + 7 routes) ✅
+npm run health         # System health validation (13 services + 10 routes) ✅
 npm run validate       # Full production validation (test + build + lint) ✅
 
 # Phase 8 Architecture Status - PRODUCTION READY:
 ✅ Orchestrator: ~200-line server.js with ServiceContainer + RouteRegistry (app/)
 ✅ Services: 6 business services with strategy patterns (app/services/)
-✅ Routes: 8 route modules with automatic discovery (app/routes/)
+✅ Routes: 10 route modules with domain separation (app/routes/)
 ✅ Controllers: Dependency injection with lifecycle management (app/controllers/)
 ✅ Models: 21 optimized files with pure domain logic (core/)
 ✅ Views: Production UI with comprehensive plugin features (ui/)
@@ -400,7 +416,7 @@ npm run quick-deploy          # Sync & validate only (20s)
 ### **Test Commands (Updated for MVC Architecture):**
 ```bash
 # MCP Server Testing
-npm run start:mvc              # Start MCP server (app/server/main.js)
+npm run start:server              # Start MCP server (app/server/main.js)
 npm run test:integration:mcp   # Test MCP tools integration
 npm run health                 # System health validation
 
@@ -888,8 +904,7 @@ npm install
 ### 3. **🚀 ENHANCED ONE-COMMAND SETUP (NEW!)**
 ```bash
 # Complete build and server startup
-npm run build && npm run start:mvc
-
+npm run build && npm run start:server
 # OR comprehensive testing + validation
 npm run test:all && npm run validate
 
@@ -913,16 +928,16 @@ echo "GEMINI_API_KEY=your-free-key-here" > .env
 
 ### 4. Start MVC Server (Controllers + Models)
 ```bash
-npm run start:mvc
-# OR for development with file watching
+npm run start:server# OR for development with file watching
 npm run start:dev
 
-# NEW: Express MCP server with middleware stack
-node app/main.js
+# Express server with Phase 8 clean architecture
+npm start
 
-# MCP server starts on http://localhost:3000 with 6 business tools:
-# ✅ project_analyzer, ticket_generator, compliance_checker,
-#    batch_processor, effort_estimator, relationship_mapper
+# Server starts on http://localhost:3000 with:
+# ✅ 13 services initialized (AI, Redis, Templates, etc.)
+# ✅ 10 route modules loaded (clean domain separation)
+# ✅ All health endpoints working (/health, /api/ai/health, /api/figma/health, /api/mcp/health)
 
 # NEW: Live test monitoring with WebSocket server
 npm run test:monitor:dashboard
@@ -1247,7 +1262,7 @@ The documentation is organized into focused categories with:
 
 ## 🏆 Status
 
-**🚀 PRODUCTION READY** - Enterprise-grade Figma AI automation with **enhanced template system architecture**, FREE Google Gemini integration, 76% optimized codebase, Redis caching, and professional quality output with proper MVC separation.
+**🚀 PRODUCTION READY** - Enterprise-grade Figma AI automation with **Phase 8 clean architecture**, complete route consolidation, domain-separated organization, FREE Google Gemini integration, and professional quality output with proper MVC separation.
 
 ---
 

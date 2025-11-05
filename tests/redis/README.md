@@ -45,8 +45,7 @@ Tests Redis integration with main server application:
 **Usage:**
 ```bash
 # Start main server first
-npm run start:mvc
-
+npm run start:server
 # Then run integration test
 cd tests/redis/
 node test-caching-integration.js
@@ -83,7 +82,7 @@ cd tests/redis/
 node test-direct-redis.js && node test-redis-client.js
 
 # Start server for integration test
-npm run start:mvc &
+npm run start:server &
 sleep 3
 node test-caching-integration.js
 ```

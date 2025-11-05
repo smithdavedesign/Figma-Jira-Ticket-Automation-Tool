@@ -31,8 +31,7 @@ cd figma-ticket-generator
 npm install
 
 # 2. Start the MCP server
-npm run start:mvc
-
+npm run start:server
 # 3. Verify server is running
 curl http://localhost:3000/health
 # Should return: {"status": "healthy", "services": {...}}
@@ -464,7 +463,7 @@ const COMMON_ISSUES = {
   pluginNotLoading: {
     symptoms: ['Plugin not visible in Figma', 'Plugin fails to start'],
     solutions: [
-      'Verify MCP server is running (npm run start:mvc)',
+      'Verify MCP server is running (npm run start:server)',
       'Check Figma Desktop version (latest recommended)',
       'Reload plugin in Figma Development section',
       'Check browser console for errors'
