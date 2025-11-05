@@ -1,57 +1,43 @@
 #!/bin/bash
 
-# Build script for the restructured Figma AI Ticket Generator
+# Build script for the simplified Figma AI Ticket Generator
 
 echo "🏗️  Building Figma AI Ticket Generator..."
 
-# Clean dist directory
-rm -rf dist
-mkdir -p dist
-
-# Build TypeScript
-echo "📦 Compiling TypeScript..."
+# Build TypeScript plugin code
+echo "📦 Compiling TypeScript plugin..."
 npx tsc -p config/tsconfig.json
 
-# Copy UI assets to dist
-echo "🎨 Copying UI assets..."
-mkdir -p dist/ui
-cp -r ui/plugin dist/ui/ 2>/dev/null || true
-cp -r ui/components dist/ui/ 2>/dev/null || true
-cp -r ui/test dist/ui/ 2>/dev/null || true
-# Keep comprehensive ui/index.html as standalone version
-cp ui/index.html dist/ui/standalone.html 2>/dev/null || true
-
-# Inline CSS for Figma compatibility (if needed)
-echo "🎨 Inlining CSS..."
-# The HTML already has inline CSS, so this step is optional
-echo "CSS already inlined in HTML file"
-
-# Create distribution manifest (for packaging)
-echo "📝 Creating distribution manifest..."
-sed 's|ui/plugin/index.html|ui/plugin/index.html|g' manifest.json > dist/manifest.json
-
-# Copy code.js to root for development (Figma expects it there)
-echo "🔧 Setting up development files..."
-if [ -f "dist/code.js" ]; then
-    cp dist/code.js code.js
-else
-    echo "⚠️  dist/code.js not found, using existing code.js"
+# Validate build artifacts
+echo "🔍 Validating build artifacts..."
+if [ ! -f "code.js" ]; then
+    echo "❌ Error: code.js not found after TypeScript compilation"
+    exit 1
 fi
 
-# Final sync to ensure everything is up to date
-echo "🔄 Final sync..."
-./scripts/sync-dist.sh
+if [ ! -f "ui/index.html" ]; then
+    echo "❌ Error: ui/index.html not found"
+    exit 1
+fi
+
+if [ ! -f "manifest.json" ]; then
+    echo "❌ Error: manifest.json not found"
+    exit 1
+fi
+
+echo "✅ All required Figma plugin files present"
 
 echo "✅ Build complete!"
-echo "📁 Output:"
-echo "   🎯 FOR FIGMA TESTING:"
-echo "      - manifest.json (Import this into Figma)"
-echo "      - code.js (Plugin logic)"
-echo "      - ui/plugin/ (Modular UI with separate JS/CSS files)"
 echo ""
-echo "   📦 FOR DISTRIBUTION:"
-echo "      - dist/ (Complete package for publishing)"
-echo "      - dist/ui/plugin/ (Built modular UI)"
-echo "      - dist/ui/standalone.html (Comprehensive standalone UI)"
+echo "📁 Figma Plugin Files Ready:"
+echo "   📋 manifest.json - Plugin configuration"
+echo "   🧠 code.js - Plugin logic (compiled from TypeScript)"
+echo "   🎨 ui/index.html - Plugin interface"
 echo ""
-echo "🧪 To test: Import manifest.json from root directory into Figma"
+echo "� Server Files Ready:"
+echo "   🖥️  app/server.js - Express server"
+echo "   🔧 All dependencies in app/ directory"
+echo ""
+echo "🧪 To test:"
+echo "   1. Figma: Import manifest.json from root directory"
+echo "   2. Server: Run 'node app/server.js' or 'npm start'"

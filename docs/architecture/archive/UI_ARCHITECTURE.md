@@ -24,10 +24,6 @@ This directory contains all HTML user interface files, properly organized to avo
 - Used directly by Figma plugin (manifest points here)
 
 ### `/ui/plugin/index.html`
-**⚠️ LEGACY BACKUP** - Old plugin structure (for reference only):
-- Used by build script to create `dist/ui/index.html`
-- Processed with CSS inlining for Figma compatibility
-- Should be kept in sync with unified file
 
 ## 📁 Archived Files
 
@@ -63,14 +59,13 @@ Demonstration and simulation files:
    cp ui/unified/index.html ui/standalone/index.html
    cp ui/unified/index.html ui/plugin/index.html
    ```
-3. **Rebuild plugin**: Run `npm run build` to update `dist/ui/index.html`
+3. **Rebuild plugin**: Run `npm run build` to update `app/ui/index.html`
 
 ## 🚫 What NOT to do
 
 - ❌ Don't edit `ui/standalone/` or `ui/plugin/` directly
 - ❌ Don't create new HTML files in project root
 - ❌ Don't read from `/ui/legacy/` files (they're outdated)
-- ❌ Don't edit built files in `dist/ui/`
 
 ## ✅ What TO do
 

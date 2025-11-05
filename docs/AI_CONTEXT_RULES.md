@@ -254,7 +254,7 @@ npm run test:all:quick              # Quick validation suite
 npm run health && curl -s http://localhost:3000/ && echo "✅ MCP Ready"
 
 # Build verification
-npm run build:ts && echo "✅ Plugin Built" && ls -la dist/
+npm run build:ts && echo "✅ Plugin Built" 
 
 # Test suite status  
 npm run test:integration:mcp && echo "✅ MCP Integration Working"

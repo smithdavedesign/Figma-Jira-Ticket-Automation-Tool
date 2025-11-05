@@ -418,6 +418,65 @@ paths:
                 $ref: '#/components/schemas/HealthResponse'
 
   /api/figma/screenshot:
+    get:
+      tags: [figma]
+      summary: 📸 Legacy Screenshot Endpoint (GET) - Will Return 500 Error
+      description: |
+        **⚠️ LEGACY ENDPOINT - RETURNS 500 ERROR BY DESIGN**
+        
+        This GET endpoint is deprecated and will return a 500 Internal Server Error 
+        with the message: "Failed to capture screenshot (GET): Missing required fields: fileKey, nodeId"
+        
+        **Fix**: Use `POST /api/figma/screenshot` instead with proper request body.
+        
+        **Expected Error Response:**
+        ```json
+        {
+          "success": false,
+          "error": "Failed to capture screenshot (GET): Missing required fields: fileKey, nodeId",
+          "metadata": {
+            "timestamp": "2025-11-05T21:24:29.249Z",
+            "route": "FigmaCore",
+            "statusCode": 500
+          }
+        }
+        ```
+      parameters:
+        - name: fileKey
+          in: query
+          required: true
+          description: Figma file key (will still cause 500 error)
+          schema:
+            type: string
+        - name: nodeId
+          in: query
+          required: true
+          description: Node ID (will still cause 500 error)
+          schema:
+            type: string
+      responses:
+        '500':
+          description: Expected error - endpoint is deprecated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Failed to capture screenshot (GET): Missing required fields: fileKey, nodeId"
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                      route:
+                        type: string
+                      statusCode:
+                        type: integer
     post:
       tags: [figma]
       summary: 📸 Enhanced Figma Screenshot with Context Layer
@@ -828,25 +887,84 @@ paths:
     post:
       tags: [test]
       summary: 🧪 Test AI Ticket Generation
-      description: Test ticket generation with various scenarios
+      description: |
+        Test ticket generation with various scenarios.
+        
+        **Required Fields**: `description` is mandatory.
+        **Default Strategy**: `enhanced` if not specified.
+        
+        **Example Descriptions**:
+        - "The login button is not responding when clicked on mobile devices"
+        - "Add dark mode support with user preference persistence"
+        - "Page load time is extremely slow (>5 seconds) on the dashboard"
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required: [description]
               properties:
-                scenario:
+                description:
                   type: string
-                  enum: [simple, complex, minimal, rich]
+                  description: Test scenario description (required)
+                  example: "The login button is not responding when clicked on mobile devices"
                 strategy:
                   type: string
                   enum: [ai, template, enhanced, legacy]
+                  default: enhanced
+                  description: Generation strategy to test
                 includeScreenshot:
                   type: boolean
+                  default: false
+                  description: Whether to include screenshot in generation
       responses:
         '200':
-          description: Test completed
+          description: Test completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  ticket:
+                    type: object
+                    description: Generated ticket data
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                      route:
+                        type: string
+                      statusCode:
+                        type: integer
+        '400':
+          description: Missing required fields or invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Missing required fields: description"
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                      route:
+                        type: string
+                      statusCode:
+                        type: integer
+        '500':
+          description: Server error during ticket generation
           content:
             application/json:
               schema:

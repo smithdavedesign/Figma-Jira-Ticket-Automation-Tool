@@ -54,7 +54,7 @@ npm run build
 
 #### For Claude Code
 ```bash
-claude mcp add --transport stdio figma-ai-ticket-generator node /path/to/server/dist/server.js
+claude mcp add --transport stdio figma-ai-ticket-generator node /path/to/server/app/server.js
 ```
 
 #### For VS Code
@@ -65,7 +65,7 @@ Add to your `mcp.json`:
   "servers": {
     "figma-ai-ticket-generator": {
       "command": "node",
-      "args": ["/path/to/server/dist/server.js"],
+      "args": ["/path/to/server/app/server.js"],
       "type": "stdio"
     }
   }
@@ -77,7 +77,7 @@ Add to your `mcp.json`:
 {
   "name": "Figma AI Ticket Generator",
   "command": "node",
-  "args": ["/path/to/server/dist/server.js"]
+  "args": ["/path/to/server/app/server.js"]
 }
 ```
 
@@ -225,7 +225,7 @@ npm run build
 ```
 
 **MCP client not connecting:**
-- Verify the path to `dist/server.js` is correct
+- Verify the path to `app/server.js` is correct
 - Check that Node.js 18+ is installed
 - Ensure the server built successfully
 

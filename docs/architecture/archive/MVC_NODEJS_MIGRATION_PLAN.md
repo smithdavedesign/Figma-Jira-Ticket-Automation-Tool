@@ -128,10 +128,6 @@ figma-ticket-generator/
 │   ├── redis.config.js          # Redis connection settings
 │   └── server.config.js         # Server settings and environment
 │
-├── dist/                        # 📦 BUILD OUTPUTS
-│   ├── code.js                  # Compiled plugin for Figma ✅
-│   ├── ui/                      # Compiled UI assets
-│   └── manifest.json            # Figma plugin manifest ✅
 │
 ├── archive/                     # 📁 ARCHIVED CODE ✅
 │   ├── server-typescript/       # Original TypeScript server (49 files)

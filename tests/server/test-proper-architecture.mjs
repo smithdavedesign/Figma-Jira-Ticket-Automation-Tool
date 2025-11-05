@@ -12,7 +12,8 @@
  */
 
 import dotenv from 'dotenv';
-import { FigmaMCPGeminiOrchestrator } from '../src/ai/figma-mcp-gemini-orchestrator.js';
+// Update import to use actual orchestrator file
+import { AIOrchestrator } from '../../core/ai/orchestrator.js';
 
 dotenv.config();
 
@@ -42,7 +43,7 @@ async function testProperLayerSeparation() {
     
     // Initialize orchestrator
     console.log('\n🎯 Initializing Proper Layer Separation Orchestrator...');
-    const orchestrator = new FigmaMCPGeminiOrchestrator(geminiApiKey);
+    const orchestrator = new AIOrchestrator({ apiKey: geminiApiKey });
     console.log('✅ Orchestrator initialized');
     
     // Execute with proper layer separation
@@ -159,7 +160,7 @@ async function validateArchitecturalPrinciples() {
 }
 
 // Run the test
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('🧪 Starting Proper Architecture Test Suite...\n');
   
   testProperLayerSeparation()

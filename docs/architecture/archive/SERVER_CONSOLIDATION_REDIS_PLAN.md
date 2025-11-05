@@ -6,8 +6,7 @@
 ## 📊 **Current Architecture Analysis**
 
 ### **What We Have:**
-- **`server/src/server.ts`** - 129KB TypeScript server (development, crash-prone)
-- **`server/dist/server.js`** - Compiled stable server (production-ready)
+- **`server/app/server.ts`** - 129KB TypeScript server (development, crash-prone)
 - **Dual architecture confusion** - Multiple npm scripts pointing to different servers
 
 ### **What We Need:**

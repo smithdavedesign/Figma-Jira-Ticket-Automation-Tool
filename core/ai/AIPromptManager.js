@@ -65,7 +65,7 @@ export class AIPromptManager {
 
       console.log(`✅ Reasoning prompt loaded: ${promptType}`, {
         promptLength: renderedPrompt.length,
-        contextKeys: Object.keys(context)
+        contextKeys: context ? Object.keys(context) : []
       });
 
       return {
@@ -144,46 +144,68 @@ export class AIPromptManager {
    * Evaluate expressions in prompt templates
    */
   evaluateExpression(expression, context) {
-    // Handle fallback syntax: "value || 'default'"
-    if (expression.includes('||')) {
-      const parts = expression.split('||').map(part => part.trim());
-      for (const part of parts) {
-        const value = this.evaluateExpression(part, context);
-        if (value !== null && value !== undefined && value !== '') {
-          return value;
+    try {
+      // Handle fallback syntax: "value || 'default'"
+      if (expression.includes('||')) {
+        const parts = expression.split('||').map(part => part.trim());
+        for (const part of parts) {
+          const value = this.evaluateExpression(part, context);
+          if (value !== null && value !== undefined && value !== '') {
+            return value;
+          }
+          // If it's a quoted string, return it as the fallback
+          if (part.match(/^['"].*['"]$/)) {
+            return part.slice(1, -1); // Remove quotes
+          }
         }
-        // If it's a quoted string, return it as the fallback
-        if (part.match(/^['"].*['"]$/)) {
-          return part.slice(1, -1); // Remove quotes
-        }
+        return '';
       }
+
+      // Handle filters: "value | join(', ')"
+      const filterMatch = expression.match(/^(.+?)\s*\|\s*(\w+)(?:\(['"]([^'"]*)['"]\))?$/);
+      if (filterMatch) {
+        const [, mainExpr, filterName, filterArg] = filterMatch;
+        const mainValue = this.evaluateExpression(mainExpr.trim(), context);
+        return this.applyFilter(mainValue, filterName, filterArg);
+      }
+
+      // Handle dot notation: "figma.component_name"
+      if (expression.includes('.')) {
+        return this.getNestedProperty(context, expression);
+      }
+
+      // Direct context access
+      if (context && Object.prototype.hasOwnProperty.call(context, expression)) {
+        return context[expression];
+      }
+
+      // Return empty string if property doesn't exist
+      return '';
+    } catch (error) {
+      console.warn(`Expression evaluation failed for "${expression}":`, error.message);
       return '';
     }
-
-    // Handle filters: "value | join(', ')"
-    const filterMatch = expression.match(/^(.+?)\s*\|\s*(\w+)(?:\(['"]([^'"]*)['"]\))?$/);
-    if (filterMatch) {
-      const [, mainExpr, filterName, filterArg] = filterMatch;
-      const mainValue = this.evaluateExpression(mainExpr.trim(), context);
-      return this.applyFilter(mainValue, filterName, filterArg);
-    }
-
-    // Handle dot notation: "figma.component_name"
-    if (expression.includes('.')) {
-      return this.getNestedProperty(context, expression);
-    }
-
-    // Direct context access
-    return context[expression];
   }
 
   /**
    * Get nested property using dot notation
    */
   getNestedProperty(obj, path) {
-    return path.split('.').reduce((current, key) => {
-      return current && current[key] !== undefined ? current[key] : null;
-    }, obj);
+    try {
+      if (!obj || typeof obj !== 'object') {
+        return '';
+      }
+
+      return path.split('.').reduce((current, key) => {
+        if (current && typeof current === 'object' && Object.prototype.hasOwnProperty.call(current, key)) {
+          return current[key];
+        }
+        return '';
+      }, obj);
+    } catch (error) {
+      console.warn(`Nested property access failed for path "${path}":`, error.message);
+      return '';
+    }
   }
 
   /**

@@ -741,7 +741,6 @@ kill $(lsof -t -i:3000) 2>/dev/null
 npm run build:ts 2>&1 | grep -E "(error|Error)" || echo "✅ Build OK"
 
 # Verify output files
-ls -la dist/ && echo "✅ Dist files created"
 cat manifest.json | jq '.main' && echo "✅ Manifest valid"
 ```
 

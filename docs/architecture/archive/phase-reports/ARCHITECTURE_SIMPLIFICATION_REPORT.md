@@ -10,12 +10,8 @@ The project had significant structural redundancy due to evolution from simple p
 ├── 📄 manifest.json (root)           → Points to: code.js + ui/index.html
 ├── 📄 code.ts (1,230 lines)          → TypeScript source (in root)
 ├── 📄 code.js (1,109 lines)          → Compiled output (in root)
-├── 📁 dist/
-│   ├── manifest.json                 → Points to: dist/code.js + dist/ui/
-│   ├── code.js                       → Duplicate build output
-│   └── ui/                           → Duplicate UI files
 ├── 📁 production-bundle/
-│   ├── manifest.json                 → Points to: dist/code.js + dist/ui/
+│   ├── manifest.json                 → Points to: 
 │   ├── code.js                       → Triplicate build output
 │   └── ui/                           → Triplicate UI files
 └── 📁 app/main.js                    → MCP Server (separate system)

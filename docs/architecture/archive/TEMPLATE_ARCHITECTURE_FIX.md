@@ -145,16 +145,15 @@ detectTechStackPlatform(context) {
 ### **Deployment Commands Used**
 ```bash
 # Clean build
-rm -rf dist/
 npm install
 npm run build
 
 # Fix template structure
-mkdir -p dist/ai/templates/jira
-cp src/ai/templates/jira/*.yml dist/ai/templates/jira/
+mkdir -p core/ai/templates/jira
+cp src/ai/templates/jira/*.yml core/ai/templates/jira/
 
 # Start fresh server
-node dist/server.js
+node app/server.js
 ```
 
 ## 📊 **Impact & Benefits**

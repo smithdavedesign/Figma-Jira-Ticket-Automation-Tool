@@ -215,7 +215,7 @@ class YAMLValidator {
 // Main execution
 async function main() {
   const validator = new YAMLValidator();
-  const templatesDir = join(__dirname, '../config/templates');
+  const templatesDir = join(__dirname, '../core/ai/templates');
   
   console.log(chalk.bold('🔍 YAML Template Validation'));
   console.log(`📁 Scanning: ${templatesDir}`);

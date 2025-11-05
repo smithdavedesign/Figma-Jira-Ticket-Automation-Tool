@@ -269,7 +269,15 @@ async function runAITemplateIntegrationTests() {
     console.log('✅ MCP server is running');
   } catch (error) {
     console.log('❌ MCP server not accessible - make sure to run: npm run start:server');
-    return { success: false, error: 'Server not running' };
+    return { 
+      success: false, 
+      error: 'Server not running',
+      overall: false,
+      aiGeneration: { success: false, error: 'Server not running' },
+      templateFallback: { success: false, error: 'Server not running' },
+      serviceFallback: { success: false, error: 'Server not running' },
+      multiplePlatforms: { success: false, error: 'Server not running' }
+    };
   }
   
   const testResults = {
