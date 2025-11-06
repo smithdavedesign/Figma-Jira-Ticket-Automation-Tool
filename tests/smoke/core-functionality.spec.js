@@ -7,9 +7,9 @@ test.describe('Plugin Loading Smoke Tests', () => {
     expect(response.ok()).toBeTruthy();
     
     const health = await response.json();
-    expect(health).toHaveProperty('status', 'ok');
-    expect(health).toHaveProperty('server', 'test-server');
+    expect(health).toHaveProperty('status', 'healthy');
     expect(health).toHaveProperty('timestamp');
+    // Note: Production server returns comprehensive health data, not just 'test-server'
   });
 
   test('Plugin UI should load without errors', async ({ page }) => {
@@ -96,9 +96,10 @@ test.describe('Plugin Loading Smoke Tests', () => {
     
     const health = await response.json();
     
-    // Check basic health fields for test server
-    expect(health).toHaveProperty('status', 'ok');
+    // Check basic health fields for production server
+    expect(health).toHaveProperty('status', 'healthy');
     expect(health).toHaveProperty('timestamp');
-    expect(health).toHaveProperty('server', 'test-server');
+    expect(health).toHaveProperty('version');
+    expect(health).toHaveProperty('uptime');
   });
 });

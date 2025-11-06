@@ -169,7 +169,8 @@ export class TemplateManager {
       // Figma context data
       figma: {
         component_name: componentName,
-        file_name: figmaContext?.metadata?.name || requestData?.fileContext?.fileName || 'Unknown File',
+        component_type: figmaContext?.type || 'Component',
+        file_name: figmaContext?.metadata?.name || requestData?.fileContext?.fileName || 'Design File',
         file_id: figmaContext?.metadata?.id || figmaContext?.fileKey || requestData?.fileContext?.fileKey || requestData?.fileKey || extractedFileKey,
         frame_id: requestData?.frameData?.id || null,
         dimensions: figmaContext?.specifications?.dimensions || { width: 0, height: 0 },
@@ -180,6 +181,7 @@ export class TemplateManager {
         live_link: this.buildFigmaUrl(figmaContext, requestData, extractedFileKey),
         screenshot_filename: `${componentName}-screenshot.png`,
         screenshot_url: requestData?.screenshot || figmaContext?.screenshot || null,
+        screenshot_format: 'png',
         screenshot_markdown: this.generateScreenshotMarkdown(componentName, requestData, figmaContext),
         screenshot_attachment: this.generateScreenshotAttachment(componentName, requestData, figmaContext),
         design_status: 'Ready for Development',
@@ -217,6 +219,10 @@ export class TemplateManager {
         implementation_notes: this.generateImplementationNotes(figmaContext, techStack),
         accessibility_requirements: this.generateAccessibilityRequirements(figmaContext)
       },
+
+      // Template aliases (for backward compatibility and shorthand)
+      comp: componentName, // Shorthand for component name
+      code: Array.isArray(techStack) ? techStack.join(', ') : techStack, // Shorthand for tech stack
 
       // Organization context (can be enhanced later)
       org: {
