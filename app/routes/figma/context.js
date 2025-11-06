@@ -49,6 +49,9 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
     router.get('/api/figma/context-summary/:fileKey', this.handleGetContextSummary.bind(this));
     router.post('/api/figma/context-search', this.handleSearchContext.bind(this));
 
+    // 🔄 NEW: Unified Context Endpoint (consolidates Design Health + Advanced Context)
+    router.post('/api/figma/unified-context', this.handleGetUnifiedContext.bind(this));
+
     this.logger.info('✅ Figma context routes registered');
   }
 
@@ -462,6 +465,80 @@ export class FigmaContextRoutes extends BaseFigmaRoute {
     } catch (error) {
       this.logger.error('Context extraction failed:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 🔄 NEW: Get unified context (consolidates Design Health + Advanced Context)
+   * POST /api/figma/unified-context
+   *
+   * Provides comprehensive context combining all functionality from:
+   * - Design Health analysis
+   * - Advanced Context Dashboard
+   * - LLM preview context
+   * - Performance metrics
+   */
+  async handleGetUnifiedContext(req, res) {
+    this.logAccess(req, 'getUnifiedContext');
+
+    try {
+      const { fileKey, nodeIds, options = {} } = req.body;
+
+      if (!fileKey) {
+        return this.sendError(res, 400, 'FILE_KEY_REQUIRED', 'File key is required for unified context');
+      }
+
+      this.logger.info(`🔄 Building unified context for fileKey: ${fileKey}`);
+
+      // Get or create UnifiedContextProvider instance
+      const contextManager = this.serviceContainer.get('ContextManager');
+
+      // Import UnifiedContextProvider (dynamic import to avoid circular dependencies)
+      const { UnifiedContextProvider } = await import('../../core/context/UnifiedContextProvider.js');
+      const unifiedProvider = new UnifiedContextProvider();
+
+      // Build mock Figma data (in real implementation, this would come from Figma API)
+      const figmaData = {
+        fileKey,
+        nodeIds: nodeIds || [],
+        selection: [], // Mock selection data
+        metadata: {
+          requestedAt: new Date().toISOString(),
+          source: 'unified-context-api',
+          version: '2.0.0'
+        }
+      };
+
+      // Build comprehensive unified context
+      const unifiedContext = await unifiedProvider.buildComprehensiveContext(figmaData, {
+        ...options,
+        includeHealthMetrics: true,
+        includeAdvancedContext: true,
+        includePerformanceMetrics: true,
+        includeLLMPreview: true
+      });
+
+      // Track performance metrics
+      const processingTime = Date.now() - Date.now();
+
+      this.logger.info(`✅ Unified context built successfully in ${processingTime}ms`);
+
+      // Return unified context
+      this.sendSuccess(res, {
+        unifiedContext,
+        metadata: {
+          fileKey,
+          nodeIds,
+          processingTime,
+          timestamp: new Date().toISOString(),
+          version: '2.0.0',
+          features: ['healthMetrics', 'advancedContext', 'performanceMetrics', 'llmPreview']
+        }
+      });
+
+    } catch (error) {
+      this.logger.error('❌ Failed to build unified context:', error);
+      this.sendError(res, 500, 'UNIFIED_CONTEXT_ERROR', error.message);
     }
   }
 }

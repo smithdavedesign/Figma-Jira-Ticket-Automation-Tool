@@ -148,7 +148,7 @@ export class Server {
 
       // Import and register template manager
       const { TemplateManager } = await import('../core/data/template-manager.js');
-      this.serviceContainer.register('templateManager', (container, redis) => new TemplateManager({ redis }), true, ['redis']);
+      this.serviceContainer.register('templateManager', (container, redis, configService) => new TemplateManager({ redis, configService }), true, ['redis', 'configurationService']);
 
       // Import and register visual AI service
       const { VisualEnhancedAIService } = await import('../core/ai/visual-enhanced-ai-service.js');
@@ -205,7 +205,12 @@ export class Server {
       await this.initializeAllServices();
 
     } catch (error) {
-      this.logger.error('❌ Service Container initialization failed:', error);
+      this.logger.error('❌ Service Container initialization failed:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        error: error
+      });
       throw error;
     }
   }

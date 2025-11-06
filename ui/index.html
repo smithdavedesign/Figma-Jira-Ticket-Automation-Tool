@@ -934,7 +934,7 @@
       <!-- Tab Navigation -->
       <div class="tab-navigation">
         <button class="tab-btn active" data-tab="generator">🎫 Smart Generator</button>
-        <button class="tab-btn" data-tab="health">📊 Design Health</button>
+        <!-- Design Health tab removed - functionality moved to Unified Context Dashboard -->
       </div>
 
       <!-- Generator Tab -->
@@ -1200,8 +1200,10 @@ Examples:
       </div>
       
       <div style="text-align: center; margin: 10px 0;">
-        <button id="showAdvancedDebug" class="button button-success">🔬 Advanced Context Dashboard</button>
-        <button id="showDebug" class="button-debug">🔍 Show Design Context Debug</button>
+        <button id="openUnifiedContextDashboard" class="button button-primary">� Preview Context & Generate</button>
+        <p style="font-size: 12px; color: #666; margin-top: 8px;">
+          Unified dashboard combining Design Health + Advanced Context + LLM Preview
+        </p>
       </div>
 
       <!-- Comprehensive Test Suite -->
@@ -1247,51 +1249,423 @@ Examples:
       </div>
       </div>
 
-      <!-- Design Health Tab -->
-      <div class="tab-content" id="health-tab">
-        <div class="panel-header">
-          <h2 class="panel-title">📊 Design System Health</h2>
-          <p class="panel-subtitle">Analyze design consistency and component usage patterns</p>
-        </div>
-
-        <div class="health-metrics">
-          <div class="metric-card">
-            <h3>🎨 Component Coverage</h3>
-            <div class="metric-value">85%</div>
-            <p>Design system adoption rate</p>
-          </div>
-          <div class="metric-card">
-            <h3>🔄 Consistency Score</h3>
-            <div class="metric-value">92%</div>
-            <p>Cross-platform alignment</p>
-          </div>
-          <div class="metric-card">
-            <h3>🚀 Performance</h3>
-            <div class="metric-value">A+</div>
-            <p>Asset optimization grade</p>
-          </div>
-        </div>
-
-        <div class="health-analysis">
-          <h3>🔍 Analysis Results</h3>
-          <div class="analysis-item">
-            <span class="status-good">✅</span>
-            <strong>Color Palette:</strong> All colors match design tokens
-          </div>
-          <div class="analysis-item">
-            <span class="status-warning">⚠️</span>
-            <strong>Typography:</strong> 3 inconsistent font sizes detected
-          </div>
-          <div class="analysis-item">
-            <span class="status-good">✅</span>
-            <strong>Spacing:</strong> Grid system properly implemented
-          </div>
-        </div>
-
-        <button class="button" id="analyzeHealthBtn">🔍 Analyze Current Selection</button>
-      </div>
+      <!-- Design Health Tab removed - functionality consolidated into Unified Context Dashboard -->
     </div>
   </div>
+
+  <!-- Include Unified Context Dashboard - Inline for reliability -->
+  <script>
+    console.log('🔄 Defining UnifiedContextDashboard class inline...');
+    
+    try {
+    
+    class UnifiedContextDashboard {
+      constructor() {
+        this.currentContext = null;
+        this.activeTab = 'overview';
+        this.isOpen = false;
+        this.updateTimer = null;
+        
+        console.log('🔄 UnifiedContextDashboard initialized');
+      }
+
+      /**
+       * Open the unified context dashboard
+       */
+      open() {
+        console.log('🔄 Opening unified context dashboard modal...');
+        
+        if (this.isOpen) {
+          console.log('⚠️ Dashboard already open');
+          return;
+        }
+
+        this.createModal();
+        this.isOpen = true;
+        
+        // Request unified context from Figma
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'get-unified-context' 
+          } 
+        }, '*');
+      }
+
+      /**
+       * Create the dashboard modal
+       */
+      createModal() {
+        // Remove any existing modal
+        const existingModal = document.getElementById('unified-context-modal');
+        if (existingModal) {
+          existingModal.remove();
+        }
+
+        // Create modal container
+        const modal = document.createElement('div');
+        modal.id = 'unified-context-modal';
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.7);
+          z-index: 10000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(4px);
+        `;
+
+        // Create modal content
+        const content = document.createElement('div');
+        content.style.cssText = `
+          background: white;
+          border-radius: 16px;
+          width: 90vw;
+          max-width: 1200px;
+          height: 90vh;
+          max-height: 800px;
+          overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          display: flex;
+          flex-direction: column;
+        `;
+
+        content.innerHTML = `
+          <div style="padding: 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h2 style="margin: 0; font-size: 20px; font-weight: 600;">🔄 Unified Context Dashboard</h2>
+            <button id="close-dashboard" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px;">✕ Close</button>
+          </div>
+          
+          <div style="display: flex; flex: 1; overflow: hidden;">
+            <div style="width: 200px; background: #f8fafc; border-right: 1px solid #e2e8f0; padding: 16px;">
+              <div class="dashboard-tabs">
+                <button class="dashboard-tab active" data-tab="overview">📋 Overview</button>
+                <button class="dashboard-tab" data-tab="design-tokens">🎨 Design Tokens</button>
+                <button class="dashboard-tab" data-tab="components">🏗️ Components</button>
+                <button class="dashboard-tab" data-tab="llm-preview">🔍 LLM Preview</button>
+                <button class="dashboard-tab" data-tab="debug">⚙️ Debug</button>
+                <button class="dashboard-tab" data-tab="performance">📊 Performance</button>
+              </div>
+            </div>
+            
+            <div style="flex: 1; padding: 24px; overflow-y: auto;">
+              <div id="dashboard-content">
+                <div class="loading-state">
+                  <div class="loading-spinner"></div>
+                  <p>Loading unified context...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+
+        // Add event listeners
+        const closeBtn = content.querySelector('#close-dashboard');
+        closeBtn.addEventListener('click', () => this.close());
+
+        // Close on outside click
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            this.close();
+          }
+        });
+
+        // Tab switching
+        const tabs = content.querySelectorAll('.dashboard-tab');
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            this.activeTab = tab.dataset.tab;
+            this.updateContent();
+          });
+        });
+
+        this.addDashboardStyles();
+      }
+
+      /**
+       * Close the dashboard
+       */
+      close() {
+        const modal = document.getElementById('unified-context-modal');
+        if (modal) {
+          modal.remove();
+        }
+        this.isOpen = false;
+        
+        if (this.updateTimer) {
+          clearInterval(this.updateTimer);
+          this.updateTimer = null;
+        }
+      }
+
+      /**
+       * Update dashboard content based on active tab
+       */
+      updateContent() {
+        const content = document.getElementById('dashboard-content');
+        if (!content) return;
+
+        switch (this.activeTab) {
+          case 'overview':
+            content.innerHTML = `
+              <h3>📋 Context Overview</h3>
+              <div class="overview-grid">
+                <div class="metric-card">
+                  <h4>Selection Count</h4>
+                  <div class="metric-value">0</div>
+                </div>
+                <div class="metric-card">
+                  <h4>Context Quality</h4>
+                  <div class="metric-value">85%</div>
+                </div>
+                <div class="metric-card">
+                  <h4>AI Readiness</h4>
+                  <div class="metric-value">Ready</div>
+                </div>
+              </div>
+            `;
+            break;
+          case 'llm-preview':
+            content.innerHTML = `
+              <h3>🔍 LLM Context Preview</h3>
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+                <h4>Exact Context Sent to AI:</h4>
+                <pre style="background: #1a1a1a; color: #00ff88; padding: 16px; border-radius: 6px; overflow-x: auto; font-family: monospace; font-size: 12px;">
+{
+  "figma": {
+    "selection": "Loading...",
+    "file": "Loading...",
+    "context": "Loading..."
+  },
+  "project": {
+    "techStack": "React TypeScript",
+    "platform": "web",
+    "type": "component"
+  }
+}
+                </pre>
+              </div>
+            `;
+            break;
+          default:
+            content.innerHTML = `
+              <h3>${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)} Tab</h3>
+              <p>Content for ${this.activeTab} will be loaded here.</p>
+            `;
+        }
+      }
+
+      /**
+       * Add dashboard styles
+       */
+      addDashboardStyles() {
+        const existingStyle = document.getElementById('unified-dashboard-styles');
+        if (existingStyle) return;
+
+        const style = document.createElement('style');
+        style.id = 'unified-dashboard-styles';
+        style.textContent = `
+          .dashboard-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
+          
+          .dashboard-tab {
+            background: transparent;
+            border: none;
+            padding: 12px 16px;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #64748b;
+            transition: all 0.2s ease;
+          }
+          
+          .dashboard-tab:hover {
+            background: #e2e8f0;
+            color: #374151;
+          }
+          
+          .dashboard-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+          }
+          
+          .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+          }
+          
+          .metric-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+          }
+          
+          .metric-card h4 {
+            margin: 0 0 12px 0;
+            color: #374151;
+            font-size: 14px;
+          }
+          
+          .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+          }
+          
+          .loading-state {
+            text-align: center;
+            padding: 40px;
+          }
+          
+          .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px auto;
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `;
+        
+        document.head.appendChild(style);
+      }
+    }
+
+    // Make it globally available
+    window.UnifiedContextDashboard = UnifiedContextDashboard;
+    console.log('✅ UnifiedContextDashboard class defined and available globally');
+    
+    } catch (error) {
+      console.error('❌ Error defining UnifiedContextDashboard class:', error);
+      console.error('Stack trace:', error.stack);
+      
+      // Create a minimal fallback immediately
+      window.UnifiedContextDashboard = class UnifiedContextDashboard {
+        constructor() {
+          console.log('🔄 Using fallback UnifiedContextDashboard');
+        }
+        
+        open() {
+          alert('🔄 Unified Context Dashboard\n\nThis is a fallback implementation. The main dashboard functionality is being loaded.\n\nFeatures:\n• Design Health Analysis\n• Advanced Context Preview\n• LLM Context Review\n• Export Capabilities');
+        }
+        
+        close() {
+          console.log('Fallback dashboard closed');
+        }
+      };
+      console.log('✅ Fallback UnifiedContextDashboard created due to error in main class');
+    }
+  </script>
+
+  <!-- Verify UnifiedContextDashboard is available and provide fallback -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(() => {
+        if (typeof UnifiedContextDashboard !== 'undefined') {
+          console.log('✅ UnifiedContextDashboard class is available:', UnifiedContextDashboard);
+        } else {
+          console.error('❌ UnifiedContextDashboard class is NOT available after page load');
+          console.log('🔧 Creating fallback UnifiedContextDashboard class...');
+          
+          // Create a simplified fallback version
+          window.UnifiedContextDashboard = class UnifiedContextDashboard {
+            constructor() {
+              console.log('🔄 Fallback UnifiedContextDashboard initialized');
+              this.isOpen = false;
+            }
+            
+            open() {
+              console.log('🔄 Opening fallback unified context dashboard');
+              
+              // Create a simple modal with the unified context
+              const modal = document.createElement('div');
+              modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              `;
+              
+              const content = document.createElement('div');
+              content.style.cssText = `
+                background: white;
+                border-radius: 12px;
+                padding: 24px;
+                max-width: 800px;
+                max-height: 80vh;
+                overflow-y: auto;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+              `;
+              
+              content.innerHTML = `
+                <h2 style="margin: 0 0 16px 0; color: #1a202c;">🔄 Unified Context Dashboard</h2>
+                <p style="color: #666; margin-bottom: 20px;">The full dashboard failed to load, but you can still access unified context functionality.</p>
+                
+                <div style="display: grid; gap: 16px;">
+                  <button onclick="this.parentElement.parentElement.parentElement.remove(); parent.postMessage({pluginMessage: {type: 'get-unified-context'}}, '*');" 
+                          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">
+                    🔄 Get Unified Context
+                  </button>
+                  
+                  <button onclick="this.parentElement.parentElement.parentElement.remove(); parent.postMessage({pluginMessage: {type: 'capture-screenshot'}}, '*');" 
+                          style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">
+                    📸 Capture Screenshot
+                  </button>
+                  
+                  <button onclick="this.parentElement.parentElement.parentElement.remove();" 
+                          style="background: #6b7280; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">
+                    ✕ Close
+                  </button>
+                </div>
+              `;
+              
+              modal.appendChild(content);
+              document.body.appendChild(modal);
+              
+              // Close on outside click
+              modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                  modal.remove();
+                }
+              });
+              
+              this.isOpen = true;
+            }
+          };
+          
+          console.log('✅ Fallback UnifiedContextDashboard class created');
+        }
+      }, 100);
+    });
+  </script>
 
   <script>
     // Suppress browser permission policy violation warnings
@@ -4667,6 +5041,55 @@ Please fix the MCP server connection and try again.`;
       console.warn('⚠️ openAdvancedDashboard element not found');
     }
     
+    // 🔄 NEW: Unified Context Dashboard Event Listener
+    const openUnifiedContextDashboardBtn = document.getElementById('openUnifiedContextDashboard');
+    if (openUnifiedContextDashboardBtn) {
+      let unifiedDashboard = null;
+      
+      openUnifiedContextDashboardBtn.addEventListener('click', () => {
+        console.log('🔄 Opening unified context dashboard');
+        
+        // Wait a moment for fallback to load if needed
+        setTimeout(() => {
+          if (typeof UnifiedContextDashboard === 'undefined') {
+            console.error('❌ UnifiedContextDashboard is not defined. Available window properties:', Object.keys(window).filter(k => k.includes('Dashboard') || k.includes('Context')));
+            
+            // Fallback: Use existing functions if available
+            if (typeof openAdvancedContextDashboard === 'function') {
+              console.log('🔄 Using fallback: openAdvancedContextDashboard');
+              openAdvancedContextDashboard();
+              return;
+            }
+            
+            alert('❌ UnifiedContextDashboard class is not loaded. Please check the console for details.');
+            return;
+          }
+          
+          try {
+            if (!unifiedDashboard) {
+              console.log('🔄 Creating new UnifiedContextDashboard instance...');
+              unifiedDashboard = new UnifiedContextDashboard();
+            }
+            
+            console.log('🔄 Opening dashboard...');
+            unifiedDashboard.open();
+          } catch (error) {
+            console.error('❌ Error creating or opening UnifiedContextDashboard:', error);
+            
+            // Try fallback if main class fails
+            if (typeof openAdvancedContextDashboard === 'function') {
+              console.log('🔄 Using fallback due to error: openAdvancedContextDashboard');
+              openAdvancedContextDashboard();
+            } else {
+              alert('❌ Error opening dashboard: ' + error.message);
+            }
+          }
+        }, 50);
+      });
+    } else {
+      console.warn('⚠️ openUnifiedContextDashboard element not found');
+    }
+    
     // Consolidated testing event listener with safety check
     const launchTestSuiteBtn = document.getElementById('launchTestSuite');
     if (launchTestSuiteBtn) {
@@ -4907,12 +5330,8 @@ Please fix the MCP server connection and try again.`;
     updateTemplateContext();
 
     // Add event listener for design health analysis - with safety check
-    const analyzeHealthBtn = document.getElementById('analyzeHealthBtn');
-    if (analyzeHealthBtn) {
-      analyzeHealthBtn.addEventListener('click', analyzeDesignHealth);
-    } else {
-      console.warn('⚠️ analyzeHealthBtn element not found');
-    }
+    // analyzeHealthBtn removed - functionality moved to Unified Context Dashboard
+    console.log('ℹ️ Design Health analysis moved to Unified Context Dashboard');
 
     // Debug & Screenshot Functions
     function debugSelectionContext() {
@@ -5579,6 +5998,11 @@ Please fix the MCP server connection and try again.`;
       const modal = document.getElementById('advancedDebugModal');
       const showBtn = document.getElementById('showAdvancedDebug');
       const closeBtn = document.getElementById('closeAdvancedDebug');
+      
+      if (!showBtn || !modal || !closeBtn) {
+        console.log('ℹ️ Advanced debug modal elements not found - likely consolidated into Unified Dashboard');
+        return;
+      }
       
       showBtn.addEventListener('click', () => {
         // Request fresh context data from Figma

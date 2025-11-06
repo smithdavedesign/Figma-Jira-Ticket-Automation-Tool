@@ -9,6 +9,7 @@
  * - Redis caching for performance
  * - Integration with Figma session context
  * - Accessible by MCP, API, and LLM services
+ * - Configuration service integration (NO STATIC VALUES)
  */
 
 import { Logger } from '../utils/logger.js';
@@ -18,6 +19,8 @@ import { UniversalTemplateEngine } from '../template/UniversalTemplateEngine.js'
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
+// Configuration Service will be injected via dependency injection
+
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,7 +29,8 @@ export class TemplateManager {
   constructor(options = {}) {
     this.logger = new Logger('TemplateManager');
     this.errorHandler = new ErrorHandler();
-    this.redis = new RedisClient();
+    this.redis = options.redis || new RedisClient();
+    this.configService = options.configService; // Injected configuration service
 
     // Initialize Universal Template Engine with config directory
     const configDir = join(__dirname, '../../config/templates');
@@ -165,6 +169,20 @@ export class TemplateManager {
       screenshot: requestData?.screenshot
     });
 
+    // Extract dimensions from enhancedFrameData if available
+    const extractDimensionsFromFrameData = (requestData) => {
+      if (requestData?.enhancedFrameData && Array.isArray(requestData.enhancedFrameData) && requestData.enhancedFrameData.length > 0) {
+        const firstFrame = requestData.enhancedFrameData[0];
+        if (firstFrame.dimensions) {
+          return firstFrame.dimensions;
+        }
+        if (firstFrame.width && firstFrame.height) {
+          return { width: firstFrame.width, height: firstFrame.height };
+        }
+      }
+      return figmaContext?.specifications?.dimensions || { width: 0, height: 0 };
+    };
+
     const templateContext = {
       // Figma context data
       figma: {
@@ -172,8 +190,8 @@ export class TemplateManager {
         component_type: figmaContext?.type || 'Component',
         file_name: figmaContext?.metadata?.name || requestData?.fileContext?.fileName || 'Design File',
         file_id: figmaContext?.metadata?.id || figmaContext?.fileKey || requestData?.fileContext?.fileKey || requestData?.fileKey || extractedFileKey,
-        frame_id: requestData?.frameData?.id || null,
-        dimensions: figmaContext?.specifications?.dimensions || { width: 0, height: 0 },
+        frame_id: requestData?.frameData?.id || requestData?.enhancedFrameData?.[0]?.id || null,
+        dimensions: extractDimensionsFromFrameData(requestData),
         design_tokens: figmaContext?.specifications?.colors || [],
         dependencies: figmaContext?.components?.map(c => c.name) || [],
         properties: figmaContext?.properties || [],
@@ -189,7 +207,7 @@ export class TemplateManager {
         extracted_typography: this.extractTypographyTokens(figmaContext, requestData)
       },
 
-      // Project context (enhanced with comprehensive defaults)
+      // Project context (dynamically configured - NO STATIC VALUES)
       project: {
         name: 'Design System Project',
         tech_stack: Array.isArray(techStack) ? techStack : [techStack],
@@ -197,13 +215,13 @@ export class TemplateManager {
         document_type: documentType,
         component_type: 'UI Component',
         labels: 'component,design-system',
-        due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 2 weeks from now
-        team: 'Development Team',
-        cycle: 'Sprint ' + Math.ceil(new Date().getDate() / 7),
-        design_system_url: 'https://design-system.company.com',
-        component_library_url: 'https://storybook.company.com',
-        accessibility_url: 'https://accessibility.company.com',
-        testing_standards_url: 'https://testing.company.com'
+        due_date: this.configService?.getTicketDueDate?.() || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        team: this.configService?.get?.('team.name') || 'Development Team',
+        cycle: this.configService?.getCurrentSprint?.() || 'Current Sprint',
+        design_system_url: this.configService?.get?.('company.designSystemUrl') || '',
+        component_library_url: this.configService?.get?.('company.componentLibraryUrl') || '',
+        accessibility_url: this.configService?.get?.('company.accessibilityUrl') || '',
+        testing_standards_url: this.configService?.get?.('company.testingStandardsUrl') || ''
       },
 
       // Calculated context (complexity analysis)
@@ -478,9 +496,9 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
    */
   async listTemplates() {
     try {
-      // Get available templates from the Universal Template System
-      const platforms = ['jira', 'wiki', 'figma', 'storybook'];
-      const documentTypes = ['component', 'feature', 'service', 'authoring'];
+      // Get available templates from the Universal Template System (dynamic configuration)
+      const platforms = this.configService?.get?.('template.platforms') || ['jira', 'wiki', 'figma', 'storybook'];
+      const documentTypes = this.configService?.get?.('template.documentTypes') || ['component', 'feature', 'service', 'authoring'];
       const templates = [];
 
       for (const platform of platforms) {
