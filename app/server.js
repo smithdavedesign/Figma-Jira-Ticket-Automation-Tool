@@ -99,6 +99,9 @@ export class Server {
       // Phase 5: Start HTTP server
       await this.startHttpServer();
 
+      // Phase 5.5: Start MCP server (if enabled)
+      await this.startMCPServer();
+
       // Phase 6: Setup graceful shutdown
       this.setupGracefulShutdown();
 
@@ -162,6 +165,22 @@ export class Server {
 
       this.serviceContainer.register('contextManager', (container) =>
         new ContextManager(), true, []);
+
+      // MCP server integration (if enabled)
+      if (process.env.ENABLE_MCP_SERVER !== 'false') {
+        this.logger.info('🔌 Creating MCP server service...');
+        const { FigmaMCPServer } = await import('./services/MCPService.js').catch(() => ({ FigmaMCPServer: null }));
+        if (FigmaMCPServer) {
+          this.serviceContainer.register('mcpServer', (container) =>
+            new FigmaMCPServer({
+              port: process.env.MCP_PORT || 3845,
+              services: container
+            }), false, []); // Don't initialize automatically
+          this.logger.info('✅ MCP server service registered');
+        } else {
+          this.logger.warn('⚠️ MCP server implementation not found, skipping');
+        }
+      }
 
       this.serviceContainer.register('analysisService', (container, redis, configService, screenshotService) =>
         new AnalysisService(redis, configService, screenshotService), true, ['redis', 'configurationService', 'screenshotService']);
@@ -337,25 +356,40 @@ export class Server {
    */
   async startHttpServer() {
     return new Promise((resolve, reject) => {
-      const port = this.getPort();
-
-      this.server = this.app.listen(port, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
+      this.server = this.app.listen(this.getPort(), () => {
+        this.logger.info(`🌐 HTTP server listening on port ${this.getPort()}`);
+        resolve();
       });
 
       this.server.on('error', (error) => {
-        if (error.code === 'EADDRINUSE') {
-          this.logger.error(`Port ${port} is already in use`);
-        } else {
-          this.logger.error('Server error:', error);
-        }
+        this.logger.error('❌ Server error:', error);
         reject(error);
       });
     });
+  }
+
+  /**
+   * Start MCP server (if enabled and available)
+   */
+  async startMCPServer() {
+    if (process.env.ENABLE_MCP_SERVER === 'false') {
+      this.logger.info('🔌 MCP server disabled via environment variable');
+      return;
+    }
+
+    try {
+      const mcpServer = this.serviceContainer.get('mcpServer', false);
+      if (mcpServer) {
+        await mcpServer.start();
+        this.logger.info(`🔌 MCP server started on port ${process.env.MCP_PORT || 3845}`);
+        this.logger.info('🔗 MCP server provides design context and Figma integration tools');
+      } else {
+        this.logger.info('🔌 MCP server not configured, continuing without MCP capability');
+      }
+    } catch (error) {
+      this.logger.warn('⚠️ MCP server startup failed, continuing without MCP capability:', error.message);
+      // Don't fail the entire server startup if MCP fails
+    }
   }
 
   /**
@@ -396,6 +430,17 @@ export class Server {
     this.logger.info('🛑 Shutting down server...');
 
     try {
+      // Shutdown MCP server first
+      try {
+        const mcpServer = this.serviceContainer?.get('mcpServer', false);
+        if (mcpServer) {
+          await mcpServer.shutdown();
+          this.logger.info('✅ MCP server shut down');
+        }
+      } catch (error) {
+        this.logger.warn('⚠️ Error shutting down MCP server:', error.message);
+      }
+
       // Close HTTP server
       if (this.server) {
         await new Promise((resolve) => {
@@ -477,6 +522,8 @@ export class Server {
    * @returns {Object} Server status
    */
   getStatus() {
+    const mcpServer = this.serviceContainer?.get('mcpServer', false);
+
     return {
       isStarted: this.isStarted,
       startTime: this.startTime,
@@ -485,7 +532,8 @@ export class Server {
       services: this.serviceContainer ? this.serviceContainer.getRegisteredServices() : [],
       routes: this.routeRegistry ? this.routeRegistry.getRoutes().size : 0,
       memory: process.memoryUsage(),
-      version: process.env.npm_package_version || '1.0.0'
+      version: process.env.npm_package_version || '1.0.0',
+      mcp: mcpServer ? mcpServer.getStatus() : { enabled: false, message: 'MCP server not configured' }
     };
   }
 }

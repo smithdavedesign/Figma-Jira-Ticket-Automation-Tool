@@ -24,11 +24,13 @@ An intelligent enterprise platform that transforms Figma designs into comprehens
 
 ## ✨ Core Features
 
-### **🎉 LATEST: Route Consolidation & Domain Separation Complete (November 4, 2025)**
-- 🏗️ **Domain-Based Route Organization**: Clean separation with dedicated folders (routes/ai/, routes/figma/)
-- 🔧 **File Organization**: Moved figma.js coordinator to proper subfolder structure
-- 🛡️ **Duplicate Elimination**: Removed conflicting health endpoints, fixed syntax errors
-- � **Phase 8 Architecture**: Clean DI + Service Layer + Route Registry (10 route modules)
+### **🎉 LATEST: Plugin Architecture Cleanup + MCP Integration Complete (November 5, 2025)**
+- 🧹 **Plugin Code Cleanup**: Eliminated duplicate plugin implementations (app/plugin/ directory removed)
+- 🔧 **Clean Architecture**: Single source of truth with code.ts → code.js compilation
+- � **MCP Integration**: MCPService.js integrated into service container (app/services/)
+- 🏗️ **Unified Server**: MCP + REST server running in integrated app/server.js
+- � **Documentation Updated**: All references updated across project documentation
+- ✅ **Zero Breaking Changes**: Full functionality preserved with cleaner structure
 - ⚡ **Health Endpoint Validation**: All endpoints tested and working (/health, /api/ai/health, /api/figma/health, /api/mcp/health)
 - 🗑️ **Deprecated Code Removal**: Legacy api.js marked for removal, routes moved to proper domains
 - 🔍 **Route Analytics**: Comprehensive route analysis ensuring no duplicates or conflicts
@@ -106,19 +108,20 @@ Our platform follows a clean **Model-View-Controller (MVC)** architecture that e
 ```
 📁 MVC Structure (✅ PHASE 8 CLEAN ARCHITECTURE - Production Ready):
 
-├── app/                          # 🎯 CONTROLLERS & ORCHESTRATION (18 Active Files)
-│   ├── server.js                 # ✅ Main Orchestrator (~200 lines, was 2,272)
+├── app/                          # 🎯 CONTROLLERS & ORCHESTRATION (19 Active Files)
+│   ├── server.js                 # ✅ Main Orchestrator (~250 lines, was 2,272)
 │   ├── controllers/              # 🔧 DEPENDENCY INJECTION
 │   │   └── ServiceContainer.js   # Service lifecycle & DI container
 │   ├── core/                     # 🧠 ARCHITECTURE CORE
 │   │   └── RouteRegistry.js      # Automatic route discovery system
-│   ├── services/                 # 🔄 BUSINESS SERVICES (6 services)
+│   ├── services/                 # 🔄 BUSINESS SERVICES (7 services)
 │   │   ├── BaseService.js        # Service foundation pattern
 │   │   ├── TicketGenerationService.js # Unified generation strategies
 │   │   ├── ScreenshotService.js  # Visual capture service
 │   │   ├── AnalysisService.js    # Design analysis service
 │   │   ├── ConfigurationService.js # Config management
-│   │   └── TestingService.js     # Test orchestration service  
+│   │   ├── TestingService.js     # Test orchestration service
+│   │   └── MCPService.js         # 🆕 MCP server integration  
 │   ├── routes/                   # 🛣️ ROUTE MODULES (10 routes)
 │   │   ├── ai/                   # 🤖 AI DOMAIN ROUTES
 │   │   │   └── ai.js             # AI services & health endpoints
@@ -144,7 +147,9 @@ Our platform follows a clean **Model-View-Controller (MVC)** architecture that e
 │   └── archive/                  # 📦 LEGACY PRESERVATION
 │       └── main.js.legacy        # Original 2,272-line server (rollback ready)
 │
-├── core/                         # 🧠 MODELS (21 Active Files)
+├── core/                         # 🧠 MODELS (20 Active Files)
+│   ├── figma/                    # 🎨 FIGMA INTEGRATION (1 file - 100% active)
+│   │   └── figma-mcp-client.js   # Client for connecting to external Figma MCP servers
 │   ├── tools/                    # ✅ MCP SERVER TOOLS (6 files - 100% active)
 │   │   ├── project-analyzer.js   # Business logic: project analysis
 │   │   ├── ticket-generator.js   # Business logic: ticket generation
@@ -749,6 +754,7 @@ Our comprehensive testing infrastructure ensures enterprise-grade reliability ac
 ```bash
 # System Health & Quick Validation
 npm run health                     # Check system status (no servers needed)
+npm run start:server              # 🆕 Start integrated MCP + REST server
 npm run health:start              # Check + auto-start servers if needed
 npm run test:all:quick            # Quick validation (unit + 1 browser test ~30s)
 
@@ -926,16 +932,19 @@ npm run deploy:dev
 echo "GEMINI_API_KEY=your-free-key-here" > .env
 ```
 
-### 4. Start MVC Server (Controllers + Models)
+### 4. Start Integrated MVC + MCP Server
 ```bash
-npm run start:server# OR for development with file watching
+npm run start:server              # 🆕 Dual-protocol server (REST + MCP)
+# OR for development with file watching
 npm run start:dev
 
-# Express server with Phase 8 clean architecture
+# Express server with Phase 8 clean architecture + MCP integration
 npm start
 
 # Server starts on http://localhost:3000 with:
-# ✅ 13 services initialized (AI, Redis, Templates, etc.)
+# ✅ EXPRESS API: REST endpoints for web/UI integration
+# ✅ MCP SERVER: Model Context Protocol for AI assistants (port 3845)
+# ✅ 14 services initialized (AI, Redis, Templates, MCP, etc.)
 # ✅ 10 route modules loaded (clean domain separation)
 # ✅ All health endpoints working (/health, /api/ai/health, /api/figma/health, /api/mcp/health)
 

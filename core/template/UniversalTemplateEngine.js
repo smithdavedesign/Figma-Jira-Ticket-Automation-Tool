@@ -784,7 +784,7 @@ Please customize this template for your specific needs.
 
     try {
       // Load base template
-      const basePath = join(this.configDir, 'template_configs/base.yml');
+      const basePath = join(this.configDir, 'base.yml');
       const baseTemplate = await this.loadTemplate(basePath);
 
       if (!baseTemplate?.template) {

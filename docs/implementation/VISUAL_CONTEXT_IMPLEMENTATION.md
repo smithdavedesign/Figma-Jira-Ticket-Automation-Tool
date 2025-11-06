@@ -25,7 +25,7 @@ This guide covers the complete implementation of visual context extraction, scre
 The visual context system provides comprehensive screenshot capture and integration:
 
 ```javascript
-// Screenshot Capture Implementation (app/plugin/handlers/message-handler.js)
+// Screenshot Capture Implementation (code.js)
 class ScreenshotHandler {
   async captureAndProcess(frameData) {
     try {

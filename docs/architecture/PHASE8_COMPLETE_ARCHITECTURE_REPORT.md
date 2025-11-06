@@ -49,13 +49,9 @@ Production Architecture (Phase 8 Complete - November 2, 2025)
 │   ├── figma.js                               # Figma-specific operations
 │   ├── mcp.js                                 # Design context MCP server routes
 │   └── live.js                                # Real-time testing & monitoring
-├── app/plugin/                             # 🔌 FIGMA PLUGIN INTEGRATION
-│   ├── main.js                                # Figma plugin entry point
-│   ├── handlers/                              # Plugin request handlers
-│   │   ├── design-system-handler.js              # Design system processing
-│   │   └── message-handler.js                    # Message handling logic
-│   └── utils/                                 # Plugin utilities
-│       └── figma-api.js                          # Figma API integration
+├── code.ts/.js                           # 🔌 FIGMA PLUGIN INTEGRATION
+│   ├── code.ts                                # TypeScript plugin source
+│   └── code.js                                # JavaScript plugin (manifest.json)
 ├── app/middleware/                         # 🔒 MIDDLEWARE (empty - future expansion)
 ├── app/api-docs/                           # 📚 API DOCUMENTATION
 └── app/archive/                            # 📦 LEGACY PRESERVATION

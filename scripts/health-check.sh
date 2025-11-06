@@ -42,31 +42,39 @@ check_endpoint() {
 
 # Function to check if port is open
 check_port() {
-    local port=$1
-    local name=$2
-    
-    echo -n "🔌 Checking port $port ($name)... "
-    
-    if command -v nc >/dev/null 2>&1; then
-        if nc -z localhost "$port" 2>/dev/null; then
-            echo -e "${GREEN}✅ OPEN${NC}"
-            return 0
-        else
-            echo -e "${RED}❌ CLOSED${NC}"
-            return 1
-        fi
-    elif command -v lsof >/dev/null 2>&1; then
-        if lsof -i :"$port" >/dev/null 2>&1; then
-            echo -e "${GREEN}✅ OPEN${NC}"
-            return 0
-        else
-            echo -e "${RED}❌ CLOSED${NC}"
-            return 1
-        fi
+  local port=$1
+  local service_name=$2
+  echo -n "🔌 Checking port $port ($service_name)... "
+  
+  # Use lsof for macOS compatibility
+  if command -v lsof >/dev/null 2>&1; then
+    if lsof -i :$port >/dev/null 2>&1; then
+      echo "✅ OPEN"
+      return 0
     else
-        echo -e "${YELLOW}⚠️  No port checking tool available${NC}"
-        return 0
+      echo "❌ CLOSED"
+      return 1
     fi
+  elif command -v nc >/dev/null 2>&1; then
+    if nc -z localhost $port 2>/dev/null; then
+      echo "✅ OPEN"
+      return 0
+    else
+      echo "❌ CLOSED"
+      return 1
+    fi
+  elif command -v netstat >/dev/null 2>&1; then
+    if netstat -an | grep -q ":$port.*LISTEN"; then
+      echo "✅ OPEN"
+      return 0
+    else
+      echo "❌ CLOSED"
+      return 1
+    fi
+  else
+    echo "⚠️ CANNOT CHECK (no lsof, nc, or netstat)"
+    return 1
+  fi
 }
 
 # Function to start servers if needed
@@ -81,12 +89,11 @@ start_servers() {
         sleep 2
     fi
     
-    # Start MCP server in background
-    if ! check_port 3000 "MCP Server" >/dev/null 2>&1; then
-        echo "🧠 Starting MCP server on port 3000..."
-        cd server && npm run dev > /dev/null 2>&1 &
-        MCP_SERVER_PID=$!
-        cd ..
+    # Start integrated server in background
+    if ! check_port 3000 "Integrated Server" >/dev/null 2>&1; then
+        echo "🧠 Starting integrated server on port 3000..."
+        npm run start:server > /dev/null 2>&1 &
+        SERVER_PID=$!
         sleep 3
     fi
 }
@@ -97,9 +104,9 @@ cleanup() {
         echo "🛑 Stopping UI server..."
         kill $UI_SERVER_PID 2>/dev/null || true
     fi
-    if [ ! -z "$MCP_SERVER_PID" ]; then
-        echo "🛑 Stopping MCP server..."
-        kill $MCP_SERVER_PID 2>/dev/null || true
+    if [ ! -z "$SERVER_PID" ]; then
+        echo "🛑 Stopping integrated server..."
+        kill $SERVER_PID 2>/dev/null || true
     fi
 }
 
@@ -124,10 +131,10 @@ else
     ((HEALTH_ISSUES++))
 fi
 
-if [ -f "app/main.js" ]; then
-    echo -e "   ${GREEN}✅${NC} MCP server present"
+if [ -f "app/server.js" ]; then
+    echo -e "   ${GREEN}✅${NC} Integrated server present"
 else
-    echo -e "   ${RED}❌${NC} MCP server missing"
+    echo -e "   ${RED}❌${NC} Server files missing"
     ((HEALTH_ISSUES++))
 fi
 
@@ -140,7 +147,7 @@ fi
 
 # 3. Check ports
 echo "🔌 Checking server ports..."
-if ! check_port 3000 "MCP Server"; then
+if ! check_port 3000 "Integrated Server (REST + MCP)"; then
     ((HEALTH_ISSUES++))
 fi
 
@@ -148,21 +155,21 @@ echo
 
 # 4. Check HTTP endpoints
 echo "🌐 Checking HTTP endpoints..."
-# MCP server health check (expect different response)
-echo -n "🧠 Checking MCP server health... "
-if curl -s "http://localhost:3000" --connect-timeout 5 --max-time 10 >/dev/null 2>&1; then
+# Integrated server health check
+echo -n "🧠 Checking integrated server health... "
+if curl -s "http://localhost:3000/health" --connect-timeout 5 --max-time 10 >/dev/null 2>&1; then
     echo -e "${GREEN}✅ RESPONDING${NC}"
 else
     echo -e "${RED}❌ NOT RESPONDING${NC}"
     ((HEALTH_ISSUES++))
 fi
 
-# Test MCP UI endpoint if server is running
-echo -n "🔍 Checking MCP UI endpoint... "
-if curl -s "http://localhost:3000/ui/index.html" --connect-timeout 5 --max-time 10 >/dev/null 2>&1; then
+# Check if main server endpoints are working
+echo -n "🔍 Checking Figma API endpoint... "
+if curl -s "http://localhost:3000/api/figma/health" --connect-timeout 5 --max-time 10 >/dev/null 2>&1; then
     echo -e "${GREEN}✅ RESPONDING${NC}"
 else
-    echo -e "${YELLOW}⚠️ NOT CONFIGURED${NC} (UI served by MCP server)"
+    echo -e "${YELLOW}⚠️ API ENDPOINTS NOT RESPONDING${NC}"
 fi
 
 echo

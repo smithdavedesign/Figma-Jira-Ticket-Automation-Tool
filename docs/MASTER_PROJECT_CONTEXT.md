@@ -1,8 +1,8 @@
 # 🎯 MASTER PROJECT CONTEXT - Figma AI Ticket Generator
 
-**Last Updated:** November 4, 2025  
-**Status:** ✅ Comprehensive Testing Framework Complete - All Major Test Categories Operational with High Success Rates  
-**Latest Update:** Test Suite Overhaul Complete - Fixed API Configuration, Unit Tests, MCP Integration, E2E Tests, Added Missing Categories, Enhanced Production Readiness  
+**Last Updated:** November 5, 2025  
+**Status:** ✅ Plugin Code Architecture Cleanup Complete + MCP Server Integration + Testing Framework Ready  
+**Latest Update:** Plugin Code Duplication Eliminated, MCP Server Fully Integrated, Documentation Updated, Ready for Full Testing and Deployment  
 
 ## 🧠 **AI ASSISTANT CONTEXT RULES**
 
@@ -53,7 +53,38 @@ If AI assistant fails to update documentation:
 
 ---
 
-## 🧪 **COMPREHENSIVE TESTING FRAMEWORK - NOVEMBER 4, 2025 UPDATE**
+## � **PLUGIN CODE ARCHITECTURE CLEANUP - NOVEMBER 5, 2025**
+
+### **✅ PLUGIN CODE DUPLICATION ELIMINATED**
+**Major architectural cleanup completed with zero functionality loss:**
+
+- **✅ Duplicate Files Removed**: Eliminated confusing `app/plugin/` directory containing 3 duplicate plugin implementations
+  - `app/plugin/code-single.js` (1,632 lines) - Enhanced JSDoc version ❌ REMOVED
+  - `app/plugin/code.js` (1,234 lines) - Enhanced logging version ❌ REMOVED  
+  - `app/plugin/main.js` (81 lines) - Modular architecture attempt ❌ REMOVED
+  - `app/plugin/handlers/` and `app/plugin/utils/` directories ❌ REMOVED
+
+- **✅ Clean Architecture Achieved**: Single source of truth maintained
+  - `code.ts` (1,232 lines) - ✅ TypeScript source (authoritative)
+  - `code.js` (1,111 lines) - ✅ JavaScript output (manifest.json reference)
+  - All functionality preserved in root files
+
+- **✅ Documentation Updated**: All references to removed files updated across project documentation
+- **✅ Build System Updated**: vitest.config.js and related configs updated to reflect clean structure
+- **✅ Zero Breaking Changes**: Plugin functionality fully preserved, manifest.json unchanged
+
+### **✅ MCP SERVER INTEGRATION COMPLETE**
+**Production-ready MCP server architecture fully operational:**
+
+- **✅ MCPService Integration**: Moved core/mcp/mcp-server.js → app/services/MCPService.js following Phase 8 patterns
+- **✅ Unified Server**: MCP server runs alongside REST server in integrated app/server.js architecture
+- **✅ Service Container**: Clean dependency injection with proper service registration and lifecycle management
+- **✅ Graceful Shutdown**: Proper MCP server shutdown handling integrated with main server shutdown
+- **✅ Documentation Alignment**: README.md and architecture docs updated to reflect integrated MCP + REST server
+
+---
+
+## �🧪 **COMPREHENSIVE TESTING FRAMEWORK - NOVEMBER 4, 2025 UPDATE**
 
 ### **✅ TEST SUITE OVERHAUL COMPLETE (November 4, 2025)**
 **Major testing improvements achieved with systematic fixes across all categories:**
@@ -599,15 +630,16 @@ docs/                           # Root documentation directory
 
 ## 🔧 **KEY TECHNICAL COMPONENTS**
 
-### **MCP Server (app/server/)**
-- **Main Server:** app/server/main.js with 6 production tools (MVC Controllers layer)
+### **MCP Server (app/server.js)**
+- **Integrated Architecture:** MCP server runs alongside REST server in unified app/server.js
+- **MCPService Integration:** MCPService.js in services/ directory following Phase 8 patterns
 - **Business Tools:** project_analyzer, ticket_generator, compliance_checker, batch_processor, effort_estimator, relationship_mapper
 - **AI Integration:** Google Gemini API with structured prompts and fallback handling
-- **Architecture:** Proper MVC placement with imports from ../../core/ and ../../config/
+- **Service Container:** Clean dependency injection with ServiceContainer pattern
 
-### **Plugin Core (src/plugin/)**
-- **Main Source:** code-single.ts (authoritative TypeScript source)
-- **Compiled Output:** code.js (auto-generated from TypeScript)
+### **Plugin Core (Root Level)**
+- **Main Source:** code.ts (authoritative TypeScript source)
+- **Compiled Output:** code.js (used by manifest.json)
 - **Message Handlers:** get-context, capture-screenshot, close-plugin
 
 ### **UI System (ui/)**

@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node app/server.js",
     "start:dev": "nodemon --watch app/ --watch core/ --watch config/ --ext js app/server.js",
-    "start:legacy": "node app/archive/main.legacy.js",
     "start:test-server": "node tests/playwright/test-server.cjs",
     "start:server": "node app/server.js",
     "dev": "npm run start:dev",
@@ -37,6 +36,7 @@
     "test:mcp:standalone": "node tests/integration/test-standalone.mjs",
     "monitor": "node scripts/monitor-dashboard.js",
     "health": "./scripts/health-check.sh",
+    "health:auto": "./scripts/health-check.sh --start-servers",
     "validate": "npm run test && npm run build && npm run validate:yaml && echo '✅ All validation passed'",
     "validate:yaml": "node scripts/validate-yaml.js",
     "fix:yaml": "node scripts/fix-yaml.js",
@@ -85,6 +85,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@modelcontextprotocol/sdk": "^1.21.0",
     "chalk": "^5.6.2",
     "commander": "^14.0.2",
     "dotenv": "^17.2.3",

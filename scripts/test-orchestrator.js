@@ -8,7 +8,7 @@
  */
 
 import { execSync, spawn } from 'child_process';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'fs';
 import chalk from 'chalk';
 import './setup-test-env.js';
 
@@ -72,8 +72,9 @@ class TestOrchestrator {
         this.log('🧪 UNIT TESTS', 'header');
         
         const result = await this.runCommand(
-            'npm run test:run',
-            'Running Vitest unit tests'
+            'npm run test:run tests/unit/',
+            'Running Vitest unit tests only',
+            { silent: true }
         );
 
         if (result.success && result.output) {
@@ -81,7 +82,7 @@ class TestOrchestrator {
             const lines = result.output.split('\n');
             
             // Look for the summary line with various formats:
-            // " Tests  65 passed (65)" or " Tests  1 failed | 64 passed (65)"
+            // "      Tests  26 passed (26)" or "      Tests  1 failed | 25 passed (26)"
             const summaryLine = lines.find(line => line.includes('Tests') && line.includes('passed') && !line.includes('Test Files'));
             
             if (summaryLine) {
@@ -236,14 +237,14 @@ class TestOrchestrator {
 
             // Test 2: Template file structure validation
             const structureResult = await this.runCommand(
-                'find core/template -name "*.yaml" -o -name "*.yml" 2>/dev/null | wc -l',
+                'find core/ai/templates -name "*.yaml" -o -name "*.yml" 2>/dev/null | wc -l',
                 'Validating template file structure',
-                { timeout: 10000 }
+                { timeout: 10000, silent: true }
             );
 
-            if (structureResult.success && parseInt(structureResult.stdout.trim()) > 0) {
+            if (structureResult.success && structureResult.output && parseInt(structureResult.output.trim()) > 0) {
                 this.results.templates.passed++;
-                this.log(`✅ Found ${structureResult.stdout.trim()} template files`);
+                this.log(`✅ Found ${structureResult.output.trim()} template files`);
             } else {
                 this.results.templates.failed++;
                 this.log(`❌ No template files found or directory missing`, 'error');
@@ -251,11 +252,10 @@ class TestOrchestrator {
             this.results.templates.total++;
 
             // Test 3: Simple template directory access
-            const fs = require('fs');
             try {
-                const templateDir = './core/template';
-                if (fs.existsSync(templateDir)) {
-                    const files = fs.readdirSync(templateDir);
+                const templateDir = './core/ai/templates';
+                if (existsSync(templateDir)) {
+                    const files = readdirSync(templateDir);
                     const yamlFiles = files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
                     if (yamlFiles.length > 0) {
                         this.results.templates.passed++;
@@ -291,11 +291,10 @@ class TestOrchestrator {
             this.log('Testing production features configuration...', 'info');
             
             try {
-                const fs = require('fs');
                 const aiServicePath = './core/ai/template-integrated-ai-service.js';
                 
-                if (fs.existsSync(aiServicePath)) {
-                    const serviceContent = fs.readFileSync(aiServicePath, 'utf8');
+                if (existsSync(aiServicePath)) {
+                    const serviceContent = readFileSync(aiServicePath, 'utf8');
                     
                     // Check for required production features in the code
                     const requiredFeatures = ['hybridArchitecture', 'cognitiveeSeparation', 'contextEnrichment'];
@@ -322,14 +321,13 @@ class TestOrchestrator {
 
             // Test 2: Configuration files validation
             this.log('Validating configuration files...', 'info');
-            const fs = require('fs');
             const configFiles = [
                 './config/ai.config.js',
                 './config/server.config.js',
                 './config/redis.config.js'
             ];
             
-            const missingConfigs = configFiles.filter(file => !fs.existsSync(file));
+            const missingConfigs = configFiles.filter(file => !existsSync(file));
             
             if (missingConfigs.length === 0) {
                 this.results.production.passed++;
@@ -741,30 +739,30 @@ class TestOrchestrator {
             }
             this.results.smoke.total++;
 
-            // Test 2: Basic health check (gracefully handle server not running)
-            this.log('🔍 Running basic health check...', 'info');
+            // Test 2: Basic health check (with auto server startup)
+            this.log('🔍 Running health check with auto server startup...', 'info');
             
             const healthResult = await this.runCommand(
-                'npm run health',
-                'Running health check as smoke test',
-                { timeout: 30000 }
+                'npm run health:auto',
+                'Running health check with auto server startup',
+                { timeout: 45000 }
             );
 
-            // Improved server detection logic
+            // Improved server detection logic for auto-starting health check
             const hasHealthOutput = healthResult.output && healthResult.output.length > 0;
             const serverResponding = hasHealthOutput && 
                 (healthResult.output.includes('RESPONDING') || 
-                 healthResult.output.includes('✅ Node modules installed') ||
-                 healthResult.output.includes('dependencies installed'));
+                 healthResult.output.includes('✅ ALL SYSTEMS GO!') ||
+                 healthResult.output.includes('Ready for testing') ||
+                 healthResult.output.includes('✅ Node modules installed'));
             
-            // More lenient success criteria for smoke tests
-            if (healthResult.success || serverResponding || hasHealthOutput) {
+            // With auto server startup, we expect success
+            if (healthResult.success || serverResponding) {
                 this.results.smoke.passed++;
                 this.log('✅ Health check passed (system operational)', 'success');
             } else {
-                // Don't fail smoke test if server isn't running - this is expected in CI
-                this.results.smoke.passed++;
-                this.log('⚠️  Health check: Server not running (acceptable for smoke test)', 'warning');
+                this.results.smoke.failed++;
+                this.log('❌ Health check failed even with auto server startup', 'error');
             }
             this.results.smoke.total++;
 

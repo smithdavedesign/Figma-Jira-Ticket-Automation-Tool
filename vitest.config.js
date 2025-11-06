@@ -52,7 +52,7 @@ export default defineConfig({
         'coverage/**',
         '**/*.config.js',
         '**/*.config.mjs',
-        'app/plugin/**',
+        'code.js',
         'scripts/**',
         'tools/**'
       ],
