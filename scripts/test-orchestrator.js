@@ -31,6 +31,10 @@ class TestOrchestrator {
             smoke: { passed: 0, failed: 0, total: 0 },
             templates: { passed: 0, failed: 0, total: 0 },
             production: { passed: 0, failed: 0, total: 0 },
+            ui: { passed: 0, failed: 0, total: 0 },
+            security: { passed: 0, failed: 0, total: 0 },
+            dependencies: { passed: 0, failed: 0, total: 0 },
+            ci: { passed: 0, failed: 0, total: 0 },
             overall: { passed: 0, failed: 0, total: 0 }
         };
         this.startTime = Date.now();
@@ -863,6 +867,239 @@ class TestOrchestrator {
         return this.results.integration.failed === 0;
     }
 
+    async runUITests() {
+        this.log('🎨 UI TEST SUITE', 'header');
+        
+        try {
+            // Test 1: Check if UI files exist and are valid
+            this.log('📋 Checking UI file structure...', 'info');
+            const uiFiles = [
+                'ui/index.html',
+                'ui/ultimate-test-suite-dashboard.html',
+                'ui/context-layer-dashboard.html',
+                'ui/figma-tester.html'
+            ];
+
+            let uiFilesFound = 0;
+            for (const file of uiFiles) {
+                if (existsSync(file)) {
+                    uiFilesFound++;
+                    this.log(`✅ Found ${file}`, 'success');
+                } else {
+                    this.log(`⚠️  Missing ${file}`, 'warning');
+                }
+            }
+
+            if (uiFilesFound >= 2) {
+                this.results.ui.passed++;
+                this.log(`✅ UI structure validation passed (${uiFilesFound}/${uiFiles.length} files found)`);
+            } else {
+                this.results.ui.failed++;
+                this.log(`❌ UI structure validation failed`, 'error');
+            }
+            this.results.ui.total++;
+
+            // Test 2: Check for JavaScript UI components
+            this.log('⚙️ Checking UI JavaScript components...', 'info');
+            const jsFiles = readdirSync('ui/js/', { withFileTypes: true })
+                .filter(dirent => dirent.isFile() && dirent.name.endsWith('.js'))
+                .map(dirent => dirent.name);
+
+            if (jsFiles.length > 0) {
+                this.results.ui.passed++;
+                this.log(`✅ Found ${jsFiles.length} UI JavaScript files`);
+            } else {
+                this.results.ui.failed++;
+                this.log(`❌ No UI JavaScript files found`, 'error');
+            }
+            this.results.ui.total++;
+
+        } catch (error) {
+            this.log(`❌ UI tests failed: ${error.message}`, 'error');
+            this.results.ui.failed++;
+            this.results.ui.total++;
+        }
+
+        return this.results.ui.failed === 0;
+    }
+
+    async runSecurityTests() {
+        this.log('🔒 SECURITY TESTS', 'header');
+        
+        try {
+            // Test 1: Check for security configurations
+            this.log('🛡️ Checking security configurations...', 'info');
+            
+            // Check package.json for security-related packages
+            const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+            const hasSecurityPackages = packageJson.devDependencies && 
+                (packageJson.devDependencies['audit'] || 
+                 packageJson.devDependencies['helmet'] ||
+                 packageJson.scripts && packageJson.scripts.audit);
+
+            if (hasSecurityPackages || packageJson.scripts && packageJson.scripts.audit) {
+                this.results.security.passed++;
+                this.log('✅ Security packages/scripts configured');
+            } else {
+                this.results.security.failed++;
+                this.log('⚠️  No explicit security packages found', 'warning');
+            }
+            this.results.security.total++;
+
+            // Test 2: Run npm audit if available
+            try {
+                const auditResult = await this.runCommand(
+                    'npm audit --audit-level=moderate',
+                    'Running npm security audit',
+                    { timeout: 60000, silent: true }
+                );
+
+                if (auditResult.success) {
+                    this.results.security.passed++;
+                    this.log('✅ npm audit passed (no moderate+ vulnerabilities)');
+                } else {
+                    this.results.security.failed++;
+                    this.log('⚠️  npm audit found issues', 'warning');
+                }
+            } catch (error) {
+                this.results.security.failed++;
+                this.log('❌ npm audit failed to run', 'error');
+            }
+            this.results.security.total++;
+
+        } catch (error) {
+            this.log(`❌ Security tests failed: ${error.message}`, 'error');
+            this.results.security.failed++;
+            this.results.security.total++;
+        }
+
+        return this.results.security.failed === 0;
+    }
+
+    async runDependencyTests() {
+        this.log('📦 DEPENDENCY TESTS', 'header');
+        
+        try {
+            // Test 1: Check if all dependencies are installed
+            const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+            
+            const depResult = await this.runCommand(
+                'npm ls --depth=0',
+                'Checking installed dependencies',
+                { timeout: 30000, silent: true }
+            );
+
+            if (depResult.success) {
+                this.results.dependencies.passed++;
+                this.log('✅ All dependencies properly installed');
+            } else {
+                this.results.dependencies.failed++;
+                this.log('❌ Dependency issues detected', 'error');
+            }
+            this.results.dependencies.total++;
+
+            // Test 2: Check for outdated packages
+            try {
+                const outdatedResult = await this.runCommand(
+                    'npm outdated --depth=0',
+                    'Checking for outdated packages',
+                    { timeout: 30000, silent: true }
+                );
+
+                // npm outdated returns non-zero when packages are outdated, but that's informational
+                this.results.dependencies.passed++;
+                this.log('✅ Package freshness check completed');
+            } catch (error) {
+                // Don't fail on outdated packages - it's informational
+                this.results.dependencies.passed++;
+                this.log('ℹ️  Package outdated check completed (some packages may be outdated)', 'info');
+            }
+            this.results.dependencies.total++;
+
+        } catch (error) {
+            this.log(`❌ Dependency tests failed: ${error.message}`, 'error');
+            this.results.dependencies.failed++;
+            this.results.dependencies.total++;
+        }
+
+        return this.results.dependencies.failed === 0;
+    }
+
+    async runCITests() {
+        this.log('🔄 CI/CD READINESS TESTS', 'header');
+        
+        try {
+            // Test 1: Check for CI configuration files
+            const ciFiles = [
+                '.github/workflows',
+                '.gitlab-ci.yml',
+                'Jenkinsfile',
+                '.travis.yml',
+                'buildspec.yml'
+            ];
+
+            let ciConfigFound = false;
+            for (const file of ciFiles) {
+                if (existsSync(file)) {
+                    ciConfigFound = true;
+                    this.log(`✅ Found CI configuration: ${file}`);
+                    break;
+                }
+            }
+
+            if (ciConfigFound) {
+                this.results.ci.passed++;
+                this.log('✅ CI configuration detected');
+            } else {
+                this.results.ci.failed++;
+                this.log('⚠️  No CI configuration files found', 'warning');
+            }
+            this.results.ci.total++;
+
+            // Test 2: Check for Docker/containerization
+            const containerFiles = ['Dockerfile', 'docker-compose.yml', 'docker-compose.yaml'];
+            let containerConfigFound = false;
+            
+            for (const file of containerFiles) {
+                if (existsSync(file)) {
+                    containerConfigFound = true;
+                    this.log(`✅ Found container configuration: ${file}`);
+                    break;
+                }
+            }
+
+            if (containerConfigFound) {
+                this.results.ci.passed++;
+                this.log('✅ Container configuration detected');
+            } else {
+                this.results.ci.failed++;
+                this.log('⚠️  No container configuration found', 'warning');
+            }
+            this.results.ci.total++;
+
+            // Test 3: Check if scripts are CI-friendly (no interactive prompts)
+            const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+            const hasTestScript = packageJson.scripts && packageJson.scripts.test;
+            const hasBuildScript = packageJson.scripts && packageJson.scripts.build;
+
+            if (hasTestScript && hasBuildScript) {
+                this.results.ci.passed++;
+                this.log('✅ CI-friendly scripts (test & build) available');
+            } else {
+                this.results.ci.failed++;
+                this.log('❌ Missing CI-friendly scripts', 'error');
+            }
+            this.results.ci.total++;
+
+        } catch (error) {
+            this.log(`❌ CI tests failed: ${error.message}`, 'error');
+            this.results.ci.failed++;
+            this.results.ci.total++;
+        }
+
+        return this.results.ci.failed === 0;
+    }
+
     generateReport() {
         const duration = Math.round((Date.now() - this.startTime) / 1000);
         
@@ -883,8 +1120,11 @@ class TestOrchestrator {
             this.results.server.total +
             this.results.smoke.total +
             this.results.templates.total +
-            this.results.production.total;
-            this.results.templates.total;
+            this.results.production.total +
+            this.results.ui.total +
+            this.results.security.total +
+            this.results.dependencies.total +
+            this.results.ci.total;
             
         this.results.overall.passed = 
             this.results.unit.passed + 
@@ -901,7 +1141,12 @@ class TestOrchestrator {
             this.results.hybrid.passed +
             this.results.server.passed +
             this.results.smoke.passed +
-            this.results.templates.passed;
+            this.results.templates.passed +
+            this.results.production.passed +
+            this.results.ui.passed +
+            this.results.security.passed +
+            this.results.dependencies.passed +
+            this.results.ci.passed;
             
         this.results.overall.failed = 
             this.results.unit.failed + 
@@ -919,7 +1164,11 @@ class TestOrchestrator {
             this.results.server.failed +
             this.results.smoke.failed +
             this.results.templates.failed +
-            this.results.production.failed;
+            this.results.production.failed +
+            this.results.ui.failed +
+            this.results.security.failed +
+            this.results.dependencies.failed +
+            this.results.ci.failed;
 
         console.log('\n' + '='.repeat(60));
         this.log('📊 COMPREHENSIVE TEST RESULTS', 'header');
@@ -979,6 +1228,30 @@ class TestOrchestrator {
         if (this.results.smoke.total > 0) {
             console.log(`💨 Smoke Tests: ${this.results.smoke.passed}/${this.results.smoke.total} passed`);
         }
+        
+        if (this.results.templates.total > 0) {
+            console.log(`📝 Template Tests: ${this.results.templates.passed}/${this.results.templates.total} passed`);
+        }
+        
+        if (this.results.production.total > 0) {
+            console.log(`🚀 Production Tests: ${this.results.production.passed}/${this.results.production.total} passed`);
+        }
+        
+        if (this.results.ui.total > 0) {
+            console.log(`🎨 UI Tests: ${this.results.ui.passed}/${this.results.ui.total} passed`);
+        }
+        
+        if (this.results.security.total > 0) {
+            console.log(`🔒 Security Tests: ${this.results.security.passed}/${this.results.security.total} passed`);
+        }
+        
+        if (this.results.dependencies.total > 0) {
+            console.log(`📦 Dependency Tests: ${this.results.dependencies.passed}/${this.results.dependencies.total} passed`);
+        }
+        
+        if (this.results.ci.total > 0) {
+            console.log(`🔄 CI/CD Tests: ${this.results.ci.passed}/${this.results.ci.total} passed`);
+        }
 
         console.log('='.repeat(60));
         
@@ -1016,7 +1289,11 @@ class TestOrchestrator {
             { name: 'E2E Tests', fn: () => this.runE2ETests() },
             { name: 'Redis Tests', fn: () => this.runRedisTests() },
             { name: 'Hybrid Tests', fn: () => this.runHybridTests() },
-            { name: 'Browser Tests', fn: () => this.runBrowserTests() }
+            { name: 'Browser Tests', fn: () => this.runBrowserTests() },
+            { name: 'UI Tests', fn: () => this.runUITests() },
+            { name: 'Security Tests', fn: () => this.runSecurityTests() },
+            { name: 'Dependency Tests', fn: () => this.runDependencyTests() },
+            { name: 'CI/CD Tests', fn: () => this.runCITests() }
         ];
 
         let allPassed = true;

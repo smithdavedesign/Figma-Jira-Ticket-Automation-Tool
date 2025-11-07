@@ -8,7 +8,8 @@ export default defineConfig({
 
     // Test file patterns - keep simple
     include: [
-      'tests/**/*.{test,spec}.{js,mjs}'
+      'tests/**/*.{test,spec}.{js,mjs}',
+      'tests/unit/context-intelligence*.test.js'
     ],
 
     // Basic excludes - make sure to exclude Playwright tests and template tests

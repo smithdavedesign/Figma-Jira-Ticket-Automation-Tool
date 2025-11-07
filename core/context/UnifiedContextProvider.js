@@ -19,7 +19,7 @@ import { Logger } from '../logging/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 import ContextIntelligenceOrchestrator from './context-intelligence-orchestrator.js';
 
-// Import Configuration Service  
+// Import Configuration Service
 import configService from '../services/ConfigurationService.js';
 
 export class UnifiedContextProvider extends ContextManager {
@@ -87,10 +87,10 @@ export class UnifiedContextProvider extends ContextManager {
       // Add Context Intelligence Analysis (Phase 7)
       const contextIntelligence = this.unifiedConfig.includeContextIntelligence
         ? await this.buildContextIntelligenceAnalysis(figmaData, baseContext, {
-            healthMetrics,
-            advancedContext,
-            performanceMetrics
-          })
+          healthMetrics,
+          advancedContext,
+          performanceMetrics
+        })
         : null;
 
       // Build LLM preview context
@@ -432,7 +432,7 @@ export class UnifiedContextProvider extends ContextManager {
 
       // Build enhanced base context with Context Intelligence
       const enhancedBaseContext = { ...baseContext };
-      
+
       // Enrich with Context Intelligence insights if available
       if (additionalContext.contextIntelligence) {
         enhancedBaseContext.contextIntelligence = {

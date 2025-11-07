@@ -25,6 +25,41 @@ export class FigmaSessionManager {
     // Active sessions cache
     this.activeSessions = new Map();
 
+    // Performance metrics
+    this.metrics = {
+      sessions: {
+        created: 0,
+        retrieved: 0,
+        active: 0
+      },
+      api: {
+        requests: 0,
+        successful: 0,
+        failed: 0,
+        averageResponseTime: 0,
+        responseTimes: []
+      },
+      mcp: {
+        requests: 0,
+        successful: 0,
+        failed: 0,
+        averageResponseTime: 0,
+        responseTimes: []
+      },
+      cache: {
+        hits: 0,
+        misses: 0,
+        hitRate: 0
+      },
+      screenshots: {
+        requested: 0,
+        successful: 0,
+        failed: 0,
+        averageSize: 0
+      },
+      startTime: Date.now()
+    };
+
     // Configuration
     this.config = {
       sessionTTL: 3600, // 1 hour
@@ -32,7 +67,8 @@ export class FigmaSessionManager {
       apiTimeout: 5000, // 5 seconds
       retries: 3,
       cachePrefix: 'figma:session:',
-      dataPrefix: 'figma:data:'
+      dataPrefix: 'figma:data:',
+      metricsWindowSize: 100 // Keep last 100 response times for each service
     };
   }
 
@@ -109,36 +145,58 @@ export class FigmaSessionManager {
    * Create a new Figma session
    */
   async createSession(options = {}) {
-    const sessionId = this.generateSessionId();
-    const session = {
-      id: sessionId,
-      fileKey: options.fileKey || null,
-      nodeIds: options.nodeIds || [],
-      preferredSource: options.preferredSource || 'api',
-      createdAt: Date.now(),
-      lastUsed: Date.now(),
-      capabilities: {
-        api: this.apiAvailable,
-        mcp: this.mcpAvailable,
-        screenshot: this.apiAvailable, // Screenshots via API
-        assets: this.mcpAvailable, // Assets via MCP
-        tokens: this.mcpAvailable // Design tokens via MCP
-      },
-      cache: new Map()
-    };
+    const startTime = Date.now();
 
-    // Store in memory
-    this.activeSessions.set(sessionId, session);
+    try {
+      const sessionId = this.generateSessionId();
+      const session = {
+        id: sessionId,
+        fileKey: options.fileKey || null,
+        nodeIds: options.nodeIds || [],
+        preferredSource: options.preferredSource || 'api',
+        createdAt: Date.now(),
+        lastUsed: Date.now(),
+        capabilities: {
+          api: this.apiAvailable,
+          mcp: this.mcpAvailable,
+          screenshot: this.apiAvailable, // Screenshots via API
+          assets: this.mcpAvailable, // Assets via MCP
+          tokens: this.mcpAvailable // Design tokens via MCP
+        },
+        cache: new Map(),
+        metrics: {
+          requests: 0,
+          cacheHits: 0,
+          apiCalls: 0,
+          mcpCalls: 0,
+          screenshots: 0,
+          averageResponseTime: 0,
+          lastResponseTime: 0
+        }
+      };
 
-    // Store in Redis with TTL
-    await this.redis.set(
-      `${this.config.cachePrefix}${sessionId}`,
-      session,
-      this.config.sessionTTL
-    );
+      // Store in memory
+      this.activeSessions.set(sessionId, session);
 
-    this.logger.info(`🆕 Created Figma session: ${sessionId}`);
-    return session;
+      // Store in Redis with TTL
+      await this.redis.set(
+        `${this.config.cachePrefix}${sessionId}`,
+        session,
+        this.config.sessionTTL
+      );
+
+      // Update global metrics
+      this.metrics.sessions.created++;
+      this.metrics.sessions.active = this.activeSessions.size;
+
+      const responseTime = Date.now() - startTime;
+      this.logger.info(`🆕 Created Figma session: ${sessionId} (${responseTime}ms)`);
+      return session;
+
+    } catch (error) {
+      this.logger.error('Failed to create Figma session:', error);
+      throw error;
+    }
   }
 
   /**
@@ -538,6 +596,142 @@ export class FigmaSessionManager {
     // Converting raw Figma API responses to structured design intelligence format
     this.logger.debug(`🔄 Parsing API data for ${requestType}`);
     return rawData; // Placeholder
+  }
+
+  /**
+   * Update response time metrics for a service
+   */
+  updateServiceMetrics(service, responseTime, success = true) {
+    if (!this.metrics[service]) {return;}
+
+    this.metrics[service].requests++;
+    if (success) {
+      this.metrics[service].successful++;
+    } else {
+      this.metrics[service].failed++;
+    }
+
+    // Add to response times array
+    this.metrics[service].responseTimes.push(responseTime);
+
+    // Keep only last N response times
+    if (this.metrics[service].responseTimes.length > this.config.metricsWindowSize) {
+      this.metrics[service].responseTimes.shift();
+    }
+
+    // Update average
+    const times = this.metrics[service].responseTimes;
+    this.metrics[service].averageResponseTime = times.reduce((a, b) => a + b, 0) / times.length;
+  }
+
+  /**
+   * Update cache metrics
+   */
+  updateCacheMetrics(hit = true) {
+    if (hit) {
+      this.metrics.cache.hits++;
+    } else {
+      this.metrics.cache.misses++;
+    }
+
+    const total = this.metrics.cache.hits + this.metrics.cache.misses;
+    this.metrics.cache.hitRate = total > 0 ? (this.metrics.cache.hits / total) * 100 : 0;
+  }
+
+  /**
+   * Get comprehensive performance metrics
+   */
+  getPerformanceMetrics() {
+    const uptime = Date.now() - this.metrics.startTime;
+
+    return {
+      uptime,
+      sessions: {
+        ...this.metrics.sessions,
+        active: this.activeSessions.size
+      },
+      services: {
+        api: {
+          ...this.metrics.api,
+          available: this.apiAvailable,
+          successRate: this.metrics.api.requests > 0 ?
+            (this.metrics.api.successful / this.metrics.api.requests) * 100 : 0
+        },
+        mcp: {
+          ...this.metrics.mcp,
+          available: this.mcpAvailable,
+          successRate: this.metrics.mcp.requests > 0 ?
+            (this.metrics.mcp.successful / this.metrics.mcp.requests) * 100 : 0
+        }
+      },
+      cache: {
+        ...this.metrics.cache,
+        efficiency: this.metrics.cache.hitRate
+      },
+      screenshots: {
+        ...this.metrics.screenshots,
+        successRate: this.metrics.screenshots.requested > 0 ?
+          (this.metrics.screenshots.successful / this.metrics.screenshots.requested) * 100 : 0
+      },
+      health: {
+        status: this.getHealthStatus(),
+        issues: this.getHealthIssues(),
+        score: this.calculateHealthScore()
+      }
+    };
+  }
+
+  /**
+   * Get overall health status
+   */
+  getHealthStatus() {
+    if (!this.apiAvailable && !this.mcpAvailable) {return 'critical';}
+    if (this.metrics.api.failed > this.metrics.api.successful && this.metrics.mcp.failed > this.metrics.mcp.successful) {return 'degraded';}
+    if (!this.apiAvailable || !this.mcpAvailable) {return 'partial';}
+    return 'healthy';
+  }
+
+  /**
+   * Get health issues
+   */
+  getHealthIssues() {
+    const issues = [];
+
+    if (!this.apiAvailable) {issues.push('Figma API unavailable');}
+    if (!this.mcpAvailable) {issues.push('MCP server unavailable');}
+    if (this.metrics.api.averageResponseTime > 5000) {issues.push('Slow API response times');}
+    if (this.metrics.mcp.averageResponseTime > 10000) {issues.push('Slow MCP response times');}
+    if (this.metrics.cache.hitRate < 50) {issues.push('Low cache hit rate');}
+    if (this.activeSessions.size > 100) {issues.push('High session count');}
+
+    return issues;
+  }
+
+  /**
+   * Calculate health score (0-100)
+   */
+  calculateHealthScore() {
+    let score = 100;
+
+    // Service availability
+    if (!this.apiAvailable) {score -= 30;}
+    if (!this.mcpAvailable) {score -= 20;}
+
+    // Performance penalties
+    if (this.metrics.api.averageResponseTime > 3000) {score -= 10;}
+    if (this.metrics.mcp.averageResponseTime > 8000) {score -= 10;}
+    if (this.metrics.cache.hitRate < 70) {score -= 15;}
+
+    // Error rate penalties
+    const apiErrorRate = this.metrics.api.requests > 0 ?
+      (this.metrics.api.failed / this.metrics.api.requests) * 100 : 0;
+    const mcpErrorRate = this.metrics.mcp.requests > 0 ?
+      (this.metrics.mcp.failed / this.metrics.mcp.requests) * 100 : 0;
+
+    if (apiErrorRate > 10) {score -= 15;}
+    if (mcpErrorRate > 10) {score -= 10;}
+
+    return Math.max(0, Math.round(score));
   }
 
   /**

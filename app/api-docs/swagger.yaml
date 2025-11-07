@@ -1151,7 +1151,9 @@ paths:
                     type: array
                     items:
                       type: string
-                    example: ["figmaComponents", "figmaInteractions"]  /mcp/tools:
+                    example: ["figmaComponents", "figmaInteractions"]
+
+  /mcp/tools:
     get:
       tags: [mcp]
       summary: 🛠️ List Figma Design Context Tools
@@ -1279,6 +1281,376 @@ paths:
                         type: string
                       performance:
                         type: object
+
+  /test/unit/context-intelligence:
+    post:
+      tags: [test]
+      summary: 🧪 Test Context Intelligence Layer - Unit Tests
+      description: |
+        Execute unit tests for the Context Intelligence Layer components.
+        
+        Tests all 6 core modules:
+        - ContextIntelligenceOrchestrator
+        - SemanticAnalyzer 
+        - InteractionMapper
+        - AccessibilityChecker
+        - DesignTokenLinker
+        - LayoutIntentExtractor
+        
+        Validates module initialization, basic functionality, and performance benchmarking.
+      responses:
+        '200':
+          description: Unit tests completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  results:
+                    type: object
+                    properties:
+                      totalTests:
+                        type: integer
+                        example: 14
+                      passed:
+                        type: integer
+                        example: 14
+                      failed:
+                        type: integer
+                        example: 0
+                      duration:
+                        type: integer
+                        description: Test execution time in milliseconds
+                        example: 1250
+                      coverage:
+                        type: object
+                        properties:
+                          modules:
+                            type: array
+                            items:
+                              type: string
+                            example: ["ContextIntelligenceOrchestrator", "SemanticAnalyzer", "InteractionMapper"]
+                          percentage:
+                            type: number
+                            example: 95.8
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                      route:
+                        type: string
+                        example: "/api/test/unit/context-intelligence"
+        '500':
+          description: Unit test execution failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Unit test execution failed"
+                  details:
+                    type: object
+
+  /test/integration/context-intelligence:
+    post:
+      tags: [test]
+      summary: 🧪 Test Context Intelligence Layer - Integration Tests
+      description: |
+        Execute integration tests for the Context Intelligence Layer with MockUnifiedContextProvider.
+        
+        Tests multi-component analysis scenarios:
+        - Component hierarchy analysis
+        - Cross-component interaction mapping
+        - Design system integration
+        - Performance benchmarking with realistic data
+        
+        Uses mock providers to simulate real-world integration patterns.
+      responses:
+        '200':
+          description: Integration tests completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  results:
+                    type: object
+                    properties:
+                      totalTests:
+                        type: integer
+                        example: 8
+                      passed:
+                        type: integer
+                        example: 7
+                      failed:
+                        type: integer
+                        example: 1
+                      duration:
+                        type: integer
+                        description: Test execution time in milliseconds
+                        example: 2340
+                      scenarios:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            status:
+                              type: string
+                              enum: [passed, failed]
+                            duration:
+                              type: integer
+                        example:
+                          - name: "Multi-component analysis"
+                            status: "passed"
+                            duration: 450
+                          - name: "Performance benchmarking"
+                            status: "passed"
+                            duration: 890
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                      route:
+                        type: string
+                        example: "/api/test/integration/context-intelligence"
+                      mockProvider:
+                        type: string
+                        example: "MockUnifiedContextProvider"
+        '500':
+          description: Integration test execution failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Integration test execution failed"
+                  details:
+                    type: object
+
+  /context-intelligence/analyze:
+    post:
+      tags: [test]
+      summary: 🧠 Context Intelligence Analysis
+      description: |
+        Perform Context Intelligence analysis on provided design components.
+        
+        This endpoint orchestrates the full Context Intelligence pipeline:
+        1. Semantic analysis of component structure
+        2. Interaction pattern mapping
+        3. Accessibility compliance checking
+        4. Design token linking
+        5. Layout intent extraction
+        
+        Returns comprehensive analysis results with actionable insights.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                components:
+                  type: array
+                  description: Array of design components to analyze
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "button-primary-001"
+                      type:
+                        type: string
+                        example: "button"
+                      properties:
+                        type: object
+                        additionalProperties: true
+                        example:
+                          text: "Submit Form"
+                          variant: "primary"
+                          size: "medium"
+                  minItems: 1
+                  example:
+                    - id: "login-form"
+                      type: "form"
+                      properties:
+                        fields: ["username", "password"]
+                        validation: true
+                    - id: "submit-button"
+                      type: "button"
+                      properties:
+                        text: "Login"
+                        variant: "primary"
+                options:
+                  type: object
+                  properties:
+                    includeAccessibility:
+                      type: boolean
+                      default: true
+                      description: Include accessibility analysis
+                    includeDesignTokens:
+                      type: boolean
+                      default: true
+                      description: Include design token mapping
+                    includePerformance:
+                      type: boolean
+                      default: false
+                      description: Include performance metrics
+                  example:
+                    includeAccessibility: true
+                    includeDesignTokens: true
+                    includePerformance: true
+      responses:
+        '200':
+          description: Context Intelligence analysis completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  analysis:
+                    type: object
+                    properties:
+                      semantic:
+                        type: object
+                        properties:
+                          componentHierarchy:
+                            type: array
+                            items:
+                              type: object
+                          relationships:
+                            type: array
+                            items:
+                              type: object
+                      interactions:
+                        type: object
+                        properties:
+                          patterns:
+                            type: array
+                            items:
+                              type: string
+                          flows:
+                            type: array
+                            items:
+                              type: object
+                      accessibility:
+                        type: object
+                        properties:
+                          score:
+                            type: number
+                            minimum: 0
+                            maximum: 100
+                            example: 92.5
+                          issues:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                type:
+                                  type: string
+                                severity:
+                                  type: string
+                                  enum: [low, medium, high, critical]
+                                description:
+                                  type: string
+                      designTokens:
+                        type: object
+                        properties:
+                          mapped:
+                            type: array
+                            items:
+                              type: object
+                          unmapped:
+                            type: array
+                            items:
+                              type: string
+                      layout:
+                        type: object
+                        properties:
+                          intent:
+                            type: string
+                          structure:
+                            type: object
+                          recommendations:
+                            type: array
+                            items:
+                              type: string
+                  performance:
+                    type: object
+                    properties:
+                      analysisTime:
+                        type: integer
+                        description: Analysis duration in milliseconds
+                        example: 1450
+                      componentsProcessed:
+                        type: integer
+                        example: 2
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                      version:
+                        type: string
+                        example: "1.0.0"
+                      route:
+                        type: string
+                        example: "/api/context-intelligence/analyze"
+        '400':
+          description: Invalid request - missing or malformed components
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Missing required field: components"
+                  details:
+                    type: object
+        '500':
+          description: Context Intelligence analysis failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Context Intelligence analysis failed"
+                  details:
+                    type: object
 
 components:
   schemas:

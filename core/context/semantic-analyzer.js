@@ -10,7 +10,7 @@
  * - Context-aware component naming and categorization
  * - Business logic inference from visual patterns
  * - Design system pattern matching
- * 
+ *
  * Integration Points:
  * - Enhances existing DesignSpecGenerator with semantic intelligence
  * - Feeds semantic data to AI Orchestrator for better prompts
@@ -25,7 +25,7 @@ export class SemanticAnalyzer {
   constructor(options = {}) {
     this.logger = new Logger('SemanticAnalyzer');
     this.errorHandler = new ErrorHandler();
-    
+
     this.config = {
       confidenceThreshold: options.confidenceThreshold || 0.7,
       enableMLClassification: options.enableMLClassification || true,
@@ -37,7 +37,7 @@ export class SemanticAnalyzer {
     // Semantic pattern cache
     this.patternCache = new Map();
     this.componentIntentCache = new Map();
-    
+
     // Initialize semantic models
     this.initializeSemanticModels();
   }
@@ -50,7 +50,7 @@ export class SemanticAnalyzer {
    */
   async analyzeSemanticIntent(components, context) {
     const startTime = Date.now();
-    
+
     try {
       this.logger.info('🧠 Starting semantic intent analysis');
 
@@ -110,7 +110,7 @@ export class SemanticAnalyzer {
    */
   async analyzeComponentSemantics(component, context) {
     const cacheKey = `${component.id}_${component.name}_${context.purpose}`;
-    
+
     if (this.componentIntentCache.has(cacheKey)) {
       return this.componentIntentCache.get(cacheKey);
     }
@@ -118,16 +118,16 @@ export class SemanticAnalyzer {
     try {
       // Enhanced intent detection using multiple signals
       const intent = await this.detectComponentIntent(component, context);
-      
+
       // Semantic role analysis
       const role = await this.analyzeSemanticRole(component, intent, context);
-      
+
       // Business function inference
       const businessFunction = await this.inferBusinessFunction(component, intent, context);
-      
+
       // User interaction patterns
       const interactionPatterns = await this.analyzeInteractionPatterns(component, intent);
-      
+
       // Contextual keywords extraction
       const semanticKeywords = await this.extractSemanticKeywords(component, intent, context);
 
@@ -144,7 +144,7 @@ export class SemanticAnalyzer {
           interactionPatterns: interactionPatterns,
           keywords: semanticKeywords,
           confidence: this.calculateComponentConfidence(intent, role, businessFunction),
-          
+
           // Enhanced semantic classification
           classification: {
             functional: this.classifyFunctionalRole(intent, role),
@@ -152,7 +152,7 @@ export class SemanticAnalyzer {
             behavioral: this.classifyBehavioralRole(interactionPatterns),
             contextual: this.classifyContextualRole(context, businessFunction)
           },
-          
+
           // Semantic relationships
           relationships: {
             dependsOn: await this.findSemanticDependencies(component, intent),
@@ -164,12 +164,12 @@ export class SemanticAnalyzer {
 
       // Cache the result
       this.componentIntentCache.set(cacheKey, semanticComponent);
-      
+
       return semanticComponent;
 
     } catch (error) {
       this.logger.warn(`⚠️ Failed to analyze semantics for component ${component.id}:`, error);
-      
+
       // Return component with basic semantic data
       return {
         ...component,
@@ -182,7 +182,7 @@ export class SemanticAnalyzer {
           keywords: [],
           classification: {
             functional: 'unknown',
-            visual: 'unknown', 
+            visual: 'unknown',
             behavioral: 'unknown',
             contextual: 'unknown'
           }
@@ -253,7 +253,7 @@ export class SemanticAnalyzer {
 
     // Combine signals using weighted scoring
     const intentScores = this.combineIntentSignals(signals);
-    
+
     // Find primary intent and alternatives
     const sortedIntents = Object.entries(intentScores)
       .sort(([,a], [,b]) => b - a);
@@ -298,13 +298,24 @@ export class SemanticAnalyzer {
       'media': ['image', 'video', 'avatar', 'thumbnail', 'gallery']
     };
 
+    const foundKeywords = [];
     for (const [pattern, keywords] of Object.entries(uiPatterns)) {
-      if (keywords.some(keyword => name.includes(keyword))) {
+      const matchedKeywords = keywords.filter(keyword => name.includes(keyword));
+      if (matchedKeywords.length > 0) {
         signals[pattern] = (signals[pattern] || 0) + 0.7;
+        foundKeywords.push(...matchedKeywords);
       }
     }
 
-    return signals;
+    // Calculate overall confidence
+    const totalSignals = Object.values(signals).reduce((sum, val) => sum + val, 0);
+    const confidence = Math.min(totalSignals / Object.keys(uiPatterns).length, 1.0);
+
+    return {
+      signals,
+      confidence,
+      keywords: foundKeywords
+    };
   }
 
   /**
@@ -319,7 +330,7 @@ export class SemanticAnalyzer {
     // Analyze fills for intent clues
     if (visual.fills && visual.fills.length > 0) {
       const primaryFill = visual.fills[0];
-      
+
       // Button-like visual characteristics
       if (primaryFill.color && this.isButtonLikeColor(primaryFill.color)) {
         signals.button = 0.6;
@@ -350,7 +361,14 @@ export class SemanticAnalyzer {
       signals.input = 0.6;
     }
 
-    return signals;
+    // Calculate overall confidence
+    const totalSignals = Object.values(signals).reduce((sum, val) => sum + val, 0);
+    const confidence = Math.min(totalSignals, 1.0);
+
+    return {
+      signals,
+      confidence
+    };
   }
 
   /**
@@ -411,19 +429,19 @@ export class SemanticAnalyzer {
     // Context purpose influences intent detection
     if (context.purpose) {
       const purpose = context.purpose.toLowerCase();
-      
+
       if (purpose.includes('dashboard')) {
         signals.chart = 0.3;
         signals.card = 0.4;
         signals.navigation = 0.3;
       }
-      
+
       if (purpose.includes('form')) {
         signals.input = 0.5;
         signals.button = 0.4;
         signals.form = 0.6;
       }
-      
+
       if (purpose.includes('landing')) {
         signals.hero = 0.5;
         signals.button = 0.4;
@@ -524,7 +542,7 @@ export class SemanticAnalyzer {
     // 1. Extract features from component (visual, structural, textual)
     // 2. Send to trained classification model
     // 3. Return probability scores for different intents
-    
+
     // Simulated ML response based on heuristics
     const features = this.extractMLFeatures(component, context);
     return this.simulateMLClassification(features);
@@ -542,22 +560,22 @@ export class SemanticAnalyzer {
       aspectRatio: component.geometry.width / component.geometry.height,
       area: component.geometry.width * component.geometry.height,
       position: [component.geometry.x, component.geometry.y],
-      
+
       // Visual features
       hasText: !!(component.content && component.content.text),
       hasImage: !!(component.content && component.content.image),
       fillCount: component.visual?.fills?.length || 0,
       strokeCount: component.visual?.strokes?.length || 0,
-      
+
       // Structural features
       childCount: component.children?.length || 0,
       hasParent: !!component.parent,
       depth: component.level || 0,
-      
+
       // Semantic features
       nameLength: component.name.length,
       nameWords: component.name.split(/\s+/).length,
-      
+
       // Context features
       purposeType: this.encodePurposeType(context.purpose)
     };
@@ -574,7 +592,7 @@ export class SemanticAnalyzer {
     const scores = {};
 
     // Button classification logic
-    if (features.aspectRatio > 1.5 && features.aspectRatio < 5 && 
+    if (features.aspectRatio > 1.5 && features.aspectRatio < 5 &&
         features.area < 10000 && features.hasText) {
       scores.button = 0.85;
     }
@@ -585,7 +603,7 @@ export class SemanticAnalyzer {
     }
 
     // Card classification logic
-    if (features.aspectRatio > 0.5 && features.aspectRatio < 2 && 
+    if (features.aspectRatio > 0.5 && features.aspectRatio < 2 &&
         features.area > 50000 && features.childCount > 2) {
       scores.card = 0.80;
     }
@@ -658,12 +676,12 @@ export class SemanticAnalyzer {
   isFeedbackColor(color) {
     const feedbackColors = {
       success: '#28a745',
-      warning: '#ffc107', 
+      warning: '#ffc107',
       error: '#dc3545',
       info: '#17a2b8'
     };
-    
-    return Object.values(feedbackColors).some(fbColor => 
+
+    return Object.values(feedbackColors).some(fbColor =>
       this.colorSimilarity(color, fbColor) > 0.7
     );
   }
@@ -686,11 +704,11 @@ export class SemanticAnalyzer {
    * @returns {number} Overall confidence (0-1)
    */
   calculateOverallConfidence(results) {
-    if (results.confidence.components.length === 0) return 0;
-    
+    if (results.confidence.components.length === 0) {return 0;}
+
     const avgComponentConfidence = results.confidence.components.reduce((sum, conf) => sum + conf, 0) / results.confidence.components.length;
     const patternConfidence = results.patterns.length > 0 ? 0.8 : 0.5; // Boost confidence if patterns detected
-    
+
     return Math.min((avgComponentConfidence + patternConfidence) / 2, 1.0);
   }
 
@@ -702,19 +720,19 @@ export class SemanticAnalyzer {
    */
   generateIntentReasoning(intent, signals) {
     const reasons = [];
-    
+
     if (signals.naming[intent] > 0.5) {
       reasons.push(`Component name contains ${intent}-related keywords`);
     }
-    
+
     if (signals.visual[intent] > 0.5) {
       reasons.push(`Visual characteristics match ${intent} patterns`);
     }
-    
+
     if (signals.structural[intent] > 0.5) {
       reasons.push(`Component structure suggests ${intent} functionality`);
     }
-    
+
     return reasons.join('; ') || `Classified as ${intent} based on combined signals`;
   }
 
@@ -724,7 +742,7 @@ export class SemanticAnalyzer {
    * @param {DesignContext} context - Design context
    * @returns {Promise<Array>} Semantic patterns
    */
-  async detectSemanticPatterns(components, context) {
+  async detectSemanticPatternsAdvanced(components, _context) {
     // Placeholder implementation
     return [{
       type: 'authentication',
@@ -756,10 +774,41 @@ export class SemanticAnalyzer {
    * @param {Object} results - Analysis results
    * @returns {number} Overall confidence score
    */
-  calculateOverallConfidence(results) {
+  calculateOverallConfidenceScore(results) {
     const componentConfidence = results.components.reduce((sum, c) => sum + (c.confidence || 0.5), 0) / results.components.length;
     const patternConfidence = results.patterns.reduce((sum, p) => sum + (p.confidence || 0.5), 0) / Math.max(results.patterns.length, 1);
     return (componentConfidence + patternConfidence) / 2;
+  }
+
+  /**
+   * Encode purpose type for ML features
+   * @param {string} purpose - Context purpose
+   * @returns {number} Encoded purpose type
+   */
+  encodePurposeType(purpose) {
+    if (!purpose || typeof purpose !== 'string') {return 0;}
+
+    const purposeMap = {
+      'web': 1,
+      'mobile': 2,
+      'desktop': 3,
+      'tablet': 4,
+      'interface': 5,
+      'dashboard': 6,
+      'form': 7,
+      'navigation': 8,
+      'content': 9,
+      'default': 0
+    };
+
+    const lowerPurpose = purpose.toLowerCase();
+    for (const [key, value] of Object.entries(purposeMap)) {
+      if (lowerPurpose.includes(key)) {
+        return value;
+      }
+    }
+
+    return 0; // default
   }
 }
 

@@ -6,12 +6,12 @@
  *
  * Core Features:
  * - Grid system detection and classification
- * - Alignment pattern recognition  
+ * - Alignment pattern recognition
  * - Responsive breakpoint inference
  * - Hierarchical relationship mapping
  * - Layout constraint analysis
  * - Component positioning intelligence
- * 
+ *
  * Integration Points:
  * - Enhances LayoutAnalyzer with intelligent pattern detection
  * - Feeds layout data to AI Orchestrator for structure-aware prompts
@@ -26,7 +26,7 @@ export class LayoutIntentExtractor {
   constructor(options = {}) {
     this.logger = new Logger('LayoutIntentExtractor');
     this.errorHandler = new ErrorHandler();
-    
+
     this.config = {
       gridTolerance: options.gridTolerance || 8, // px tolerance for grid alignment
       alignmentTolerance: options.alignmentTolerance || 4, // px tolerance for alignment
@@ -40,7 +40,7 @@ export class LayoutIntentExtractor {
     // Layout pattern cache
     this.layoutCache = new Map();
     this.gridPatterns = new Map();
-    
+
     // Initialize layout models
     this.initializeLayoutModels();
   }
@@ -53,7 +53,7 @@ export class LayoutIntentExtractor {
    */
   async extractLayoutIntent(components, context) {
     const startTime = Date.now();
-    
+
     try {
       this.logger.info('📐 Starting layout intent extraction');
 
@@ -95,24 +95,24 @@ export class LayoutIntentExtractor {
 
       // Detect grid systems
       results.gridSystems = await this.detectGridSystems(components);
-      
+
       // Analyze alignment patterns
       results.alignmentPatterns = await this.analyzeAlignmentPatterns(components);
-      
+
       // Extract hierarchical structure
       results.hierarchicalStructure = await this.extractHierarchicalStructure(components);
-      
+
       // Analyze responsive patterns
       if (this.config.enableResponsiveAnalysis) {
         results.responsivePatterns = await this.analyzeResponsivePatterns(components, context);
       }
-      
+
       // Extract layout constraints
       results.layoutConstraints = await this.extractLayoutConstraints(components);
-      
+
       // Detect design patterns
       results.designPatterns = await this.detectDesignPatterns(components, results);
-      
+
       // Validate layout consistency
       results.validation = await this.validateLayoutConsistency(results);
 
@@ -145,7 +145,7 @@ export class LayoutIntentExtractor {
 
     for (const container of containers) {
       const gridAnalysis = await this.analyzeContainerGrid(container, components);
-      
+
       if (gridAnalysis.isGrid) {
         gridSystems.push({
           containerId: container.id,
@@ -282,7 +282,7 @@ export class LayoutIntentExtractor {
     for (const component of components) {
       // Check if component acts as a container
       const isContainer = this.isLayoutContainer(component);
-      
+
       if (isContainer.result) {
         containers.push({
           ...component,
@@ -315,16 +315,16 @@ export class LayoutIntentExtractor {
       return analysis;
     }
 
-    // Check semantic intent
+    // Check semantic intent with null check
     const containerIntents = ['frame', 'group', 'container', 'section', 'content'];
-    if (containerIntents.includes(component.semantic.intent)) {
+    if (component?.semantic?.intent && containerIntents.includes(component.semantic.intent)) {
       analysis.result = true;
       analysis.type = 'semantic';
       analysis.confidence = 0.7;
     }
 
-    // Check naming patterns
-    const name = component.name.toLowerCase();
+    // Check naming patterns with null check
+    const name = component?.name?.toLowerCase() || '';
     const containerKeywords = ['container', 'wrapper', 'section', 'layout', 'grid', 'flex', 'row', 'column'];
     for (const keyword of containerKeywords) {
       if (name.includes(keyword)) {
@@ -338,7 +338,7 @@ export class LayoutIntentExtractor {
     // Check size relative to children
     const childArea = this.calculateTotalChildArea(component);
     const containerArea = component.geometry.width * component.geometry.height;
-    
+
     if (containerArea > childArea * 1.2) { // Container is significantly larger
       analysis.result = true;
       analysis.type = 'sizing';
@@ -356,7 +356,7 @@ export class LayoutIntentExtractor {
    */
   async analyzeContainerGrid(container, allComponents) {
     const children = this.getContainerChildren(container, allComponents);
-    
+
     if (children.length < this.config.minGridItems) {
       return { isGrid: false };
     }
@@ -414,7 +414,7 @@ export class LayoutIntentExtractor {
 
     if (rows.length >= 2 && columns >= 2) {
       const gaps = this.calculateGridGaps(rows, columns);
-      
+
       return {
         isGrid: true,
         columns,
@@ -441,7 +441,7 @@ export class LayoutIntentExtractor {
 
     for (const component of components) {
       const y = component.geometry.y;
-      
+
       if (currentY === null || Math.abs(y - currentY) < this.config.gridTolerance) {
         currentRow.push(component);
         currentY = y;
@@ -467,20 +467,20 @@ export class LayoutIntentExtractor {
    * @returns {number} Number of columns
    */
   detectColumns(rows) {
-    if (rows.length === 0) return 0;
-    
+    if (rows.length === 0) {return 0;}
+
     // Find the most common row length
     const rowLengths = rows.map(row => row.length);
     const lengthCounts = new Map();
-    
+
     for (const length of rowLengths) {
       lengthCounts.set(length, (lengthCounts.get(length) || 0) + 1);
     }
-    
+
     // Return the most common row length
     const mostCommon = Array.from(lengthCounts.entries())
       .sort(([,a], [,b]) => b - a)[0];
-    
+
     return mostCommon ? mostCommon[0] : 0;
   }
 
@@ -500,28 +500,28 @@ export class LayoutIntentExtractor {
     if (rows.length > 0 && rows[0].length > 1) {
       const firstRow = rows[0];
       const horizontalGaps = [];
-      
+
       for (let i = 1; i < firstRow.length; i++) {
         const gap = firstRow[i].geometry.x - (firstRow[i-1].geometry.x + firstRow[i-1].geometry.width);
         horizontalGaps.push(gap);
       }
-      
-      gaps.horizontal = horizontalGaps.length > 0 
-        ? horizontalGaps.reduce((sum, gap) => sum + gap, 0) / horizontalGaps.length 
+
+      gaps.horizontal = horizontalGaps.length > 0
+        ? horizontalGaps.reduce((sum, gap) => sum + gap, 0) / horizontalGaps.length
         : 0;
     }
 
     // Calculate vertical gaps (between rows)
     if (rows.length > 1) {
       const verticalGaps = [];
-      
+
       for (let i = 1; i < rows.length; i++) {
         const gap = rows[i][0].geometry.y - (rows[i-1][0].geometry.y + rows[i-1][0].geometry.height);
         verticalGaps.push(gap);
       }
-      
-      gaps.vertical = verticalGaps.length > 0 
-        ? verticalGaps.reduce((sum, gap) => sum + gap, 0) / verticalGaps.length 
+
+      gaps.vertical = verticalGaps.length > 0
+        ? verticalGaps.reduce((sum, gap) => sum + gap, 0) / verticalGaps.length
         : 0;
     }
 
@@ -638,41 +638,47 @@ export class LayoutIntentExtractor {
   }
 
   calculateTotalChildArea(component) {
-    // Simplified calculation
+    // Simplified calculation with null checks
+    if (!component?.geometry || typeof component.geometry.width !== 'number' || typeof component.geometry.height !== 'number') {
+      return 0;
+    }
     return (component.geometry.width * component.geometry.height) * 0.8;
   }
 
   getContainerChildren(container, allComponents) {
-    if (!container.children) return [];
-    
-    return allComponents.filter(comp => 
+    if (!container.children) {return [];}
+
+    return allComponents.filter(comp =>
       container.children.includes(comp.id)
     );
   }
 
   calculateAverageSize(components) {
-    if (components.length === 0) return { width: 0, height: 0 };
-    
-    const totalWidth = components.reduce((sum, comp) => sum + comp.geometry.width, 0);
-    const totalHeight = components.reduce((sum, comp) => sum + comp.geometry.height, 0);
-    
+    if (components.length === 0) {return { width: 0, height: 0 };}
+
+    const validComponents = components.filter(comp => comp?.geometry && typeof comp.geometry.width === 'number' && typeof comp.geometry.height === 'number');
+    if (validComponents.length === 0) {return { width: 0, height: 0 };}
+
+    const totalWidth = validComponents.reduce((sum, comp) => sum + comp.geometry.width, 0);
+    const totalHeight = validComponents.reduce((sum, comp) => sum + comp.geometry.height, 0);
+
     return {
-      width: totalWidth / components.length,
+      width: totalWidth / validComponents.length,
       height: totalHeight / components.length
     };
   }
 
   findMostCommonIntent(components) {
     const intentCounts = new Map();
-    
+
     for (const component of components) {
       const intent = component.semantic.intent;
       intentCounts.set(intent, (intentCounts.get(intent) || 0) + 1);
     }
-    
+
     const mostCommon = Array.from(intentCounts.entries())
       .sort(([,a], [,b]) => b - a)[0];
-    
+
     return mostCommon ? mostCommon[0] : 'unknown';
   }
 

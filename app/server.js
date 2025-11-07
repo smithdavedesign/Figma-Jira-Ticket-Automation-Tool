@@ -196,6 +196,11 @@ export class Server {
       this.serviceContainer.register('aiOrchestrator', (container, redis, configService) =>
         new AIOrchestrator(redis, configService), true, ['redis', 'configurationService']);
 
+      // Register health monitoring service
+      const { HealthMonitoringService } = await import('../core/services/health-monitoring-service.js');
+      this.serviceContainer.register('healthMonitoringService', (container, redis, configService) =>
+        new HealthMonitoringService(redis, configService, container), true, ['redis', 'configurationService']);
+
       // Register alias for backward compatibility
       this.serviceContainer.register('ticketService', (container) => container.get('ticketGenerationService'), true, ['ticketGenerationService']);
 

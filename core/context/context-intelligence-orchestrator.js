@@ -17,9 +17,9 @@
  * - Integrates with existing DesignSpecGenerator and AI Orchestrator
  * - Caches analysis results for performance
  * - Validates and enriches semantic understanding
- * 
+ *
  * Integration Points:
- * - Extends existing UnifiedContextProvider 
+ * - Extends existing UnifiedContextProvider
  * - Feeds enhanced context to AI Orchestrator
  * - Improves TemplateManager with contextual intelligence
  * - Validates design patterns against accessibility and usability standards
@@ -37,7 +37,7 @@ export class ContextIntelligenceOrchestrator {
   constructor(options = {}) {
     this.logger = new Logger('ContextIntelligenceOrchestrator');
     this.errorHandler = new ErrorHandler();
-    
+
     this.config = {
       enableCaching: options.enableCaching !== false,
       cacheTimeout: options.cacheTimeout || 300000, // 5 minutes
@@ -58,7 +58,7 @@ export class ContextIntelligenceOrchestrator {
     // Analysis cache
     this.analysisCache = new Map();
     this.performanceMetrics = new Map();
-    
+
     this.initializeOrchestrator();
   }
 
@@ -72,7 +72,7 @@ export class ContextIntelligenceOrchestrator {
   async analyzeContextIntelligence(designSpec, prototypeData, context) {
     const startTime = Date.now();
     const analysisId = this.generateAnalysisId(designSpec, context);
-    
+
     try {
       this.logger.info('🧠 Starting context intelligence orchestration');
 
@@ -91,6 +91,13 @@ export class ContextIntelligenceOrchestrator {
         accessibility: null,
         tokens: null,
         layout: null,
+        analysis: {
+          semantic: null,
+          interaction: null,
+          accessibility: null,
+          tokens: null,
+          layout: null
+        },
         synthesis: {
           overallConfidence: 0,
           keyInsights: [],
@@ -121,14 +128,15 @@ export class ContextIntelligenceOrchestrator {
       // Phase 1: Semantic Analysis (foundation for all other analyses)
       this.logger.info('🎯 Phase 1: Semantic Analysis');
       results.semantic = await this.semanticAnalyzer.analyzeSemanticIntent(
-        designSpec.components || [], 
+        designSpec.components || [],
         context
       );
+      results.analysis.semantic = results.semantic;
 
       // Phase 2: Parallel Analysis (can run concurrently based on semantic foundation)
       if (this.config.parallelAnalysis) {
         this.logger.info('⚡ Phase 2: Parallel Analysis (Interaction, Accessibility, Tokens, Layout)');
-        
+
         const [interactionResult, accessibilityResult, tokensResult, layoutResult] = await Promise.all([
           this.interactionMapper.mapInteractionFlows(
             results.semantic.components,
@@ -156,10 +164,16 @@ export class ContextIntelligenceOrchestrator {
         results.tokens = tokensResult;
         results.layout = layoutResult;
 
+        // Update analysis object
+        results.analysis.interaction = results.interaction;
+        results.analysis.accessibility = results.accessibility;
+        results.analysis.tokens = results.tokens;
+        results.analysis.layout = results.layout;
+
       } else {
         // Sequential analysis
         this.logger.info('🔄 Phase 2: Sequential Analysis');
-        
+
         results.interaction = await this.interactionMapper.mapInteractionFlows(
           results.semantic.components,
           prototypeData,
@@ -182,16 +196,22 @@ export class ContextIntelligenceOrchestrator {
           results.semantic.components,
           context
         );
+
+        // Update analysis object
+        results.analysis.interaction = results.interaction;
+        results.analysis.accessibility = results.accessibility;
+        results.analysis.tokens = results.tokens;
+        results.analysis.layout = results.layout;
       }
 
       // Phase 3: Synthesis and Integration
       this.logger.info('🔬 Phase 3: Synthesis and Integration');
       results.synthesis = await this.synthesizeAnalyses(results, designSpec, context);
-      
+
       // Phase 4: Generate Recommendations
       this.logger.info('💡 Phase 4: Generate Recommendations');
       results.recommendations = await this.generateRecommendations(results, context);
-      
+
       // Phase 5: AI Orchestrator Integration
       this.logger.info('🤖 Phase 5: AI Orchestrator Integration');
       results.integration = await this.prepareAIIntegration(results, designSpec, context);
@@ -204,6 +224,16 @@ export class ContextIntelligenceOrchestrator {
 
       // Update metadata
       results.metadata.analysisTime = Date.now() - startTime;
+
+      // Add confidence structure for backward compatibility
+      results.confidence = {
+        overall: results.synthesis.overallConfidence || 0,
+        semantic: results.semantic?.confidence || 0,
+        interaction: results.interaction?.confidence || 0,
+        accessibility: results.accessibility?.confidence || 0,
+        tokens: results.tokens?.confidence || 0,
+        layout: results.layout?.confidence || 0
+      };
 
       // Cache results
       if (this.config.enableCaching) {
@@ -470,8 +500,8 @@ export class ContextIntelligenceOrchestrator {
   // Utility methods
 
   generateAnalysisId(designSpec, context) {
-    const specHash = JSON.stringify(designSpec.metadata || {});
-    const contextHash = JSON.stringify(context.purpose || '');
+    const specHash = JSON.stringify(designSpec?.metadata || {});
+    const contextHash = JSON.stringify(context?.purpose || '');
     return `analysis_${Date.now()}_${Buffer.from(specHash + contextHash).toString('base64').slice(0, 8)}`;
   }
 

@@ -31,6 +31,11 @@ export class TestRoutes extends BaseRoute {
     // AI ticket generation testing (for Swagger UI compatibility)
     router.post('/test/ai-ticket-generation', this.asyncHandler(this.handleTestAITicketGeneration.bind(this)));
 
+    // Context Intelligence test endpoints
+    router.post('/api/test/unit/context-intelligence', this.asyncHandler(this.handleUnitContextIntelligenceTest.bind(this)));
+    router.post('/api/test/integration/context-intelligence', this.asyncHandler(this.handleIntegrationContextIntelligenceTest.bind(this)));
+    router.post('/api/context-intelligence/analyze', this.asyncHandler(this.handleContextIntelligenceAnalyze.bind(this)));
+
     this.logger.info('✅ Test routes registered');
   }
 
@@ -488,6 +493,182 @@ export class TestRoutes extends BaseRoute {
   }
 
   /**
+   * Handle unit Context Intelligence test execution
+   */
+  async handleUnitContextIntelligenceTest(req, res) {
+    this.logAccess(req, 'unitContextIntelligenceTest');
+
+    try {
+      const { spawn } = await import('child_process');
+      const path = await import('path');
+
+      const testProcess = spawn('npm', ['test', 'tests/unit/context-intelligence.test.js'], {
+        cwd: process.cwd(),
+        stdio: 'pipe'
+      });
+
+      let output = '';
+      let error = '';
+
+      testProcess.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+
+      testProcess.stderr.on('data', (data) => {
+        error += data.toString();
+      });
+
+      testProcess.on('close', (code) => {
+        const testResult = {
+          testType: 'unit',
+          testFile: 'context-intelligence.test.js',
+          timestamp: new Date().toISOString(),
+          exitCode: code,
+          success: code === 0,
+          output: output,
+          error: error,
+          duration: Date.now() - testProcess.spawnfile || 0
+        };
+
+        if (code === 0) {
+          this.sendSuccess(res, testResult, 'Context Intelligence unit tests completed successfully');
+        } else {
+          this.sendError(res, 'Context Intelligence unit tests failed', 500, testResult);
+        }
+      });
+
+    } catch (error) {
+      this.logger.error('Error running Context Intelligence unit tests:', error);
+      this.sendError(res, 'Failed to execute unit tests', 500, { originalError: error.message });
+    }
+  }
+
+  /**
+   * Handle integration Context Intelligence test execution
+   */
+  async handleIntegrationContextIntelligenceTest(req, res) {
+    this.logAccess(req, 'integrationContextIntelligenceTest');
+
+    try {
+      const { spawn } = await import('child_process');
+
+      const testProcess = spawn('npm', ['test', 'tests/unit/context-intelligence-integration.test.js'], {
+        cwd: process.cwd(),
+        stdio: 'pipe'
+      });
+
+      let output = '';
+      let error = '';
+
+      testProcess.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+
+      testProcess.stderr.on('data', (data) => {
+        error += data.toString();
+      });
+
+      testProcess.on('close', (code) => {
+        const testResult = {
+          testType: 'integration',
+          testFile: 'context-intelligence-integration.test.js',
+          timestamp: new Date().toISOString(),
+          exitCode: code,
+          success: code === 0,
+          output: output,
+          error: error,
+          duration: Date.now() - testProcess.spawnfile || 0
+        };
+
+        if (code === 0) {
+          this.sendSuccess(res, testResult, 'Context Intelligence integration tests completed successfully');
+        } else {
+          this.sendError(res, 'Context Intelligence integration tests failed', 500, testResult);
+        }
+      });
+
+    } catch (error) {
+      this.logger.error('Error running Context Intelligence integration tests:', error);
+      this.sendError(res, 'Failed to execute integration tests', 500, { originalError: error.message });
+    }
+  }
+
+  /**
+   * Handle Context Intelligence live analysis
+   */
+  async handleContextIntelligenceAnalyze(req, res) {
+    this.logAccess(req, 'contextIntelligenceAnalyze');
+
+    const { analysisType, testData, components } = req.body;
+
+    try {
+      // Dynamic import of Context Intelligence modules
+      const ContextIntelligenceOrchestratorModule = await import('../../core/context/context-intelligence-orchestrator.js');
+      const ContextIntelligenceOrchestrator = ContextIntelligenceOrchestratorModule.default;
+
+      // Initialize orchestrator
+      const orchestrator = new ContextIntelligenceOrchestrator({
+        enabledComponents: components || ['semantic', 'interaction', 'accessibility', 'pattern', 'performance'],
+        cacheEnabled: false, // Disable cache for live testing
+        performanceMode: 'balanced'
+      });
+
+      const startTime = Date.now();
+
+      // Perform analysis based on type
+      let analysisResult;
+
+      switch (analysisType) {
+      case 'semantic':
+        analysisResult = await orchestrator.performSemanticAnalysis(testData);
+        break;
+      case 'interaction':
+        analysisResult = await orchestrator.performInteractionAnalysis(testData);
+        break;
+      case 'accessibility':
+        analysisResult = await orchestrator.performAccessibilityAnalysis(testData);
+        break;
+      case 'pattern':
+        analysisResult = await orchestrator.performPatternAnalysis(testData);
+        break;
+      case 'performance':
+        analysisResult = await orchestrator.performPerformanceAnalysis(testData);
+        break;
+      case 'comprehensive':
+      default:
+        analysisResult = await orchestrator.performComprehensiveAnalysis(testData);
+        break;
+      }
+
+      const duration = Date.now() - startTime;
+
+      const result = {
+        analysisType: analysisType || 'comprehensive',
+        timestamp: new Date().toISOString(),
+        duration: duration,
+        success: true,
+        analysis: analysisResult,
+        metadata: {
+          enabledComponents: orchestrator.enabledComponents,
+          dataSize: JSON.stringify(testData).length,
+          performanceMode: 'balanced'
+        }
+      };
+
+      this.sendSuccess(res, result, 'Context Intelligence analysis completed successfully');
+
+    } catch (error) {
+      this.logger.error('Error in Context Intelligence analysis:', error);
+
+      this.sendError(res, 'Context Intelligence analysis failed', 500, {
+        originalError: error.message,
+        analysisType: analysisType || 'comprehensive',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
    * Get test routes health status
    * @returns {Object} Health status
    */
@@ -499,7 +680,10 @@ export class TestRoutes extends BaseRoute {
       endpoints: [
         '/api/ai-test-dashboard',
         '/api/test-ai-scenario',
-        '/api/test-ai-screenshots'
+        '/api/test-ai-screenshots',
+        '/api/test/unit/context-intelligence',
+        '/api/test/integration/context-intelligence',
+        '/api/context-intelligence/analyze'
       ],
       serviceRequirements: [
         'redis',
@@ -512,7 +696,10 @@ export class TestRoutes extends BaseRoute {
         'screenshot-testing',
         'visual-analysis',
         'performance-metrics',
-        'test-history'
+        'test-history',
+        'context-intelligence-unit-testing',
+        'context-intelligence-integration-testing',
+        'context-intelligence-live-analysis'
       ]
     };
   }

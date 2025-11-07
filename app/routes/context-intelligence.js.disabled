@@ -1,0 +1,596 @@
+/**
+ * Context Intelligence API Routes
+ * 
+ * REST API endpoints for accessing Context Intelligence Layer data
+ * including semantic analysis, accessibility scores, and code preview.
+ */
+
+import express from 'express';
+import { Logger } from '../../core/logging/logger.js';
+import { ErrorHandler } from '../../core/utils/error-handler.js';
+import { ContextIntelligenceOrchestrator } from '../../core/context/context-intelligence-orchestrator.js';
+import { UnifiedContextProvider } from '../../core/context/UnifiedContextProvider.js';
+
+const router = express.Router();
+const logger = new Logger('ContextIntelligenceAPI');
+const errorHandler = new ErrorHandler();
+
+// Initialize intelligence orchestrator
+const intelligenceOrchestrator = new ContextIntelligenceOrchestrator({
+  enableCaching: true,
+  includePerformanceMetrics: true,
+  confidenceThreshold: 0.7
+});
+
+/**
+ * GET /api/context-intelligence/semantic-analysis
+ * Get semantic analysis results for a design
+ */
+router.get('/semantic-analysis', async (req, res) => {
+  try {
+    const { fileKey, nodeId } = req.query;
+    
+    if (!fileKey) {
+      return res.status(400).json({
+        success: false,
+        error: 'fileKey parameter is required'
+      });
+    }
+
+    logger.info(`🧠 Getting semantic analysis for file: ${fileKey}`);
+
+    // Get base context data
+    const contextProvider = new UnifiedContextProvider();
+    const contextData = await contextProvider.getStoredContext(fileKey, nodeId);
+    
+    if (!contextData || !contextData.components) {
+      return res.status(404).json({
+        success: false,
+        error: 'No context data found for the specified design'
+      });
+    }
+
+    // Run semantic analysis through intelligence orchestrator
+    const intelligenceResult = await intelligenceOrchestrator.analyzeDesignIntelligence(
+      contextData.components,
+      contextData
+    );
+
+    const semanticData = {
+      components: intelligenceResult.semantic.components.map(comp => ({
+        id: comp.id,
+        name: comp.name,
+        semanticType: comp.semantic.intent,
+        confidence: comp.semantic.confidence,
+        businessPurpose: comp.semantic.businessPurpose,
+        userStory: comp.semantic.userStory,
+        patterns: comp.semantic.patterns,
+        recommendations: comp.semantic.recommendations
+      })),
+      patterns: intelligenceResult.semantic.patterns,
+      businessLogic: intelligenceResult.semantic.businessLogic,
+      confidence: intelligenceResult.semantic.confidence,
+      metadata: {
+        analysisTime: intelligenceResult.metadata.semantic.analysisTime,
+        componentsAnalyzed: intelligenceResult.semantic.components.length,
+        patternsDetected: intelligenceResult.semantic.patterns.length
+      }
+    };
+
+    res.json({
+      success: true,
+      data: semanticData,
+      timestamp: Date.now()
+    });
+
+  } catch (error) {
+    logger.error('Failed to get semantic analysis:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve semantic analysis',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/context-intelligence/accessibility-score
+ * Get accessibility compliance analysis
+ */
+router.get('/accessibility-score', async (req, res) => {
+  try {
+    const { fileKey, nodeId } = req.query;
+    
+    if (!fileKey) {
+      return res.status(400).json({
+        success: false,
+        error: 'fileKey parameter is required'
+      });
+    }
+
+    logger.info(`♿ Getting accessibility analysis for file: ${fileKey}`);
+
+    // Get base context data
+    const contextProvider = new UnifiedContextProvider();
+    const contextData = await contextProvider.getStoredContext(fileKey, nodeId);
+    
+    if (!contextData || !contextData.components) {
+      return res.status(404).json({
+        success: false,
+        error: 'No context data found for the specified design'
+      });
+    }
+
+    // Run accessibility analysis
+    const intelligenceResult = await intelligenceOrchestrator.analyzeDesignIntelligence(
+      contextData.components,
+      contextData
+    );
+
+    const accessibilityData = {
+      compliance: {
+        level: intelligenceResult.accessibility.compliance.level,
+        overallScore: intelligenceResult.accessibility.compliance.overall.score,
+        grade: intelligenceResult.accessibility.compliance.overall.grade,
+        passedChecks: intelligenceResult.accessibility.compliance.overall.passedChecks,
+        totalChecks: intelligenceResult.accessibility.compliance.overall.totalChecks
+      },
+      categories: {
+        perceivable: {
+          score: intelligenceResult.accessibility.compliance.categories.perceivable.score,
+          issues: intelligenceResult.accessibility.compliance.categories.perceivable.issues,
+          recommendations: intelligenceResult.accessibility.compliance.categories.perceivable.recommendations
+        },
+        operable: {
+          score: intelligenceResult.accessibility.compliance.categories.operable.score,
+          issues: intelligenceResult.accessibility.compliance.categories.operable.issues,
+          recommendations: intelligenceResult.accessibility.compliance.categories.operable.recommendations
+        },
+        understandable: {
+          score: intelligenceResult.accessibility.compliance.categories.understandable.score,
+          issues: intelligenceResult.accessibility.compliance.categories.understandable.issues,
+          recommendations: intelligenceResult.accessibility.compliance.categories.understandable.recommendations
+        },
+        robust: {
+          score: intelligenceResult.accessibility.compliance.categories.robust.score,
+          issues: intelligenceResult.accessibility.compliance.categories.robust.issues,
+          recommendations: intelligenceResult.accessibility.compliance.categories.robust.recommendations
+        }
+      },
+      colorAccessibility: intelligenceResult.accessibility.colorAccessibility,
+      keyboardNavigation: intelligenceResult.accessibility.keyboardNavigation,
+      screenReader: intelligenceResult.accessibility.screenReader,
+      metadata: {
+        analysisTime: intelligenceResult.metadata.accessibility.analysisTime,
+        checksPerformed: intelligenceResult.accessibility.compliance.overall.totalChecks
+      }
+    };
+
+    res.json({
+      success: true,
+      data: accessibilityData,
+      timestamp: Date.now()
+    });
+
+  } catch (error) {
+    logger.error('Failed to get accessibility analysis:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve accessibility analysis',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/context-intelligence/code-preview
+ * Get generated code snippets and scaffolds
+ */
+router.get('/code-preview', async (req, res) => {
+  try {
+    const { fileKey, nodeId, framework = 'react', typescript = 'true' } = req.query;
+    
+    if (!fileKey) {
+      return res.status(400).json({
+        success: false,
+        error: 'fileKey parameter is required'
+      });
+    }
+
+    logger.info(`💻 Generating code preview for file: ${fileKey}, framework: ${framework}`);
+
+    // Get base context data
+    const contextProvider = new UnifiedContextProvider();
+    const contextData = await contextProvider.getStoredContext(fileKey, nodeId);
+    
+    if (!contextData || !contextData.components) {
+      return res.status(404).json({
+        success: false,
+        error: 'No context data found for the specified design'
+      });
+    }
+
+    // Run intelligence analysis to get semantic data
+    const intelligenceResult = await intelligenceOrchestrator.analyzeDesignIntelligence(
+      contextData.components,
+      contextData
+    );
+
+    // Generate code based on semantic analysis
+    const codePreview = await generateCodeFromSemantics(
+      intelligenceResult.semantic,
+      {
+        framework,
+        typescript: typescript === 'true',
+        includeAccessibility: true,
+        includeStories: true
+      }
+    );
+
+    res.json({
+      success: true,
+      data: codePreview,
+      timestamp: Date.now()
+    });
+
+  } catch (error) {
+    logger.error('Failed to generate code preview:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate code preview',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/context-intelligence/interaction-flows
+ * Get interaction mapping and user flow analysis
+ */
+router.get('/interaction-flows', async (req, res) => {
+  try {
+    const { fileKey, nodeId } = req.query;
+    
+    if (!fileKey) {
+      return res.status(400).json({
+        success: false,
+        error: 'fileKey parameter is required'
+      });
+    }
+
+    logger.info(`🔄 Getting interaction flows for file: ${fileKey}`);
+
+    // Get base context data
+    const contextProvider = new UnifiedContextProvider();
+    const contextData = await contextProvider.getStoredContext(fileKey, nodeId);
+    
+    if (!contextData || !contextData.components) {
+      return res.status(404).json({
+        success: false,
+        error: 'No context data found for the specified design'
+      });
+    }
+
+    // Run interaction analysis
+    const intelligenceResult = await intelligenceOrchestrator.analyzeDesignIntelligence(
+      contextData.components,
+      contextData
+    );
+
+    const interactionData = {
+      flows: intelligenceResult.interactions.flows,
+      navigationPatterns: intelligenceResult.interactions.navigationPatterns,
+      userJourneys: intelligenceResult.interactions.userJourneys,
+      interactiveElements: intelligenceResult.interactions.interactiveElements,
+      stateTransitions: intelligenceResult.interactions.stateTransitions,
+      metadata: {
+        analysisTime: intelligenceResult.metadata.interactions.analysisTime,
+        flowsDetected: intelligenceResult.interactions.flows.length,
+        interactiveElementsFound: intelligenceResult.interactions.interactiveElements.length
+      }
+    };
+
+    res.json({
+      success: true,
+      data: interactionData,
+      timestamp: Date.now()
+    });
+
+  } catch (error) {
+    logger.error('Failed to get interaction flows:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve interaction flows',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/context-intelligence/summary
+ * Get comprehensive intelligence summary
+ */
+router.get('/summary', async (req, res) => {
+  try {
+    const { fileKey, nodeId } = req.query;
+    
+    if (!fileKey) {
+      return res.status(400).json({
+        success: false,
+        error: 'fileKey parameter is required'
+      });
+    }
+
+    logger.info(`📊 Getting intelligence summary for file: ${fileKey}`);
+
+    // Get base context data
+    const contextProvider = new UnifiedContextProvider();
+    const contextData = await contextProvider.getStoredContext(fileKey, nodeId);
+    
+    if (!contextData || !contextData.components) {
+      return res.status(404).json({
+        success: false,
+        error: 'No context data found for the specified design'
+      });
+    }
+
+    // Run full intelligence analysis
+    const intelligenceResult = await intelligenceOrchestrator.analyzeDesignIntelligence(
+      contextData.components,
+      contextData
+    );
+
+    const summary = {
+      overview: {
+        componentsAnalyzed: intelligenceResult.semantic.components.length,
+        semanticPatterns: intelligenceResult.semantic.patterns.length,
+        accessibilityScore: intelligenceResult.accessibility.compliance.overall.score,
+        interactionFlows: intelligenceResult.interactions.flows.length,
+        overallConfidence: intelligenceResult.confidence.overall
+      },
+      keyInsights: [
+        ...intelligenceResult.semantic.patterns.map(p => ({
+          type: 'semantic',
+          insight: p.description,
+          confidence: p.confidence
+        })),
+        ...intelligenceResult.accessibility.compliance.categories.perceivable.recommendations.slice(0, 3).map(r => ({
+          type: 'accessibility',
+          insight: r.description,
+          priority: r.priority
+        })),
+        ...intelligenceResult.interactions.flows.slice(0, 2).map(f => ({
+          type: 'interaction',
+          insight: `User flow: ${f.name} with ${f.steps.length} steps`,
+          confidence: f.confidence
+        }))
+      ],
+      performance: {
+        totalAnalysisTime: 
+          intelligenceResult.metadata.semantic.analysisTime +
+          intelligenceResult.metadata.accessibility.analysisTime +
+          intelligenceResult.metadata.interactions.analysisTime,
+        cacheHitRate: intelligenceResult.metadata.cacheHitRate || 0,
+        efficiency: 'high' // Can be calculated based on analysis time vs complexity
+      }
+    };
+
+    res.json({
+      success: true,
+      data: summary,
+      timestamp: Date.now()
+    });
+
+  } catch (error) {
+    logger.error('Failed to get intelligence summary:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve intelligence summary',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * Helper function to generate code from semantic analysis
+ */
+async function generateCodeFromSemantics(semanticData, options) {
+  const { framework, typescript, includeAccessibility, includeStories } = options;
+  
+  const codePreview = {
+    components: [],
+    styles: '',
+    tests: '',
+    stories: '',
+    metadata: {
+      framework,
+      typescript,
+      generatedAt: Date.now()
+    }
+  };
+
+  // Generate component code for each semantic component
+  for (const component of semanticData.components) {
+    const componentCode = generateComponentCode(component, options);
+    codePreview.components.push({
+      name: component.name,
+      semanticType: component.semantic.intent,
+      code: componentCode.code,
+      props: componentCode.props,
+      accessibility: componentCode.accessibility,
+      imports: componentCode.imports
+    });
+  }
+
+  // Generate global styles
+  codePreview.styles = generateStylesFromTokens(semanticData.designTokens);
+
+  // Generate tests if requested
+  if (options.includeTests) {
+    codePreview.tests = generateTestsFromSemantics(semanticData.components);
+  }
+
+  // Generate Storybook stories if requested
+  if (includeStories) {
+    codePreview.stories = generateStoriesFromComponents(codePreview.components);
+  }
+
+  return codePreview;
+}
+
+/**
+ * Generate component code based on semantic analysis
+ */
+function generateComponentCode(component, options) {
+  const { framework, typescript, includeAccessibility } = options;
+  const semanticType = component.semantic.intent;
+  const componentName = component.name.replace(/\s+/g, '');
+
+  let code = '';
+  let props = [];
+  let accessibility = [];
+  let imports = ['React'];
+
+  // Framework-specific code generation
+  switch (framework) {
+    case 'react':
+      code = generateReactComponent(component, typescript, includeAccessibility);
+      break;
+    case 'vue':
+      code = generateVueComponent(component, typescript, includeAccessibility);
+      break;
+    case 'angular':
+      code = generateAngularComponent(component, typescript, includeAccessibility);
+      break;
+    default:
+      code = generateReactComponent(component, typescript, includeAccessibility);
+  }
+
+  return { code, props, accessibility, imports };
+}
+
+/**
+ * Generate React component code
+ */
+function generateReactComponent(component, typescript, includeAccessibility) {
+  const componentName = component.name.replace(/\s+/g, '');
+  const semanticType = component.semantic.intent;
+  const typeAnnotation = typescript ? ': React.FC' : '';
+  
+  let code = `${typescript ? 'interface' : '// Props'} ${componentName}Props {\n`;
+  
+  // Generate props based on semantic analysis
+  if (component.semantic.businessPurpose) {
+    code += typescript ? '  title?: string;\n' : '  // title: string\n';
+    code += typescript ? '  onClick?: () => void;\n' : '  // onClick: function\n';
+  }
+  
+  code += typescript ? '}\n\n' : '\n';
+  
+  code += `const ${componentName}${typeAnnotation} = (${typescript ? `props: ${componentName}Props` : 'props'}) => {\n`;
+  code += `  return (\n`;
+  
+  // Generate JSX based on semantic type
+  switch (semanticType) {
+    case 'button':
+    case 'cta':
+      code += `    <button\n`;
+      if (includeAccessibility) {
+        code += `      aria-label={props.title || "${component.name}"}\n`;
+        code += `      type="button"\n`;
+      }
+      code += `      onClick={props.onClick}\n`;
+      code += `      className="${componentName.toLowerCase()}"\n`;
+      code += `    >\n`;
+      code += `      {props.title || "${component.name}"}\n`;
+      code += `    </button>\n`;
+      break;
+      
+    case 'form':
+    case 'login':
+      code += `    <form\n`;
+      if (includeAccessibility) {
+        code += `      role="form"\n`;
+        code += `      aria-label="${component.name}"\n`;
+      }
+      code += `      className="${componentName.toLowerCase()}"\n`;
+      code += `    >\n`;
+      code += `      {/* Form fields will be generated here */}\n`;
+      code += `    </form>\n`;
+      break;
+      
+    case 'navigation':
+    case 'menu':
+      code += `    <nav\n`;
+      if (includeAccessibility) {
+        code += `      role="navigation"\n`;
+        code += `      aria-label="${component.name}"\n`;
+      }
+      code += `      className="${componentName.toLowerCase()}"\n`;
+      code += `    >\n`;
+      code += `      {/* Navigation items will be generated here */}\n`;
+      code += `    </nav>\n`;
+      break;
+      
+    default:
+      code += `    <div className="${componentName.toLowerCase()}">\n`;
+      code += `      {/* ${component.name} content */}\n`;
+      code += `    </div>\n`;
+  }
+  
+  code += `  );\n`;
+  code += `};\n\n`;
+  code += `export default ${componentName};`;
+  
+  return code;
+}
+
+/**
+ * Generate styles from design tokens
+ */
+function generateStylesFromTokens(designTokens) {
+  if (!designTokens) return '';
+  
+  let styles = '/* Generated from design tokens */\n';
+  styles += ':root {\n';
+  
+  // Add CSS custom properties from design tokens
+  if (designTokens.colors) {
+    Object.entries(designTokens.colors).forEach(([name, value]) => {
+      styles += `  --color-${name}: ${value};\n`;
+    });
+  }
+  
+  if (designTokens.spacing) {
+    Object.entries(designTokens.spacing).forEach(([name, value]) => {
+      styles += `  --spacing-${name}: ${value};\n`;
+    });
+  }
+  
+  styles += '}\n';
+  return styles;
+}
+
+/**
+ * Generate Storybook stories
+ */
+function generateStoriesFromComponents(components) {
+  let stories = '';
+  
+  components.forEach(component => {
+    stories += `// ${component.name}.stories.js\n`;
+    stories += `export default {\n`;
+    stories += `  title: 'Components/${component.name}',\n`;
+    stories += `  component: ${component.name},\n`;
+    stories += `};\n\n`;
+    stories += `export const Default = {\n`;
+    stories += `  args: {\n`;
+    stories += `    title: '${component.name}',\n`;
+    stories += `  },\n`;
+    stories += `};\n\n`;
+  });
+  
+  return stories;
+}
+
+export default router;

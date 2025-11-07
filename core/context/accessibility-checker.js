@@ -12,7 +12,7 @@
  * - Screen reader compatibility assessment
  * - Touch target accessibility
  * - Alternative text generation suggestions
- * 
+ *
  * Integration Points:
  * - Enhances DesignSpecGenerator with accessibility intelligence
  * - Feeds accessibility data to AI Orchestrator for inclusive prompts
@@ -27,7 +27,7 @@ export class AccessibilityChecker {
   constructor(options = {}) {
     this.logger = new Logger('AccessibilityChecker');
     this.errorHandler = new ErrorHandler();
-    
+
     this.config = {
       wcagLevel: options.wcagLevel || 'AA', // 'A', 'AA', 'AAA'
       includeAAA: options.includeAAA || false,
@@ -43,7 +43,7 @@ export class AccessibilityChecker {
     // Accessibility rule cache
     this.rulesCache = new Map();
     this.contrastCache = new Map();
-    
+
     // Initialize accessibility models
     this.initializeAccessibilityModels();
   }
@@ -57,7 +57,7 @@ export class AccessibilityChecker {
    */
   async analyzeAccessibility(components, interactiveComponents, context) {
     const startTime = Date.now();
-    
+
     try {
       this.logger.info('♿ Starting accessibility analysis');
 
@@ -117,31 +117,31 @@ export class AccessibilityChecker {
 
       // Analyze perceivable (colors, contrast, alternatives)
       results.compliance.categories.perceivable = await this.analyzePerceivable(components, context);
-      
+
       // Analyze operable (keyboard, navigation, timing)
       results.compliance.categories.operable = await this.analyzeOperable(interactiveComponents, context);
-      
+
       // Analyze understandable (readability, predictability)
       results.compliance.categories.understandable = await this.analyzeUnderstandable(components, context);
-      
+
       // Analyze robust (compatibility, markup quality)
       results.compliance.categories.robust = await this.analyzeRobust(components, interactiveComponents);
 
       // Analyze color accessibility
       results.colorAccessibility = await this.analyzeColorAccessibility(components);
-      
+
       // Analyze semantic structure
       results.semanticStructure = await this.analyzeSemanticStructure(components);
-      
+
       // Analyze interaction accessibility
       results.interaction = await this.analyzeInteractionAccessibility(interactiveComponents);
-      
+
       // Analyze content accessibility
       results.content = await this.analyzeContentAccessibility(components);
-      
+
       // Calculate overall compliance score
       results.compliance.overall = this.calculateOverallCompliance(results.compliance.categories);
-      
+
       // Generate prioritized recommendations
       results.recommendations = this.generateRecommendations(results);
 
@@ -184,19 +184,19 @@ export class AccessibilityChecker {
 
     // Check color contrast
     await this.checkColorContrast(components, category.checks.colorContrast);
-    
+
     // Check alternative text
     await this.checkAlternativeText(components, category.checks.alternativeText);
-    
+
     // Check color dependency
     await this.checkColorDependency(components, category.checks.colorDependency);
-    
+
     // Check text scaling
     await this.checkTextScaling(components, category.checks.textScaling);
 
     // Calculate category score
     category.score = this.calculateCategoryScore(category.checks);
-    
+
     // Collect issues and recommendations
     this.collectCategoryIssues(category);
 
@@ -204,7 +204,7 @@ export class AccessibilityChecker {
   }
 
   /**
-   * Analyze WCAG Operable principle 
+   * Analyze WCAG Operable principle
    * @param {InteractiveComponent[]} interactiveComponents - Interactive components
    * @param {DesignContext} context - Design context
    * @returns {Promise<AccessibilityCategory>} Operable analysis
@@ -224,13 +224,13 @@ export class AccessibilityChecker {
 
     // Check keyboard accessibility
     await this.checkKeyboardAccessibility(interactiveComponents, category.checks.keyboardAccessible);
-    
+
     // Check touch targets
     await this.checkTouchTargets(interactiveComponents, category.checks.touchTargets);
-    
+
     // Check focus visibility
     await this.checkFocusVisibility(interactiveComponents, category.checks.focusVisible);
-    
+
     // Check timing requirements
     await this.checkTiming(interactiveComponents, category.checks.timing);
 
@@ -242,7 +242,7 @@ export class AccessibilityChecker {
 
   /**
    * Analyze WCAG Understandable principle
-   * @param {SemanticComponent[]} components - Components to analyze  
+   * @param {SemanticComponent[]} components - Components to analyze
    * @param {DesignContext} context - Design context
    * @returns {Promise<AccessibilityCategory>} Understandable analysis
    */
@@ -261,13 +261,13 @@ export class AccessibilityChecker {
 
     // Check text readability
     await this.checkTextReadability(components, category.checks.readableText);
-    
+
     // Check predictable navigation
     await this.checkPredictableNavigation(components, category.checks.predictableNavigation);
-    
+
     // Check error prevention
     await this.checkErrorPrevention(components, category.checks.errorPrevention);
-    
+
     // Check instructions
     await this.checkInstructions(components, category.checks.instructionsProvided);
 
@@ -298,13 +298,13 @@ export class AccessibilityChecker {
 
     // Check valid markup suggestions
     await this.checkValidMarkup(components, category.checks.validMarkup);
-    
+
     // Check assistive technology compatibility
     await this.checkAssistiveTechCompatibility(interactiveComponents, category.checks.assistiveTechCompatible);
-    
+
     // Check semantic markup
     await this.checkSemanticMarkup(components, category.checks.semanticMarkup);
-    
+
     // Check ARIA usage
     await this.checkAriaUsage(interactiveComponents, category.checks.ariaUsage);
 
@@ -323,14 +323,14 @@ export class AccessibilityChecker {
     for (const component of components) {
       if (component.content && component.content.text) {
         const textElements = Array.isArray(component.content.text) ? component.content.text : [component.content.text];
-        
+
         for (const textElement of textElements) {
           check.total++;
-          
+
           const contrastRatio = await this.calculateContrastRatio(textElement, component.visual);
           const isLargeText = this.isLargeText(textElement.style);
           const requiredRatio = isLargeText ? this.config.minContrastRatioLarge : this.config.minContrastRatio;
-          
+
           if (contrastRatio >= requiredRatio) {
             check.passed++;
           } else {
@@ -354,11 +354,16 @@ export class AccessibilityChecker {
    * @param {Object} check - Check results object
    */
   async checkKeyboardAccessibility(interactiveComponents, check) {
+    // Ensure interactiveComponents is iterable
+    if (!Array.isArray(interactiveComponents)) {
+      return check;
+    }
+
     for (const component of interactiveComponents) {
       check.total++;
-      
+
       const keyboardAccessible = this.isKeyboardAccessible(component);
-      
+
       if (keyboardAccessible.accessible) {
         check.passed++;
       } else {
@@ -380,11 +385,28 @@ export class AccessibilityChecker {
    * @param {Object} check - Check results object
    */
   async checkTouchTargets(interactiveComponents, check) {
+    // Ensure interactiveComponents is iterable
+    if (!Array.isArray(interactiveComponents)) {
+      return check;
+    }
+
     for (const component of interactiveComponents) {
       check.total++;
-      
+
+      // Add null check for geometry
+      if (!component?.geometry || typeof component.geometry.width !== 'number' || typeof component.geometry.height !== 'number') {
+        check.failed++;
+        check.issues.push({
+          type: 'touch-target',
+          severity: 'medium',
+          component: component.id || 'unknown',
+          message: 'Cannot validate touch target - missing geometry data'
+        });
+        continue;
+      }
+
       const minDimension = Math.min(component.geometry.width, component.geometry.height);
-      
+
       if (minDimension >= this.config.minTouchTargetSize) {
         check.passed++;
       } else {
@@ -437,10 +459,10 @@ export class AccessibilityChecker {
   async calculateContrastRatio(textElement, visual) {
     // Simplified contrast calculation
     // In production, would use proper WCAG color contrast algorithms
-    
+
     const textColor = this.extractTextColor(textElement);
     const backgroundColor = this.extractBackgroundColor(visual);
-    
+
     if (!textColor || !backgroundColor) {
       return 4.5; // Assume compliant if colors can't be determined
     }
@@ -452,17 +474,17 @@ export class AccessibilityChecker {
   /**
    * Get contrast ratio between two colors
    * @param {string} color1 - First color
-   * @param {string} color2 - Second color  
+   * @param {string} color2 - Second color
    * @returns {number} Contrast ratio
    */
   getContrastRatio(color1, color2) {
     // Simplified calculation - in production would use proper WCAG formula
     const luminance1 = this.getLuminance(color1);
     const luminance2 = this.getLuminance(color2);
-    
+
     const lighter = Math.max(luminance1, luminance2);
     const darker = Math.min(luminance1, luminance2);
-    
+
     return (lighter + 0.05) / (darker + 0.05);
   }
 
@@ -474,13 +496,13 @@ export class AccessibilityChecker {
   getLuminance(color) {
     // Simplified luminance calculation
     // In production would use proper sRGB luminance formula
-    if (!color || typeof color !== 'string') return 0.5;
-    
+    if (!color || typeof color !== 'string') {return 0.5;}
+
     // Very simplified - just checking if it's light or dark
-    const isLight = color.toLowerCase().includes('ffffff') || 
+    const isLight = color.toLowerCase().includes('ffffff') ||
                    color.toLowerCase().includes('white') ||
                    color.toLowerCase().includes('f0f0f0');
-    
+
     return isLight ? 0.9 : 0.1;
   }
 
@@ -490,11 +512,11 @@ export class AccessibilityChecker {
    * @returns {boolean} Is large text
    */
   isLargeText(style) {
-    if (!style) return false;
-    
+    if (!style) {return false;}
+
     const fontSize = style.fontSize || 16;
     const fontWeight = style.fontWeight || 400;
-    
+
     // WCAG defines large text as 18pt+ or 14pt+ bold
     return fontSize >= 24 || (fontSize >= 18 && fontWeight >= 700);
   }
@@ -507,7 +529,7 @@ export class AccessibilityChecker {
   isKeyboardAccessible(component) {
     // Check if component has keyboard-accessible intent
     const keyboardAccessibleIntents = ['button', 'input', 'link', 'navigation', 'form'];
-    
+
     if (!keyboardAccessibleIntents.includes(component.semantic.intent)) {
       return {
         accessible: false,
@@ -552,7 +574,7 @@ export class AccessibilityChecker {
     // Color blindness simulation
     this.colorBlindnessTypes = {
       protanopia: 'Red-green (Protanopia)',
-      deuteranopia: 'Red-green (Deuteranopia)', 
+      deuteranopia: 'Red-green (Deuteranopia)',
       tritanopia: 'Blue-yellow (Tritanopia)',
       achromatopsia: 'Complete color blindness'
     };
@@ -587,12 +609,12 @@ export class AccessibilityChecker {
   calculateCategoryScore(checks) {
     let totalPassed = 0;
     let totalChecks = 0;
-    
+
     for (const check of Object.values(checks)) {
       totalPassed += check.passed;
       totalChecks += check.total;
     }
-    
+
     return totalChecks > 0 ? totalPassed / totalChecks : 0;
   }
 
@@ -605,15 +627,15 @@ export class AccessibilityChecker {
   calculateOverallCompliance(categories) {
     const scores = Object.values(categories).map(cat => cat.score);
     const overallScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-    
+
     let grade = 'F';
-    if (overallScore >= 0.95) grade = 'A';
-    else if (overallScore >= 0.85) grade = 'B';
-    else if (overallScore >= 0.70) grade = 'C';
-    else if (overallScore >= 0.60) grade = 'D';
-    
+    if (overallScore >= 0.95) {grade = 'A';}
+    else if (overallScore >= 0.85) {grade = 'B';}
+    else if (overallScore >= 0.70) {grade = 'C';}
+    else if (overallScore >= 0.60) {grade = 'D';}
+
     const totalIssues = Object.values(categories).reduce((sum, cat) => sum + cat.issues.length, 0);
-    
+
     return {
       score: overallScore,
       grade,
@@ -625,13 +647,13 @@ export class AccessibilityChecker {
 
   generateRecommendations(results) {
     const recommendations = { critical: [], important: [], suggested: [] };
-    
+
     // Extract all issues and categorize by severity
     const allIssues = [];
     Object.values(results.compliance.categories).forEach(category => {
       allIssues.push(...category.issues);
     });
-    
+
     for (const issue of allIssues) {
       const recommendation = {
         componentId: issue.componentId,
@@ -639,7 +661,7 @@ export class AccessibilityChecker {
         message: issue.recommendation || issue.message,
         wcagReference: issue.wcagReference
       };
-      
+
       if (issue.severity === 'error') {
         recommendations.critical.push(recommendation);
       } else if (issue.severity === 'warning') {
@@ -648,7 +670,7 @@ export class AccessibilityChecker {
         recommendations.suggested.push(recommendation);
       }
     }
-    
+
     return recommendations;
   }
 
@@ -770,12 +792,80 @@ export class AccessibilityChecker {
   generateColorRecommendations(analysis) {
     return [];
   }
+
+  /**
+   * Calculate color contrast ratio between two colors
+   * @param {string} foreground - Foreground color (hex)
+   * @param {string} background - Background color (hex)
+   * @returns {Object} Contrast analysis
+   */
+  calculateColorContrast(foreground, background) {
+    // Simple contrast calculation (placeholder)
+    // In real implementation, would use proper color contrast algorithm
+    const getRelativeLuminance = (hex) => {
+      const rgb = parseInt(hex.replace('#', ''), 16);
+      const r = (rgb >> 16) & 0xff;
+      const g = (rgb >> 8) & 0xff;
+      const b = rgb & 0xff;
+      return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    };
+
+    const foregroundLum = getRelativeLuminance(foreground);
+    const backgroundLum = getRelativeLuminance(background);
+
+    const lighter = Math.max(foregroundLum, backgroundLum);
+    const darker = Math.min(foregroundLum, backgroundLum);
+    const ratio = (lighter + 0.05) / (darker + 0.05);
+
+    return {
+      ratio: Math.round(ratio * 100) / 100,
+      passesAA: ratio >= 4.5,
+      passesAAA: ratio >= 7,
+      level: ratio >= 7 ? 'AAA' : ratio >= 4.5 ? 'AA' : 'Fail'
+    };
+  }
+
+  /**
+   * Validate touch target size for accessibility
+   * @param {Object} geometry - Component geometry
+   * @returns {Object} Touch target validation
+   */
+  validateTouchTargetSize(geometry) {
+    if (!geometry || typeof geometry.width !== 'number' || typeof geometry.height !== 'number') {
+      return {
+        valid: false,
+        reason: 'Invalid geometry data',
+        recommendations: ['Ensure component has valid dimensions']
+      };
+    }
+
+    const { width, height } = geometry;
+    const minSize = 44; // WCAG recommended minimum touch target size
+    const recommendedSize = 48; // Better UX size
+
+    const valid = width >= minSize && height >= minSize;
+    const recommended = width >= recommendedSize && height >= recommendedSize;
+
+    return {
+      valid,
+      recommended,
+      currentSize: { width, height },
+      minSize: { width: minSize, height: minSize },
+      recommendedSize: { width: recommendedSize, height: recommendedSize },
+      reason: valid
+        ? (recommended ? 'Meets recommended size' : 'Meets minimum size')
+        : `Too small: ${width}x${height} (minimum: ${minSize}x${minSize})`,
+      recommendations: valid
+        ? (recommended ? [] : [`Consider increasing size to ${recommendedSize}x${recommendedSize} for better UX`])
+        : [`Increase size to at least ${minSize}x${minSize}`, `Recommended size: ${recommendedSize}x${recommendedSize}`]
+    };
+  }
 }
 
 /**
  * Quick accessibility analysis function
  * @param {SemanticComponent[]} components - Components to analyze
- * @param {InteractiveComponent[]} interactiveComponents - Interactive components  
+ * @param {InteractiveComponent[]} interactiveComponents - Interactive components
  * @param {DesignContext} context - Design context
  * @returns {Promise<AccessibilityAnalysisResult>} Analysis results
  */

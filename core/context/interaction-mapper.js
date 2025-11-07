@@ -11,7 +11,7 @@
  * - Interaction pattern recognition
  * - User behavior prediction
  * - Touch target analysis for mobile interfaces
- * 
+ *
  * Integration Points:
  * - Enhances PrototypeMapper with behavioral intelligence
  * - Feeds interaction data to AI Orchestrator
@@ -26,7 +26,7 @@ export class InteractionMapper {
   constructor(options = {}) {
     this.logger = new Logger('InteractionMapper');
     this.errorHandler = new ErrorHandler();
-    
+
     this.config = {
       minTouchTargetSize: options.minTouchTargetSize || 44, // iOS/Android standard
       maxFlowDepth: options.maxFlowDepth || 10,
@@ -39,7 +39,7 @@ export class InteractionMapper {
     // Interaction pattern cache
     this.flowCache = new Map();
     this.interactionPatterns = new Map();
-    
+
     // Initialize interaction models
     this.initializeInteractionModels();
   }
@@ -53,7 +53,7 @@ export class InteractionMapper {
    */
   async mapInteractionFlows(components, prototypeData, context) {
     const startTime = Date.now();
-    
+
     try {
       this.logger.info('🔗 Starting interaction flow mapping');
 
@@ -90,32 +90,32 @@ export class InteractionMapper {
 
       // Identify interactive components
       results.interactiveComponents = await this.identifyInteractiveComponents(components);
-      
+
       // Map navigation flows
       results.navigationFlows = await this.mapNavigationFlows(results.interactiveComponents, prototypeData);
-      
+
       // Extract user journeys
       results.userJourneys = await this.extractUserJourneys(results.navigationFlows, context);
-      
+
       // Analyze state transitions
       results.stateTransitions = await this.analyzeStateTransitions(results.interactiveComponents, prototypeData);
-      
+
       // Analyze touch targets
       results.touchTargets = await this.analyzeTouchTargets(results.interactiveComponents);
-      
+
       // Detect gesture patterns
       if (this.config.enableGestureDetection) {
         results.gesturePatterns = await this.detectGesturePatterns(results.interactiveComponents, prototypeData);
       }
-      
+
       // Analyze accessibility patterns
       results.accessibility = await this.analyzeAccessibilityPatterns(results.interactiveComponents, results.navigationFlows);
-      
+
       // Validate flow integrity
       if (this.config.enableFlowValidation) {
         results.validation = await this.validateFlowIntegrity(results.navigationFlows, results.userJourneys);
       }
-      
+
       // Detect interaction patterns
       results.patterns = await this.detectInteractionPatterns(results);
 
@@ -145,7 +145,7 @@ export class InteractionMapper {
 
     for (const component of components) {
       const interactivity = await this.analyzeComponentInteractivity(component);
-      
+
       if (interactivity.isInteractive) {
         interactiveComponents.push({
           ...component,
@@ -181,12 +181,12 @@ export class InteractionMapper {
       accessibility: {}
     };
 
-    // Check semantic intent for interactivity
+    // Check semantic intent for interactivity with null check
     const interactiveIntents = ['button', 'input', 'form', 'navigation', 'modal', 'dropdown', 'slider', 'toggle'];
-    if (interactiveIntents.includes(component.semantic.intent)) {
+    if (component?.semantic?.intent && interactiveIntents.includes(component.semantic.intent)) {
       analysis.isInteractive = true;
       analysis.type = component.semantic.intent;
-      analysis.confidence = component.semantic.confidence;
+      analysis.confidence = component.semantic.confidence || 0.5;
     }
 
     // Check visual cues for interactivity
@@ -207,10 +207,10 @@ export class InteractionMapper {
 
     // Determine possible behaviors
     analysis.behaviors = this.determinePossibleBehaviors(component, analysis);
-    
+
     // Determine possible states
     analysis.states = this.determinePossibleStates(component, analysis);
-    
+
     // Determine accessibility requirements
     analysis.accessibility = this.determineAccessibilityRequirements(component, analysis);
 
@@ -234,13 +234,13 @@ export class InteractionMapper {
     // Button-like visual characteristics
     if (visual.fills && visual.fills.length > 0) {
       const fill = visual.fills[0];
-      
+
       // Solid fills often indicate clickable elements
       if (fill.type === 'SOLID') {
         cues.score += 0.3;
         cues.evidence.push('Solid fill suggests clickable element');
       }
-      
+
       // Bright/saturated colors often indicate interactive elements
       if (this.isBrightColor(fill.color)) {
         cues.score += 0.2;
@@ -255,7 +255,10 @@ export class InteractionMapper {
       cues.evidence.push('Border suggests form element or button');
     }
 
-    // Size and proportion analysis
+    // Size and proportion analysis with null check
+    if (!component?.geometry || typeof component.geometry.width !== 'number' || typeof component.geometry.height !== 'number') {
+      return cues; // Return early if geometry is invalid
+    }
     const { width, height } = component.geometry;
     const aspectRatio = width / height;
 
@@ -291,8 +294,11 @@ export class InteractionMapper {
    * @returns {Object} Naming interactivity analysis
    */
   analyzeNamingInteractivityCues(component) {
+    if (!component.name) {
+      return { score: 0, keywords: [], confidence: 0 };
+    }
     const name = component.name.toLowerCase();
-    
+
     const interactiveKeywords = {
       button: ['button', 'btn', 'click', 'submit', 'send', 'save', 'delete', 'cancel', 'confirm'],
       input: ['input', 'field', 'textbox', 'search', 'filter'],
@@ -374,7 +380,7 @@ export class InteractionMapper {
 
     // Group flows by common patterns
     const flowGroups = await this.groupFlowsByPattern(navigationFlows);
-    
+
     for (const [pattern, flows] of flowGroups) {
       const journey = await this.createUserJourney(pattern, flows, context);
       if (journey) {
@@ -384,7 +390,7 @@ export class InteractionMapper {
 
     // Identify main user journeys based on context
     const mainJourneys = await this.identifyMainUserJourneys(journeys, context);
-    
+
     this.logger.debug(`👤 Extracted ${journeys.length} user journeys (${mainJourneys.length} main)`);
     return journeys;
   }
@@ -404,7 +410,7 @@ export class InteractionMapper {
 
     const summary = this.summarizeTouchTargetAnalysis(touchTargets);
     this.logger.debug(`👆 Analyzed ${touchTargets.length} touch targets: ${summary.compliant}/${touchTargets.length} compliant`);
-    
+
     return touchTargets;
   }
 
@@ -468,21 +474,21 @@ export class InteractionMapper {
         flow: ['validate', 'submit', 'feedback'],
         states: ['default', 'loading', 'success', 'error']
       },
-      
+
       // Navigation patterns
       tabNavigation: {
         trigger: 'tab',
         flow: ['select', 'highlight', 'show-content'],
         states: ['default', 'active', 'hover', 'disabled']
       },
-      
+
       // Modal patterns
       modalDialog: {
         trigger: 'button[modal-trigger]',
         flow: ['open', 'overlay', 'focus-trap', 'close'],
         states: ['closed', 'opening', 'open', 'closing']
       },
-      
+
       // Dropdown patterns
       dropdown: {
         trigger: 'button[dropdown-trigger]',
@@ -510,8 +516,8 @@ export class InteractionMapper {
   isBrightColor(color) {
     // Simplified brightness check
     // In production, would use proper color space calculations
-    if (!color || typeof color !== 'string') return false;
-    
+    if (!color || typeof color !== 'string') {return false;}
+
     const brightColors = ['#ff', '#00ff', '#ff00', '#0ff', '#f0f', '#ff0'];
     return brightColors.some(bright => color.toLowerCase().includes(bright.slice(0, 3)));
   }
@@ -571,7 +577,7 @@ export class InteractionMapper {
   summarizeTouchTargetAnalysis(touchTargets) {
     const compliant = touchTargets.filter(target => target.isCompliant).length;
     const total = touchTargets.length;
-    
+
     return {
       compliant,
       total,
@@ -581,7 +587,7 @@ export class InteractionMapper {
   }
 
   // Additional placeholder methods for full implementation
-  
+
   async createNavigationFlow(connection, interactiveComponents) {
     // Create navigation flow from prototype connection
     return null; // Placeholder
@@ -658,67 +664,67 @@ export class InteractionMapper {
   determinePossibleBehaviors(component, analysis) {
     // Determine possible behaviors for component
     const behaviors = [];
-    
+
     switch (analysis.type) {
-      case 'button':
-        behaviors.push('click', 'submit', 'navigate');
-        break;
-      case 'input':
-        behaviors.push('focus', 'input', 'validate');
-        break;
-      case 'dropdown':
-        behaviors.push('toggle', 'select', 'close');
-        break;
-      default:
-        behaviors.push('interact');
+    case 'button':
+      behaviors.push('click', 'submit', 'navigate');
+      break;
+    case 'input':
+      behaviors.push('focus', 'input', 'validate');
+      break;
+    case 'dropdown':
+      behaviors.push('toggle', 'select', 'close');
+      break;
+    default:
+      behaviors.push('interact');
     }
-    
+
     return behaviors;
   }
 
   determinePossibleStates(component, analysis) {
     // Determine possible states for component
     const states = ['default'];
-    
+
     if (analysis.isInteractive) {
       states.push('hover', 'focus', 'active');
-      
+
       if (analysis.type === 'button') {
         states.push('disabled', 'loading');
       }
-      
+
       if (analysis.type === 'input') {
         states.push('error', 'valid', 'disabled');
       }
-      
+
       if (analysis.type === 'toggle') {
         states.push('checked', 'unchecked');
       }
     }
-    
+
     return states;
   }
 
   determineAccessibilityRequirements(component, analysis) {
     // Determine accessibility requirements
     const requirements = {};
-    
+
     if (analysis.isInteractive) {
       requirements.focusable = true;
       requirements.keyboardAccessible = true;
-      
+
       if (analysis.type === 'button') {
         requirements.role = 'button';
         requirements.ariaLabel = true;
       }
-      
+
       if (analysis.type === 'input') {
         requirements.role = 'textbox';
         requirements.ariaLabel = true;
         requirements.ariaDescribedBy = true;
       }
     }
-    
+
     return requirements;
   }
 }

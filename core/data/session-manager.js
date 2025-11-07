@@ -15,11 +15,47 @@ export class SessionManager {
     this.logger = new Logger('SessionManager');
     this.errorHandler = new ErrorHandler();
     this.redis = new RedisClient();
-    this.config = redisConfig.sessions;
 
-    // In-memory fallback for sessions when Redis is unavailable
+    // Memory-based session storage (fallback)
     this.memoryStore = new Map();
     this.sessionTimers = new Map();
+
+    // Performance tracking metrics
+    this.metrics = {
+      sessionCreated: 0,
+      sessionRetrieved: 0,
+      cacheHits: 0,
+      cacheMisses: 0,
+      redisHits: 0,
+      redisMisses: 0,
+      responseTimes: [],
+      errors: 0,
+      startTime: Date.now()
+    };
+
+    // Configuration
+    this.config = {
+      ttl: 3600, // 1 hour
+      cleanupInterval: 300000, // 5 minutes
+      maxSessions: 10000,
+      metricsWindowSize: 100 // Keep last 100 response times
+    };
+
+    this.startTime = Date.now();
+    this.setupCleanupInterval();
+  }
+
+  /**
+   * Setup cleanup interval for expired sessions
+   */
+  setupCleanupInterval() {
+    setInterval(() => {
+      this.cleanupExpiredSessions().catch(error => {
+        this.logger.error('Cleanup interval error:', error);
+      });
+    }, this.config.cleanupInterval);
+
+    this.logger.info('Session cleanup interval started');
   }
 
   /**
@@ -42,42 +78,51 @@ export class SessionManager {
    * @param {Object} userData - Additional user data
    * @returns {Promise<string>} Session ID
    */
-  async createSession(userId, userData = {}) {
+  async createSession(sessionId = null, data = {}, ttl = null) {
+    const startTime = Date.now();
+
     try {
-      const sessionId = this.generateSessionId();
-      const sessionData = {
-        userId,
-        userData,
-        createdAt: new Date().toISOString(),
-        lastAccessedAt: new Date().toISOString(),
-        userAgent: userData.userAgent || null,
-        ipAddress: userData.ipAddress || null
+      const id = sessionId || this.generateSessionId();
+      const expiresAt = Date.now() + ((ttl || this.config.defaultTTL) * 1000);
+
+      const session = {
+        id,
+        data,
+        createdAt: Date.now(),
+        lastAccessed: Date.now(),
+        expiresAt,
+        ttl: ttl || this.config.defaultTTL,
+        metrics: {
+          accessCount: 1,
+          cacheHits: 0,
+          redisHits: 0,
+          averageResponseTime: 0
+        }
       };
 
-      // Store in Redis or memory
-      const stored = await this.redis.set(
-        sessionId,
-        sessionData,
-        this.config.ttl,
-        'session'
-      );
+      // Store in memory
+      this.sessions.set(id, session);
 
-      if (!stored) {
-        // Fallback to memory storage
-        this.memoryStore.set(sessionId, sessionData);
-        this.setMemoryExpiration(sessionId, this.config.ttl * 1000);
+      // Store in Redis if available
+      if (this.redis.isConnected()) {
+        await this.redis.setex(
+          `${this.config.sessionPrefix}${id}`,
+          ttl || this.config.defaultTTL,
+          JSON.stringify(session)
+        );
       }
 
-      this.logger.info('Session created', {
-        sessionId: sessionId.substring(0, 8) + '...',
-        userId,
-        storage: stored ? 'redis' : 'memory'
-      });
+      // Update metrics
+      this.metrics.sessionCreated++;
+      this.updateResponseTime(startTime);
 
-      return sessionId;
+      this.logger.info(`Session created: ${id} (${Date.now() - startTime}ms)`);
+      return session;
 
     } catch (error) {
-      this.errorHandler.handleToolError('session_manager', error, { userId });
+      this.metrics.errors++;
+      this.logger.error('Failed to create session:', error);
+      return this.errorHandler.handle(error, { context: 'createSession' });
     }
   }
 
@@ -87,36 +132,65 @@ export class SessionManager {
    * @returns {Promise<Object|null>} Session data or null
    */
   async getSession(sessionId) {
+    const startTime = Date.now();
+
     try {
       if (!sessionId) {
         return null;
       }
 
+      this.metrics.sessionRetrieved++;
+
       // Try Redis first
       let sessionData = await this.redis.get(sessionId, 'session');
+      let source = 'none';
 
-      // Fallback to memory
-      if (!sessionData && this.memoryStore.has(sessionId)) {
-        sessionData = this.memoryStore.get(sessionId);
+      if (sessionData) {
+        this.metrics.redisHits++;
+        source = 'redis';
+      } else {
+        this.metrics.redisMisses++;
+
+        // Fallback to memory
+        if (this.memoryStore.has(sessionId)) {
+          sessionData = this.memoryStore.get(sessionId);
+          this.metrics.cacheHits++;
+          source = 'memory';
+        } else {
+          this.metrics.cacheMisses++;
+        }
       }
 
       if (!sessionData) {
+        this.updateResponseTime(startTime);
         this.logger.debug('Session not found', { sessionId: sessionId.substring(0, 8) + '...' });
         return null;
       }
+
+      // Update session metrics
+      if (!sessionData.metrics) {
+        sessionData.metrics = { accessCount: 0, sources: { redis: 0, memory: 0 } };
+      }
+      sessionData.metrics.accessCount++;
+      sessionData.metrics.sources[source] = (sessionData.metrics.sources[source] || 0) + 1;
 
       // Update last accessed time
       sessionData.lastAccessedAt = new Date().toISOString();
       await this.updateSession(sessionId, sessionData);
 
+      this.updateResponseTime(startTime);
       this.logger.debug('Session retrieved', {
         sessionId: sessionId.substring(0, 8) + '...',
-        userId: sessionData.userId
+        userId: sessionData.userId,
+        source,
+        responseTime: Date.now() - startTime
       });
 
       return sessionData;
 
     } catch (error) {
+      this.metrics.errors++;
+      this.updateResponseTime(startTime);
       this.logger.error('Failed to get session:', error);
       return null;
     }
@@ -340,17 +414,89 @@ export class SessionManager {
   }
 
   /**
-   * Get session manager status
+   * Update response time metrics
+   * @param {number} startTime - Request start time
+   */
+  updateResponseTime(startTime) {
+    const responseTime = Date.now() - startTime;
+    this.metrics.responseTimes.push(responseTime);
+
+    // Keep only last N response times to prevent memory growth
+    if (this.metrics.responseTimes.length > this.config.metricsWindowSize) {
+      this.metrics.responseTimes.shift();
+    }
+  }
+
+  /**
+   * Get performance metrics
+   * @returns {Object} Performance metrics
+   */
+  getPerformanceMetrics() {
+    const responseTimes = this.metrics.responseTimes;
+    const totalRequests = this.metrics.sessionCreated + this.metrics.sessionRetrieved;
+    const cacheHitRate = totalRequests > 0 ? (this.metrics.cacheHits / totalRequests) * 100 : 0;
+    const redisHitRate = this.metrics.redisMisses > 0 ?
+      (this.metrics.redisHits / (this.metrics.redisHits + this.metrics.redisMisses)) * 100 : 0;
+
+    return {
+      sessions: {
+        created: this.metrics.sessionCreated,
+        retrieved: this.metrics.sessionRetrieved,
+        active: this.memoryStore.size
+      },
+      cache: {
+        hits: this.metrics.cacheHits,
+        misses: this.metrics.cacheMisses,
+        hitRate: Math.round(cacheHitRate * 100) / 100
+      },
+      redis: {
+        hits: this.metrics.redisHits,
+        misses: this.metrics.redisMisses,
+        hitRate: Math.round(redisHitRate * 100) / 100,
+        connected: this.redis.isConnected()
+      },
+      performance: {
+        averageResponseTime: responseTimes.length > 0 ?
+          Math.round((responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length) * 100) / 100 : 0,
+        minResponseTime: responseTimes.length > 0 ? Math.min(...responseTimes) : 0,
+        maxResponseTime: responseTimes.length > 0 ? Math.max(...responseTimes) : 0,
+        recentRequests: responseTimes.length
+      },
+      errors: this.metrics.errors,
+      uptime: Date.now() - this.metrics.startTime
+    };
+  }
+
+  /**
+   * Get session manager status with enhanced metrics
    * @returns {Object} Status information
    */
   getStatus() {
-    return {
-      redisConnected: this.redis.isConnected,
-      memorySessions: this.memoryStore.size,
-      activeTimers: this.sessionTimers.size,
+    const baseStatus = {
+      totalSessions: this.memoryStore.size,
+      redisConnected: this.redis.isConnected(),
+      memoryUsage: process.memoryUsage(),
+      uptime: Date.now() - this.startTime,
       config: {
         ttl: this.config.ttl,
+        cleanupInterval: this.config.cleanupInterval,
         maxSessions: this.config.maxSessions
+      }
+    };
+
+    // Add performance metrics
+    const performanceMetrics = this.getPerformanceMetrics();
+
+    return {
+      ...baseStatus,
+      metrics: performanceMetrics,
+      health: {
+        status: this.redis.isConnected() ? 'healthy' : 'degraded',
+        issues: [
+          ...(this.redis.isConnected() ? [] : ['Redis connection unavailable']),
+          ...(performanceMetrics.errors > 10 ? ['High error rate detected'] : []),
+          ...(performanceMetrics.performance.averageResponseTime > 100 ? ['Slow response times detected'] : [])
+        ]
       }
     };
   }
