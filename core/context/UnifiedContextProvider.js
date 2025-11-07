@@ -15,11 +15,12 @@
  */
 
 import { ContextManager } from './ContextManager.js';
-import { Logger } from '../utils/logger.js';
+import { Logger } from '../logging/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
+import ContextIntelligenceOrchestrator from './context-intelligence-orchestrator.js';
 
-// Import Configuration Service
-const configService = require('../services/ConfigurationService.js');
+// Import Configuration Service  
+import configService from '../services/ConfigurationService.js';
 
 export class UnifiedContextProvider extends ContextManager {
   constructor(options = {}) {
@@ -33,10 +34,19 @@ export class UnifiedContextProvider extends ContextManager {
       includeDesignHealth: configService.isFeatureEnabled('designHealth'),
       includeAdvancedContext: configService.isFeatureEnabled('advancedContext'),
       includePerformanceMetrics: configService.isFeatureEnabled('performanceMetrics'),
+      includeContextIntelligence: configService.isFeatureEnabled('contextIntelligence') !== false, // Default enabled
       enableRealTimeUpdates: true,
       contextValidation: true,
       ...options
     };
+
+    // Initialize Context Intelligence Orchestrator (Phase 7)
+    this.contextIntelligence = new ContextIntelligenceOrchestrator({
+      enableCaching: this.unifiedConfig.includeContextIntelligence,
+      parallelAnalysis: true,
+      includePerformanceMetrics: this.unifiedConfig.includePerformanceMetrics,
+      confidenceThreshold: 0.7
+    });
 
     // Health metrics tracking
     this.healthMetrics = new Map();
@@ -74,11 +84,21 @@ export class UnifiedContextProvider extends ContextManager {
         ? await this.buildPerformanceMetrics(figmaData, baseContext)
         : null;
 
+      // Add Context Intelligence Analysis (Phase 7)
+      const contextIntelligence = this.unifiedConfig.includeContextIntelligence
+        ? await this.buildContextIntelligenceAnalysis(figmaData, baseContext, {
+            healthMetrics,
+            advancedContext,
+            performanceMetrics
+          })
+        : null;
+
       // Build LLM preview context
       const llmPreviewContext = await this.buildLLMPreviewContext(baseContext, {
         healthMetrics,
         advancedContext,
-        performanceMetrics
+        performanceMetrics,
+        contextIntelligence
       });
 
       // Construct unified context object
@@ -95,6 +115,9 @@ export class UnifiedContextProvider extends ContextManager {
         // Performance metrics
         performanceMetrics,
 
+        // Context Intelligence Analysis (Phase 7)
+        contextIntelligence,
+
         // LLM preview context (what gets sent to AI)
         llmPreview: llmPreviewContext,
 
@@ -105,7 +128,8 @@ export class UnifiedContextProvider extends ContextManager {
           featuresEnabled: {
             designHealth: this.unifiedConfig.includeDesignHealth,
             advancedContext: this.unifiedConfig.includeAdvancedContext,
-            performanceMetrics: this.unifiedConfig.includePerformanceMetrics
+            performanceMetrics: this.unifiedConfig.includePerformanceMetrics,
+            contextIntelligence: this.unifiedConfig.includeContextIntelligence
           },
           contextVersion: '2.0.0',
           unifiedProvider: true
@@ -274,6 +298,87 @@ export class UnifiedContextProvider extends ContextManager {
   }
 
   /**
+   * Build Context Intelligence Analysis (Phase 7)
+   * @param {object} figmaData - Raw Figma data
+   * @param {object} baseContext - Base context from ContextManager
+   * @param {object} additionalContext - Additional context from other analyses
+   * @returns {object} Context intelligence analysis
+   */
+  async buildContextIntelligenceAnalysis(figmaData, baseContext, additionalContext = {}) {
+    try {
+      this.logger.debug('🧠 Building context intelligence analysis (Phase 7)');
+
+      // Create a DesignSpec from baseContext for Context Intelligence
+      const designSpec = {
+        components: baseContext.components || [],
+        designTokens: baseContext.designTokens || {},
+        specifications: baseContext.specifications || {},
+        metadata: {
+          totalNodes: baseContext.nodes?.length || 0,
+          componentCount: baseContext.components?.length || 0,
+          designSystemDetected: !!(baseContext.designTokens?.colors?.length || baseContext.designTokens?.typography?.length)
+        }
+      };
+
+      // Create prototype data from figmaData
+      const prototypeData = {
+        interactions: figmaData.interactions || [],
+        prototypes: figmaData.prototypes || [],
+        transitions: figmaData.transitions || [],
+        flows: figmaData.flows || []
+      };
+
+      // Create design context
+      const designContext = {
+        purpose: baseContext.specifications?.purpose || 'User interface design',
+        targetAudience: baseContext.specifications?.audience || 'General users',
+        businessDomain: baseContext.specifications?.domain || 'Web application',
+        platform: baseContext.specifications?.platform || 'Web',
+        designSystem: baseContext.designTokens?.system || 'Custom'
+      };
+
+      // Run Context Intelligence Orchestrator
+      const contextIntelligenceResult = await this.contextIntelligence.analyzeContextIntelligence(
+        designSpec,
+        prototypeData,
+        designContext
+      );
+
+      // Enrich with additional context if available
+      if (additionalContext.healthMetrics) {
+        contextIntelligenceResult.enrichment = {
+          ...contextIntelligenceResult.enrichment,
+          healthMetrics: {
+            overallHealthScore: additionalContext.healthMetrics.overallHealth?.totalScore || 0,
+            componentHealth: additionalContext.healthMetrics.componentHealth?.score || 0,
+            accessibilityHealth: additionalContext.healthMetrics.accessibilityHealth?.score || 0
+          }
+        };
+      }
+
+      if (additionalContext.advancedContext) {
+        contextIntelligenceResult.enrichment = {
+          ...contextIntelligenceResult.enrichment,
+          advancedContext: {
+            hierarchyComplexity: additionalContext.advancedContext.hierarchyAnalysis?.complexity || 0,
+            componentComplexity: Object.keys(additionalContext.advancedContext.componentAnalysis?.componentTypes || {}).length,
+            interactionComplexity: additionalContext.advancedContext.interactionAnalysis?.interactionComplexity || 0
+          }
+        };
+      }
+
+      this.logger.info(`🧠 Context Intelligence Analysis completed with ${(contextIntelligenceResult.synthesis.overallConfidence * 100).toFixed(1)}% confidence`);
+      this.logger.info(`💡 Generated ${contextIntelligenceResult.recommendations.critical.length} critical recommendations`);
+
+      return contextIntelligenceResult;
+
+    } catch (error) {
+      this.logger.error('❌ Failed to build context intelligence analysis:', error);
+      return null;
+    }
+  }
+
+  /**
    * Build performance metrics
    * @param {object} figmaData - Raw Figma data
    * @param {object} baseContext - Base context from ContextManager
@@ -325,19 +430,49 @@ export class UnifiedContextProvider extends ContextManager {
       const { TemplateManager } = await import('../data/template-manager.js');
       const templateManager = new TemplateManager();
 
+      // Build enhanced base context with Context Intelligence
+      const enhancedBaseContext = { ...baseContext };
+      
+      // Enrich with Context Intelligence insights if available
+      if (additionalContext.contextIntelligence) {
+        enhancedBaseContext.contextIntelligence = {
+          semanticInsights: additionalContext.contextIntelligence.synthesis?.keyInsights || [],
+          businessLogic: additionalContext.contextIntelligence.synthesis?.businessLogic || {},
+          userExperience: additionalContext.contextIntelligence.synthesis?.userExperience || {},
+          designQuality: additionalContext.contextIntelligence.synthesis?.designQuality || {},
+          recommendations: {
+            critical: additionalContext.contextIntelligence.recommendations?.critical || [],
+            important: additionalContext.contextIntelligence.recommendations?.important || []
+          },
+          aiEnhancements: additionalContext.contextIntelligence.integration?.promptEnhancements || {}
+        };
+      }
+
       // Build template context that would be sent to LLM
       const templateContext = await templateManager.buildTemplateContext(
-        baseContext,
+        enhancedBaseContext,
         'React', // Default tech stack
         'jira', // Default platform
         'component' // Default document type
       );
 
+      // Calculate enhanced context with Context Intelligence
+      const enhancedTemplateContext = {
+        ...templateContext
+      };
+
+      // Add Context Intelligence prompt enhancements if available
+      if (additionalContext.contextIntelligence?.integration?.promptEnhancements) {
+        enhancedTemplateContext.aiPromptEnhancements = additionalContext.contextIntelligence.integration.promptEnhancements;
+      }
+
       return {
-        templateContext,
-        tokenCount: this.estimateTokenCount(templateContext),
-        contextSize: JSON.stringify(templateContext).length,
-        validationStatus: this.validateLLMContext(templateContext),
+        templateContext: enhancedTemplateContext,
+        tokenCount: this.estimateTokenCount(enhancedTemplateContext),
+        contextSize: JSON.stringify(enhancedTemplateContext).length,
+        validationStatus: this.validateLLMContext(enhancedTemplateContext),
+        contextIntelligenceEnabled: !!(additionalContext.contextIntelligence),
+        intelligenceConfidence: additionalContext.contextIntelligence?.synthesis?.overallConfidence || 0,
         previewGenerated: new Date().toISOString()
       };
 
@@ -367,6 +502,20 @@ export class UnifiedContextProvider extends ContextManager {
         if (!context[section]) {
           validation.errors.push(`Missing required section: ${section}`);
           validation.isValid = false;
+        }
+      }
+
+      // Validate Context Intelligence if enabled
+      if (context.contextIntelligence) {
+        if (!context.contextIntelligence.synthesis || !context.contextIntelligence.recommendations) {
+          validation.warnings.push('Context Intelligence analysis incomplete');
+        } else {
+          const confidence = context.contextIntelligence.synthesis.overallConfidence || 0;
+          if (confidence < 0.5) {
+            validation.warnings.push(`Low Context Intelligence confidence: ${(confidence * 100).toFixed(1)}%`);
+          } else if (confidence >= 0.8) {
+            validation.warnings.push(`High Context Intelligence confidence: ${(confidence * 100).toFixed(1)}%`);
+          }
         }
       }
 
@@ -707,7 +856,7 @@ export class UnifiedContextProvider extends ContextManager {
   }
 
   calculateContextCompleteness(context) {
-    const sections = ['nodes', 'components', 'designTokens', 'specifications', 'healthMetrics', 'advancedContext'];
+    const sections = ['nodes', 'components', 'designTokens', 'specifications', 'healthMetrics', 'advancedContext', 'contextIntelligence'];
     const presentSections = sections.filter(section => context[section]).length;
     return presentSections / sections.length;
   }

@@ -159,6 +159,29 @@ export class ErrorHandler {
   }
 
   /**
+   * Generic error handler - logs and re-throws with context
+   * @param {Error} error - Original error
+   * @param {string} context - Context where error occurred (optional)
+   * @returns {Error} Enhanced error
+   */
+  handle(error, context = 'Unknown') {
+    this.logger.error(`Error in ${context}:`, {
+      message: error.message,
+      stack: error.stack,
+      context: context
+    });
+
+    // Create enhanced error with context
+    const enhancedError = new Error(`${context}: ${error.message}`);
+    enhancedError.originalError = error;
+    enhancedError.context = context;
+    enhancedError.timestamp = new Date().toISOString();
+    enhancedError.stack = error.stack;
+
+    return enhancedError;
+  }
+
+  /**
    * Handle tool execution errors with context
    * @param {string} toolName - Name of the tool that failed
    * @param {Error} error - Original error from tool execution
