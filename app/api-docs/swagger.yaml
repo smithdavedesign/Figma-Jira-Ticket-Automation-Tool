@@ -49,6 +49,8 @@ tags:
     description: 🧪 Testing and validation
   - name: live
     description: 📡 Live data and real-time features
+  - name: plugin
+    description: 🔌 Figma Plugin API - Modular Context Collection System
 
 paths:
   /api/generate/strategy-info:
@@ -848,12 +850,308 @@ paths:
                       status:
                         type: string
                         enum: [healthy, degraded, unhealthy]
-                      services:
-                        type: object
-                      tools:
-                        type: array
+                  services:
+                    type: object
+                  tools:
+                    type: array
 
-  /mcp/tools:
+  # 🚀 FIGMA PLUGIN API - MODULAR CONTEXT COLLECTION SYSTEM
+  /plugin/comprehensive-context:
+    post:
+      tags: [plugin]
+      summary: 🚀 Comprehensive Context Collection (Plugin API)
+      description: |
+        **🔌 Figma Plugin Modular API System**
+        
+        This documents the **client-side plugin API** that provides comprehensive context collection 
+        directly from Figma using our modular system. This API operates via `postMessage` 
+        communication between the Figma plugin UI and the plugin code.
+        
+        ### 🏗️ Architecture:
+        ```
+        Figma UI "Preview Context" Button Click 
+          ↓
+        collectComprehensiveContext() [Client-side]
+          ↓
+        9x Modular Collection Functions (Parallel)
+          ↓
+        postMessage() to Figma Plugin
+          ↓
+        6x Plugin Message Handlers
+          ↓
+        Direct Figma API Extraction
+          ↓
+        Structured Data Storage
+        ```
+        
+        ### 📦 **9 Collection Modules:**
+        1. **`figmaSelection`** - Core selection data with hierarchy
+        2. **`figmaComponents`** - Component analysis and variants
+        3. **`figmaStyles`** - Design tokens extraction
+        4. **`figmaInteractions`** - Prototype interactions  
+        5. **`figmaConstraints`** - Auto-layout & responsive data
+        6. **`figmaEffects`** - Shadows, blurs, advanced styling
+        7. **`screenshot`** - High-quality image capture
+        8. **`accessibility`** - A11y analysis from collected data
+        9. **`codeGeneration`** - Implementation readiness specs
+        
+        ### 🎯 **Plugin Message Handlers:**
+        - `get-comprehensive-selection` → `handleGetComprehensiveSelection()`
+        - `analyze-components` → `handleAnalyzeComponents()`
+        - `extract-design-tokens` → `handleExtractDesignTokens()`
+        - `analyze-interactions` → `handleAnalyzeInteractions()`
+        - `analyze-constraints` → `handleAnalyzeConstraints()`
+        - `analyze-effects` → `handleAnalyzeEffects()`
+        
+        ### 💾 **Data Storage:**
+        ```javascript
+        window.comprehensiveContextData = {
+          metadata: { version: '3.0.0', collectedAt: '...', source: '...' },
+          figmaData: { selection: [...], components: [...], interactions: [...] },
+          designTokens: { colors: [...], typography: [...], spacing: [...] },
+          technicalSpecs: { constraints: {...}, effects: {...} },
+          accessibility: { contrastRatios: [...], wcagCompliance: '...' },
+          codeGeneration: { framework: '...', implementation: {...} },
+          screenshot: { url: '...', metadata: {...} }
+        }
+        ```
+        
+        ### ⚡ **Trigger Mechanism:**
+        **Only triggers on "🔍 Preview Context & Generate" button click**
+        
+        **No HTTP requests needed** - all data comes directly from Figma API via plugin context.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [techStack]
+              properties:
+                techStack:
+                  type: string
+                  description: Target technology stack
+                  example: "React with TypeScript"
+                documentType:
+                  type: string
+                  enum: [story, task, bug, epic, component]
+                  default: story
+                  description: Type of documentation to generate
+                enableModules:
+                  type: object
+                  description: Module configuration - enable/disable specific collection modules
+                  properties:
+                    figmaSelection:
+                      type: boolean
+                      default: true
+                      description: Core selection data with hierarchy
+                    figmaComponents:
+                      type: boolean
+                      default: true
+                      description: Component analysis and variants
+                    figmaStyles:
+                      type: boolean
+                      default: true
+                      description: Design tokens extraction
+                    figmaInteractions:
+                      type: boolean
+                      default: true
+                      description: Prototype interactions analysis
+                    figmaConstraints:
+                      type: boolean
+                      default: true
+                      description: Auto-layout & responsive constraints
+                    figmaEffects:
+                      type: boolean
+                      default: true
+                      description: Shadows, blurs, advanced styling
+                    screenshot:
+                      type: boolean
+                      default: true
+                      description: High-quality screenshot capture
+                    accessibility:
+                      type: boolean
+                      default: true
+                      description: Accessibility analysis from data
+                    codeGeneration:
+                      type: boolean
+                      default: true
+                      description: Code generation readiness assessment
+            examples:
+              full_collection:
+                summary: Full Comprehensive Collection
+                description: Collect all 9 modules for maximum context
+                value:
+                  techStack: "React with TypeScript"
+                  documentType: "component"
+                  enableModules:
+                    figmaSelection: true
+                    figmaComponents: true
+                    figmaStyles: true
+                    figmaInteractions: true
+                    figmaConstraints: true
+                    figmaEffects: true
+                    screenshot: true
+                    accessibility: true
+                    codeGeneration: true
+              selective_collection:
+                summary: Selective Module Collection
+                description: Only collect essential modules for speed
+                value:
+                  techStack: "Vue.js"
+                  documentType: "story"
+                  enableModules:
+                    figmaSelection: true
+                    screenshot: true
+                    designTokens: true
+                    accessibility: false
+                    codeGeneration: false
+              minimal_collection:
+                summary: Minimal Data Collection
+                description: Basic selection and screenshot only
+                value:
+                  techStack: "Angular"
+                  documentType: "task"
+                  enableModules:
+                    figmaSelection: true
+                    screenshot: true
+                    # All other modules disabled for speed
+
+      responses:
+        '200':
+          description: Comprehensive context collection completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Comprehensive context collected successfully"
+                  data:
+                    $ref: '#/components/schemas/ComprehensiveContextData'
+                  performance:
+                    type: object
+                    properties:
+                      totalModules:
+                        type: integer
+                        example: 9
+                      completedModules:
+                        type: integer
+                        example: 9
+                      collectionTime:
+                        type: integer
+                        description: Total collection time in milliseconds
+                        example: 3420
+                      averageModuleTime:
+                        type: integer
+                        description: Average time per module in milliseconds
+                        example: 380
+                      dataPoints:
+                        type: integer
+                        description: Total number of data points collected
+                        example: 847
+              examples:
+                successful_collection:
+                  summary: Successful Comprehensive Collection
+                  value:
+                    success: true
+                    message: "Comprehensive context collected from 9 modules"
+                    data:
+                      metadata:
+                        collectedAt: "2025-11-07T15:30:00.000Z"
+                        source: "modular-comprehensive-collection"
+                        version: "3.0.0"
+                        enabledModules: 
+                          figmaSelection: true
+                          figmaComponents: true
+                          figmaStyles: true
+                          screenshot: true
+                      figmaData:
+                        selection: 
+                          - id: "123:456"
+                            name: "Login Button"
+                            type: "INSTANCE"
+                            hierarchy: { layers: 3, componentCount: 1 }
+                        components:
+                          - id: "123:456"
+                            name: "Button Component"
+                            type: "instance"
+                            masterComponent: { id: "789:012", name: "Base Button" }
+                      designTokens:
+                        colors: ["#007AFF", "#34C759", "#FF3B30"]
+                        typography: ["Inter-16px-Medium", "Inter-14px-Regular"]
+                        spacing: [8, 16, 24, 32]
+                        borderRadius: [4, 8, 12]
+                      screenshot:
+                        url: "data:image/png;base64,iVBORw0KGgoAAAANS..."
+                        metadata: { captureTime: "2025-11-07T15:30:00.000Z" }
+                    performance:
+                      totalModules: 9
+                      completedModules: 9
+                      collectionTime: 3420
+                      averageModuleTime: 380
+                      dataPoints: 847
+
+        '400':
+          description: Invalid module configuration or missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Missing required field: techStack"
+                  modules:
+                    type: object
+                    properties:
+                      attempted:
+                        type: array
+                        items:
+                          type: string
+                      failed:
+                        type: array
+                        items:
+                          type: string
+                      succeeded:
+                        type: array
+                        items:
+                          type: string
+
+        '408':
+          description: Module collection timeout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Module collection timed out after 15 seconds"
+                  partialData:
+                    $ref: '#/components/schemas/ComprehensiveContextData'
+                    description: Partial data from completed modules
+                  completedModules:
+                    type: array
+                    items:
+                      type: string
+                    example: ["figmaSelection", "screenshot", "designTokens"]
+                  failedModules:
+                    type: array
+                    items:
+                      type: string
+                    example: ["figmaComponents", "figmaInteractions"]  /mcp/tools:
     get:
       tags: [mcp]
       summary: 🛠️ List Figma Design Context Tools
@@ -1338,6 +1636,389 @@ components:
               type: string
             architecture:
               type: string
+
+    ComprehensiveContextData:
+      type: object
+      description: Complete structured data from modular comprehensive context collection
+      properties:
+        metadata:
+          type: object
+          description: Collection metadata
+          properties:
+            collectedAt:
+              type: string
+              format: date-time
+              description: Timestamp when collection completed
+            source:
+              type: string
+              example: "modular-comprehensive-collection"
+              description: Source of the data collection
+            version:
+              type: string
+              example: "3.0.0"
+              description: Collection system version
+            enabledModules:
+              type: object
+              description: Which modules were enabled for collection
+              additionalProperties:
+                type: boolean
+        figmaData:
+          type: object
+          description: Core Figma data from selection and components
+          properties:
+            selection:
+              type: array
+              description: Enhanced selection data with hierarchy
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Figma node ID
+                  name:
+                    type: string
+                    description: Node name
+                  type:
+                    type: string
+                    enum: [FRAME, COMPONENT, INSTANCE, TEXT, RECTANGLE, ELLIPSE, VECTOR, GROUP]
+                    description: Figma node type
+                  position:
+                    type: object
+                    properties:
+                      x:
+                        type: number
+                      y:
+                        type: number
+                  size:
+                    type: object
+                    properties:
+                      width:
+                        type: number
+                      height:
+                        type: number
+                  hierarchy:
+                    type: object
+                    description: Node hierarchy information
+                    properties:
+                      layers:
+                        type: integer
+                        description: Number of nested layers
+                      componentCount:
+                        type: integer
+                        description: Number of component instances
+                      textLayerCount:
+                        type: integer
+                        description: Number of text layers
+            components:
+              type: array
+              description: Component analysis data
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  type:
+                    type: string
+                    enum: [instance, definition, broken-instance]
+                  masterComponent:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      key:
+                        type: string
+            interactions:
+              type: array
+              description: Prototype interactions and flows
+              items:
+                type: object
+                properties:
+                  nodeId:
+                    type: string
+                  nodeName:
+                    type: string
+                  trigger:
+                    type: string
+                    enum: [ON_CLICK, ON_HOVER, ON_PRESS, ON_DRAG, unknown]
+                  action:
+                    type: string
+                    enum: [NAVIGATE, BACK, CLOSE, OVERLAY, unknown]
+                  destination:
+                    type: string
+                    nullable: true
+        designTokens:
+          type: object
+          description: Extracted design tokens from Figma styles
+          properties:
+            colors:
+              type: array
+              description: Color palette
+              items:
+                type: string
+                pattern: '^#[0-9A-Fa-f]{6}$'
+                example: "#007AFF"
+            typography:
+              type: array
+              description: Typography system
+              items:
+                type: string
+                example: "Inter-16px-Medium"
+            spacing:
+              type: array
+              description: Spacing scale (sorted)
+              items:
+                type: number
+              example: [4, 8, 12, 16, 20, 24, 32, 40, 48, 64]
+            borderRadius:
+              type: array
+              description: Border radius values (sorted)
+              items:
+                type: number
+              example: [0, 4, 6, 8, 12, 16, 24]
+            effects:
+              type: array
+              description: Shadow and effect definitions
+              items:
+                type: string
+              example: ["0px 2px 4px rgba(0,0,0,0.1)", "0px 4px 8px rgba(0,0,0,0.15)"]
+        technicalSpecs:
+          type: object
+          description: Technical implementation specifications
+          properties:
+            constraints:
+              type: object
+              description: Layout constraints and auto-layout data
+              properties:
+                autoLayout:
+                  type: array
+                  description: Auto-layout configurations
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      layoutMode:
+                        type: string
+                        enum: [HORIZONTAL, VERTICAL, GRID]
+                      itemSpacing:
+                        type: number
+                      paddingLeft:
+                        type: number
+                      paddingRight:
+                        type: number
+                      paddingTop:
+                        type: number
+                      paddingBottom:
+                        type: number
+                constraints:
+                  type: array
+                  description: Node positioning constraints
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      horizontal:
+                        type: string
+                        enum: [LEFT, RIGHT, LEFT_RIGHT, CENTER, SCALE]
+                      vertical:
+                        type: string
+                        enum: [TOP, BOTTOM, TOP_BOTTOM, CENTER, SCALE]
+            effects:
+              type: object
+              description: Visual effects analysis
+              properties:
+                shadows:
+                  type: array
+                  description: Drop shadow effects
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      offset:
+                        type: object
+                        properties:
+                          x:
+                            type: number
+                          y:
+                            type: number
+                      radius:
+                        type: number
+                      color:
+                        type: object
+                        properties:
+                          r:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                          g:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                          b:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                          a:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                blurs:
+                  type: array
+                  description: Blur effects
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      radius:
+                        type: number
+                blends:
+                  type: array
+                  description: Blend mode effects
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      blendMode:
+                        type: string
+                      opacity:
+                        type: number
+                        minimum: 0
+                        maximum: 1
+        accessibility:
+          type: object
+          description: Accessibility analysis from collected data
+          properties:
+            contrastRatios:
+              type: array
+              description: Color contrast ratio analysis
+              items:
+                type: object
+                properties:
+                  foreground:
+                    type: string
+                  background:
+                    type: string
+                  ratio:
+                    type: number
+                  wcagAA:
+                    type: boolean
+                  wcagAAA:
+                    type: boolean
+            altTextCoverage:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Percentage of images with alt text
+            keyboardNavigation:
+              type: boolean
+              description: Whether keyboard navigation is supported
+            semanticStructure:
+              type: string
+              enum: [excellent, good, needs-review, poor]
+              description: Quality of semantic HTML structure
+            wcagCompliance:
+              type: string
+              enum: [compliant, partial, non-compliant]
+              description: Overall WCAG compliance level
+            recommendations:
+              type: array
+              description: Accessibility improvement recommendations
+              items:
+                type: string
+              example: 
+                - "Review color contrast ratios"
+                - "Add alt text for images"
+                - "Ensure keyboard navigation support"
+        codeGeneration:
+          type: object
+          description: Code generation readiness and specifications
+          properties:
+            framework:
+              type: string
+              description: Target development framework
+              example: "React with TypeScript"
+            components:
+              type: array
+              description: Identified components for code generation
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  props:
+                    type: object
+            styles:
+              type: object
+              description: CSS/styling specifications
+              additionalProperties: true
+            structure:
+              type: object
+              description: Component structure and hierarchy
+              additionalProperties: true
+            implementation:
+              type: object
+              description: Implementation readiness assessment
+              properties:
+                ready:
+                  type: boolean
+                  description: Whether design is ready for code generation
+                confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  description: Confidence score for code generation
+                blockers:
+                  type: array
+                  description: Issues preventing code generation
+                  items:
+                    type: string
+                  example: ["Missing component specifications", "Inconsistent spacing system"]
+        screenshot:
+          type: object
+          nullable: true
+          description: High-quality screenshot data
+          properties:
+            url:
+              type: string
+              description: Screenshot data URL (base64 encoded)
+              pattern: '^data:image/(png|jpeg|svg\+xml);base64,'
+            metadata:
+              type: object
+              description: Screenshot capture metadata
+              properties:
+                captureTime:
+                  type: string
+                  format: date-time
+                nodeName:
+                  type: string
+                nodeType:
+                  type: string
+                fileKey:
+                  type: string
+                source:
+                  type: string
+                  enum: [backend-api, direct-export, fallback]
 
     ErrorResponse:
       type: object

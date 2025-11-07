@@ -157,6 +157,25 @@ figma.ui.onmessage = async (msg) => {
                 // DEPRECATED: Use 'get-unified-context' instead
                 await handleGetAdvancedContext();
                 break;
+            // 🚀 NEW MODULAR API HANDLERS
+            case 'get-comprehensive-selection':
+                await handleGetComprehensiveSelection(msg);
+                break;
+            case 'analyze-components':
+                await handleAnalyzeComponents(msg);
+                break;
+            case 'extract-design-tokens':
+                await handleExtractDesignTokens(msg);
+                break;
+            case 'analyze-interactions':
+                await handleAnalyzeInteractions(msg);
+                break;
+            case 'analyze-constraints':
+                await handleAnalyzeConstraints(msg);
+                break;
+            case 'analyze-effects':
+                await handleAnalyzeEffects(msg);
+                break;
             case 'capture-screenshot':
                 await handleCaptureScreenshot();
                 break;
@@ -1290,4 +1309,321 @@ async function handlePreciseScreenshot() {
     }
     console.log('📸 === PRECISE SCREENSHOT COMPLETE ===');
 }
-console.log('✅ Enhanced Figma Plugin with Debug Tools loaded successfully');
+// 🚀 NEW MODULAR API HANDLERS
+async function handleGetComprehensiveSelection(msg) {
+    console.log('📦 Getting comprehensive selection data...');
+    try {
+        const selection = figma.currentPage.selection;
+        const fileKey = figma.fileKey || 'unknown';
+        const comprehensiveData = [];
+        for (const node of selection) {
+            const nodeData = await buildComprehensiveNodeData(node, msg.options || {});
+            comprehensiveData.push(nodeData);
+        }
+        const fileContext = {
+            fileKey,
+            fileName: figma.root.name,
+            pageName: figma.currentPage.name,
+            pageId: figma.currentPage.id
+        };
+        figma.ui.postMessage({
+            type: 'comprehensive-selection-data',
+            data: comprehensiveData,
+            fileContext: fileContext
+        });
+    }
+    catch (error) {
+        console.error('❌ Comprehensive selection failed:', error);
+        figma.ui.postMessage({
+            type: 'comprehensive-selection-data',
+            data: [],
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+}
+async function handleAnalyzeComponents(msg) {
+    console.log('🎨 Analyzing components...');
+    try {
+        const selection = figma.currentPage.selection;
+        const componentAnalysis = [];
+        for (const node of selection) {
+            if (node.type === 'INSTANCE' || node.type === 'COMPONENT') {
+                const analysis = await analyzeComponentNode(node, msg.options || {});
+                componentAnalysis.push(analysis);
+            }
+        }
+        figma.ui.postMessage({
+            type: 'components-analysis-data',
+            data: componentAnalysis
+        });
+    }
+    catch (error) {
+        console.error('❌ Component analysis failed:', error);
+        figma.ui.postMessage({
+            type: 'components-analysis-data',
+            data: [],
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+}
+async function handleExtractDesignTokens(msg) {
+    console.log('🎭 Extracting design tokens...');
+    try {
+        const selection = figma.currentPage.selection;
+        const designTokens = {
+            colors: new Set(),
+            typography: new Set(),
+            spacing: new Set(),
+            borderRadius: new Set(),
+            effects: new Set()
+        };
+        for (const node of selection) {
+            const tokens = await extractDesignTokens(node);
+            if (tokens.colors)
+                tokens.colors.forEach((c) => designTokens.colors.add(c));
+            if (tokens.typography)
+                tokens.typography.forEach((t) => designTokens.typography.add(t));
+            if (tokens.spacing)
+                tokens.spacing.forEach((s) => designTokens.spacing.add(s));
+            if (tokens.borderRadius)
+                tokens.borderRadius.forEach((r) => designTokens.borderRadius.add(r));
+            if (tokens.shadows)
+                tokens.shadows.forEach((e) => designTokens.effects.add(e));
+        }
+        figma.ui.postMessage({
+            type: 'design-tokens-data',
+            data: {
+                colors: Array.from(designTokens.colors),
+                typography: Array.from(designTokens.typography),
+                spacing: Array.from(designTokens.spacing).sort((a, b) => a - b),
+                borderRadius: Array.from(designTokens.borderRadius).sort((a, b) => a - b),
+                effects: Array.from(designTokens.effects)
+            }
+        });
+    }
+    catch (error) {
+        console.error('❌ Design token extraction failed:', error);
+        figma.ui.postMessage({
+            type: 'design-tokens-data',
+            data: {},
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+}
+async function handleAnalyzeInteractions(msg) {
+    var _a, _b, _c;
+    console.log('⚡ Analyzing interactions...');
+    try {
+        const selection = figma.currentPage.selection;
+        const interactions = [];
+        for (const node of selection) {
+            if ('reactions' in node && node.reactions) {
+                for (const reaction of node.reactions) {
+                    interactions.push({
+                        nodeId: node.id,
+                        nodeName: node.name,
+                        trigger: ((_a = reaction.trigger) === null || _a === void 0 ? void 0 : _a.type) || 'unknown',
+                        action: ((_b = reaction.action) === null || _b === void 0 ? void 0 : _b.type) || 'unknown',
+                        destination: ((_c = reaction.action) === null || _c === void 0 ? void 0 : _c.destinationId) || null
+                    });
+                }
+            }
+        }
+        figma.ui.postMessage({
+            type: 'interactions-data',
+            data: interactions
+        });
+    }
+    catch (error) {
+        console.error('❌ Interaction analysis failed:', error);
+        figma.ui.postMessage({
+            type: 'interactions-data',
+            data: [],
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+}
+async function handleAnalyzeConstraints(msg) {
+    console.log('📐 Analyzing constraints...');
+    try {
+        const selection = figma.currentPage.selection;
+        const constraints = {
+            autoLayout: [],
+            constraints: [],
+            responsive: []
+        };
+        for (const node of selection) {
+            // Auto Layout analysis
+            if ('layoutMode' in node && node.layoutMode !== 'NONE') {
+                constraints.autoLayout.push({
+                    nodeId: node.id,
+                    nodeName: node.name,
+                    layoutMode: node.layoutMode,
+                    itemSpacing: node.itemSpacing,
+                    paddingLeft: node.paddingLeft,
+                    paddingRight: node.paddingRight,
+                    paddingTop: node.paddingTop,
+                    paddingBottom: node.paddingBottom
+                });
+            }
+            // Constraints analysis
+            if ('constraints' in node) {
+                constraints.constraints.push({
+                    nodeId: node.id,
+                    nodeName: node.name,
+                    horizontal: node.constraints.horizontal,
+                    vertical: node.constraints.vertical
+                });
+            }
+        }
+        figma.ui.postMessage({
+            type: 'constraints-data',
+            data: constraints
+        });
+    }
+    catch (error) {
+        console.error('❌ Constraints analysis failed:', error);
+        figma.ui.postMessage({
+            type: 'constraints-data',
+            data: {},
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+}
+async function handleAnalyzeEffects(msg) {
+    console.log('✨ Analyzing effects...');
+    try {
+        const selection = figma.currentPage.selection;
+        const effects = {
+            shadows: [],
+            blurs: [],
+            blends: []
+        };
+        for (const node of selection) {
+            if ('effects' in node && node.effects) {
+                for (const effect of node.effects) {
+                    if (effect.type === 'DROP_SHADOW') {
+                        effects.shadows.push({
+                            nodeId: node.id,
+                            nodeName: node.name,
+                            offset: effect.offset,
+                            radius: effect.radius,
+                            color: effect.color,
+                            visible: effect.visible
+                        });
+                    }
+                    else if (effect.type === 'LAYER_BLUR') {
+                        effects.blurs.push({
+                            nodeId: node.id,
+                            nodeName: node.name,
+                            radius: effect.radius,
+                            visible: effect.visible
+                        });
+                    }
+                }
+            }
+            if ('blendMode' in node && node.blendMode !== 'NORMAL') {
+                effects.blends.push({
+                    nodeId: node.id,
+                    nodeName: node.name,
+                    blendMode: node.blendMode,
+                    opacity: node.opacity
+                });
+            }
+        }
+        figma.ui.postMessage({
+            type: 'effects-data',
+            data: effects
+        });
+    }
+    catch (error) {
+        console.error('❌ Effects analysis failed:', error);
+        figma.ui.postMessage({
+            type: 'effects-data',
+            data: {},
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+}
+// Helper function to build comprehensive node data
+async function buildComprehensiveNodeData(node, options) {
+    const nodeData = {
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        visible: node.visible,
+        locked: node.locked,
+        position: { x: node.x, y: node.y },
+        size: { width: node.width, height: node.height }
+    };
+    // Add fills
+    if ('fills' in node && node.fills) {
+        nodeData.fills = node.fills.map((fill) => ({
+            type: fill.type,
+            color: fill.type === 'SOLID' ? fill.color : null,
+            opacity: fill.opacity || 1
+        }));
+    }
+    // Add text properties
+    if (node.type === 'TEXT') {
+        nodeData.text = {
+            characters: node.characters,
+            fontSize: node.fontSize,
+            fontName: node.fontName,
+            textAlignHorizontal: node.textAlignHorizontal,
+            textAlignVertical: node.textAlignVertical
+        };
+    }
+    // Add component properties
+    if (node.type === 'INSTANCE') {
+        try {
+            const masterComponent = await node.getMainComponentAsync();
+            nodeData.component = {
+                id: masterComponent === null || masterComponent === void 0 ? void 0 : masterComponent.id,
+                name: masterComponent === null || masterComponent === void 0 ? void 0 : masterComponent.name,
+                key: masterComponent === null || masterComponent === void 0 ? void 0 : masterComponent.key
+            };
+        }
+        catch (error) {
+            nodeData.component = { id: null, name: null, key: null };
+        }
+    }
+    // Add children if requested
+    if (options.includeChildren && 'children' in node && node.children) {
+        nodeData.children = [];
+        for (const child of node.children) {
+            const childData = await buildComprehensiveNodeData(child, Object.assign(Object.assign({}, options), { depth: (options.depth || 1) - 1 }));
+            nodeData.children.push(childData);
+        }
+    }
+    return nodeData;
+}
+// Helper function to analyze component nodes
+async function analyzeComponentNode(node, options) {
+    const analysis = {
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        componentType: 'unknown'
+    };
+    if (node.type === 'INSTANCE') {
+        try {
+            const masterComponent = await node.getMainComponentAsync();
+            analysis.masterComponent = {
+                id: masterComponent === null || masterComponent === void 0 ? void 0 : masterComponent.id,
+                name: masterComponent === null || masterComponent === void 0 ? void 0 : masterComponent.name,
+                key: masterComponent === null || masterComponent === void 0 ? void 0 : masterComponent.key
+            };
+            analysis.componentType = 'instance';
+        }
+        catch (error) {
+            analysis.componentType = 'broken-instance';
+        }
+    }
+    else if (node.type === 'COMPONENT') {
+        analysis.componentType = 'definition';
+        analysis.key = node.key;
+    }
+    return analysis;
+}
+console.log('✅ Enhanced Figma Plugin with Modular API Handlers loaded successfully');

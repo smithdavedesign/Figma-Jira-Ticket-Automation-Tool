@@ -899,9 +899,19 @@
             // =============================================================================
 
             async analyzeDesign() {
+                // Check if we have context data from plugin first
+                if (window.figmaContextData) {
+                    this.log('🔄 Using context data from Figma plugin', 'info');
+                    this.contextData = window.figmaContextData;
+                    this.updateDesignSystemView(this.contextData);
+                    this.setOperationStatus('design-system', 'success', 'Plugin Data');
+                    this.log('✅ Design system analysis completed using plugin data', 'success');
+                    return;
+                }
+
                 const figmaUrl = document.getElementById('figma-url').value.trim();
                 if (!figmaUrl) {
-                    this.showError('Please enter a Figma URL');
+                    this.showError('Please enter a Figma URL or use the plugin integration');
                     return;
                 }
 
@@ -1121,8 +1131,10 @@
             // =============================================================================
 
             async generateAITicket() {
-                if (!this.contextData) {
-                    this.showError('No context data available. Analyze a design first.');
+                // Use plugin context data if available, otherwise use analyzed data
+                const contextData = window.figmaContextData || this.contextData;
+                if (!contextData) {
+                    this.showError('No context data available. Analyze a design first or use plugin integration.');
                     return;
                 }
 
@@ -1507,6 +1519,98 @@
                 this.log(`Auto-scroll ${this.autoScroll ? 'enabled' : 'disabled'}`, 'info');
             }
 
+            populateWithFigmaContext(contextData) {
+                this.log('📊 Populating dashboard with Figma context data', 'info');
+                
+                try {
+                    // Update the Figma URL field if we have file context
+                    if (contextData.figmaData?.fileContext?.fileName) {
+                        const urlInput = document.getElementById('figma-url');
+                        if (urlInput && !urlInput.value) {
+                            urlInput.value = `https://figma.com/file/demo/${contextData.figmaData.fileContext.fileName}`;
+                        }
+                    }
+                    
+                    // Update tech stack if available
+                    if (contextData.techStack?.description) {
+                        const techStackInput = document.getElementById('tech-stack');
+                        if (techStackInput) {
+                            techStackInput.value = contextData.techStack.description;
+                        }
+                    }
+                    
+                    // Store context data globally
+                    window.figmaContextData = contextData;
+                    
+                    // Update context tabs with real data
+                    this.updateContextTabs(contextData);
+                    
+                    // Simulate successful analysis
+                    setTimeout(() => {
+                        this.log(`✅ Loaded ${contextData.components?.length || 0} components, ${Object.keys(contextData.designTokens || {}).length} token categories`, 'success');
+                        this.updateStatus('figma', 'online', 'Plugin Data Loaded');
+                    }, 500);
+                    
+                } catch (error) {
+                    this.log(`❌ Error populating dashboard: ${error.message}`, 'error');
+                    console.error('Dashboard population error:', error);
+                }
+            }
+
+            updateContextTabs(contextData) {
+                // Update Overview tab
+                const overviewContent = document.getElementById('overview-content');
+                if (overviewContent && contextData.figmaData) {
+                    overviewContent.innerHTML = `
+                        <div class="context-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Selection Count:</span>
+                                <span class="metric-value">${contextData.figmaData.selection?.length || 0}</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Components:</span>
+                                <span class="metric-value">${contextData.components?.length || 0}</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Design Tokens:</span>
+                                <span class="metric-value">${Object.keys(contextData.designTokens || {}).length}</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">File:</span>
+                                <span class="metric-value">${contextData.figmaData.fileContext?.fileName || 'Unknown'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Update Raw Data tab
+                const rawContent = document.getElementById('raw-content');
+                if (rawContent) {
+                    rawContent.innerHTML = `<pre>${JSON.stringify(contextData, null, 2)}</pre>`;
+                }
+
+                // Update Tokens tab if design tokens exist
+                const tokensContent = document.getElementById('tokens-content');
+                if (tokensContent && contextData.designTokens) {
+                    const tokenHtml = Object.entries(contextData.designTokens).map(([category, tokens]) => {
+                        if (Array.isArray(tokens) && tokens.length > 0) {
+                            return `
+                                <div class="token-category">
+                                    <h4>${category.charAt(0).toUpperCase() + category.slice(1)}</h4>
+                                    <div class="token-list">
+                                        ${tokens.slice(0, 10).map(token => `<span class="token-item">${token}</span>`).join('')}
+                                        ${tokens.length > 10 ? `<span class="token-more">+${tokens.length - 10} more</span>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        return '';
+                    }).join('');
+                    
+                    tokensContent.innerHTML = tokenHtml || '<p>No design tokens found</p>';
+                }
+            }
+
             exportLogs() {
                 const logText = this.logs.map(log => 
                     `[${log.timestamp}] ${log.type.toUpperCase()}: ${log.message}`
@@ -1547,9 +1651,34 @@
         const toggleAutoScroll = () => dashboard.toggleAutoScroll();
         const exportLogs = () => dashboard.exportLogs();
 
+        // Listen for context data from Figma plugin
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'figma-context-data' && event.data.source === 'figma-plugin') {
+                console.log('📦 Received context data from Figma plugin:', event.data.data);
+                
+                if (dashboard) {
+                    // Populate dashboard with received context data
+                    dashboard.populateWithFigmaContext(event.data.data);
+                    dashboard.log('✅ Context data received from Figma plugin', 'success');
+                } else {
+                    // Store data for when dashboard is ready
+                    window.pendingFigmaContext = event.data.data;
+                    console.log('📋 Stored context data for dashboard initialization');
+                }
+            }
+        });
+
         // Initialize dashboard when page loads
         document.addEventListener('DOMContentLoaded', () => {
             dashboard = new UnifiedContextDashboard();
+            
+            // If we have pending context data, apply it
+            if (window.pendingFigmaContext) {
+                console.log('📊 Applying pending Figma context data');
+                dashboard.populateWithFigmaContext(window.pendingFigmaContext);
+                dashboard.log('✅ Applied pending context data from Figma plugin', 'success');
+                window.pendingFigmaContext = null;
+            }
         });
     </script>
 </body>

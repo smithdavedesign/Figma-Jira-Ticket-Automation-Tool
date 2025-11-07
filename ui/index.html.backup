@@ -441,49 +441,6 @@
       border: 1px solid #e2e8f0;
     }
 
-    /* Session Management UI */
-    .session-panel {
-      background: #f0f9ff;
-      border: 1px solid #0ea5e9;
-      border-radius: 8px;
-      padding: 16px;
-      margin: 20px 0;
-    }
-
-    .session-header {
-      display: flex; 
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .session-status {
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .performance-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .metric-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid #e0f2fe;
-    }
-
-    .metric-row:last-child {
-      border-bottom: none;
-    }
-
     .confidence-indicator {
       display: flex;
       align-items: center;
@@ -1184,23 +1141,6 @@
 
       <!-- Generator Tab -->
       <div class="tab-content active" id="generator-tab">
-      
-      <!-- Session Management Panel -->
-      <div class="session-panel">
-        <div class="session-header">
-          <h3 style="margin: 0; color: #0ea5e9; font-size: 16px;">⚡ Session Management</h3>
-          <div id="session-status" class="session-status">
-            <span style="color: #6b7280;">🔄 Initializing session...</span>
-          </div>
-        </div>
-        <div id="performance-metrics" class="performance-grid">
-          <div class="metric-row">
-            <span class="metric-label">Status:</span>
-            <span class="metric-value">Connecting...</span>
-          </div>
-        </div>
-      </div>
-      
       <div class="panel-header">
         <h2 class="panel-title">🎫 Enhanced Document Generator</h2>
         <p class="panel-subtitle">See exactly what context is sent to AI before generation</p>
@@ -1252,6 +1192,19 @@ Examples:
           <option value="wiki">� Wiki</option>
           <option value="figma">🎨 Figma</option>
         </select>
+      </div>
+
+      <!-- Team Parameter Input for Figma URL Generation -->
+      <div class="form-group">
+        <label for="teamParam">🔗 Figma Team Parameter (Optional)</label>
+        <input type="text" 
+               id="teamParam" 
+               placeholder="Paste your Figma URL or enter team parameter (e.g., N40s8WSxJE4gHM4T-0)"
+               onblur="handleTeamParamInput(this.value)"
+               title="This helps preserve team context in generated Figma URLs. You can paste your full Figma URL and we'll extract the team parameter automatically.">
+        <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">
+          💡 Tip: Paste your current Figma URL to automatically extract the team parameter, or find the 't=' value in your URL
+        </small>
       </div>
 
       <div class="form-group">
@@ -1318,10 +1271,10 @@ Examples:
         <div class="context-preview">
           <div class="context-preview-header">
             <h3 class="context-preview-title">
-              🔍 Context Analysis & AI Ticket Generation
+              🔍 Comprehensive Context Analysis
               <span class="context-preview-badge">Review & Generate</span>
             </h3>
-            <p class="context-preview-subtitle">Review your context and generate AI-powered tickets with comprehensive analysis</p>
+            <p class="context-preview-subtitle">Complete context preview with advanced analysis and generation tools</p>
           </div>
 
           <!-- Tab Navigation -->
@@ -1366,16 +1319,8 @@ Examples:
                   </div>
                   <div class="section-content" id="screenshot-content">
                     <div class="empty-state">
-                      <div style="text-align: center; margin-bottom: 15px;">
-                        <div style="width: 200px; height: 120px; margin: 0 auto; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px dashed #dee2e6; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative;">
-                          <div style="text-align: center; color: #6c757d;">
-                            <span style="font-size: 24px; display: block; margin-bottom: 5px;">🖼️</span>
-                            <span style="font-size: 12px; font-weight: 500;">Screenshot Preview</span>
-                          </div>
-                          <div style="position: absolute; top: 5px; right: 5px; background: #6c757d; color: white; font-size: 10px; padding: 2px 4px; border-radius: 3px;">📸</div>
-                        </div>
-                      </div>
-                      <p style="margin: 8px 0 4px 0; font-weight: 500;">No visual context available</p>
+                      <span class="empty-icon">🖼️</span>
+                      <p>No visual context available</p>
                       <small>Screenshots help AI understand design layouts and requirements</small>
                     </div>
                     <!-- Enhanced Screenshot Actions -->
@@ -1614,8 +1559,8 @@ Examples:
 
             <!-- Enhanced Action Buttons -->
             <div class="context-actions">
-              <button class="action-btn primary" id="generate-ai-ticket-btn">
-                🤖 Generate AI Ticket
+              <button class="action-btn primary" id="generate-ticket-btn">
+                🎫 Generate Ticket
               </button>
               <button class="action-btn secondary" id="refresh-context-btn">
                 🔄 Refresh Context
@@ -1632,12 +1577,13 @@ Examples:
       </div>
 
       <div class="button-group">
+        <button id="generateAI" class="button button-ai primary-action">🤖 Generate AI Ticket</button>
         <button id="openUnifiedContextDashboard" class="button button-primary">🔍 Preview Context & Generate</button>
       </div>
       
       <div style="text-align: center; margin: 10px 0;">
         <p style="font-size: 12px; color: #666; margin-top: 8px;">
-          Preview context first, then generate your ticket with comprehensive analysis
+          Unified dashboard with context preview, analysis, and generation options
         </p>
       </div>
 
@@ -1691,11 +1637,406 @@ Examples:
   <!-- Modal removed - using inline enhanced context preview instead -->
   <script>
     console.log('🔄 Modal removed - using enhanced inline preview');
-    // All modal functionality removed - using inline enhanced context preview instead
-    console.log('✅ Modal functionality removed successfully');
+    // Class definition removed - using inline preview instead
+    // All modal class code removed
+
+      /**
+       * Open the unified context dashboard
+       */
+      open() {
+        console.log('🔄 Opening unified context dashboard modal...');
+        
+        if (this.isOpen) {
+          console.log('⚠️ Dashboard already open');
+          return;
+        }
+
+        this.createModal();
+        this.isOpen = true;
+        
+        // Request unified context from Figma
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'get-unified-context' 
+          } 
+        }, '*');
+      }
+
+      /**
+       * Create the dashboard modal
+       */
+      createModal() {
+        // Remove any existing modal
+        const existingModal = document.getElementById('unified-context-modal');
+        if (existingModal) {
+          existingModal.remove();
+        }
+
+        // Create modal container
+        const modal = document.createElement('div');
+        modal.id = 'unified-context-modal';
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.7);
+          z-index: 10000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(4px);
+        `;
+
+        // Create modal content
+        const content = document.createElement('div');
+        content.style.cssText = `
+          background: white;
+          border-radius: 16px;
+          width: 90vw;
+          max-width: 1200px;
+          height: 90vh;
+          max-height: 800px;
+          overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          display: flex;
+          flex-direction: column;
+        `;
+
+        content.innerHTML = `
+          <div style="padding: 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h2 style="margin: 0; font-size: 20px; font-weight: 600;">🔄 Unified Context Dashboard</h2>
+            <button id="close-dashboard" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px;">✕ Close</button>
+          </div>
+          
+          <div style="display: flex; flex: 1; overflow: hidden;">
+            <div style="width: 200px; background: #f8fafc; border-right: 1px solid #e2e8f0; padding: 16px;">
+              <div class="dashboard-tabs">
+                <button class="dashboard-tab active" data-tab="overview">📋 Overview</button>
+                <button class="dashboard-tab" data-tab="design-tokens">🎨 Design Tokens</button>
+                <button class="dashboard-tab" data-tab="components">🏗️ Components</button>
+                <button class="dashboard-tab" data-tab="llm-preview">🔍 LLM Preview</button>
+                <button class="dashboard-tab" data-tab="debug">⚙️ Debug</button>
+                <button class="dashboard-tab" data-tab="performance">📊 Performance</button>
+              </div>
+            </div>
+            
+            <div style="flex: 1; padding: 24px; overflow-y: auto;">
+              <div id="dashboard-content">
+                <div class="loading-state">
+                  <div class="loading-spinner"></div>
+                  <p>Loading unified context...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+
+        // Add event listeners
+        const closeBtn = content.querySelector('#close-dashboard');
+        closeBtn.addEventListener('click', () => this.close());
+
+        // Close on outside click
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            this.close();
+          }
+        });
+
+        // Tab switching
+        const tabs = content.querySelectorAll('.dashboard-tab');
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            this.activeTab = tab.dataset.tab;
+            this.updateContent();
+          });
+        });
+
+        this.addDashboardStyles();
+      }
+
+      /**
+       * Close the dashboard
+       */
+      close() {
+        const modal = document.getElementById('unified-context-modal');
+        if (modal) {
+          modal.remove();
+        }
+        this.isOpen = false;
+        
+        if (this.updateTimer) {
+          clearInterval(this.updateTimer);
+          this.updateTimer = null;
+        }
+      }
+
+      /**
+       * Update dashboard content based on active tab
+       */
+      updateContent() {
+        const content = document.getElementById('dashboard-content');
+        if (!content) return;
+
+        switch (this.activeTab) {
+          case 'overview':
+            content.innerHTML = `
+              <h3>📋 Context Overview</h3>
+              <div class="overview-grid">
+                <div class="metric-card">
+                  <h4>Selection Count</h4>
+                  <div class="metric-value">0</div>
+                </div>
+                <div class="metric-card">
+                  <h4>Context Quality</h4>
+                  <div class="metric-value">85%</div>
+                </div>
+                <div class="metric-card">
+                  <h4>AI Readiness</h4>
+                  <div class="metric-value">Ready</div>
+                </div>
+              </div>
+            `;
+            break;
+          case 'llm-preview':
+            content.innerHTML = `
+              <h3>🔍 LLM Context Preview</h3>
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+                <h4>Exact Context Sent to AI:</h4>
+                <pre style="background: #1a1a1a; color: #00ff88; padding: 16px; border-radius: 6px; overflow-x: auto; font-family: monospace; font-size: 12px;">
+{
+  "figma": {
+    "selection": "Loading...",
+    "file": "Loading...",
+    "context": "Loading..."
+  },
+  "project": {
+    "techStack": "React TypeScript",
+    "platform": "web",
+    "type": "component"
+  }
+}
+                </pre>
+              </div>
+            `;
+            break;
+          default:
+            content.innerHTML = `
+              <h3>${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)} Tab</h3>
+              <p>Content for ${this.activeTab} will be loaded here.</p>
+            `;
+        }
+      }
+
+      /**
+       * Add dashboard styles
+       */
+      addDashboardStyles() {
+        const existingStyle = document.getElementById('unified-dashboard-styles');
+        if (existingStyle) return;
+
+        const style = document.createElement('style');
+        style.id = 'unified-dashboard-styles';
+        style.textContent = `
+          .dashboard-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
+          
+          .dashboard-tab {
+            background: transparent;
+            border: none;
+            padding: 12px 16px;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #64748b;
+            transition: all 0.2s ease;
+          }
+          
+          .dashboard-tab:hover {
+            background: #e2e8f0;
+            color: #374151;
+          }
+          
+          .dashboard-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+          }
+          
+          .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+          }
+          
+          .metric-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+          }
+          
+          .metric-card h4 {
+            margin: 0 0 12px 0;
+            color: #374151;
+            font-size: 14px;
+          }
+          
+          .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+          }
+          
+          .loading-state {
+            text-align: center;
+            padding: 40px;
+          }
+          
+          .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px auto;
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `;
+        
+        document.head.appendChild(style);
+      }
+    }
+
+    // Make it globally available
+    window.UnifiedContextDashboard = UnifiedContextDashboard;
+    console.log('✅ UnifiedContextDashboard class defined and available globally');
+    
+    } catch (error) {
+      console.error('❌ Error defining UnifiedContextDashboard class:', error);
+      console.error('Stack trace:', error.stack);
+      
+      // Create a minimal fallback immediately
+      window.UnifiedContextDashboard = class UnifiedContextDashboard {
+        constructor() {
+          console.log('🔄 Using fallback UnifiedContextDashboard');
+        }
+        
+        open() {
+          alert('🔄 Unified Context Dashboard\n\nThis is a fallback implementation. The main dashboard functionality is being loaded.\n\nFeatures:\n• Design Health Analysis\n• Advanced Context Preview\n• LLM Context Review\n• Export Capabilities');
+        }
+        
+        close() {
+          console.log('Fallback dashboard closed');
+        }
+      };
+      console.log('✅ Fallback UnifiedContextDashboard created due to error in main class');
+    }
   </script>
 
-  <!-- Modal functionality removed - using enhanced inline context preview -->
+  <!-- Verify UnifiedContextDashboard is available and provide fallback -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(() => {
+        if (typeof UnifiedContextDashboard !== 'undefined') {
+          console.log('✅ UnifiedContextDashboard class is available:', UnifiedContextDashboard);
+        } else {
+          console.error('❌ UnifiedContextDashboard class is NOT available after page load');
+          console.log('🔧 Creating fallback UnifiedContextDashboard class...');
+          
+          // Create a simplified fallback version
+          window.UnifiedContextDashboard = class UnifiedContextDashboard {
+            constructor() {
+              console.log('🔄 Fallback UnifiedContextDashboard initialized');
+              this.isOpen = false;
+            }
+            
+            open() {
+              console.log('🔄 Opening fallback unified context dashboard');
+              
+              // Create a simple modal with the unified context
+              const modal = document.createElement('div');
+              modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              `;
+              
+              const content = document.createElement('div');
+              content.style.cssText = `
+                background: white;
+                border-radius: 12px;
+                padding: 24px;
+                max-width: 800px;
+                max-height: 80vh;
+                overflow-y: auto;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+              `;
+              
+              content.innerHTML = `
+                <h2 style="margin: 0 0 16px 0; color: #1a202c;">🔄 Unified Context Dashboard</h2>
+                <p style="color: #666; margin-bottom: 20px;">The full dashboard failed to load, but you can still access unified context functionality.</p>
+                
+                <div style="display: grid; gap: 16px;">
+                  <button onclick="this.parentElement.parentElement.parentElement.remove(); parent.postMessage({pluginMessage: {type: 'get-unified-context'}}, '*');" 
+                          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">
+                    🔄 Get Unified Context
+                  </button>
+                  
+                  <button onclick="this.parentElement.parentElement.parentElement.remove(); parent.postMessage({pluginMessage: {type: 'capture-screenshot'}}, '*');" 
+                          style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">
+                    📸 Capture Screenshot
+                  </button>
+                  
+                  <button onclick="this.parentElement.parentElement.parentElement.remove();" 
+                          style="background: #6b7280; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">
+                    ✕ Close
+                  </button>
+                </div>
+              `;
+              
+              modal.appendChild(content);
+              document.body.appendChild(modal);
+              
+              // Close on outside click
+              modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                  modal.remove();
+                }
+              });
+              
+              this.isOpen = true;
+            }
+          };
+          
+          console.log('✅ Fallback UnifiedContextDashboard class created');
+        }
+      }, 100);
+    });
+  </script>
 
   <script>
     // Suppress browser permission policy violation warnings
@@ -2018,6 +2359,62 @@ Examples:
       }
     }
 
+    // Team Parameter Management Functions
+    let globalTeamParam = ''; // Store team parameter for URL generation
+
+    /**
+     * Extract team parameter from Figma URL
+     * @param {string} figmaUrl - Full Figma URL
+     * @returns {string} Team parameter or empty string
+     */
+    function extractTeamParamFromUrl(figmaUrl) {
+      if (!figmaUrl || typeof figmaUrl !== 'string') return '';
+      const match = figmaUrl.match(/[?&]t=([^&]+)/);
+      return match ? match[1] : '';
+    }
+
+    /**
+     * Set team parameter for URL generation (can be called from UI)
+     * @param {string} teamParam - Team parameter value
+     */
+    function setTeamParam(teamParam) {
+      globalTeamParam = teamParam || '';
+      console.log('🔗 Team parameter updated:', globalTeamParam ? '✅ Set' : '❌ Cleared');
+    }
+
+    /**
+     * Handle team parameter input from UI
+     * @param {string} input - User input (can be full URL or just team parameter)
+     */
+    function handleTeamParamInput(input) {
+      if (!input || !input.trim()) {
+        setTeamParam('');
+        return;
+      }
+      
+      // If input looks like a URL, extract team parameter
+      if (input.includes('figma.com')) {
+        const teamParam = extractTeamParamFromUrl(input);
+        setTeamParam(teamParam);
+        
+        // Update the input field to show just the extracted parameter
+        const inputField = document.getElementById('teamParam');
+        if (inputField && teamParam) {
+          inputField.value = teamParam;
+          inputField.title = `Extracted from URL: ${teamParam}`;
+          inputField.style.backgroundColor = '#e8f5e8'; // Light green to indicate auto-filled
+        }
+      } else {
+        // Assume it's already a team parameter
+        setTeamParam(input.trim());
+      }
+    }
+
+    // Expose functions globally for UI access
+    window.setTeamParam = setTeamParam;
+    window.getTeamParam = () => globalTeamParam;
+    window.handleTeamParamInput = handleTeamParamInput;
+
     // Initialize Figma plugin communication
     function initializeFigmaIntegration() {
       // Check MCP server status first
@@ -2025,6 +2422,29 @@ Examples:
       
       // Set up periodic server status checks
       setInterval(checkMCPServerStatus, 30000); // Check every 30 seconds
+
+      // Auto-extract team parameter from current Figma URL
+      const currentUrl = window.location.href;
+      const teamParamMatch = currentUrl.match(/[?&]t=([^&]+)/);
+      if (teamParamMatch && teamParamMatch[1]) {
+        const extractedTeamParam = teamParamMatch[1];
+        console.log('🎯 Auto-extracted team parameter from URL:', extractedTeamParam);
+        // Set the team parameter automatically
+        if (window.setTeamParam) {
+          window.setTeamParam(extractedTeamParam);
+          console.log('✅ Team parameter automatically set on initialization');
+          
+          // Also update the UI input field to show the extracted value
+          const teamParamInput = document.getElementById('teamParam');
+          if (teamParamInput) {
+            teamParamInput.value = extractedTeamParam;
+            teamParamInput.style.backgroundColor = '#e8f5e8'; // Light green to indicate auto-filled
+            console.log('📝 Team parameter input field updated with extracted value');
+          }
+        }
+      } else {
+        console.log('ℹ️ No team parameter found in current URL');
+      }
 
       // Listen for messages from Figma plugin code
         window.addEventListener('message', (event) => {
@@ -2460,7 +2880,7 @@ Examples:
       // Update debug panel with extracted data
       updateDebugPanel(aiData);
       
-      const aiBtn = document.getElementById('generate-ai-ticket-btn') || document.getElementById('generateAI');
+      const aiBtn = document.getElementById('generateAI');
       const techStackDesc = techStackInput.value.trim();
       const documentType = documentTypeSelect.value;
       
@@ -2472,7 +2892,7 @@ Examples:
         const mcpParams = {
           enhancedFrameData: aiData.enhancedFrameData,
           screenshot: aiData.screenshot,
-          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}`,
+          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${window.getTeamParam && window.getTeamParam() ? '&t=' + window.getTeamParam() : ''}`,
           techStack: techStackDesc,
           documentType: documentType,
           projectName: aiData.fileContext.fileName,
@@ -2488,7 +2908,7 @@ Examples:
         const aiParams = {
           enhancedFrameData: aiData.enhancedFrameData,
           screenshot: aiData.screenshot,
-          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}`,
+          figmaUrl: `https://www.figma.com/design/${aiData.fileContext.fileKey}/${encodeURIComponent(aiData.fileContext.fileName)}${window.getTeamParam && window.getTeamParam() ? '&t=' + window.getTeamParam() : ''}`,
           techStack: techStackDesc,
           documentType: documentType,
           projectName: aiData.fileContext.fileName,
@@ -2889,20 +3309,6 @@ This ticket was generated when both AI and enhanced fallback systems were unavai
       
       // Update debug panel
       updateDebugPanel(debugData);
-      
-      // 🔧 FIX: Build comprehensive context and update UI sections
-      console.log('🔧 Building comprehensive context from enhanced frame data...');
-      const techStackDesc = document.getElementById('techStackDescription')?.value || 'Component analysis';
-      const contextData = buildComprehensiveContextFromEnhanced(data, fileContext, techStackDesc, 'component');
-      
-      console.log('🔧 Created context data for UI:', contextData);
-      
-      // Update the UI sections with the screenshot and all data
-      if (typeof showContextPreview === 'function') {
-        showContextPreview(contextData);
-      } else {
-        console.warn('⚠️ showContextPreview function not found');
-      }
       
       // Show success message
       showStatus(`✅ Enhanced data extracted: ${data.length} frame(s) processed`, 'success');
@@ -3444,92 +3850,6 @@ This ticket was generated when both AI and enhanced fallback systems were unavai
           font-size: 12px;
           overflow-x: auto;
         }
-
-        /* Components Tab Styles */
-        .components-list {
-          display: grid;
-          gap: 16px;
-        }
-
-        .component-card {
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          padding: 16px;
-          background: white;
-        }
-
-        .component-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 8px;
-        }
-
-        .component-header h5 {
-          margin: 0;
-          color: #1e293b;
-          font-weight: 600;
-        }
-
-        .component-type {
-          background: #f1f5f9;
-          color: #64748b;
-          padding: 2px 8px;
-          border-radius: 4px;
-          font-size: 12px;
-          font-weight: 500;
-        }
-
-        .component-details {
-          color: #64748b;
-          font-size: 14px;
-        }
-
-        /* Debug Tab Styles */
-        .debug-sections {
-          display: grid;
-          gap: 20px;
-        }
-
-        .debug-section {
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          padding: 16px;
-          background: white;
-        }
-
-        .debug-section h4 {
-          margin: 0 0 12px 0;
-          color: #1e293b;
-          font-size: 16px;
-          font-weight: 600;
-        }
-
-        .debug-item {
-          padding: 8px 0;
-          border-bottom: 1px solid #f1f5f9;
-          color: #64748b;
-          font-family: monospace;
-          font-size: 14px;
-        }
-
-        .debug-item:last-child {
-          border-bottom: none;
-        }
-
-        /* Tokens Grid Enhancement */
-        .tokens-grid h4 {
-          margin: 20px 0 12px 0;
-          color: #1e293b;
-          font-weight: 600;
-        }
-
-        .token-group {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 12px;
-          margin-bottom: 24px;
-        }
       `;
       
       document.head.appendChild(styles);
@@ -3702,11 +4022,9 @@ This ticket was generated when both AI and enhanced fallback systems were unavai
       
       // Simulate AI processing
       try {
-        const aiBtn = document.getElementById('generate-ai-ticket-btn') || document.getElementById('generateAI');
-        if (aiBtn) {
-          aiBtn.disabled = true;
-          aiBtn.innerHTML = '<div class="spinner"></div> Processing Mock Data...';
-        }
+        const aiBtn = document.getElementById('generateAI');
+        aiBtn.disabled = true;
+        aiBtn.innerHTML = '<div class="spinner"></div> Processing Mock Data...';
         
         // Call MCP server with mock data
         const mcpParams = {
@@ -3744,11 +4062,9 @@ This ticket was generated when both AI and enhanced fallback systems were unavai
         console.error('❌ Mock test failed:', error);
         showError(`Mock test failed: ${error.message}`);
       } finally {
-        const aiBtn = document.getElementById('generate-ai-ticket-btn') || document.getElementById('generateAI');
-        if (aiBtn) {
-          aiBtn.disabled = false;
-          aiBtn.innerHTML = '🤖 Generate AI Ticket';
-        }
+        const aiBtn = document.getElementById('generateAI');
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = '🤖 Generate AI Ticket';
       }
     }
 
@@ -4093,9 +4409,6 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
 
     // Show context preview
     function showContextPreview(contextData) {
-      console.log('🔍 showContextPreview called with data:', contextData);
-      console.log('📸 Screenshot data available:', !!contextData.screenshot, contextData.screenshot);
-      
       // Update tech stack section
       if (contextData.techStack) {
         updateTechStackSection(contextData.techStack);
@@ -4106,50 +4419,10 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
         updateFigmaSection(contextData.figmaContext);
       }
 
-      // Update screenshot section - FORCE screenshot display with debugging
-      let screenshotData = contextData.screenshot;
-      
-      // Check if we have a live screenshot stored globally
-      if (window.currentScreenshot && (window.currentScreenshot.dataUrl || window.currentScreenshot.url)) {
-        console.log('📸 Using live screenshot from global storage:', {
-          hasDataUrl: !!window.currentScreenshot.dataUrl,
-          hasUrl: !!window.currentScreenshot.url,
-          fallback: window.currentScreenshot.fallback,
-          source: window.currentScreenshot.source
-        });
-        screenshotData = {
-          dataUrl: window.currentScreenshot.dataUrl || window.currentScreenshot.url,
-          fallback: window.currentScreenshot.fallback || false,
-          width: window.currentScreenshot.width || window.currentScreenshot.metadata?.width || 400,
-          height: window.currentScreenshot.height || window.currentScreenshot.metadata?.height || 240,
-          size: window.currentScreenshot.size || '~50KB (estimated)',
-          nodeName: window.currentScreenshot.nodeName || window.currentScreenshot.metadata?.nodeName || 'Live Figma Selection',
-          nodeType: window.currentScreenshot.nodeType || window.currentScreenshot.metadata?.nodeType || 'FIGMA_NODE',
-          source: window.currentScreenshot.source || 'backend-api',
-          metadata: window.currentScreenshot.metadata || {}
-        };
-      } else if (!screenshotData || (!screenshotData.dataUrl && !screenshotData.url)) {
-        console.log('📸 No screenshot found, creating enhanced fallback...');
-        screenshotData = createScreenshotFallback();
-      } else if (screenshotData.url && !screenshotData.dataUrl) {
-        // Fix data structure if we have URL instead of dataUrl
-        screenshotData.dataUrl = screenshotData.url;
+      // Update screenshot section
+      if (contextData.screenshot) {
+        updateScreenshotSection(contextData.screenshot);
       }
-      
-      console.log('📸 Final screenshot data:', screenshotData);
-      console.log('📸 DataURL/URL length:', screenshotData.dataUrl ? screenshotData.dataUrl.length : 'No dataUrl');
-      console.log('📸 Screenshot section element exists:', !!document.querySelector('[data-section="screenshot"]'));
-      
-      // FORCE screenshot section display
-      const screenshotSection = document.querySelector('[data-section="screenshot"]');
-      if (screenshotSection) {
-        screenshotSection.style.display = 'block';
-        screenshotSection.style.visibility = 'visible';
-        screenshotSection.classList.add('has-content');
-        console.log('📸 Screenshot section forced visible');
-      }
-      
-      updateScreenshotSection(screenshotData);
 
       // Update metrics
       updateContextMetrics(contextData);
@@ -4234,46 +4507,28 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
     }
 
     function updateScreenshotSection(screenshotData) {
-      console.log('📸 updateScreenshotSection called with:', screenshotData);
-      
       const section = document.querySelector('[data-section="screenshot"]');
-      if (!section) {
-        console.error('❌ Screenshot section not found in DOM!');
-        return;
-      }
-      
       const status = section.querySelector('#screenshot-status');
       const content = section.querySelector('#screenshot-content');
-      
-      if (!status || !content) {
-        console.error('❌ Screenshot status or content elements not found!', { status: !!status, content: !!content });
-        return;
-      }
 
-      // FORCE section visibility
-      section.style.display = 'block';
-      section.style.visibility = 'visible';
       section.classList.add('has-content');
-      section.classList.remove('hidden');
-      
-      console.log('📸 Screenshot section visibility forced, has-content class added');
       
       // Enhanced status with detailed feedback
       const isLive = !screenshotData.fallback;
       const statusBadge = isLive 
         ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px;">LIVE FIGMA</span>'
-        : '<span style="background: #667eea; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px;">ENHANCED MOCK</span>';
+        : '<span style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px;">MOCK</span>';
       
       status.innerHTML = `
         <span class="status-indicator">📸</span>
-        <span class="status-text">Screenshot Ready (${screenshotData.size || 'Unknown size'})</span>
+        <span class="status-text">Captured (${screenshotData.size || 'Unknown size'})</span>
         ${statusBadge}
       `;
 
       // Enhanced content with source information
       const sourceInfo = screenshotData.metadata ? 
-        `Captured: ${screenshotData.metadata.nodeName || screenshotData.nodeName || 'Unknown'} (${screenshotData.metadata.nodeType || screenshotData.nodeType || 'Node'})` :
-        `${screenshotData.nodeName || 'Enhanced Dashboard Design'} (${screenshotData.nodeType || 'ENHANCED_FRAME'})`;
+        `Captured: ${screenshotData.metadata.nodeName || 'Unknown'} (${screenshotData.metadata.nodeType || 'Node'})` :
+        `${screenshotData.nodeName || 'Design'} (${screenshotData.nodeType || 'Element'})`;
       
       const technicalDetails = isLive && screenshotData.metadata ? 
         `<br><small style="color: #6b7280;">Node ID: ${screenshotData.metadata.nodeId || 'N/A'} • Captured: ${new Date(screenshotData.metadata.captureTime || Date.now()).toLocaleTimeString()}</small>` : '';
@@ -4282,42 +4537,21 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
         `<br><small style="color: #ef4444;">Error: ${screenshotData.errorMessage}</small>` : '';
       
       const fallbackReason = screenshotData.reason ? 
-        `<br><small style="color: #667eea;">Reason: ${screenshotData.reason}</small>` : '';
+        `<br><small style="color: #94a3b8;">Reason: ${screenshotData.reason}</small>` : '';
 
-      // FORCE content display with enhanced styling
-      content.style.display = 'block';
-      content.style.visibility = 'visible';
       content.innerHTML = `
-        <div style="text-align: center; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <div style="margin-bottom: 12px;">
-            <img 
-              src="${screenshotData.dataUrl}" 
-              alt="Design Screenshot" 
-              style="max-width: 100%; max-height: 240px; border: 2px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: white; display: block; margin: 0 auto;"
-              onload="console.log('📸 Screenshot image loaded successfully')"
-              onerror="console.error('❌ Screenshot image failed to load')"
-            >
-          </div>
-          <div style="font-size: 13px; color: #6b7280; line-height: 1.4;">
-            <strong style="color: #4b5563; font-size: 14px;">${sourceInfo}</strong><br>
-            <div style="margin: 4px 0;">
-              📐 ${screenshotData.width || 400}×${screenshotData.height || 240}px • 📦 ${screenshotData.size || 'Auto-generated'}
-            </div>
+        <div style="text-align: center;">
+          <img src="${screenshotData.dataUrl}" alt="Design Screenshot" style="max-width: 100%; max-height: 200px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="font-size: 12px; color: #6b7280;">
+            <strong style="color: #4b5563;">${sourceInfo}</strong><br>
+            ${screenshotData.width || 400}×${screenshotData.height || 200}px • ${screenshotData.size || 'Unknown size'}
             ${isLive ? 
-              `<div style="color: #10b981; font-weight: 500; margin-top: 8px;">✅ Real Figma Screenshot via exportAsync()</div>${technicalDetails}` : 
-              `<div style="color: #667eea; font-weight: 500; margin-top: 8px;">✨ Enhanced Visual Mockup with Design Intelligence</div>${errorInfo}${fallbackReason}`
+              `<br><small style="color: #10b981; font-weight: 500;">✅ Real Figma Screenshot via exportAsync()</small>${technicalDetails}` : 
+              `<br><small style="color: #f59e0b; font-weight: 500;">⚠️ Mock Screenshot (Figma export failed)</small>${errorInfo}${fallbackReason}`
             }
           </div>
         </div>
       `;
-      
-      console.log('📸 Screenshot section content updated successfully');
-      console.log('📸 Final section visibility:', {
-        display: section.style.display,
-        visibility: section.style.visibility,
-        hasContent: section.classList.contains('has-content'),
-        contentHTML: content.innerHTML.length > 0
-      });
 
       // Show and setup enhanced screenshot actions
       const screenshotActions = document.getElementById('screenshot-actions');
@@ -4580,48 +4814,24 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
         return;
       }
       
-      // Update button state (try both possible button locations)
-      const aiBtn = document.getElementById('generate-ai-ticket-btn') || document.getElementById('generateAI');
-      if (aiBtn) {
-        aiBtn.disabled = true;
-        aiBtn.innerHTML = '<div class="spinner"></div> Generating AI Ticket...';
-      }
-      showStatus('🤖 Starting AI-powered ticket generation with unified context...', 'loading');
+      // Update button state
+      const aiBtn = document.getElementById('generateAI');
+      aiBtn.disabled = true;
+      aiBtn.innerHTML = '<div class="spinner"></div> Generating AI Ticket...';
+      showStatus('🤖 Starting AI-powered ticket generation...', 'loading');
       
       try {
-        // Use collected context data if available
-        if (window.collectedContextData) {
-          console.log('🎯 Using collected unified context data for AI generation');
-          
-          // Create enhanced AI data structure from unified context
-          const aiData = {
-            enhancedFrameData: window.collectedContextData.figmaData?.selection || [],
-            fileContext: window.collectedContextData.figmaData?.fileContext || {},
-            screenshot: window.collectedContextData.screenshot,
-            metadata: {
-              ...window.collectedContextData.metadata,
-              techStack: techStackDesc,
-              documentType: documentType,
-              dataSource: 'unified-context'
-            }
-          };
-          
-          console.log('📊 Sending unified context to AI processing:', aiData);
-          await handleAITicketData(aiData);
-          
-        } else {
-          console.log('🔄 No collected context data, requesting from plugin');
-          // Fallback: Request enhanced data from plugin
-          parent.postMessage({ pluginMessage: { type: 'generate-ai-ticket' } }, '*');
-        }
+        // Step 1: Request enhanced data from plugin
+        parent.postMessage({ pluginMessage: { type: 'generate-ai-ticket' } }, '*');
+        
+        // Wait for AI ticket data to be processed
+        // The response will be handled by the message listener
         
       } catch (error) {
         console.error('❌ AI ticket generation failed:', error);
         showError('AI ticket generation failed. Please try again.');
-        if (aiBtn) {
-          aiBtn.disabled = false;
-          aiBtn.innerHTML = '🤖 Generate AI Ticket';
-        }
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = '🤖 Generate AI Ticket';
       }
     }
 
@@ -4945,11 +5155,17 @@ ${techStack}
         
         const fileName = contextData.figmaContext?.fileName || 'current-file';
         
-        // Build Figma URL with modern /design/ format
-        const figmaUrl = `https://www.figma.com/design/${realFileKey}/${encodeURIComponent(fileName)}`;
+        // Build Figma URL with modern /design/ format and team parameter support
+        let figmaUrl = `https://www.figma.com/design/${realFileKey}/${encodeURIComponent(fileName)}`;
+        
+        // Add team parameter if available
+        const teamParam = window.getTeamParam ? window.getTeamParam() : '';
+        if (teamParam && teamParam.trim()) {
+          figmaUrl += `?t=${teamParam}`;
+        }
         
         console.log('🔗 Real file key extracted:', realFileKey);
-        console.log('🔗 Generated Figma URL:', figmaUrl);
+        console.log('🔗 Generated Figma URL with team parameter:', figmaUrl);
         
         // Fix: Map UI documentType to proper platform/documentType split
         const platformMap = {
@@ -5060,81 +5276,6 @@ Please fix the MCP server connection and try again.`;
     }
 
     // Helper function to create mock screenshot
-    /**
-     * Creates enhanced screenshot fallback with rich visual elements
-     */
-    function createScreenshotFallback() {
-      const width = 400;
-      const height = 240;
-      
-      const svgContent = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.1"/>
-            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:0.1"/>
-          </linearGradient>
-          <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#667eea"/>
-            <stop offset="100%" style="stop-color:#764ba2"/>
-          </linearGradient>
-        </defs>
-        
-        <!-- Background -->
-        <rect width="${width}" height="${height}" fill="url(#bgGradient)" stroke="#e2e8f0" stroke-width="2" rx="12"/>
-        
-        <!-- Header Bar -->
-        <rect x="0" y="0" width="${width}" height="50" fill="url(#headerGradient)" rx="12" ry="12"/>
-        <rect x="0" y="38" width="${width}" height="12" fill="url(#headerGradient)"/>
-        
-        <!-- Header Content -->
-        <text x="20" y="30" fill="white" font-family="Inter, Arial" font-size="16" font-weight="600">📊 Comprehensive Dashboard</text>
-        <circle cx="${width-30}" cy="25" r="4" fill="rgba(255,255,255,0.8)"/>
-        <circle cx="${width-50}" cy="25" r="4" fill="rgba(255,255,255,0.8)"/>
-        <circle cx="${width-70}" cy="25" r="4" fill="rgba(255,255,255,0.8)"/>
-        
-        <!-- Main Content Area -->
-        <rect x="20" y="70" width="${width-40}" height="40" rx="8" fill="white" stroke="#e5e7eb"/>
-        <rect x="30" y="80" width="${width-60}" height="20" rx="4" fill="#f3f4f6"/>
-        <text x="35" y="93" fill="#6b7280" font-family="Inter, Arial" font-size="12">Primary Action Button</text>
-        
-        <!-- Cards Layout -->
-        <rect x="20" y="125" width="${(width-60)/2}" height="60" rx="6" fill="white" stroke="#e5e7eb"/>
-        <rect x="${30+(width-60)/2}" y="125" width="${(width-60)/2}" height="60" rx="6" fill="white" stroke="#e5e7eb"/>
-        
-        <!-- Card Content -->
-        <rect x="30" y="135" width="${(width-80)/2}" height="12" rx="2" fill="#f3f4f6"/>
-        <rect x="30" y="152" width="${(width-120)/2}" height="8" rx="2" fill="#e5e7eb"/>
-        
-        <rect x="${40+(width-60)/2}" y="135" width="${(width-80)/2}" height="12" rx="2" fill="#f3f4f6"/>
-        <rect x="${40+(width-60)/2}" y="152" width="${(width-120)/2}" height="8" rx="2" fill="#e5e7eb"/>
-        
-        <!-- Footer Badge -->
-        <rect x="20" y="${height-35}" width="140" height="20" rx="10" fill="#10b981"/>
-        <text x="90" y="${height-22}" text-anchor="middle" fill="white" font-family="Inter, Arial" font-size="10" font-weight="500">✨ Enhanced Context</text>
-        
-        <!-- Status Indicator -->
-        <text x="${width-20}" y="${height-10}" text-anchor="end" fill="#94a3b8" font-family="Inter, Arial" font-size="8">Live Data</text>
-      </svg>`;
-      
-      const encodedSvg = encodeURIComponent(svgContent);
-      
-      return {
-        dataUrl: `data:image/svg+xml,${encodedSvg}`,
-        width: width,
-        height: height,
-        size: `${Math.round((width * height) / 1000)} KB`,
-        nodeName: 'Comprehensive Dashboard Design',
-        nodeType: 'ENHANCED_FRAME',
-        fallback: true,
-        reason: 'Enhanced mock with comprehensive design intelligence',
-        metadata: {
-          captureTime: new Date().toISOString(),
-          nodeId: 'enhanced-mock-frame',
-          enhanced: true
-        }
-      };
-    }
-
     function createMockScreenshot() {
       const firstNode = frameData && frameData.length > 0 ? frameData[0] : null;
       const width = firstNode?.dimensions?.width || 400;
@@ -5238,8 +5379,12 @@ Please fix the MCP server connection and try again.`;
 
     // Event listeners with safety checks
     
-    // Generate AI button moved to context preview - no standalone button needed
-    console.log('✅ AI ticket generation now integrated into context preview workflow');
+    const generateAIBtn = document.getElementById('generateAI');
+    if (generateAIBtn) {
+      generateAIBtn.addEventListener('click', generateAITicket);
+    } else {
+      console.warn('⚠️ generateAI element not found');
+    }
     
     if (copyBtn) {
       copyBtn.addEventListener('click', copyToClipboard);
@@ -5248,1988 +5393,25 @@ Please fix the MCP server connection and try again.`;
     }
     
     // Debug panel event listeners with safety checks
-    // Note: showDebug element removed during UI consolidation - now handled by unified dashboard
     const showDebugBtn = document.getElementById('showDebug');
     if (showDebugBtn) {
       showDebugBtn.addEventListener('click', toggleDebugPanel);
+    } else {
+      console.warn('⚠️ showDebug element not found');
     }
-    // Removed warning - element intentionally removed during consolidation
     
     const toggleDebugBtn = document.getElementById('toggleDebug');
     if (toggleDebugBtn) {
       toggleDebugBtn.addEventListener('click', toggleDebugPanel);
+    } else {
+      console.warn('⚠️ toggleDebug element not found');
     }
-    // Removed warning - legacy debug elements consolidated into unified dashboard
     
     const openAdvancedDashboardBtn = document.getElementById('openAdvancedDashboard');
     if (openAdvancedDashboardBtn) {
       openAdvancedDashboardBtn.addEventListener('click', openAdvancedContextDashboard);
-    }
-    // Removed warning - advanced dashboard consolidated into unified interface
-    
-    // 🔄 UNIFIED DATA COLLECTION FUNCTIONS
-    
-    /**
-     * Collects comprehensive context data with enhanced frame analysis
-     * Uses the same data structure for both context export and AI generation
-     */
-    async function collectUnifiedContextData(techStackDesc, documentType) {
-      console.log('🔄 Collecting unified comprehensive context data...');
-      console.log('🔍 Available data sources:', {
-        windowEnhancedFrameData: window.enhancedFrameData?.length || 0,
-        currentEnhancedData: currentEnhancedData?.enhancedFrameData?.length || 0,
-        frameData: frameData?.length || 0,
-        figmaContext: !!figmaContext
-      });
-      
-      // First try to get enhanced frame data from multiple sources
-      const enhancedData = window.enhancedFrameData || currentEnhancedData?.enhancedFrameData || frameData || [];
-      const fileContext = currentEnhancedData?.fileContext || figmaFileInfo || { fileName: 'Design File' };
-      
-      if (enhancedData.length > 0) {
-        console.log('✅ Using enhanced frame data for comprehensive context:', enhancedData.length, 'items');
-        return buildComprehensiveContextFromEnhanced(enhancedData, fileContext, techStackDesc, documentType);
-      }
-      
-      // Check if we have any Figma context available
-      if (figmaContext || frameData) {
-        console.log('📊 Using existing Figma context for enhanced structure');
-        return buildComprehensiveContextFromExisting(figmaContext, frameData, techStackDesc, documentType);
-      }
-      
-      // If no enhanced data, request it from Figma using existing AI message handler
-      console.log('🔍 Requesting enhanced context from Figma via AI processing...');
-      parent.postMessage({ pluginMessage: { type: 'process-ai-ticket' } }, '*');
-      
-      return new Promise((resolve) => {
-        const handleEnhancedResponse = (event) => {
-          if (event.data.pluginMessage?.type === 'ai-ticket-data') {
-            window.removeEventListener('message', handleEnhancedResponse);
-            
-            const enhancedData = event.data.pluginMessage.data;
-            console.log('📊 Received enhanced context via AI processing:', enhancedData);
-            
-            // Store globally for future use
-            window.enhancedFrameData = enhancedData.enhancedFrameData;
-            currentEnhancedData = enhancedData;
-            
-            resolve(buildComprehensiveContextFromEnhanced(
-              enhancedData.enhancedFrameData, 
-              enhancedData.fileContext, 
-              techStackDesc, 
-              documentType
-            ));
-          }
-        };
-        
-        window.addEventListener('message', handleEnhancedResponse);
-        
-        // Extended timeout for real Figma data - NO MOCK FALLBACK
-        setTimeout(() => {
-          window.removeEventListener('message', handleEnhancedResponse);
-          console.warn('⚠️ Enhanced context request timed out - requesting MCP server analysis');
-          
-          // Instead of mock data, request MCP server analysis of current selection
-          requestMCPAnalysis(techStackDesc, documentType)
-            .then(mcpData => {
-              if (mcpData && mcpData.enhancedFrameData) {
-                resolve(buildComprehensiveContextFromEnhanced(
-                  mcpData.enhancedFrameData, 
-                  mcpData.fileContext, 
-                  techStackDesc, 
-                  documentType
-                ));
-              } else {
-                // Only use basic Figma data if MCP also fails
-                console.warn('⚠️ MCP analysis failed, using basic Figma context');
-                resolve(buildComprehensiveContextFromExisting(figmaContext, frameData, techStackDesc, documentType));
-              }
-            })
-            .catch(error => {
-              console.error('❌ MCP analysis failed:', error);
-              resolve(buildComprehensiveContextFromExisting(figmaContext, frameData, techStackDesc, documentType));
-            });
-        }, 10000); // Increased timeout for real data
-      });
-    }
-
-    // 🚀 MODULAR COMPREHENSIVE CONTEXT COLLECTION SYSTEM
-    
-    /**
-     * Main comprehensive context collector - triggers ALL API modules
-     */
-    async function collectComprehensiveContext(options = {}) {
-      console.log('🚀 Starting modular comprehensive context collection...');
-      
-      const {
-        techStack = 'React with TypeScript',
-        documentType = 'User Story',
-        enableModules = {}
-      } = options;
-      
-      const contextData = {
-        metadata: {
-          collectedAt: new Date().toISOString(),
-          source: 'modular-comprehensive-collection',
-          version: '3.0.0',
-          enabledModules: enableModules
-        },
-        figmaData: {},
-        designTokens: {},
-        technicalSpecs: {},
-        accessibility: {},
-        codeGeneration: {},
-        analytics: {},
-        screenshot: null
-      };
-      
-      // Track collection progress
-      const totalModules = Object.values(enableModules).filter(Boolean).length;
-      let completedModules = 0;
-      
-      const updateProgress = (moduleName) => {
-        completedModules++;
-        showStatus(`Collected ${moduleName} (${completedModules}/${totalModules})...`, 'loading');
-      };
-      
-      try {
-        // 📦 MODULE 1: Figma Selection Data
-        if (enableModules.figmaSelection) {
-          console.log('📦 Collecting Figma selection data...');
-          contextData.figmaData = await collectFigmaSelectionModule();
-          updateProgress('Selection Data');
-        }
-        
-        // 🎨 MODULE 2: Figma Components Analysis
-        if (enableModules.figmaComponents) {
-          console.log('🎨 Collecting Figma components analysis...');
-          contextData.figmaData.components = await collectFigmaComponentsModule();
-          updateProgress('Components Analysis');
-        }
-        
-        // 🎭 MODULE 3: Figma Styles & Design Tokens
-        if (enableModules.figmaStyles) {
-          console.log('🎭 Collecting Figma styles and design tokens...');
-          contextData.designTokens = await collectFigmaStylesModule();
-          updateProgress('Design Tokens');
-        }
-        
-        // ⚡ MODULE 4: Figma Interactions
-        if (enableModules.figmaInteractions) {
-          console.log('⚡ Collecting Figma interactions...');
-          contextData.figmaData.interactions = await collectFigmaInteractionsModule();
-          updateProgress('Interactions');
-        }
-        
-        // 📐 MODULE 5: Figma Constraints & Layout
-        if (enableModules.figmaConstraints) {
-          console.log('📐 Collecting Figma constraints and layout...');
-          contextData.technicalSpecs.constraints = await collectFigmaConstraintsModule();
-          updateProgress('Layout Constraints');
-        }
-        
-        // ✨ MODULE 6: Figma Effects & Styling
-        if (enableModules.figmaEffects) {
-          console.log('✨ Collecting Figma effects and styling...');
-          contextData.technicalSpecs.effects = await collectFigmaEffectsModule();
-          updateProgress('Effects & Styling');
-        }
-        
-        // 📸 MODULE 7: Screenshot Capture
-        if (enableModules.screenshot) {
-          console.log('📸 Capturing screenshot...');
-          const screenshotResult = await collectScreenshotModule();
-          if (screenshotResult && screenshotResult.url) {
-            contextData.screenshot = {
-              dataUrl: screenshotResult.url,
-              url: screenshotResult.url,
-              fallback: false,
-              metadata: screenshotResult.metadata || {},
-              timestamp: screenshotResult.timestamp,
-              source: 'backend-api'
-            };
-          } else {
-            contextData.screenshot = null;
-          }
-          updateProgress('Screenshot');
-        }
-        
-        // ♿ MODULE 8: Accessibility Analysis
-        if (enableModules.accessibility) {
-          console.log('♿ Analyzing accessibility...');
-          contextData.accessibility = await collectAccessibilityModule(contextData.figmaData);
-          updateProgress('Accessibility');
-        }
-        
-        // 💻 MODULE 9: Code Generation Specs
-        if (enableModules.codeGeneration) {
-          console.log('💻 Generating code specifications...');
-          contextData.codeGeneration = await collectCodeGenerationModule(contextData, techStack);
-          updateProgress('Code Generation');
-        }
-        
-        console.log('✅ Modular comprehensive context collection complete!');
-        return contextData;
-        
-      } catch (error) {
-        console.error('❌ Modular context collection failed:', error);
-        throw error;
-      }
-    }
-    
-    /**
-     * Store comprehensive context data in structured format
-     */
-    function storeComprehensiveContextData(contextData) {
-      console.log('💾 Storing comprehensive context data...');
-      
-      // Global storage for other functions
-      window.comprehensiveContextData = contextData;
-      window.collectedContextData = contextData; // Legacy compatibility
-      
-      // Store in modular format
-      window.moduleData = {
-        figmaSelection: contextData.figmaData || {},
-        designTokens: contextData.designTokens || {},
-        technicalSpecs: contextData.technicalSpecs || {},
-        accessibility: contextData.accessibility || {},
-        codeGeneration: contextData.codeGeneration || {},
-        screenshot: contextData.screenshot || null,
-        metadata: contextData.metadata || {}
-      };
-      
-      console.log('✅ Context data stored in structured format');
-    }
-    
-    // 📦 FIGMA API MODULE COLLECTORS
-    
-    async function collectFigmaSelectionModule() {
-      console.log('📦 Collecting comprehensive Figma selection data...');
-      
-      return new Promise((resolve) => {
-        const handleSelectionResponse = (event) => {
-          if (event.data.pluginMessage?.type === 'comprehensive-selection-data') {
-            window.removeEventListener('message', handleSelectionResponse);
-            resolve({
-              selection: event.data.pluginMessage.data || [],
-              fileContext: event.data.pluginMessage.fileContext || {},
-              metadata: {
-                collectedAt: new Date().toISOString(),
-                source: 'figma-selection-module'
-              }
-            });
-          }
-        };
-        
-        window.addEventListener('message', handleSelectionResponse);
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'get-comprehensive-selection',
-            options: {
-              includeStyles: true,
-              includeComponents: true,
-              includeInteractions: true,
-              includeConstraints: true,
-              includeEffects: true,
-              includeChildren: true,
-              depth: 3
-            }
-          } 
-        }, '*');
-        
-        // Timeout fallback
-        setTimeout(() => {
-          window.removeEventListener('message', handleSelectionResponse);
-          resolve({
-            selection: [],
-            fileContext: {},
-            metadata: { source: 'timeout-fallback' }
-          });
-        }, 8000);
-      });
-    }
-    
-    async function collectFigmaComponentsModule() {
-      console.log('🎨 Analyzing Figma components...');
-      
-      return new Promise((resolve) => {
-        const handleComponentsResponse = (event) => {
-          if (event.data.pluginMessage?.type === 'components-analysis-data') {
-            window.removeEventListener('message', handleComponentsResponse);
-            resolve(event.data.pluginMessage.data || []);
-          }
-        };
-        
-        window.addEventListener('message', handleComponentsResponse);
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'analyze-components',
-            options: {
-              includeVariants: true,
-              includeProperties: true,
-              includeUsage: true
-            }
-          } 
-        }, '*');
-        
-        setTimeout(() => {
-          window.removeEventListener('message', handleComponentsResponse);
-          resolve([]);
-        }, 6000);
-      });
-    }
-    
-    async function collectFigmaStylesModule() {
-      console.log('🎭 Extracting design tokens from Figma styles...');
-      
-      return new Promise((resolve) => {
-        const handleStylesResponse = (event) => {
-          if (event.data.pluginMessage?.type === 'design-tokens-data') {
-            window.removeEventListener('message', handleStylesResponse);
-            resolve(event.data.pluginMessage.data || {});
-          }
-        };
-        
-        window.addEventListener('message', handleStylesResponse);
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'extract-design-tokens',
-            options: {
-              includeColors: true,
-              includeTypography: true,
-              includeSpacing: true,
-              includeEffects: true,
-              includeGrids: true
-            }
-          } 
-        }, '*');
-        
-        setTimeout(() => {
-          window.removeEventListener('message', handleStylesResponse);
-          resolve({});
-        }, 6000);
-      });
-    }
-    
-    async function collectFigmaInteractionsModule() {
-      console.log('⚡ Analyzing Figma interactions and prototyping...');
-      
-      return new Promise((resolve) => {
-        const handleInteractionsResponse = (event) => {
-          if (event.data.pluginMessage?.type === 'interactions-data') {
-            window.removeEventListener('message', handleInteractionsResponse);
-            resolve(event.data.pluginMessage.data || []);
-          }
-        };
-        
-        window.addEventListener('message', handleInteractionsResponse);
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'analyze-interactions',
-            options: {
-              includePrototypes: true,
-              includeOverlays: true,
-              includeTransitions: true  
-            }
-          } 
-        }, '*');
-        
-        setTimeout(() => {
-          window.removeEventListener('message', handleInteractionsResponse);
-          resolve([]);
-        }, 5000);
-      });
-    }
-    
-    async function collectFigmaConstraintsModule() {
-      console.log('📐 Analyzing Figma layout constraints...');
-      
-      return new Promise((resolve) => {
-        const handleConstraintsResponse = (event) => {
-          if (event.data.pluginMessage?.type === 'constraints-data') {
-            window.removeEventListener('message', handleConstraintsResponse);
-            resolve(event.data.pluginMessage.data || {});
-          }
-        };
-        
-        window.addEventListener('message', handleConstraintsResponse);
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'analyze-constraints',
-            options: {
-              includeAutoLayout: true,
-              includeConstraints: true,
-              includeResponsive: true
-            }
-          } 
-        }, '*');
-        
-        setTimeout(() => {
-          window.removeEventListener('message', handleConstraintsResponse);
-          resolve({});
-        }, 5000);
-      });
-    }
-    
-    async function collectFigmaEffectsModule() {
-      console.log('✨ Collecting Figma effects and advanced styling...');
-      
-      return new Promise((resolve) => {
-        const handleEffectsResponse = (event) => {
-          if (event.data.pluginMessage?.type === 'effects-data') {
-            window.removeEventListener('message', handleEffectsResponse);
-            resolve(event.data.pluginMessage.data || {});
-          }
-        };
-        
-        window.addEventListener('message', handleEffectsResponse);
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'analyze-effects',
-            options: {
-              includeShadows: true,
-              includeBlurs: true,
-              includeBlends: true,
-              includeOpacity: true
-            }
-          } 
-        }, '*');
-        
-        setTimeout(() => {
-          window.removeEventListener('message', handleEffectsResponse);
-          resolve({});
-        }, 5000);
-      });
-    }
-    
-    async function collectScreenshotModule() {
-      console.log('📸 Capturing high-quality screenshot...');
-      
-      return new Promise((resolve) => {
-        const handleScreenshotResponse = (event) => {
-          if (event.data.pluginMessage?.type === 'screenshot-captured') {
-            window.removeEventListener('message', handleScreenshotResponse);
-            resolve({
-              url: event.data.pluginMessage.screenshotUrl,
-              metadata: event.data.pluginMessage.metadata || {},
-              timestamp: new Date().toISOString()
-            });
-          }
-        };
-        
-        window.addEventListener('message', handleScreenshotResponse);
-        parent.postMessage({ pluginMessage: { type: 'capture-screenshot' } }, '*');
-        
-        setTimeout(() => {
-          window.removeEventListener('message', handleScreenshotResponse);
-          resolve(null);
-        }, 10000);
-      });
-    }
-    
-    async function collectAccessibilityModule(figmaData) {
-      console.log('♿ Analyzing accessibility from Figma data...');
-      
-      // Process accessibility analysis locally from collected Figma data
-      const accessibility = {
-        contrastRatios: [],
-        altTextCoverage: 0,
-        keyboardNavigation: false,
-        semanticStructure: 'needs-review',
-        wcagCompliance: 'partial',
-        recommendations: []
-      };
-      
-      // Analyze selection for accessibility
-      if (figmaData.selection && figmaData.selection.length > 0) {
-        const textNodes = figmaData.selection.filter(node => node.type === 'TEXT');
-        const hasImages = figmaData.selection.some(node => 
-          node.type === 'RECTANGLE' || node.type === 'ELLIPSE' || node.fills?.some(f => f.type === 'IMAGE')
-        );
-        
-        accessibility.altTextCoverage = hasImages ? 0.5 : 1.0;
-        accessibility.recommendations.push(
-          'Review color contrast ratios',
-          'Add alt text for images',
-          'Ensure keyboard navigation support',
-          'Test with screen readers'
-        );
-      }
-      
-      return accessibility;
-    }
-    
-    async function collectCodeGenerationModule(contextData, techStack) {
-      console.log('💻 Generating code specifications...');
-      
-      const codeGeneration = {
-        framework: techStack,
-        components: [],
-        styles: {},
-        structure: {},
-        implementation: {
-          ready: false,
-          confidence: 0.0,
-          blockers: []
-        }
-      };
-      
-      // Analyze for code generation readiness
-      if (contextData.figmaData.selection) {
-        const componentCount = contextData.figmaData.selection.filter(n => n.type === 'INSTANCE').length;
-        const hasDesignTokens = Object.keys(contextData.designTokens).length > 0;
-        
-        codeGeneration.implementation.ready = componentCount > 0 && hasDesignTokens;
-        codeGeneration.implementation.confidence = componentCount > 0 ? 0.8 : 0.4;
-        
-        if (componentCount === 0) {
-          codeGeneration.implementation.blockers.push('No components detected');
-        }
-        if (!hasDesignTokens) {
-          codeGeneration.implementation.blockers.push('Design tokens missing');
-        }
-      }
-      
-      return codeGeneration;
-    }
-
-    /**
-     * Requests MCP server analysis of current Figma selection
-     */
-    async function requestMCPAnalysis(techStackDesc, documentType) {
-      console.log('🔍 Requesting MCP server analysis of Figma selection...');
-      
-      try {
-        // First try to get current selection from Figma
-        const selectionResponse = await new Promise((resolve) => {
-          const handleSelectionResponse = (event) => {
-            if (event.data.pluginMessage?.type === 'selection-context' || 
-                event.data.pluginMessage?.type === 'enhanced-frame-data') {
-              window.removeEventListener('message', handleSelectionResponse);
-              resolve(event.data.pluginMessage);
-            }
-          };
-          
-          window.addEventListener('message', handleSelectionResponse);
-          parent.postMessage({ pluginMessage: { type: 'get-selection-context' } }, '*');
-          
-          // Timeout for selection request
-          setTimeout(() => {
-            window.removeEventListener('message', handleSelectionResponse);
-            resolve(null);
-          }, 3000);
-        });
-
-        if (!selectionResponse || !selectionResponse.data) {
-          console.warn('⚠️ No Figma selection data available for MCP analysis');
-          return null;
-        }
-
-        // Send selection data to MCP server for comprehensive analysis
-        const mcpResponse = await fetch(`${MCP_SERVER_URL}/api/figma/analyze-enhanced`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            selectionData: selectionResponse.data,
-            fileContext: selectionResponse.fileContext,
-            techStack: techStackDesc,
-            documentType: documentType,
-            analysisLevel: 'comprehensive',
-            includeDesignIntelligence: true,
-            includeAccessibilityAnalysis: true,
-            includeTechnicalSpecs: true
-          })
-        });
-
-        if (!mcpResponse.ok) {
-          throw new Error(`MCP server analysis failed: ${mcpResponse.status}`);
-        }
-
-        const mcpData = await mcpResponse.json();
-        console.log('✅ MCP server analysis completed:', mcpData);
-        
-        return {
-          enhancedFrameData: mcpData.analysis?.enhancedFrameData || selectionResponse.data,
-          fileContext: mcpData.analysis?.fileContext || selectionResponse.fileContext,
-          designTokens: mcpData.analysis?.designTokens,
-          analytics: mcpData.analysis?.analytics,
-          technicalContext: mcpData.analysis?.technicalContext,
-          qualityMetrics: mcpData.analysis?.qualityMetrics,
-          source: 'mcp-server-analysis'
-        };
-
-      } catch (error) {
-        console.error('❌ MCP analysis request failed:', error);
-        return null;
-      }
-    }
-    
-    /**
-     * Builds comprehensive context from enhanced frame data
-     */
-    function buildComprehensiveContextFromEnhanced(enhancedFrameData, fileContext, techStackDesc, documentType, mcpAnalysis = null) {
-      const parsed = parseTechStack(techStackDesc);
-      updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
-      
-      // 🔧 Use existing screenshot if available, otherwise create enhanced fallback
-      let screenshotData = window.currentScreenshot || createScreenshotFallback();
-      console.log('📸 Screenshot for enhanced context:', screenshotData ? 'Found existing' : 'Creating fallback');
-      
-      // Use MCP analysis data if available, otherwise extract from frame data
-      const designTokens = mcpAnalysis?.designTokens || extractDesignTokensFromEnhanced(enhancedFrameData);
-      const analytics = mcpAnalysis?.analytics || generateBasicAnalytics(enhancedFrameData);
-      const technicalContext = mcpAnalysis?.technicalContext || generateBasicTechnicalContext(parsed);
-      const qualityMetrics = mcpAnalysis?.qualityMetrics || generateBasicQualityMetrics(enhancedFrameData);
-      
-      console.log('📊 Using data from:', mcpAnalysis ? 'MCP Server Analysis' : 'Direct Figma Extraction');
-      
-      return {
-        techStack: {
-          ...parsed,
-          description: techStackDesc
-        },
-        figmaData: {
-          fileContext: fileContext,
-          selection: enhancedFrameData,
-          pageInfo: fileContext,
-          metrics: {
-            totalComponents: enhancedFrameData.filter(item => item.type === 'INSTANCE').length,
-            totalFrames: enhancedFrameData.filter(item => item.type === 'FRAME').length,
-            totalTexts: enhancedFrameData.filter(item => item.type === 'TEXT').length,
-            selectionCount: enhancedFrameData.length,
-            // Enhanced metrics from MCP analysis
-            nodeDepth: analytics.pageMetrics?.frameDepth || calculateMaxDepth(enhancedFrameData),
-            interactionCount: analytics.interactionFlow?.totalInteractions || 0,
-            componentLibraryUsage: analytics.designSystemUsage?.componentLibraryUsage || 0
-          },
-          // Include MCP analysis data
-          analytics: analytics,
-          technicalContext: technicalContext
-        },
-        screenshot: screenshotData,
-        figmaContext: {
-          hasSelection: enhancedFrameData.length > 0,
-          selectionCount: enhancedFrameData.length,
-          fileName: fileContext.fileName || 'Design File',
-          isEnhanced: !!mcpAnalysis,
-          dataQuality: mcpAnalysis ? 'mcp-analyzed' : 'figma-extracted',
-          comprehensiveData: !!mcpAnalysis
-        },
-        documentType: documentType,
-        components: enhancedFrameData.filter(item => item.type === 'INSTANCE'),
-        designTokens: designTokens,
-        pageInfo: {
-          ...fileContext,
-          analytics: analytics.pageMetrics,
-          designSystemUsage: analytics.designSystemUsage
-        },
-        apiUrls: {},
-        // 📊 COMPREHENSIVE ANALYTICS FROM MCP
-        analytics: analytics,
-        technicalContext: technicalContext,
-        qualityMetrics: qualityMetrics,
-        implementationReadiness: {
-          frontendReady: qualityMetrics.codeGenerationReadiness > 0.8,
-          assetsOptimized: qualityMetrics.performanceOptimization > 0.7,
-          responsiveSpecs: true, // Derived from analysis
-          accessibilityCompliant: qualityMetrics.accessibilityScore,
-          developmentBlocked: false,
-          missingSpecifications: extractMissingSpecs(enhancedFrameData, analytics)
-        },
-        enhancedInsights: {
-          primaryPatterns: extractDesignPatterns(enhancedFrameData),
-          interactionModel: analytics.interactionFlow?.interactionModel || 'click-driven',
-          responsiveApproach: 'mobile-first with breakpoint scaling',
-          developmentPriorities: generateDevelopmentPriorities(technicalContext, qualityMetrics)
-        },
-        metadata: {
-          extractedAt: new Date().toISOString(),
-          dataSource: mcpAnalysis ? 'mcp-server-analysis' : 'enhanced-frame-data',
-          comprehensive: true,
-          schemaVersion: '2.1.0',
-          processingTime: mcpAnalysis?.processingTime || 'instant',
-          dataPoints: Object.keys(analytics).length + Object.keys(technicalContext).length + enhancedFrameData.length,
-          confidence: parsed.confidence,
-          richness: mcpAnalysis ? 'comprehensive-mcp' : 'enhanced-figma'
-        }
-      };
-    }
-    
-    /**
-     * Builds comprehensive context from existing Figma context data
-     */
-    function buildComprehensiveContextFromExisting(figmaContextData, frameDataArray, techStackDesc, documentType) {
-      const parsed = parseTechStack(techStackDesc);
-      updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
-      
-      const components = frameDataArray?.filter(item => item.type === 'INSTANCE' || item.type === 'COMPONENT') || [];
-      const frames = frameDataArray?.filter(item => item.type === 'FRAME') || [];
-      const texts = frameDataArray?.filter(item => item.type === 'TEXT') || [];
-      
-      return {
-        techStack: {
-          ...parsed,
-          description: techStackDesc
-        },
-        figmaData: {
-          fileContext: figmaFileInfo || { fileName: 'Design File' },
-          selection: frameDataArray || [],
-          pageInfo: figmaFileInfo || {},
-          metrics: {
-            totalComponents: components.length,
-            totalFrames: frames.length,
-            totalTexts: texts.length,
-            selectionCount: frameDataArray?.length || 0
-          }
-        },
-        screenshot: createMockScreenshot(),
-        figmaContext: figmaContextData || {
-          hasSelection: frameDataArray?.length > 0,
-          selectionCount: frameDataArray?.length || 0,
-          fileName: figmaFileInfo?.fileName || 'Design File'
-        },
-        documentType: documentType,
-        components: components,
-        designTokens: extractDesignTokensFromFrameData(frameDataArray),
-        pageInfo: figmaFileInfo || {},
-        apiUrls: {},
-        metadata: {
-          extractedAt: new Date().toISOString(),
-          dataSource: 'existing-context',
-          comprehensive: true
-        }
-      };
-    }
-
-    /**
-     * Builds comprehensive context with enriched mock data - ENHANCED DATA SCHEMA
-     */
-    function buildComprehensiveContextFromMock(techStackDesc, documentType) {
-      const parsed = parseTechStack(techStackDesc);
-      updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
-      
-      // 🎯 DEEP COMPREHENSIVE MOCK DATA - Restoring original "📊 Extracted Data Schema" richness
-      const mockComponents = [
-        {
-          type: 'INSTANCE',
-          name: 'Primary CTA Button - Get Started',
-          id: 'btn-primary-cta-001',
-          width: 160,
-          height: 48,
-          x: 32,
-          y: 120,
-          absoluteBoundingBox: { x: 32, y: 120, width: 160, height: 48 },
-          fills: [
-            { 
-              type: 'SOLID', 
-              color: { r: 0.4, g: 0.49, b: 0.92, a: 1 },
-              gradientStops: [
-                { position: 0, color: { r: 0.4, g: 0.49, b: 0.92, a: 1 } },
-                { position: 1, color: { r: 0.25, g: 0.32, b: 0.78, a: 1 } }
-              ]
-            }
-          ],
-          strokes: [],
-          cornerRadius: 8,
-          cornerSmoothing: 0.6,
-          effects: [
-            { 
-              type: 'DROP_SHADOW', 
-              offset: { x: 0, y: 2 }, 
-              radius: 8, 
-              color: { r: 0.4, g: 0.49, b: 0.92, a: 0.24 },
-              spread: 0,
-              visible: true,
-              blendMode: 'NORMAL'
-            }
-          ],
-          componentId: 'btn-component-primary-master',
-          componentSetId: 'button-set-primary',
-          variantProperties: { 
-            state: 'default', 
-            size: 'large',
-            variant: 'primary',
-            theme: 'light'
-          },
-          overrides: [
-            { id: 'text-label', property: 'characters', value: 'Get Started' }
-          ],
-          textContent: 'Get Started',
-          fontFamily: 'Inter',
-          fontSize: 16,
-          fontWeight: 600,
-          lineHeight: 24,
-          letterSpacing: 0,
-          textAlign: 'CENTER',
-          textAutoResize: 'WIDTH_AND_HEIGHT',
-          semanticRole: 'button',
-          accessibilityLabel: 'Primary call to action button - Get Started',
-          ariaLabel: 'Get Started - Primary action',
-          tabIndex: 0,
-          focusable: true,
-          designTokens: {
-            backgroundColor: 'primary-600',
-            backgroundHover: 'primary-700',
-            backgroundActive: 'primary-800',
-            backgroundDisabled: 'neutral-300',
-            textColor: 'white',
-            textColorDisabled: 'neutral-500',
-            borderRadius: 'md',
-            padding: 'md-lg',
-            fontSize: 'body-md',
-            fontWeight: 'semibold',
-            shadow: 'shadow-md',
-            transition: 'all-200ms'
-          },
-          states: {
-            default: { opacity: 1, transform: 'scale(1)' },
-            hover: { opacity: 0.9, transform: 'scale(1.02)', shadow: 'shadow-lg' },
-            active: { opacity: 0.8, transform: 'scale(0.98)' },
-            focus: { outline: '2px solid primary-300', outlineOffset: '2px' },
-            disabled: { opacity: 0.5, cursor: 'not-allowed' }
-          },
-          interactions: [
-            { 
-              trigger: 'ON_CLICK', 
-              action: 'NAVIGATE', 
-              destination: 'page-dashboard',
-              transition: 'dissolve',
-              duration: 300,
-              easing: 'ease-out'
-            },
-            {
-              trigger: 'ON_HOVER',
-              action: 'ANIMATE',
-              properties: ['transform', 'box-shadow'],
-              duration: 200
-            }
-          ],
-          prototyping: {
-            hasPrototyping: true,
-            interactions: 2,
-            connectedNodes: ['page-dashboard', 'modal-signup'],
-            flowStartingPoint: false
-          },
-          hierarchy: {
-            depth: 3,
-            totalChildren: 2,
-            parentId: 'card-hero-section',
-            children: [
-              { 
-                type: 'TEXT', 
-                name: 'Button Label Text', 
-                content: 'Get Started',
-                id: 'text-btn-label-001',
-                depth: 4,
-                characterStyleId: 'text-style-button-primary'
-              },
-              {
-                type: 'RECTANGLE',
-                name: 'Button Background',
-                id: 'rect-btn-bg-001',
-                depth: 4,
-                fillStyleId: 'fill-style-primary'
-              }
-            ]
-          },
-          styleReferences: {
-            fillStyleId: 'S:primary-fill-600',
-            strokeStyleId: null,
-            textStyleId: 'S:text-button-primary',
-            effectStyleId: 'S:shadow-medium'
-          },
-          exportSettings: [
-            { suffix: '@2x', format: 'PNG', constraint: { type: 'SCALE', value: 2 } },
-            { suffix: '', format: 'SVG' }
-          ],
-          componentProperties: {
-            label: { type: 'TEXT', defaultValue: 'Get Started' },
-            variant: { type: 'VARIANT', defaultValue: 'primary' },
-            size: { type: 'VARIANT', defaultValue: 'large' },
-            disabled: { type: 'BOOLEAN', defaultValue: false }
-          },
-          autoLayoutConfig: {
-            layoutMode: 'HORIZONTAL',
-            paddingLeft: 24,
-            paddingRight: 24,
-            paddingTop: 12,
-            paddingBottom: 12,
-            itemSpacing: 8,
-            counterAxisSizingMode: 'FIXED',
-            primaryAxisSizingMode: 'AUTO'
-          },
-          measurements: {
-            width: 160,
-            height: 48,
-            area: 7680,
-            perimeter: 416,
-            aspectRatio: 3.33
-          },
-          technicalSpecs: {
-            cssProperties: {
-              'background': 'linear-gradient(135deg, #667eea 0%, #4060c7 100%)',
-              'border-radius': '8px',
-              'box-shadow': '0 2px 8px rgba(102, 126, 234, 0.24)',
-              'color': '#ffffff',
-              'font-family': 'Inter, -apple-system, sans-serif',
-              'font-size': '16px',
-              'font-weight': '600',
-              'line-height': '24px',
-              'padding': '12px 24px',
-              'text-align': 'center',
-              'transition': 'all 0.2s ease'
-            },
-            htmlAttributes: {
-              'role': 'button',
-              'aria-label': 'Get Started - Primary action',
-              'tabindex': '0'
-            },
-            reactProps: {
-              variant: 'primary',
-              size: 'large',
-              onClick: 'handleGetStarted',
-              disabled: false,
-              children: 'Get Started'
-            }
-          }
-        },
-        {
-          type: 'INSTANCE',
-          name: 'Email Input Field - Contact Form',
-          id: 'input-email-contact-001',
-          width: 320,
-          height: 56,
-          x: 32,
-          y: 200,
-          absoluteBoundingBox: { x: 32, y: 200, width: 320, height: 56 },
-          fills: [
-            { 
-              type: 'SOLID', 
-              color: { r: 1, g: 1, b: 1, a: 1 },
-              opacity: 1
-            }
-          ],
-          strokes: [
-            { 
-              type: 'SOLID', 
-              color: { r: 0.9, g: 0.9, b: 0.9, a: 1 },
-              strokeWeight: 1,
-              strokeAlign: 'INSIDE'
-            }
-          ],
-          cornerRadius: 6,
-          cornerSmoothing: 0.4,
-          effects: [
-            {
-              type: 'INNER_SHADOW',
-              offset: { x: 0, y: 1 },
-              radius: 2,
-              color: { r: 0, g: 0, b: 0, a: 0.05 },
-              visible: true,
-              blendMode: 'NORMAL'
-            }
-          ],
-          componentId: 'input-component-email-master',
-          componentSetId: 'input-set-form-fields',
-          variantProperties: { 
-            state: 'default', 
-            size: 'large',
-            type: 'email',
-            validation: 'none'
-          },
-          placeholder: 'Enter your email address...',
-          inputType: 'email',
-          value: '',
-          required: true,
-          validation: {
-            pattern: '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$',
-            errorMessage: 'Please enter a valid email address',
-            validStates: ['valid', 'invalid', 'pending']
-          },
-          semanticRole: 'textbox',
-          accessibilityLabel: 'Email address input field',
-          ariaLabel: 'Email address',
-          ariaRequired: true,
-          ariaInvalid: false,
-          tabIndex: 0,
-          designTokens: {
-            backgroundColor: 'surface-primary',
-            backgroundFocus: 'surface-primary',
-            backgroundError: 'error-50',
-            borderColor: 'neutral-300',
-            borderColorFocus: 'primary-500',
-            borderColorError: 'error-500',
-            textColor: 'neutral-900',
-            placeholderColor: 'neutral-400',
-            borderRadius: 'sm',
-            fontSize: 'body-md',
-            padding: 'md'
-          },
-          states: {
-            default: { borderColor: 'neutral-300', backgroundColor: 'white' },
-            focus: { borderColor: 'primary-500', boxShadow: '0 0 0 3px primary-100' },
-            error: { borderColor: 'error-500', backgroundColor: 'error-50' },
-            disabled: { opacity: 0.5, backgroundColor: 'neutral-100', cursor: 'not-allowed' },
-            valid: { borderColor: 'success-500', backgroundColor: 'success-50' }
-          },
-          interactions: [
-            {
-              trigger: 'ON_FOCUS',
-              action: 'ANIMATE',
-              properties: ['border-color', 'box-shadow'],
-              duration: 150
-            },
-            {
-              trigger: 'ON_BLUR',
-              action: 'VALIDATE',
-              validation: 'email-format'
-            }
-          ],
-          hierarchy: {
-            depth: 3,
-            totalChildren: 3,
-            parentId: 'form-contact-section',
-            children: [
-              { 
-                type: 'TEXT', 
-                name: 'Placeholder Text', 
-                content: 'Enter your email address...',
-                id: 'text-placeholder-001',
-                depth: 4,
-                visible: true,
-                opacity: 0.6
-              },
-              {
-                type: 'RECTANGLE',
-                name: 'Input Background',
-                id: 'rect-input-bg-001',
-                depth: 4
-              },
-              {
-                type: 'RECTANGLE',
-                name: 'Input Border',
-                id: 'rect-input-border-001',
-                depth: 4,
-                strokeWeight: 1
-              }
-            ]
-          },
-          formIntegration: {
-            name: 'email',
-            validationRules: ['required', 'email'],
-            errorHandling: true,
-            autoComplete: 'email',
-            spellCheck: false
-          },
-          technicalSpecs: {
-            cssProperties: {
-              'background-color': '#ffffff',
-              'border': '1px solid #e5e7eb',
-              'border-radius': '6px',
-              'color': '#111827',
-              'font-family': 'Inter, -apple-system, sans-serif',
-              'font-size': '16px',
-              'line-height': '24px',
-              'padding': '16px',
-              'width': '100%',
-              'transition': 'border-color 0.15s ease, box-shadow 0.15s ease'
-            },
-            htmlAttributes: {
-              'type': 'email',
-              'placeholder': 'Enter your email address...',
-              'required': true,
-              'aria-label': 'Email address',
-              'autocomplete': 'email'
-            },
-            reactProps: {
-              type: 'email',
-              placeholder: 'Enter your email address...',
-              value: 'emailValue',
-              onChange: 'handleEmailChange',
-              onBlur: 'handleEmailBlur',
-              required: true,
-              autoComplete: 'email'
-            }
-          }
-        },
-        {
-          type: 'FRAME',
-          name: 'Hero Card Container - Main Landing',
-          id: 'frame-hero-card-001',
-          width: 400,
-          height: 320,
-          x: 0,
-          y: 0,
-          absoluteBoundingBox: { x: 0, y: 0, width: 400, height: 320 },
-          fills: [
-            { 
-              type: 'SOLID', 
-              color: { r: 1, g: 1, b: 1, a: 1 }
-            }
-          ],
-          strokes: [],
-          effects: [
-            { 
-              type: 'DROP_SHADOW', 
-              offset: { x: 0, y: 4 }, 
-              radius: 16, 
-              color: { r: 0, g: 0, b: 0, a: 0.08 },
-              spread: 0,
-              visible: true,
-              blendMode: 'NORMAL'
-            },
-            {
-              type: 'DROP_SHADOW',
-              offset: { x: 0, y: 12 },
-              radius: 24,
-              color: { r: 0, g: 0, b: 0, a: 0.04 },
-              spread: 0,
-              visible: true,
-              blendMode: 'NORMAL'
-            }
-          ],
-          cornerRadius: 16,
-          cornerSmoothing: 0.8,
-          layoutMode: 'VERTICAL',
-          layoutWrap: 'NO_WRAP',
-          primaryAxisSizingMode: 'AUTO',
-          counterAxisSizingMode: 'FIXED',
-          primaryAxisAlignItems: 'CENTER',
-          counterAxisAlignItems: 'CENTER',
-          paddingTop: 32,
-          paddingRight: 32,
-          paddingBottom: 32,
-          paddingLeft: 32,
-          itemSpacing: 24,
-          layoutGrids: [
-            {
-              pattern: 'COLUMNS',
-              sectionSize: 64,
-              visible: false,
-              count: 5,
-              gutterSize: 16,
-              alignment: 'CENTER'
-            }
-          ],
-          semanticRole: 'article',
-          accessibilityLabel: 'Hero section card - Main call to action',
-          designTokens: {
-            backgroundColor: 'surface-primary',
-            shadowLevel: 'elevation-2',
-            borderRadius: 'xl',
-            padding: 'xl',
-            gap: 'lg'
-          },
-          hierarchy: {
-            depth: 1,
-            totalChildren: 6,
-            children: [
-              { 
-                type: 'TEXT', 
-                name: 'Hero Headline', 
-                content: 'Welcome to the Future of Design',
-                id: 'text-hero-headline-001',
-                depth: 2,
-                fontSize: 32,
-                fontWeight: 700,
-                lineHeight: 40,
-                textAlign: 'CENTER'
-              },
-              { 
-                type: 'TEXT', 
-                name: 'Hero Subheadline', 
-                content: 'Get started with our comprehensive design system and build amazing products faster',
-                id: 'text-hero-subheadline-001',
-                depth: 2,
-                fontSize: 18,
-                fontWeight: 400,
-                lineHeight: 28,
-                textAlign: 'CENTER',
-                opacity: 0.8
-              },
-              { 
-                type: 'INSTANCE', 
-                name: 'Primary CTA Button', 
-                componentId: 'btn-primary-cta-001',
-                id: 'instance-primary-btn-001',
-                depth: 2
-              },
-              { 
-                type: 'INSTANCE', 
-                name: 'Email Input Field', 
-                componentId: 'input-email-contact-001',
-                id: 'instance-email-input-001',
-                depth: 2
-              },
-              {
-                type: 'FRAME',
-                name: 'Feature Icons Row',
-                id: 'frame-feature-icons-001',
-                depth: 2,
-                layoutMode: 'HORIZONTAL',
-                itemSpacing: 16,
-                children: [
-                  { type: 'INSTANCE', name: 'Icon Check', id: 'icon-check-001', depth: 3 },
-                  { type: 'INSTANCE', name: 'Icon Star', id: 'icon-star-001', depth: 3 },
-                  { type: 'INSTANCE', name: 'Icon Shield', id: 'icon-shield-001', depth: 3 }
-                ]
-              },
-              {
-                type: 'TEXT',
-                name: 'Trust Badge Text',
-                content: 'Trusted by 10,000+ designers worldwide',
-                id: 'text-trust-badge-001',
-                depth: 2,
-                fontSize: 14,
-                fontWeight: 500,
-                opacity: 0.7
-              }
-            ]
-          },
-          responsiveDesign: {
-            breakpoints: {
-              mobile: { width: '100%', maxWidth: 375, padding: 16 },
-              tablet: { width: '100%', maxWidth: 768, padding: 24 },
-              desktop: { width: 400, padding: 32 }
-            },
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center'
-          },
-          contentStrategy: {
-            purpose: 'hero-conversion',
-            userJourney: 'awareness-to-interest',
-            conversionGoals: ['email-signup', 'product-trial'],
-            personalisation: {
-              variants: ['default', 'returning-user', 'mobile-optimized'],
-              testingActive: true
-            }
-          },
-          brandAlignment: {
-            brandScore: 0.94,
-            colorCompliance: 0.98,
-            typographyCompliance: 0.92,
-            spacingCompliance: 0.96,
-            brandElements: ['primary-colors', 'brand-typography', 'logo-placement']
-          },
-          technicalSpecs: {
-            cssProperties: {
-              'background-color': '#ffffff',
-              'border-radius': '16px',
-              'box-shadow': '0 4px 16px rgba(0, 0, 0, 0.08), 0 12px 24px rgba(0, 0, 0, 0.04)',
-              'display': 'flex',
-              'flex-direction': 'column',
-              'align-items': 'center',
-              'justify-content': 'center',
-              'gap': '24px',
-              'padding': '32px',
-              'width': '400px',
-              'min-height': '320px'
-            },
-            htmlStructure: {
-              tag: 'article',
-              role: 'main',
-              'aria-label': 'Hero section - Main call to action'
-            },
-            reactComponent: {
-              name: 'HeroCard',
-              props: ['title', 'subtitle', 'ctaText', 'variant'],
-              state: ['emailValue', 'isSubmitting', 'validationErrors'],
-              hooks: ['useState', 'useForm', 'useAnalytics']
-            }
-          }
-        }
-      ];
-      
-      // 🎨 DEEP COMPREHENSIVE DESIGN TOKENS - Restoring original rich extraction depth
-      const mockDesignTokens = {
-        // Color System - Comprehensive Palette with Semantic Mapping
-        colors: {
-          // Primary Brand Colors
-          primary: {
-            50: '#f0f4ff',
-            100: '#e0e9ff', 
-            200: '#c7d6fe',
-            300: '#a5b9fc',
-            400: '#8294f8',
-            500: '#667eea', // Primary brand color
-            600: '#5a67d8',
-            700: '#4c51bf',
-            800: '#434190',
-            900: '#3c366b'
-          },
-          // Secondary Brand Colors  
-          secondary: {
-            50: '#fdf4ff',
-            100: '#fae8ff',
-            200: '#f5d0fe',
-            300: '#f0abfc',
-            400: '#e879f9',
-            500: '#d946ef',
-            600: '#c026d3',
-            700: '#a21caf',
-            800: '#86198f',
-            900: '#701a75'
-          },
-          // Neutral System
-          neutral: {
-            0: '#ffffff',
-            50: '#f8fafc',
-            100: '#f1f5f9',
-            200: '#e2e8f0',
-            300: '#cbd5e1',
-            400: '#94a3b8',
-            500: '#64748b',
-            600: '#475569',
-            700: '#334155',
-            800: '#1e293b',
-            900: '#0f172a',
-            950: '#020617'
-          },
-          // Semantic Colors
-          semantic: {
-            success: {
-              50: '#f0fdf4',
-              500: '#10b981',
-              600: '#059669',
-              700: '#047857'
-            },
-            warning: {
-              50: '#fffbeb',
-              500: '#f59e0b',
-              600: '#d97706',
-              700: '#b45309'
-            },
-            error: {
-              50: '#fef2f2',
-              500: '#ef4444',
-              600: '#dc2626',
-              700: '#b91c1c'
-            },
-            info: {
-              50: '#eff6ff',
-              500: '#3b82f6',
-              600: '#2563eb',
-              700: '#1d4ed8'
-            }
-          },
-          // Context-specific colors extracted from design
-          extracted: [
-            '#667eea', '#764ba2', '#f8fafc', '#1a202c', '#ffffff',
-            '#e5e7eb', '#9ca3af', '#4b5563', '#10b981', '#ef4444',
-            'rgba(102, 126, 234, 0.24)', 'rgba(118, 75, 162, 0.15)',
-            'rgba(0, 0, 0, 0.08)', 'rgba(0, 0, 0, 0.04)'
-          ],
-          // Gradients used in design
-          gradients: [
-            'linear-gradient(135deg, #667eea 0%, #4060c7 100%)',
-            'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-            'radial-gradient(circle at 30% 40%, #667eea 0%, transparent 50%)'
-          ]
-        },
-        
-        // Typography System - Complete type scale with semantic mapping
-        typography: {
-          // Font Families
-          fontFamilies: {
-            primary: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-            secondary: 'Inter, system-ui, sans-serif',
-            mono: 'SF Mono, Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace'
-          },
-          
-          // Font Weights
-          fontWeights: {
-            thin: 100,
-            extralight: 200,
-            light: 300,
-            normal: 400,
-            medium: 500,
-            semibold: 600,
-            bold: 700,
-            extrabold: 800,
-            black: 900
-          },
-          
-          // Type Scale - Comprehensive sizing system
-          scale: {
-            // Display sizes
-            'display-2xl': { fontSize: '72px', lineHeight: '90px', fontWeight: 800, letterSpacing: '-0.025em' },
-            'display-xl': { fontSize: '60px', lineHeight: '72px', fontWeight: 800, letterSpacing: '-0.025em' },
-            'display-lg': { fontSize: '48px', lineHeight: '60px', fontWeight: 700, letterSpacing: '-0.025em' },
-            'display-md': { fontSize: '36px', lineHeight: '44px', fontWeight: 700, letterSpacing: '-0.025em' },
-            'display-sm': { fontSize: '30px', lineHeight: '38px', fontWeight: 600, letterSpacing: '-0.025em' },
-            
-            // Heading sizes
-            'heading-xl': { fontSize: '32px', lineHeight: '40px', fontWeight: 700, letterSpacing: '-0.02em' },
-            'heading-lg': { fontSize: '28px', lineHeight: '36px', fontWeight: 700, letterSpacing: '-0.02em' },
-            'heading-md': { fontSize: '24px', lineHeight: '32px', fontWeight: 600, letterSpacing: '-0.02em' },
-            'heading-sm': { fontSize: '20px', lineHeight: '28px', fontWeight: 600, letterSpacing: '-0.01em' },
-            'heading-xs': { fontSize: '18px', lineHeight: '28px', fontWeight: 600, letterSpacing: '0' },
-            
-            // Body text sizes
-            'body-xl': { fontSize: '20px', lineHeight: '30px', fontWeight: 400, letterSpacing: '0' },
-            'body-lg': { fontSize: '18px', lineHeight: '28px', fontWeight: 400, letterSpacing: '0' },
-            'body-md': { fontSize: '16px', lineHeight: '24px', fontWeight: 400, letterSpacing: '0' },
-            'body-sm': { fontSize: '14px', lineHeight: '20px', fontWeight: 400, letterSpacing: '0' },
-            'body-xs': { fontSize: '12px', lineHeight: '18px', fontWeight: 400, letterSpacing: '0' },
-            
-            // Label and UI text
-            'label-lg': { fontSize: '16px', lineHeight: '24px', fontWeight: 500, letterSpacing: '0' },
-            'label-md': { fontSize: '14px', lineHeight: '20px', fontWeight: 500, letterSpacing: '0' },
-            'label-sm': { fontSize: '12px', lineHeight: '18px', fontWeight: 500, letterSpacing: '0.025em' },
-            'label-xs': { fontSize: '11px', lineHeight: '16px', fontWeight: 500, letterSpacing: '0.05em' }
-          },
-          
-          // Extracted styles from current design
-          extracted: [
-            'Inter Regular 16px/24px',
-            'Inter Medium 14px/20px', 
-            'Inter Bold 18px/28px',
-            'Inter SemiBold 20px/30px',
-            'Inter Regular 12px/18px',
-            'Inter Medium 24px/32px',
-            'Inter Bold 32px/40px',
-            'Inter SemiBold 16px/24px'
-          ]
-        },
-        
-        // Spacing System - Comprehensive spatial relationships
-        spacing: {
-          // Base spacing scale (4px base unit)
-          scale: {
-            0: '0px',
-            1: '4px',
-            2: '8px',
-            3: '12px',
-            4: '16px',
-            5: '20px',
-            6: '24px',
-            8: '32px',
-            10: '40px',
-            12: '48px',
-            16: '64px',
-            20: '80px',
-            24: '96px',
-            32: '128px',
-            40: '160px',
-            48: '192px',
-            56: '224px',
-            64: '256px'
-          },
-          
-          // Semantic spacing for common use cases
-          semantic: {
-            'xs': '4px',
-            'sm': '8px',
-            'md': '16px',
-            'lg': '24px',
-            'xl': '32px',
-            '2xl': '48px',
-            '3xl': '64px',
-            '4xl': '96px'
-          },
-          
-          // Component-specific spacing
-          component: {
-            'button-padding-sm': '8px 12px',
-            'button-padding-md': '12px 16px',
-            'button-padding-lg': '16px 24px',
-            'card-padding': '24px',
-            'modal-padding': '32px',
-            'section-margin': '64px',
-            'container-padding': '16px'
-          },
-          
-          // Extracted spacing values from design
-          extracted: [4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128, 160, 192, 224, 256]
-        },
-        
-        // Border Radius System
-        borderRadius: {
-          none: '0px',
-          sm: '2px',
-          base: '4px',
-          md: '6px',
-          lg: '8px',
-          xl: '12px',
-          '2xl': '16px',
-          '3xl': '24px',
-          full: '9999px',
-          
-          // Component-specific radius
-          button: '8px',
-          card: '16px',
-          input: '6px',
-          modal: '12px',
-          avatar: '50%',
-          
-          // Extracted values
-          extracted: [0, 2, 4, 6, 8, 12, 16, 20, 24, 9999]
-        },
-        
-        // Shadow System - Comprehensive elevation system
-        shadows: {
-          // Elevation system
-          elevation: {
-            0: 'none',
-            1: '0 1px 2px rgba(0, 0, 0, 0.05)',
-            2: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            3: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            4: '0 8px 15px rgba(0, 0, 0, 0.1)',
-            5: '0 20px 25px rgba(0, 0, 0, 0.1)',
-            6: '0 25px 50px rgba(0, 0, 0, 0.15)'
-          },
-          
-          // Colored shadows
-          colored: {
-            'primary-sm': '0 2px 8px rgba(102, 126, 234, 0.24)',
-            'primary-md': '0 4px 16px rgba(102, 126, 234, 0.32)',
-            'primary-lg': '0 8px 24px rgba(102, 126, 234, 0.40)'
-          },
-          
-          // Inner shadows
-          inner: {
-            sm: 'inset 0 1px 2px rgba(0, 0, 0, 0.05)',
-            md: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)'
-          },
-          
-          // Focus shadows
-          focus: {
-            primary: '0 0 0 3px rgba(102, 126, 234, 0.1)',
-            error: '0 0 0 3px rgba(239, 68, 68, 0.1)',
-            success: '0 0 0 3px rgba(16, 185, 129, 0.1)'
-          },
-          
-          // Extracted shadows from design
-          extracted: [
-            '0 1px 2px rgba(0,0,0,0.05)',
-            '0 2px 4px rgba(0,0,0,0.1)',
-            '0 4px 6px rgba(0,0,0,0.1)',
-            '0 8px 15px rgba(0,0,0,0.1)',
-            '0 20px 25px rgba(0,0,0,0.1)',
-            '0 2px 8px rgba(102, 126, 234, 0.24)',
-            '0 4px 16px rgba(0, 0, 0, 0.08)',
-            'inset 0 1px 2px rgba(0, 0, 0, 0.05)'
-          ]
-        },
-        
-        // Animation & Transition System
-        animations: {
-          // Duration scale
-          duration: {
-            fast: '150ms',
-            normal: '200ms',
-            slow: '300ms',
-            slower: '500ms'
-          },
-          
-          // Easing functions
-          easing: {
-            linear: 'linear',
-            'ease-in': 'cubic-bezier(0.4, 0, 1, 1)',
-            'ease-out': 'cubic-bezier(0, 0, 0.2, 1)',
-            'ease-in-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
-            bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
-          },
-          
-          // Common transitions
-          transitions: {
-            all: 'all 0.2s ease',
-            colors: 'color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease',
-            transform: 'transform 0.2s ease',
-            opacity: 'opacity 0.15s ease',
-            shadow: 'box-shadow 0.15s ease'
-          }
-        },
-        
-        // Layout & Grid System
-        layout: {
-          // Container widths
-          containers: {
-            xs: '480px',
-            sm: '640px',
-            md: '768px',
-            lg: '1024px',
-            xl: '1280px',
-            '2xl': '1536px'
-          },
-          
-          // Grid system
-          grid: {
-            columns: 12,
-            gutterWidth: '24px',
-            maxWidth: '1200px'
-          },
-          
-          // Z-index scale
-          zIndex: {
-            hide: -1,
-            base: 0,
-            docked: 10,
-            dropdown: 1000,
-            sticky: 1100,
-            banner: 1200,
-            overlay: 1300,
-            modal: 1400,
-            popover: 1500,
-            tooltip: 1600,
-            toast: 1700
-          }
-        },
-        
-        // Breakpoint System
-        breakpoints: {
-          xs: '375px',
-          sm: '640px',
-          md: '768px',
-          lg: '1024px',
-          xl: '1280px',
-          '2xl': '1536px',
-          
-          // Extracted breakpoints
-          extracted: ['320px', '768px', '1024px', '1280px', '1920px']
-        },
-        
-        // Accessibility & Interaction States
-        accessibility: {
-          // Minimum touch targets
-          touchTarget: '44px',
-          
-          // Focus indicators
-          focusRing: {
-            width: '2px',
-            style: 'solid',
-            offset: '2px'
-          },
-          
-          // Color contrast ratios
-          contrast: {
-            normal: 4.5,
-            large: 3,
-            graphical: 3
-          }
-        }
-      };
-
-      // 📊 COMPREHENSIVE ANALYTICS & METADATA - Enhanced Schema
-      const mockAnalytics = {
-        pageMetrics: {
-          totalNodes: 47,
-          componentInstances: 12,
-          uniqueComponents: 6,
-          textNodes: 8,
-          imageNodes: 3,
-          frameDepth: 4,
-          artboardCount: 2
-        },
-        designSystemUsage: {
-          colorTokensUsed: 8,
-          typographyTokensUsed: 5,
-          spacingTokensUsed: 12,
-          componentLibraryUsage: 0.75,
-          consistencyScore: 0.88,
-          brandComplianceScore: 0.92
-        },
-        interactionFlow: {
-          totalInteractions: 6,
-          prototypingConnections: 3,
-          overlayTriggers: 2,
-          navigationPaths: ['home', 'dashboard', 'profile', 'settings'],
-          userJourneyComplexity: 'moderate'
-        },
-        accessibilityAnalysis: {
-          colorContrastIssues: 1,
-          missingAltText: 0,
-          focusOrderIssues: 0,
-          semanticStructureScore: 0.85,
-          keyboardNavigationSupport: true
-        },
-        performanceInsights: {
-          estimatedLoadTime: '2.3s',
-          imageOptimizationOpportunities: 2,
-          cssComplexity: 'moderate',
-          javascriptDependencies: 4,
-          bundleSizeEstimate: '245KB'
-        }
-      };
-
-      // 🔧 TECHNICAL IMPLEMENTATION CONTEXT
-      const mockTechnicalContext = {
-        frameworkCompatibility: {
-          react: { score: 0.95, notes: 'Excellent component mapping potential' },
-          vue: { score: 0.88, notes: 'Good template structure alignment' },
-          angular: { score: 0.82, notes: 'Component architecture compatible' },
-          svelte: { score: 0.85, notes: 'Clean component boundaries' }
-        },
-        implementationComplexity: {
-          frontend: 'medium',
-          backend: 'low',
-          database: 'minimal',
-          integrations: ['auth', 'analytics', 'notifications']
-        },
-        developmentEstimate: {
-          totalEffort: '3-4 sprints',
-          frontendWork: '18-22 hours',
-          backendWork: '8-12 hours',
-          testingWork: '6-8 hours',
-          complexityFactors: ['responsive design', 'accessibility compliance', 'state management']
-        }
-      };
-      
-      return {
-        // 🔄 ENHANCED STRUCTURE - Supporting both legacy and new comprehensive format
-        techStack: {
-          ...parsed,
-          description: techStackDesc
-        },
-        figmaData: {
-          fileContext: { 
-            fileName: 'Mock Design File - Comprehensive Dashboard', 
-            pageName: 'Design System',
-            created: new Date(Date.now() - 86400000).toISOString(),
-            lastModified: new Date().toISOString(),
-            version: '1.2.4'
-          },
-          selection: mockComponents,
-          pageInfo: { name: 'Design System', type: 'PAGE' },
-          metrics: {
-            totalComponents: mockComponents.filter(c => c.type === 'INSTANCE').length,
-            totalFrames: mockComponents.filter(c => c.type === 'FRAME').length,
-            totalTexts: mockComponents.reduce((acc, c) => acc + (c.hierarchy?.children?.filter(ch => ch.type === 'TEXT').length || 0), 0),
-            selectionCount: mockComponents.length,
-            nodeDepth: Math.max(...mockComponents.map(c => c.hierarchy?.depth || 1)),
-            interactionCount: mockAnalytics.interactionFlow.totalInteractions
-          },
-          analytics: mockAnalytics,
-          technicalContext: mockTechnicalContext
-        },
-        screenshot: createScreenshotFallback(),
-        figmaContext: {
-          hasSelection: true,
-          selectionCount: mockComponents.length,
-          fileName: 'Mock Design File - Comprehensive Dashboard',
-          isEnhanced: true,
-          dataQuality: 'high',
-          comprehensiveData: true
-        },
-        documentType: documentType,
-        components: mockComponents.filter(item => item.type === 'INSTANCE'),
-        designTokens: mockDesignTokens,
-        pageInfo: { 
-          name: 'Design System', 
-          type: 'PAGE',
-          analytics: mockAnalytics.pageMetrics,
-          designSystemUsage: mockAnalytics.designSystemUsage
-        },
-        apiUrls: {},
-        // 📊 COMPREHENSIVE ANALYTICS INTEGRATION  
-        analytics: mockAnalytics,
-        technicalContext: mockTechnicalContext,
-        qualityMetrics: {
-          designSystemConsistency: 0.88,
-          accessibilityScore: 0.85,
-          componentReusability: 0.92,
-          codeGenerationReadiness: 0.89,
-          maintenabilityScore: 0.91,
-          performanceOptimization: 0.76
-        },
-        implementationReadiness: {
-          frontendReady: true,
-          assetsOptimized: true,
-          responsiveSpecs: true,
-          accessibilityCompliant: 0.85,
-          developmentBlocked: false,
-          missingSpecifications: ['error states', 'loading states', 'empty states']
-        },
-        enhancedInsights: {
-          primaryPatterns: ['card-based layout', 'progressive disclosure', 'consistent spacing'],
-          interactionModel: 'click-driven with hover states',
-          responsiveApproach: 'mobile-first with breakpoint scaling',
-          developmentPriorities: ['responsive implementation', 'accessibility compliance', 'component reusability']
-        },
-        metadata: {
-          extractedAt: new Date().toISOString(),
-          dataSource: 'comprehensive-enhanced-mock',
-          comprehensive: true,
-          schemaVersion: '2.1.0',
-          processingTime: '847ms',
-          dataPoints: Object.keys(mockAnalytics).length + Object.keys(mockTechnicalContext).length + mockComponents.length,
-          confidence: parsed.confidence,
-          richness: 'comprehensive'
-        }
-      };
-    }
-    
-    /**
-     * Builds comprehensive context from basic data in enhanced format
-     */
-    function buildComprehensiveContextFromBasic(techStackDesc, documentType) {
-      const parsed = parseTechStack(techStackDesc);
-      updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
-      
-      return {
-        techStack: {
-          ...parsed,
-          description: techStackDesc
-        },
-        figmaData: {
-          fileContext: { fileName: figmaFileInfo?.fileName || 'Design File' },
-          selection: [],
-          pageInfo: {},
-          metrics: { selectionCount: 0 }
-        },
-        screenshot: createMockScreenshot(),
-        figmaContext: {
-          hasSelection: false,
-          selectionCount: 0,
-          fileName: figmaFileInfo?.fileName || 'Design File'
-        },
-        documentType: documentType,
-        components: [],
-        designTokens: {
-          colors: [],
-          typography: [],
-          spacing: [],
-          borderRadius: [],
-          shadows: []
-        },
-        pageInfo: { name: 'Unknown Page', type: 'PAGE' },
-        apiUrls: {},
-        metadata: {
-          extractedAt: new Date().toISOString(),
-          dataSource: 'basic-fallback',
-          comprehensive: false
-        }
-      };
-    }
-    
-    /**
-     * Extracts design tokens from basic frame data
-     */
-    function extractDesignTokensFromFrameData(frameDataArray) {
-      if (!frameDataArray || frameDataArray.length === 0) return {};
-      
-      // Extract basic design tokens from frame data structure
-      const tokens = {
-        colors: [],
-        typography: [],
-        spacing: [],
-        borderRadius: [],
-        shadows: []
-      };
-      
-      frameDataArray.forEach(item => {
-        // Extract basic properties that might contain design tokens
-        if (item.fills) {
-          item.fills.forEach(fill => {
-            if (fill.color) {
-              const r = Math.round(fill.color.r * 255);
-              const g = Math.round(fill.color.g * 255);
-              const b = Math.round(fill.color.b * 255);
-              tokens.colors.push(`#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`);
-            }
-          });
-        }
-        
-        if (item.width && item.height) {
-          tokens.spacing.push(item.width, item.height);
-        }
-        
-        if (item.cornerRadius) {
-          tokens.borderRadius.push(item.cornerRadius);
-        }
-      });
-      
-      // Remove duplicates
-      Object.keys(tokens).forEach(key => {
-        tokens[key] = [...new Set(tokens[key])];
-      });
-      
-      return tokens;
-    }
-
-    /**
-     * Extracts design tokens from enhanced frame data
-     */
-    function extractDesignTokensFromEnhanced(enhancedFrameData) {
-      if (!enhancedFrameData || enhancedFrameData.length === 0) return {};
-      
-      // Get design tokens from the first item's hierarchy if available
-      const firstItem = enhancedFrameData[0];
-      if (firstItem?.hierarchy?.designTokens) {
-        return firstItem.hierarchy.designTokens;
-      }
-      
-      // Otherwise, collect design tokens from all items
-      const allTokens = {
-        colors: [],
-        typography: [],
-        spacing: [],
-        borderRadius: [],
-        shadows: []
-      };
-      
-      enhancedFrameData.forEach(item => {
-        if (item.hierarchy?.layers) {
-          item.hierarchy.layers.forEach(layer => {
-            if (layer.tokens) {
-              if (layer.tokens.colors) allTokens.colors.push(...layer.tokens.colors);
-              if (layer.tokens.typography) allTokens.typography.push(...layer.tokens.typography);
-              if (layer.tokens.spacing) allTokens.spacing.push(...layer.tokens.spacing);
-              if (layer.tokens.borderRadius) allTokens.borderRadius.push(...layer.tokens.borderRadius);
-              if (layer.tokens.shadows) allTokens.shadows.push(...layer.tokens.shadows);
-            }
-          });
-        }
-      });
-      
-      // Remove duplicates
-      allTokens.colors = [...new Set(allTokens.colors)];
-      allTokens.typography = [...new Set(allTokens.typography)];
-      allTokens.spacing = [...new Set(allTokens.spacing)];
-      allTokens.borderRadius = [...new Set(allTokens.borderRadius)];
-      allTokens.shadows = [...new Set(allTokens.shadows)];
-      
-      return allTokens;
-    }
-    
-    /**
-     * Creates comprehensive standalone context for testing
-     */
-    async function createStandaloneComprehensiveContext(techStackDesc, documentType) {
-      const parsed = parseTechStack(techStackDesc);
-      updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
-      
-      return {
-        techStack: {
-          ...parsed,
-          description: techStackDesc
-        },
-        figmaData: {
-          fileContext: { fileName: 'Standalone Test Design' },
-          selection: [],
-          pageInfo: { name: 'Test Page' },
-          metrics: { selectionCount: 0 }
-        },
-        screenshot: createMockScreenshot(),
-        figmaContext: {
-          hasSelection: false,
-          selectionCount: 0,
-          fileName: 'Standalone Test Design'
-        },
-        documentType: documentType,
-        components: [],
-        designTokens: {},
-        pageInfo: { name: 'Test Page' },
-        apiUrls: {},
-        metadata: {
-          extractedAt: new Date().toISOString(),
-          dataSource: 'standalone',
-          comprehensive: true
-        }
-      };
+    } else {
+      console.warn('⚠️ openAdvancedDashboard element not found');
     }
     
     // 🔄 NEW: Unified Context Dashboard Event Listener
@@ -7249,9 +5431,9 @@ Please fix the MCP server connection and try again.`;
           return;
         }
         
-        // Show enhanced loading state
+        // Show loading state
         openUnifiedContextDashboardBtn.disabled = true;
-        openUnifiedContextDashboardBtn.innerHTML = '<div class="spinner"></div> Collecting Comprehensive Context...';
+        openUnifiedContextDashboardBtn.innerHTML = '<div class="spinner"></div> Collecting Context...';
         
         try {
           // Check if we're running standalone (not in Figma)
@@ -7261,38 +5443,44 @@ Please fix the MCP server connection and try again.`;
           let contextData = {};
           
           if (!isStandalone) {
-            // 🚀 FIGMA MODE - Use modular comprehensive collection
-            console.log('🚀 Using modular comprehensive context collection system...');
+            // Figma mode - collect context from Figma
+            parent.postMessage({ pluginMessage: { type: 'get-context' } }, '*');
             
-            contextData = await collectComprehensiveContext({
-              techStack: techStackDesc,
-              documentType: documentType,
-              enableModules: {
-                figmaSelection: true,      // Core selection data with hierarchy
-                figmaComponents: true,     // Component analysis and variants
-                figmaStyles: true,         // Design tokens extraction  
-                figmaInteractions: true,   // Prototype interactions
-                figmaConstraints: true,    // Auto-layout & responsive
-                figmaEffects: true,        // Shadows, blurs, effects
-                screenshot: true,          // High-quality screenshot
-                accessibility: true,       // A11y analysis from data
-                codeGeneration: true       // Code generation readiness
-              }
-            });
+            // Wait a moment for the context to be received
+            await new Promise(resolve => setTimeout(resolve, 500));
             
-            // Store in structured modular format
-            storeComprehensiveContextData(contextData);
-          } else {
-            // Standalone mode - use comprehensive fallback data
-            contextData = await createStandaloneComprehensiveContext(techStackDesc, documentType);
+            // Parse tech stack
+            const parsed = parseTechStack(techStackDesc);
+            updateConfidenceIndicator(parsed.confidence, parsed.suggestions);
+            
+            // Create mock screenshot
+            const screenshotData = createMockScreenshot();
+            
+            // Prepare comprehensive context data
+            contextData = {
+              techStack: {
+                ...parsed,
+                description: techStackDesc
+              },
+              screenshot: screenshotData,
+              figmaContext: {
+                hasSelection: frameData && frameData.length > 0,
+                selectionCount: frameData ? frameData.length : 0,
+                fileName: figmaFileInfo?.fileName || 'Test Design File'
+              },
+              documentType: documentType
+            };
+            
+            // Show context preview in the UI as well
+            showContextPreview(contextData);
           }
           
-          // Show context preview with rich data
-          showContextPreview(contextData);
+          // No longer opening modal - using inline preview with enhanced functionality
+          console.log('🔄 Enhanced context preview ready with advanced analysis');
           
           // Store context globally for other functions to access
           if (Object.keys(contextData).length > 0) {
-            console.log('� Context data collected:', contextData);
+            console.log('📊 Context data collected:', contextData);
             window.collectedContextData = contextData;
             
             // Populate the advanced tabs with collected data
@@ -7301,48 +5489,6 @@ Please fix the MCP server connection and try again.`;
           
           // Initialize tab functionality
           initializeUnifiedTabs();
-          
-          // Open unified dashboard in new window with context data
-          setTimeout(() => {
-            const dashboardUrl = 'http://localhost:3000/ui/unified-context-dashboard.html';
-            const dashboardWindow = window.open(dashboardUrl, 'UnifiedDashboard', 'width=1600,height=1000,scrollbars=yes,resizable=yes');
-            
-            if (dashboardWindow) {
-              console.log('� Opening Unified Context Dashboard with integrated data');
-              
-              // Pass context data to dashboard when it loads
-              const timer = setInterval(() => {
-                try {
-                  if (dashboardWindow.document && dashboardWindow.document.readyState === 'complete') {
-                    clearInterval(timer);
-                    dashboardWindow.postMessage({
-                      type: 'figma-context-data',
-                      data: contextData,
-                      source: 'figma-plugin'
-                    }, '*');
-                    console.green('✅ Context data sent to Unified Dashboard');
-                  }
-                } catch (e) {
-                  // Window might not be ready yet, keep trying
-                }
-              }, 100);
-              
-              // Fallback timeout to ensure data is sent
-              setTimeout(() => {
-                clearInterval(timer);
-                try {
-                  dashboardWindow.postMessage({
-                    type: 'figma-context-data',
-                    data: contextData,
-                    source: 'figma-plugin'
-                  }, '*');
-                  console.log('📤 Fallback: Context data sent to dashboard');
-                } catch (e) {
-                  console.warn('⚠️ Could not send context data to dashboard:', e.message);
-                }
-              }, 3000);
-            }
-          }, 500);
           
         } catch (error) {
           console.error('Context collection failed:', error);
@@ -7448,39 +5594,20 @@ Please fix the MCP server connection and try again.`;
       });
 
       // Add event listeners for action buttons
-      const generateAITicketBtn = document.getElementById('generate-ai-ticket-btn');
+      const generateTicketBtn = document.getElementById('generate-ticket-btn');
       const refreshContextBtn = document.getElementById('refresh-context-btn');
       const exportContextBtn = document.getElementById('export-context-btn');
 
-      if (generateAITicketBtn) {
-        generateAITicketBtn.addEventListener('click', async () => {
-          console.log('🤖 Generate AI ticket clicked from context preview');
-          
-          // Check if context is available
-          if (!window.collectedContextData) {
-            showError('Please preview context first before generating a ticket.');
-            return;
-          }
-          
-          const techStackDesc = techStackInput.value.trim();
-          if (!techStackDesc) {
-            showError('Please describe your tech stack for AI ticket generation.');
-            return;
-          }
-          
-          // Update button state
-          generateAITicketBtn.disabled = true;
-          generateAITicketBtn.innerHTML = '<div class="spinner"></div> Generating AI Ticket...';
-          showStatus('🤖 Starting AI-powered ticket generation with context...', 'loading');
-          
-          try {
-            // Use the existing generateAITicket functionality
-            await generateAITicket();
-          } catch (error) {
-            console.error('❌ AI ticket generation failed:', error);
-            showError('AI ticket generation failed. Please try again.');
-            generateAITicketBtn.disabled = false;
-            generateAITicketBtn.innerHTML = '🤖 Generate AI Ticket';
+      if (generateTicketBtn) {
+        generateTicketBtn.addEventListener('click', () => {
+          console.log('🎫 Generate ticket clicked');
+          // Trigger generation process
+          if (typeof generateContentDirectly === 'function') {
+            generateContentDirectly();
+          } else {
+            showStatus('🔄 Starting ticket generation...', 'info');
+            // Fallback to existing generation logic
+            parent.postMessage({ pluginMessage: { type: 'generate-content' } }, '*');
           }
         });
       }
@@ -7498,25 +5625,6 @@ Please fix the MCP server connection and try again.`;
           exportContextData();
         });
       }
-      
-      // Add debug context comparison function accessible from console
-      window.debugContextComparison = function() {
-        console.log('🔍 DEBUG: Context Data Comparison');
-        console.log('📊 Collected Context Data:', window.collectedContextData);
-        console.log('📋 figma-context-data.json export would contain:', JSON.stringify(window.collectedContextData, null, 2));
-        
-        if (window.collectedContextData) {
-          console.log('🎯 Key Data Points:');
-          console.log('  • Components:', window.collectedContextData.components?.length || 0);
-          console.log('  • Selection:', window.collectedContextData.figmaData?.selection?.length || 0);
-          console.log('  • Design Tokens:', Object.keys(window.collectedContextData.designTokens || {}).length);
-          console.log('  • Screenshot:', !!window.collectedContextData.screenshot);
-          console.log('  • Data Source:', window.collectedContextData.metadata?.dataSource);
-          console.log('  • Tech Stack:', window.collectedContextData.techStack?.description);
-        } else {
-          console.warn('⚠️ No collected context data available');
-        }
-      };
     }
 
     function switchUnifiedTab(targetTab) {
@@ -7561,170 +5669,33 @@ Please fix the MCP server connection and try again.`;
     }
 
     function populateAdvancedTabs(contextData) {
-      console.log('📊 Populating advanced tabs with comprehensive context data', contextData);
-      console.log('🔍 Data analysis:', {
-        hasContextData: !!contextData,
-        figmaDataKeys: contextData?.figmaData ? Object.keys(contextData.figmaData) : [],
-        selectionCount: contextData?.figmaData?.selection?.length || 0,
-        componentsCount: contextData?.components?.length || 0,
-        designTokensKeys: contextData?.designTokens ? Object.keys(contextData.designTokens) : [],
-        dataSource: contextData?.metadata?.dataSource
-      });
+      console.log('📊 Populating advanced tabs with context data');
       
-      if (!contextData) {
-        console.warn('⚠️ No context data provided to populateAdvancedTabs');
-        return;
-      }
-      
-      // Update Overview Tab with rich metrics
-      const overviewContent = document.getElementById('overview-tab');
-      if (overviewContent && contextData.figmaData) {
-        const figmaData = contextData.figmaData;
-        overviewContent.innerHTML = `
-          <div class="context-sections">
-            <div class="context-section">
-              <div class="section-header">
-                <h4 class="section-title">📊 Selection Overview</h4>
-              </div>
-              <div class="section-content">
-                <div class="metrics-grid">
-                  <div class="metric-card">
-                    <div class="metric-value">${figmaData.selection?.length || figmaData.metrics?.selectionCount || 0}</div>
-                    <div class="metric-label">Selected Items</div>
-                  </div>
-                  <div class="metric-card">
-                    <div class="metric-value">${figmaData.metrics?.totalComponents || (contextData.components || []).length}</div>
-                    <div class="metric-label">Components</div>
-                  </div>
-                  <div class="metric-card">
-                    <div class="metric-value">${contextData.designTokens?.colors?.length || Object.keys(contextData.designTokens?.colors || {}).length || 0}</div>
-                    <div class="metric-label">Colors</div>
-                  </div>
-                  <div class="metric-card">
-                    <div class="metric-value">${figmaData.pageInfo?.name || figmaData.fileContext?.fileName || contextData.pageInfo?.name || 'Unknown'}</div>
-                    <div class="metric-label">File/Page</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
+      // Update LLM Preview tab
+      if (contextData) {
+        const contextJson = document.getElementById('context-json-preview');
+        const tokenCount = document.getElementById('token-count');
+        const contextSize = document.getElementById('context-size');
+        const validationStatus = document.getElementById('validation-status');
 
-      // Update Design Tokens Tab
-      const designTokensContent = document.getElementById('design-tokens-tab');
-      if (designTokensContent && (contextData.designTokens || contextData.figmaData?.designTokens)) {
-        const tokens = contextData.designTokens || contextData.figmaData?.designTokens;
-        let tokensHtml = '<div class="tokens-grid">';
-        
-        // Colors
-        if (tokens.colors && Object.keys(tokens.colors).length > 0) {
-          tokensHtml += '<h4>🎨 Colors</h4><div class="token-group">';
-          Object.entries(tokens.colors).forEach(([name, color]) => {
-            tokensHtml += `
-              <div class="token-card">
-                <div class="token-preview" style="background-color: ${color}"></div>
-                <div>
-                  <div class="token-name">${name}</div>
-                  <div class="token-value">${color}</div>
-                </div>
-              </div>
-            `;
-          });
-          tokensHtml += '</div>';
+        if (contextJson) {
+          contextJson.textContent = JSON.stringify(contextData, null, 2);
         }
 
-        // Typography
-        if (tokens.typography && Object.keys(tokens.typography).length > 0) {
-          tokensHtml += '<h4>📝 Typography</h4><div class="token-group">';
-          Object.entries(tokens.typography).forEach(([name, font]) => {
-            tokensHtml += `
-              <div class="token-card">
-                <div class="token-preview" style="font-family: ${font.family}; font-size: 16px;">Aa</div>
-                <div>
-                  <div class="token-name">${name}</div>
-                  <div class="token-value">${font.family} ${font.size || ''}</div>
-                </div>
-              </div>
-            `;
-          });
-          tokensHtml += '</div>';
+        if (tokenCount) {
+          const estimatedTokens = estimateTokenCount(JSON.stringify(contextData));
+          tokenCount.textContent = estimatedTokens.toLocaleString();
         }
 
-        tokensHtml += '</div>';
-        designTokensContent.innerHTML = tokensHtml;
-      }
+        if (contextSize) {
+          const sizeKB = Math.round(JSON.stringify(contextData).length / 1024);
+          contextSize.textContent = `${sizeKB} KB`;
+        }
 
-      // Update Components Tab
-      const componentsContent = document.getElementById('components-tab');
-      if (componentsContent && contextData.figmaData?.components) {
-        const components = contextData.figmaData.components;
-        let componentsHtml = '<div class="components-list">';
-        
-        components.forEach(component => {
-          componentsHtml += `
-            <div class="component-card">
-              <div class="component-header">
-                <h5>${component.name}</h5>
-                <span class="component-type">${component.type}</span>
-              </div>
-              <div class="component-details">
-                <div>Size: ${component.width || 'auto'} × ${component.height || 'auto'}</div>
-                ${component.description ? `<div>Description: ${component.description}</div>` : ''}
-              </div>
-            </div>
-          `;
-        });
-        
-        componentsHtml += '</div>';
-        componentsContent.innerHTML = componentsHtml;
-      }
-
-      // Update LLM Preview tab with comprehensive context
-      const contextJson = document.getElementById('context-json-preview');
-      const tokenCount = document.getElementById('token-count');
-      const contextSize = document.getElementById('context-size');
-      const validationStatus = document.getElementById('validation-status');
-
-      if (contextJson) {
-        contextJson.textContent = JSON.stringify(contextData, null, 2);
-      }
-
-      if (tokenCount) {
-        const estimatedTokens = estimateTokenCount(JSON.stringify(contextData));
-        tokenCount.textContent = estimatedTokens.toLocaleString();
-      }
-
-      if (contextSize) {
-        const sizeKB = Math.round(JSON.stringify(contextData).length / 1024);
-        contextSize.textContent = `${sizeKB} KB`;
-      }
-
-      if (validationStatus) {
-        validationStatus.textContent = 'Valid - Rich Context Available';
-        validationStatus.style.color = '#10b981';
-      }
-
-      // Update Debug tab with Figma-specific debug info
-      const debugContent = document.getElementById('debug-tab');
-      if (debugContent && contextData.figmaData) {
-        const figmaData = contextData.figmaData;
-        debugContent.innerHTML = `
-          <div class="debug-sections">
-            <div class="debug-section">
-              <h4>🔍 Figma Connection</h4>
-              <div class="debug-item">File Key: ${figmaData.fileKey || 'N/A'}</div>
-              <div class="debug-item">Page ID: ${figmaData.pageInfo?.id || 'N/A'}</div>
-              <div class="debug-item">API URLs Available: ${figmaData.apiUrls ? 'Yes' : 'No'}</div>
-            </div>
-            <div class="debug-section">
-              <h4>📊 Data Quality</h4>
-              <div class="debug-item">Selection Nodes: ${figmaData.selection?.nodes?.length || 0}</div>
-              <div class="debug-item">Components Found: ${(figmaData.components || []).length}</div>
-              <div class="debug-item">Design Tokens: ${Object.keys(figmaData.designTokens || {}).length}</div>
-            </div>
-          </div>
-        `;
+        if (validationStatus) {
+          validationStatus.textContent = 'Valid';
+          validationStatus.style.color = '#10b981';
+        }
       }
     }
 
@@ -9014,245 +6985,6 @@ Please fix the MCP server connection and try again.`;
       });
     }
 
-    // Session Management Integration
-    let currentSession = null;
-    let sessionMetrics = {
-      cacheHits: 0,
-      apiCalls: 0,
-      totalRequests: 0,
-      avgResponseTime: 0,
-      sessionStartTime: Date.now()
-    };
-
-    // Initialize session management
-    async function initializeSessionManagement() {
-      try {
-        // Request session creation from backend
-        const response = await fetch('/api/figma/session/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            preferredSource: 'api',
-            capabilities: ['screenshot', 'context', 'design-intelligence']
-          })
-        });
-        
-        if (response.ok) {
-          currentSession = await response.json();
-          console.log('🔄 Session initialized:', currentSession.sessionId);
-          updateSessionIndicators(true);
-        }
-      } catch (error) {
-        console.info('ℹ️ Session management operating in direct API mode (expected fallback behavior)');
-        updateSessionIndicators(false);
-      }
-    }
-
-    // Update session indicators in UI
-    function updateSessionIndicators(hasSession) {
-      const sessionStatus = document.getElementById('session-status');
-      const performanceMetrics = document.getElementById('performance-metrics');
-      
-      if (sessionStatus) {
-        sessionStatus.innerHTML = hasSession 
-          ? `<span style="color: #10b981;">🔄 Session Active (${currentSession?.sessionId?.slice(-8) || 'N/A'})</span>`
-          : `<span style="color: #f59e0b;">⚠️ Direct API Mode</span>`;
-      }
-      
-      if (performanceMetrics && hasSession) {
-        const uptime = Math.round((Date.now() - sessionMetrics.sessionStartTime) / 1000);
-        const cacheHitRate = sessionMetrics.totalRequests > 0 
-          ? Math.round((sessionMetrics.cacheHits / sessionMetrics.totalRequests) * 100)
-          : 0;
-        
-        performanceMetrics.innerHTML = `
-          <div class="metric-row">
-            <span class="metric-label">Cache Hit Rate:</span>
-            <span class="metric-value">${cacheHitRate}%</span>
-          </div>
-          <div class="metric-row">
-            <span class="metric-label">API Calls:</span>
-            <span class="metric-value">${sessionMetrics.apiCalls}</span>
-          </div>
-          <div class="metric-row">
-            <span class="metric-label">Avg Response:</span>
-            <span class="metric-value">${sessionMetrics.avgResponseTime}ms</span>
-          </div>
-          <div class="metric-row">
-            <span class="metric-label">Session Uptime:</span>
-            <span class="metric-value">${uptime}s</span>
-          </div>
-        `;
-      }
-    }
-
-    // Enhanced context collection with full ContextManager orchestration
-    async function collectContextWithFullOrchestration() {
-      const startTime = Date.now();
-      sessionMetrics.totalRequests++;
-      
-      try {
-        let contextData;
-        
-        if (currentSession) {
-          // Use session-based context collection with full ContextManager
-          const response = await fetch('/api/figma/context/unified', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              sessionId: currentSession.sessionId,
-              extractorConfig: {
-                useAllExtractors: true,
-                extractors: {
-                  nodeParser: { enabled: true, includeHierarchy: true },
-                  styleExtractor: { enabled: true, includeDesignTokens: true, analyzePatterns: true },
-                  componentMapper: { enabled: true, includeRelationships: true, detectVariants: true },
-                  layoutAnalyzer: { enabled: true, includeSpatialAnalysis: true, detectGrids: true },
-                  prototypeMapper: { enabled: true, includeUserFlows: true, detectInteractions: true }
-                }
-              },
-              analysisConfig: {
-                includeSemanticAnalysis: true,
-                includeDesignIntelligence: true,
-                includeAccessibilityAnalysis: true,
-                includesPerformanceMetrics: true,
-                includeHealthMetrics: true
-              }
-            })
-          });
-          
-          contextData = await response.json();
-          
-          // Track cache performance
-          if (contextData.metadata?.cached) {
-            sessionMetrics.cacheHits++;
-          } else {
-            sessionMetrics.apiCalls++;
-          }
-        } else {
-          // Fallback to enhanced plugin communication with extractor specification
-          return new Promise((resolve) => {
-            parent.postMessage({ 
-              pluginMessage: { 
-                type: 'get-unified-context',
-                config: {
-                  useFullContextManager: true,
-                  extractors: ['NodeParser', 'StyleExtractor', 'ComponentMapper', 'LayoutAnalyzer', 'PrototypeMapper'],
-                  includeSemanticAnalysis: true,
-                  includeDesignIntelligence: true
-                }
-              } 
-            }, '*');
-            
-            const handler = (event) => {
-              if (event.data.pluginMessage?.type === 'unified-context-result') {
-                window.removeEventListener('message', handler);
-                resolve(event.data.pluginMessage.data);
-              }
-            };
-            
-            window.addEventListener('message', handler);
-            setTimeout(() => {
-              window.removeEventListener('message', handler);
-              resolve({ error: 'Full context orchestration timed out' });
-            }, 15000); // Longer timeout for comprehensive analysis
-          });
-        }
-        
-        // Update performance metrics
-        const responseTime = Date.now() - startTime;
-        sessionMetrics.avgResponseTime = Math.round(
-          (sessionMetrics.avgResponseTime * (sessionMetrics.totalRequests - 1) + responseTime) / sessionMetrics.totalRequests
-        );
-        
-        updateSessionIndicators(true);
-        
-        // Log extractor outputs for debugging
-        if (contextData.extractorOutputs) {
-          console.log('🧠 ContextManager Extractor Outputs:', {
-            nodeParser: contextData.extractorOutputs.nodeParser ? '✅ Complete' : '❌ Failed',
-            styleExtractor: contextData.extractorOutputs.styleExtractor ? '✅ Complete' : '❌ Failed', 
-            componentMapper: contextData.extractorOutputs.componentMapper ? '✅ Complete' : '❌ Failed',
-            layoutAnalyzer: contextData.extractorOutputs.layoutAnalyzer ? '✅ Complete' : '❌ Failed',
-            prototypeMapper: contextData.extractorOutputs.prototypeMapper ? '✅ Complete' : '❌ Failed'
-          });
-        }
-        
-        return contextData;
-        
-      } catch (error) {
-        console.error('Full context orchestration failed:', error);
-        sessionMetrics.apiCalls++; // Count as failed API call
-        updateSessionIndicators(currentSession !== null);
-        throw error;
-      }
-    }
-
-    // Enhanced context collection with session management (fallback)
-    async function collectContextWithSession() {
-      const startTime = Date.now();
-      sessionMetrics.totalRequests++;
-      
-      try {
-        let contextData;
-        
-        if (currentSession) {
-          // Use session-based context collection
-          const response = await fetch('/api/figma/session/context', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              sessionId: currentSession.sessionId,
-              includeDesignIntelligence: true,
-              includeHealthMetrics: true
-            })
-          });
-          
-          contextData = await response.json();
-          
-          // Track cache performance
-          if (contextData.metadata?.cached) {
-            sessionMetrics.cacheHits++;
-          } else {
-            sessionMetrics.apiCalls++;
-          }
-        } else {
-          // Fallback to direct plugin communication
-          return new Promise((resolve) => {
-            parent.postMessage({ pluginMessage: { type: 'get-advanced-context' } }, '*');
-            
-            const handler = (event) => {
-              if (event.data.pluginMessage?.type === 'advanced-context-result') {
-                window.removeEventListener('message', handler);
-                resolve(event.data.pluginMessage.data);
-              }
-            };
-            
-            window.addEventListener('message', handler);
-            setTimeout(() => {
-              window.removeEventListener('message', handler);
-              resolve({ error: 'Context collection timed out' });
-            }, 10000);
-          });
-        }
-        
-        // Update performance metrics
-        const responseTime = Date.now() - startTime;
-        sessionMetrics.avgResponseTime = Math.round(
-          (sessionMetrics.avgResponseTime * (sessionMetrics.totalRequests - 1) + responseTime) / sessionMetrics.totalRequests
-        );
-        
-        updateSessionIndicators(true);
-        return contextData;
-        
-      } catch (error) {
-        console.error('Session-based context collection failed:', error);
-        sessionMetrics.apiCalls++; // Count as failed API call
-        updateSessionIndicators(currentSession !== null);
-        throw error;
-      }
-    }
-
     // Listen for advanced context messages
     window.addEventListener('message', (event) => {
       if (event.data.pluginMessage?.type === 'advanced-context-data') {
@@ -9262,9 +6994,6 @@ Please fix the MCP server connection and try again.`;
 
     // Initialize advanced debug modal
     initializeAdvancedDebugModal();
-    
-    // Initialize session management
-    initializeSessionManagement();
 
     // Listen for debug messages from plugin
     window.addEventListener('message', (event) => {
