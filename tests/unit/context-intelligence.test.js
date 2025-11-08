@@ -445,8 +445,8 @@ describe('🧠 Context Intelligence Layer Unit Tests', () => {
       expect(result.recommendations).toBeDefined();
     });
 
-    it('should detect design system from tokens', () => {
-      const detection = linker.detectDesignSystem(mockDesignSpec.designTokens);
+    it('should detect design system from tokens', async () => {
+      const detection = await linker.detectDesignSystem(mockDesignSpec.designTokens);
       
       expect(detection).toBeDefined();
       expect(detection.detectedSystem).toBeDefined();
@@ -455,8 +455,8 @@ describe('🧠 Context Intelligence Layer Unit Tests', () => {
       expect(detection.evidence).toBeInstanceOf(Array);
     });
 
-    it('should analyze color tokens', () => {
-      const analysis = linker.analyzeColorTokens(mockDesignSpec.designTokens.colors);
+    it('should analyze color tokens', async () => {
+      const analysis = await linker.analyzeColorTokens(mockDesignSpec.designTokens.colors);
       
       expect(analysis).toBeDefined();
       expect(analysis.palette).toBeDefined();
@@ -465,8 +465,8 @@ describe('🧠 Context Intelligence Layer Unit Tests', () => {
       expect(analysis.coverage).toBeLessThanOrEqual(1);
     });
 
-    it('should calculate system match score', () => {
-      const score = linker.calculateSystemMatch(
+    it('should calculate system match score', async () => {
+      const score = await linker.calculateSystemMatch(
         mockDesignSpec.designTokens,
         'Material Design'
       );

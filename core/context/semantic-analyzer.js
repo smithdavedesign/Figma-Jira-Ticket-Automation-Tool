@@ -133,6 +133,7 @@ export class SemanticAnalyzer {
 
       const semanticComponent = {
         ...component,
+        intent: intent.primary, // Add top-level intent for test compatibility
         semantic: {
           ...component.semantic,
           intent: intent.primary,
@@ -173,6 +174,7 @@ export class SemanticAnalyzer {
       // Return component with basic semantic data
       return {
         ...component,
+        intent: 'unknown', // Add top-level intent for test compatibility
         semantic: {
           ...component.semantic,
           confidence: 0.3,
@@ -232,6 +234,360 @@ export class SemanticAnalyzer {
   }
 
   /**
+   * Detect workflow patterns in components
+   * @param {DesignComponent[]} components - Components to analyze
+   * @param {DesignContext} context - Design context
+   * @returns {Promise<SemanticPattern[]>} Detected workflow patterns
+   */
+  async detectWorkflowPatterns(components, context) {
+    const patterns = [];
+
+    // Authentication/Login patterns
+    const hasEmailInput = components.some(c =>
+      c.name?.toLowerCase().includes('email') ||
+      c.name?.toLowerCase().includes('username') ||
+      c.semantic?.role === 'input'
+    );
+    const hasPasswordInput = components.some(c =>
+      c.name?.toLowerCase().includes('password') ||
+      c.type === 'PASSWORD'
+    );
+    const hasLoginButton = components.some(c =>
+      c.name?.toLowerCase().includes('login') ||
+      c.name?.toLowerCase().includes('sign') ||
+      c.name?.toLowerCase().includes('submit') ||
+      c.semantic?.role === 'button'
+    );
+
+    // Full authentication pattern (email + password + button)
+    if (hasEmailInput && hasPasswordInput && hasLoginButton) {
+      patterns.push({
+        type: 'authentication_flow',
+        subtype: 'login',
+        confidence: 0.9,
+        components: components.filter(c =>
+          c.name?.toLowerCase().includes('email') ||
+          c.name?.toLowerCase().includes('password') ||
+          c.name?.toLowerCase().includes('login') ||
+          c.name?.toLowerCase().includes('submit')
+        ),
+        description: 'User authentication workflow pattern detected'
+      });
+    }
+    // Partial authentication pattern (just email + button, could be signup/signin start)
+    else if (hasEmailInput && hasLoginButton) {
+      patterns.push({
+        type: 'authentication_flow',
+        subtype: 'email_entry',
+        confidence: 0.7,
+        components: components.filter(c =>
+          c.name?.toLowerCase().includes('email') ||
+          c.name?.toLowerCase().includes('submit') ||
+          c.name?.toLowerCase().includes('button')
+        ),
+        description: 'Email authentication entry pattern detected'
+      });
+    }
+
+    // Form patterns
+    const inputComponents = components.filter(c =>
+      c.type === 'INPUT' ||
+      c.name?.toLowerCase().includes('input') ||
+      c.category?.toLowerCase() === 'input' ||
+      c.semantic?.role === 'input'
+    );
+    const submitButtons = components.filter(c =>
+      c.name?.toLowerCase().includes('submit') ||
+      c.name?.toLowerCase().includes('send') ||
+      c.name?.toLowerCase().includes('button') ||
+      c.category?.toLowerCase() === 'button' ||
+      c.semantic?.role === 'button'
+    );
+
+    if (inputComponents.length >= 1 && submitButtons.length >= 1) {
+      patterns.push({
+        type: 'form_workflow',
+        subtype: 'data_entry',
+        confidence: 0.8,
+        components: [...inputComponents, ...submitButtons],
+        description: 'Data entry form workflow pattern detected'
+      });
+    }
+
+    // Navigation patterns
+    const navComponents = components.filter(c =>
+      c.name?.toLowerCase().includes('nav') ||
+      c.name?.toLowerCase().includes('menu') ||
+      c.name?.toLowerCase().includes('tab') ||
+      c.category?.toLowerCase() === 'navigation' ||
+      c.category?.toLowerCase() === 'avatar' // Avatar often part of navigation/header
+    );
+
+    if (navComponents.length >= 1) {
+      patterns.push({
+        type: 'navigation_workflow',
+        subtype: 'primary_navigation',
+        confidence: 0.7,
+        components: navComponents,
+        description: 'Primary navigation workflow pattern detected'
+      });
+    }
+
+    // Dashboard patterns - detect from card layouts and navigation
+    const cardComponents = components.filter(c =>
+      c.name?.toLowerCase().includes('card') ||
+      c.category?.toLowerCase() === 'card' ||
+      c.name?.toLowerCase().includes('statistics') ||
+      c.name?.toLowerCase().includes('dashboard')
+    );
+
+    const hasNavigation = navComponents.length > 0;
+
+    if (cardComponents.length >= 1 && hasNavigation) {
+      patterns.push({
+        type: 'dashboard_workflow',
+        subtype: 'analytics_dashboard',
+        confidence: 0.8,
+        components: [...cardComponents, ...navComponents],
+        description: 'Dashboard layout with navigation and data cards detected'
+      });
+    } else if (cardComponents.length >= 1) {
+      patterns.push({
+        type: 'dashboard_workflow',
+        subtype: 'content_cards',
+        confidence: 0.6,
+        components: cardComponents,
+        description: 'Card-based content layout pattern detected'
+      });
+    }
+
+    return patterns;
+  }
+
+  /**
+   * Detect information architecture patterns
+   * @param {DesignComponent[]} components - Components to analyze
+   * @returns {Promise<SemanticPattern[]>} Detected IA patterns
+   */
+  async detectInformationArchitecturePatterns(components) {
+    const patterns = [];
+
+    // Card/List patterns
+    const cardComponents = components.filter(c =>
+      c.name?.toLowerCase().includes('card') ||
+      c.name?.toLowerCase().includes('item') ||
+      c.type === 'FRAME'
+    );
+
+    if (cardComponents.length >= 3) {
+      patterns.push({
+        type: 'information_architecture',
+        subtype: 'card_grid',
+        confidence: 0.8,
+        components: cardComponents,
+        description: 'Card-based information architecture pattern'
+      });
+    }
+
+    // Header/Content/Footer hierarchy
+    const headerComponents = components.filter(c =>
+      c.name?.toLowerCase().includes('header') ||
+      c.name?.toLowerCase().includes('title')
+    );
+    const contentComponents = components.filter(c =>
+      c.name?.toLowerCase().includes('content') ||
+      c.name?.toLowerCase().includes('body')
+    );
+    const footerComponents = components.filter(c =>
+      c.name?.toLowerCase().includes('footer')
+    );
+
+    if (headerComponents.length >= 1 && contentComponents.length >= 1) {
+      patterns.push({
+        type: 'information_architecture',
+        subtype: 'hierarchical_layout',
+        confidence: 0.7,
+        components: [...headerComponents, ...contentComponents, ...footerComponents],
+        description: 'Hierarchical content structure pattern'
+      });
+    }
+
+    return patterns;
+  }
+
+  /**
+   * Detect interaction patterns
+   * @param {DesignComponent[]} components - Components to analyze
+   * @returns {Promise<SemanticPattern[]>} Detected interaction patterns
+   */
+  async detectInteractionPatterns(components) {
+    const patterns = [];
+
+    // Button interaction patterns
+    const buttons = components.filter(c =>
+      c.type === 'BUTTON' ||
+      c.name?.toLowerCase().includes('button') ||
+      c.semantic?.role === 'button'
+    );
+
+    if (buttons.length >= 1) {
+      patterns.push({
+        type: 'interaction_pattern',
+        subtype: 'button_actions',
+        confidence: 0.8,
+        components: buttons,
+        description: 'Interactive button pattern detected'
+      });
+    }
+
+    // Modal/Dialog patterns
+    const modals = components.filter(c =>
+      c.name?.toLowerCase().includes('modal') ||
+      c.name?.toLowerCase().includes('dialog') ||
+      c.name?.toLowerCase().includes('popup')
+    );
+
+    if (modals.length >= 1) {
+      patterns.push({
+        type: 'interaction_pattern',
+        subtype: 'modal_dialog',
+        confidence: 0.9,
+        components: modals,
+        description: 'Modal dialog interaction pattern'
+      });
+    }
+
+    return patterns;
+  }
+
+  /**
+   * Detect design system patterns
+   * @param {DesignComponent[]} components - Components to analyze
+   * @param {DesignContext} context - Design context
+   * @returns {Promise<SemanticPattern[]>} Detected design system patterns
+   */
+  async detectDesignSystemPatterns(components, context) {
+    const patterns = [];
+
+    // Color consistency patterns
+    const colorGroups = new Map();
+    components.forEach(component => {
+      if (component.visual?.fills) {
+        component.visual.fills.forEach(fill => {
+          if (fill.type === 'SOLID' && fill.color) {
+            const color = fill.color;
+            if (!colorGroups.has(color)) {
+              colorGroups.set(color, []);
+            }
+            colorGroups.get(color).push(component);
+          }
+        });
+      }
+    });
+
+    const consistentColors = Array.from(colorGroups.entries()).filter(([, comps]) => comps.length >= 2);
+    if (consistentColors.length >= 2) {
+      patterns.push({
+        type: 'design_system_pattern',
+        subtype: 'color_consistency',
+        confidence: 0.7,
+        components: consistentColors.flatMap(([, comps]) => comps),
+        description: 'Consistent color usage pattern detected'
+      });
+    }
+
+    // Typography patterns
+    const fontGroups = new Map();
+    components.forEach(component => {
+      if (component.visual?.typography?.fontFamily) {
+        const font = component.visual.typography.fontFamily;
+        if (!fontGroups.has(font)) {
+          fontGroups.set(font, []);
+        }
+        fontGroups.get(font).push(component);
+      }
+    });
+
+    const consistentFonts = Array.from(fontGroups.entries()).filter(([, comps]) => comps.length >= 2);
+    if (consistentFonts.length >= 1) {
+      patterns.push({
+        type: 'design_system_pattern',
+        subtype: 'typography_consistency',
+        confidence: 0.8,
+        components: consistentFonts.flatMap(([, comps]) => comps),
+        description: 'Consistent typography pattern detected'
+      });
+    }
+
+    return patterns;
+  }
+
+  /**
+   * Detect business logic patterns
+   * @param {DesignComponent[]} components - Components to analyze
+   * @param {DesignContext} context - Design context
+   * @returns {Promise<SemanticPattern[]>} Detected business logic patterns
+   */
+  async detectBusinessLogicPatterns(components, context) {
+    const patterns = [];
+
+    // E-commerce patterns
+    const hasProductInfo = components.some(c =>
+      c.name?.toLowerCase().includes('product') ||
+      c.name?.toLowerCase().includes('price') ||
+      c.name?.toLowerCase().includes('cart')
+    );
+    const hasCheckout = components.some(c =>
+      c.name?.toLowerCase().includes('checkout') ||
+      c.name?.toLowerCase().includes('buy') ||
+      c.name?.toLowerCase().includes('purchase')
+    );
+
+    if (hasProductInfo && hasCheckout) {
+      patterns.push({
+        type: 'business_logic_pattern',
+        subtype: 'ecommerce_flow',
+        confidence: 0.9,
+        components: components.filter(c =>
+          c.name?.toLowerCase().includes('product') ||
+          c.name?.toLowerCase().includes('price') ||
+          c.name?.toLowerCase().includes('cart') ||
+          c.name?.toLowerCase().includes('checkout')
+        ),
+        description: 'E-commerce business flow pattern detected'
+      });
+    }
+
+    // Dashboard patterns
+    const hasMetrics = components.some(c =>
+      c.name?.toLowerCase().includes('chart') ||
+      c.name?.toLowerCase().includes('graph') ||
+      c.name?.toLowerCase().includes('metric')
+    );
+    const hasFilters = components.some(c =>
+      c.name?.toLowerCase().includes('filter') ||
+      c.name?.toLowerCase().includes('search')
+    );
+
+    if (hasMetrics && hasFilters) {
+      patterns.push({
+        type: 'business_logic_pattern',
+        subtype: 'dashboard_analytics',
+        confidence: 0.8,
+        components: components.filter(c =>
+          c.name?.toLowerCase().includes('chart') ||
+          c.name?.toLowerCase().includes('graph') ||
+          c.name?.toLowerCase().includes('metric') ||
+          c.name?.toLowerCase().includes('filter')
+        ),
+        description: 'Analytics dashboard pattern detected'
+      });
+    }
+
+    return patterns;
+  }
+
+  /**
    * Enhanced component intent detection using multiple signals
    * @param {DesignComponent} component - Component to analyze
    * @param {DesignContext} context - Design context
@@ -258,16 +614,30 @@ export class SemanticAnalyzer {
     const sortedIntents = Object.entries(intentScores)
       .sort(([,a], [,b]) => b - a);
 
+    // Default fallback if no intents found
+    if (sortedIntents.length === 0) {
+      return {
+        intent: 'generic',
+        primary: 'generic',
+        alternatives: [],
+        confidence: 0.1,
+        signals,
+        reasoning: 'No specific intent signals detected, using generic classification'
+      };
+    }
+
     const primary = sortedIntents[0][0];
+    const confidence = sortedIntents[0][1];
     const alternatives = sortedIntents.slice(1, 3).map(([intent, score]) => ({
       intent,
       confidence: score
     }));
 
     return {
+      intent: primary, // Add for test compatibility
       primary,
       alternatives,
-      confidence: sortedIntents[0][1],
+      confidence: isNaN(confidence) ? 0.1 : confidence, // Ensure confidence is valid
       signals,
       reasoning: this.generateIntentReasoning(primary, signals)
     };
@@ -525,6 +895,11 @@ export class SemanticAnalyzer {
       if (totalWeight > 0) {
         intentScores[intent] = Math.min(score / totalWeight, 1.0);
       }
+    }
+
+    // Ensure at least one intent exists with minimum confidence
+    if (Object.keys(intentScores).length === 0) {
+      intentScores.generic = 0.1;
     }
 
     return intentScores;

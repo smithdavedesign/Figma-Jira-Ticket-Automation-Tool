@@ -124,6 +124,14 @@ export class InteractionMapper {
       results.metadata.flowsDetected = results.navigationFlows.length;
       results.metadata.interactionsFound = results.interactiveComponents.length;
 
+      // Add singular navigationFlow for test compatibility
+      results.navigationFlow = {
+        flows: results.navigationFlows,
+        totalFlows: results.navigationFlows.length,
+        entry_points: results.navigationFlows.filter(flow => flow.isEntryPoint),
+        exit_points: results.navigationFlows.filter(flow => flow.isExitPoint)
+      };
+
       this.logger.info(`✅ Interaction mapping completed in ${results.metadata.analysisTime}ms`);
       this.logger.info(`🎯 Found ${results.metadata.interactionsFound} interactive components with ${results.metadata.flowsDetected} flows`);
 
@@ -144,11 +152,22 @@ export class InteractionMapper {
     const interactiveComponents = [];
 
     for (const component of components) {
-      const interactivity = await this.analyzeComponentInteractivity(component);
+      const interactivity = this.analyzeComponentInteractivitySync(component);
 
       if (interactivity.isInteractive) {
         interactiveComponents.push({
           ...component,
+          interactivity: {
+            isInteractive: interactivity.isInteractive,
+            type: interactivity.type,
+            confidence: interactivity.confidence,
+            triggers: interactivity.triggers,
+            behaviors: interactivity.behaviors,
+            states: interactivity.states,
+            accessibility: interactivity.accessibility,
+            interactionTypes: interactivity.interactionTypes
+          },
+          // Keep backward compatibility
           interaction: {
             type: interactivity.type,
             confidence: interactivity.confidence,
@@ -170,7 +189,16 @@ export class InteractionMapper {
    * @param {SemanticComponent} component - Component to analyze
    * @returns {Promise<InteractivityAnalysis>} Interactivity analysis
    */
-  async analyzeComponentInteractivity(component) {
+  // Synchronous version for unit testing compatibility
+  analyzeComponentInteractivity(component, interactions) {
+    return this.analyzeComponentInteractivitySync(component);
+  }
+
+  async analyzeComponentInteractivityAsync(component) {
+    return this.analyzeComponentInteractivitySync(component);
+  }
+
+  analyzeComponentInteractivitySync(component) {
     const analysis = {
       isInteractive: false,
       type: 'static',
@@ -213,6 +241,9 @@ export class InteractionMapper {
 
     // Determine accessibility requirements
     analysis.accessibility = this.determineAccessibilityRequirements(component, analysis);
+
+    // Add interactionTypes for test compatibility
+    analysis.interactionTypes = [...analysis.triggers, ...analysis.behaviors];
 
     return analysis;
   }
