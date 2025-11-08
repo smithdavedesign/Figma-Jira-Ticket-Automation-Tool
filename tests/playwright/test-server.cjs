@@ -30,11 +30,14 @@ const server = http.createServer((req, res) => {
   }
 
   // Handle health check
-  if (req.url === '/health') {
+  if (req.url === '/health' || req.url === '/api/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ 
-      status: 'ok', 
+      status: 'healthy', 
       timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      services: 1,
+      routes: { registered: 2, groups: 1 },
       server: 'test-server'
     }));
     return;

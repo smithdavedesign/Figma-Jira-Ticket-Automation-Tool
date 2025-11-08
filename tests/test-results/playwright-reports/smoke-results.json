@@ -78,7 +78,7 @@
           "specs": [
             {
               "title": "Test server should be healthy",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -91,122 +91,18 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
+                      "status": "passed",
                       "duration": 18,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:10:20",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 20,
-                          "line": 10
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \n \u001b[90m  9 |\u001b[39m     \u001b[36mconst\u001b[39m health \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'status'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'healthy'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'timestamp'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 12 |\u001b[39m     \u001b[90m// Note: Production server returns comprehensive health data, not just 'test-server'\u001b[39m\n \u001b[90m 13 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 20,
-                            "line": 10
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n\n   8 |     \n   9 |     const health = await response.json();\n> 10 |     expect(health).toHaveProperty('status', 'healthy');\n     |                    ^\n  11 |     expect(health).toHaveProperty('timestamp');\n  12 |     // Note: Production server returns comprehensive health data, not just 'test-server'\n  13 |   });\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:10:20"
-                        }
-                      ],
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-07T20:42:14.155Z",
+                      "startTime": "2025-11-08T03:10:58.674Z",
                       "annotations": [],
-                      "attachments": [],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 20,
-                        "line": 10
-                      }
-                    },
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 26,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:10:20",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 20,
-                          "line": 10
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \n \u001b[90m  9 |\u001b[39m     \u001b[36mconst\u001b[39m health \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'status'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'healthy'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'timestamp'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 12 |\u001b[39m     \u001b[90m// Note: Production server returns comprehensive health data, not just 'test-server'\u001b[39m\n \u001b[90m 13 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 20,
-                            "line": 10
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n\n   8 |     \n   9 |     const health = await response.json();\n> 10 |     expect(health).toHaveProperty('status', 'healthy');\n     |                    ^\n  11 |     expect(health).toHaveProperty('timestamp');\n  12 |     // Note: Production server returns comprehensive health data, not just 'test-server'\n  13 |   });\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:10:20"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2025-11-07T20:42:14.470Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--d3a05-st-server-should-be-healthy-chromium-retry1/trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 20,
-                        "line": 10
-                      }
-                    },
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 17,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:10:20",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 20,
-                          "line": 10
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \n \u001b[90m  9 |\u001b[39m     \u001b[36mconst\u001b[39m health \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'status'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'healthy'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'timestamp'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 12 |\u001b[39m     \u001b[90m// Note: Production server returns comprehensive health data, not just 'test-server'\u001b[39m\n \u001b[90m 13 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 20,
-                            "line": 10
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n\n   8 |     \n   9 |     const health = await response.json();\n> 10 |     expect(health).toHaveProperty('status', 'healthy');\n     |                    ^\n  11 |     expect(health).toHaveProperty('timestamp');\n  12 |     // Note: Production server returns comprehensive health data, not just 'test-server'\n  13 |   });\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:10:20"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 2,
-                      "startTime": "2025-11-07T20:42:14.791Z",
-                      "annotations": [],
-                      "attachments": [],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 20,
-                        "line": 10
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "82707a9d8222aa8b10db-a2124ac66f70f7fbc27b",
@@ -216,7 +112,7 @@
             },
             {
               "title": "Plugin UI should load without errors",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -227,176 +123,25 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 5424,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:30:45",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 45,
-                          "line": 30
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m     \n \u001b[90m 29 |\u001b[39m     \u001b[90m// Check for key UI elements\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#generate'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'.header'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 32 |\u001b[39m     \n \u001b[90m 33 |\u001b[39m     \u001b[90m// Check for critical UI components\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 45,
-                            "line": 30
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n  28 |     \n  29 |     // Check for key UI elements\n> 30 |     await expect(page.locator('#generate')).toBeVisible();\n     |                                             ^\n  31 |     await expect(page.locator('.header')).toBeVisible();\n  32 |     \n  33 |     // Check for critical UI components\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:30:45"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 3239,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-07T20:42:15.096Z",
+                      "startTime": "2025-11-08T03:10:58.702Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 45,
-                        "line": 30
-                      }
-                    },
-                    {
-                      "workerIndex": 4,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 5289,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:30:45",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 45,
-                          "line": 30
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m     \n \u001b[90m 29 |\u001b[39m     \u001b[90m// Check for key UI elements\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#generate'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'.header'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 32 |\u001b[39m     \n \u001b[90m 33 |\u001b[39m     \u001b[90m// Check for critical UI components\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 45,
-                            "line": 30
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n  28 |     \n  29 |     // Check for key UI elements\n> 30 |     await expect(page.locator('#generate')).toBeVisible();\n     |                                             ^\n  31 |     await expect(page.locator('.header')).toBeVisible();\n  32 |     \n  33 |     // Check for critical UI components\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:30:45"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2025-11-07T20:42:21.962Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium-retry1/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium-retry1/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium-retry1/error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium-retry1/trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 45,
-                        "line": 30
-                      }
-                    },
-                    {
-                      "workerIndex": 5,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 5281,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:30:45",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 45,
-                          "line": 30
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m     \n \u001b[90m 29 |\u001b[39m     \u001b[90m// Check for key UI elements\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#generate'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'.header'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 32 |\u001b[39m     \n \u001b[90m 33 |\u001b[39m     \u001b[90m// Check for critical UI components\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 45,
-                            "line": 30
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n  28 |     \n  29 |     // Check for key UI elements\n> 30 |     await expect(page.locator('#generate')).toBeVisible();\n     |                                             ^\n  31 |     await expect(page.locator('.header')).toBeVisible();\n  32 |     \n  33 |     // Check for critical UI components\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:30:45"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 2,
-                      "startTime": "2025-11-07T20:42:27.678Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium-retry2/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium-retry2/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--3fe7f--should-load-without-errors-chromium-retry2/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 45,
-                        "line": 30
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "82707a9d8222aa8b10db-183370f5388eb746f45e",
               "file": "core-functionality.spec.js",
-              "line": 15,
+              "line": 17,
               "column": 3
             },
             {
@@ -412,15 +157,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 6,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2194,
+                      "duration": 2195,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-07T20:42:33.395Z",
+                      "startTime": "2025-11-08T03:11:02.043Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -430,12 +175,12 @@
               ],
               "id": "82707a9d8222aa8b10db-5ba00d00a9b55b614678",
               "file": "core-functionality.spec.js",
-              "line": 47,
+              "line": 54,
               "column": 3
             },
             {
               "title": "Ticket generator UI should be functional",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -446,181 +191,30 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 6,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 7279,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:74:45",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 45,
-                          "line": 74
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 72 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#platform'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#documentType'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 74 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#generate'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 75 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#techStackInput'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 76 |\u001b[39m     \n \u001b[90m 77 |\u001b[39m     \u001b[90m// Check form controls work\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 45,
-                            "line": 74
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n  72 |     await expect(page.locator('#platform')).toBeVisible();\n  73 |     await expect(page.locator('#documentType')).toBeVisible();\n> 74 |     await expect(page.locator('#generate')).toBeVisible();\n     |                                             ^\n  75 |     await expect(page.locator('#techStackInput')).toBeVisible();\n  76 |     \n  77 |     // Check form controls work\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:74:45"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 3217,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-07T20:42:35.705Z",
+                      "startTime": "2025-11-08T03:11:04.242Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 45,
-                        "line": 74
-                      }
-                    },
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 7307,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:74:45",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 45,
-                          "line": 74
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 72 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#platform'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#documentType'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 74 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#generate'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 75 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#techStackInput'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 76 |\u001b[39m     \n \u001b[90m 77 |\u001b[39m     \u001b[90m// Check form controls work\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 45,
-                            "line": 74
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n  72 |     await expect(page.locator('#platform')).toBeVisible();\n  73 |     await expect(page.locator('#documentType')).toBeVisible();\n> 74 |     await expect(page.locator('#generate')).toBeVisible();\n     |                                             ^\n  75 |     await expect(page.locator('#techStackInput')).toBeVisible();\n  76 |     \n  77 |     // Check form controls work\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:74:45"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2025-11-07T20:42:43.294Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium-retry1/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium-retry1/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium-retry1/error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium-retry1/trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 45,
-                        "line": 74
-                      }
-                    },
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 7298,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:74:45",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 45,
-                          "line": 74
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 72 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#platform'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#documentType'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 74 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#generate'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 75 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#techStackInput'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 76 |\u001b[39m     \n \u001b[90m 77 |\u001b[39m     \u001b[90m// Check form controls work\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 45,
-                            "line": 74
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#generate')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#generate')\u001b[22m\n\n\n  72 |     await expect(page.locator('#platform')).toBeVisible();\n  73 |     await expect(page.locator('#documentType')).toBeVisible();\n> 74 |     await expect(page.locator('#generate')).toBeVisible();\n     |                                             ^\n  75 |     await expect(page.locator('#techStackInput')).toBeVisible();\n  76 |     \n  77 |     // Check form controls work\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:74:45"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 2,
-                      "startTime": "2025-11-07T20:42:51.048Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium-retry2/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium-retry2/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--635cd-tor-UI-should-be-functional-chromium-retry2/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 45,
-                        "line": 74
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "82707a9d8222aa8b10db-8899920afa9c8caa8228",
               "file": "core-functionality.spec.js",
-              "line": 65,
+              "line": 72,
               "column": 3
             },
             {
               "title": "Health check endpoint should return basic info",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -631,129 +225,25 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 17,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:100:20",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 20,
-                          "line": 100
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  98 |\u001b[39m     \n \u001b[90m  99 |\u001b[39m     \u001b[90m// Check basic health fields for production server\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 100 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'status'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'healthy'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 101 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'timestamp'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 102 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'version'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 103 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'uptime'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 20,
-                            "line": 100
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n\n   98 |     \n   99 |     // Check basic health fields for production server\n> 100 |     expect(health).toHaveProperty('status', 'healthy');\n      |                    ^\n  101 |     expect(health).toHaveProperty('timestamp');\n  102 |     expect(health).toHaveProperty('version');\n  103 |     expect(health).toHaveProperty('uptime');\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:100:20"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 4,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-11-07T20:42:58.744Z",
+                      "startTime": "2025-11-08T03:11:07.462Z",
                       "annotations": [],
-                      "attachments": [],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 20,
-                        "line": 100
-                      }
-                    },
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 26,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:100:20",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 20,
-                          "line": 100
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  98 |\u001b[39m     \n \u001b[90m  99 |\u001b[39m     \u001b[90m// Check basic health fields for production server\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 100 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'status'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'healthy'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 101 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'timestamp'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 102 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'version'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 103 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'uptime'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 20,
-                            "line": 100
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n\n   98 |     \n   99 |     // Check basic health fields for production server\n> 100 |     expect(health).toHaveProperty('status', 'healthy');\n      |                    ^\n  101 |     expect(health).toHaveProperty('timestamp');\n  102 |     expect(health).toHaveProperty('version');\n  103 |     expect(health).toHaveProperty('uptime');\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:100:20"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2025-11-07T20:42:59.043Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/test-results/playwright-screenshots/smoke-screenshots/core-functionality-Plugin--687c1-nt-should-return-basic-info-chromium-retry1/trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 20,
-                        "line": 100
-                      }
-                    },
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 16,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:100:20",
-                        "location": {
-                          "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                          "column": 20,
-                          "line": 100
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  98 |\u001b[39m     \n \u001b[90m  99 |\u001b[39m     \u001b[90m// Check basic health fields for production server\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 100 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'status'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'healthy'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 101 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'timestamp'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 102 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'version'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 103 |\u001b[39m     expect(health)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'uptime'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                            "column": 20,
-                            "line": 100
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\n\nExpected value: \u001b[32m\"healthy\"\u001b[39m\nReceived value: \u001b[31m\"ok\"\u001b[39m\n\n   98 |     \n   99 |     // Check basic health fields for production server\n> 100 |     expect(health).toHaveProperty('status', 'healthy');\n      |                    ^\n  101 |     expect(health).toHaveProperty('timestamp');\n  102 |     expect(health).toHaveProperty('version');\n  103 |     expect(health).toHaveProperty('uptime');\n    at /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js:100:20"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 2,
-                      "startTime": "2025-11-07T20:42:59.369Z",
-                      "annotations": [],
-                      "attachments": [],
-                      "errorLocation": {
-                        "file": "/Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator/tests/smoke/core-functionality.spec.js",
-                        "column": 20,
-                        "line": 100
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "82707a9d8222aa8b10db-441fe2919c82a2a1598e",
               "file": "core-functionality.spec.js",
-              "line": 93,
+              "line": 100,
               "column": 3
             }
           ]
@@ -763,11 +253,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-11-07T20:42:13.461Z",
-    "duration": 45941.524,
-    "expected": 1,
+    "startTime": "2025-11-08T03:10:58.015Z",
+    "duration": 9483.617,
+    "expected": 5,
     "skipped": 0,
-    "unexpected": 4,
+    "unexpected": 0,
     "flaky": 0
   }
 }

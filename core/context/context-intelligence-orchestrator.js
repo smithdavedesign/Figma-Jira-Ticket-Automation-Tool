@@ -30,7 +30,7 @@ import { ErrorHandler } from '../utils/error-handler.js';
 import SemanticAnalyzer from './semantic-analyzer.js';
 import InteractionMapper from './interaction-mapper.js';
 import AccessibilityChecker from './accessibility-checker.js';
-import DesignTokenLinker from './design-token-linker.js';
+import DesignTokenLinker from './design-system-linker.js';
 import LayoutIntentExtractor from './layout-intent-extractor.js';
 
 export class ContextIntelligenceOrchestrator {

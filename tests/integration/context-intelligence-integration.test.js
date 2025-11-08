@@ -12,7 +12,7 @@ import UnifiedContextProvider from '../../core/context/UnifiedContextProvider.js
 import SemanticAnalyzer from '../../core/context/semantic-analyzer.js';
 import InteractionMapper from '../../core/context/interaction-mapper.js';
 import AccessibilityChecker from '../../core/context/accessibility-checker.js';
-import DesignTokenLinker from '../../core/context/design-token-linker.js';
+import DesignTokenLinker from '../../core/context/design-system-linker.js';
 import LayoutIntentExtractor from '../../core/context/layout-intent-extractor.js';
 
 describe('🧠 Context Intelligence Layer Integration', () => {
