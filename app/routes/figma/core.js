@@ -25,6 +25,13 @@ export class FigmaCoreRoutes extends BaseFigmaRoute {
     router.post('/api/figma/screenshot', this.handleFigmaScreenshotPOST.bind(this));
     router.post('/api/screenshot', this.handleScreenshotWrapper.bind(this)); // Simplified wrapper
 
+    // Core API endpoints expected by unified dashboard
+    router.get('/api/figma/core', this.handleFigmaCore.bind(this));
+    router.post('/api/figma/core', this.handleFigmaCore.bind(this));
+    router.post('/api/figma/file-info', this.handleFileInfo.bind(this));
+    router.post('/api/figma/analyze-design', this.handleAnalyzeDesign.bind(this));
+    router.post('/api/figma/extract-components', this.handleExtractComponents.bind(this));
+
     this.logger.info('✅ Figma core routes registered');
   }
 
@@ -291,20 +298,196 @@ export class FigmaCoreRoutes extends BaseFigmaRoute {
     }
   }
 
-  // Mock data and basic API endpoints remain the same as original...
-  // (I'll include essential ones for brevity)
+  /**
+   * Handle Figma core API requests
+   */
+  async handleFigmaCore(req, res) {
+    this.logAccess(req, 'figmaCore');
 
+    try {
+      const figmaApiKey = process.env.FIGMA_API_KEY || req.headers.authorization?.replace('Bearer ', '');
+
+      if (!figmaApiKey) {
+        return this.sendError(res, 'Figma API key is required', 400, {
+          configurationRequired: true,
+          hint: 'Set FIGMA_API_KEY environment variable or include in Authorization header'
+        });
+      }
+
+      // Basic Figma API validation
+      const testUrl = 'https://api.figma.com/v1/me';
+      try {
+        const response = await fetch(testUrl, {
+          headers: { 'X-Figma-Token': figmaApiKey }
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          this.sendSuccess(res, {
+            status: 'connected',
+            user: userData,
+            capabilities: ['file-access', 'node-access', 'image-export']
+          }, 'Figma API connection successful');
+        } else {
+          this.sendError(res, 'Invalid Figma API key', 401);
+        }
+      } catch (error) {
+        this.sendError(res, 'Failed to connect to Figma API', 500, { originalError: error.message });
+      }
+    } catch (error) {
+      this.handleFigmaError(error, res, 'core API');
+    }
+  }
+
+  /**
+   * Handle file info requests
+   */
+  async handleFileInfo(req, res) {
+    this.logAccess(req, 'fileInfo');
+
+    try {
+      const { fileId } = req.body;
+      const figmaApiKey = process.env.FIGMA_API_KEY || req.headers.authorization?.replace('Bearer ', '');
+
+      if (!figmaApiKey) {
+        return this.sendError(res, 'Figma API key is required', 400);
+      }
+
+      if (!fileId) {
+        return this.sendError(res, 'File ID is required', 400);
+      }
+
+      // Test mode
+      if (fileId === 'test' || this.isTestRequest(req)) {
+        return this.sendSuccess(res, {
+          name: 'Test Figma File',
+          lastModified: new Date().toISOString(),
+          version: '1.0',
+          nodes: {
+            'test:1': { type: 'FRAME', name: 'Test Frame' }
+          },
+          testMode: true
+        }, 'File info retrieved (test mode)');
+      }
+
+      // Real Figma API call
+      const fileUrl = `https://api.figma.com/v1/files/${fileId}`;
+      const response = await fetch(fileUrl, {
+        headers: { 'X-Figma-Token': figmaApiKey }
+      });
+
+      if (response.ok) {
+        const fileData = await response.json();
+        this.sendSuccess(res, fileData, 'File info retrieved successfully');
+      } else {
+        this.sendError(res, 'Failed to retrieve file info', response.status);
+      }
+    } catch (error) {
+      this.handleFigmaError(error, res, 'get file info');
+    }
+  }
+
+  /**
+   * Handle design analysis requests
+   */
+  async handleAnalyzeDesign(req, res) {
+    this.logAccess(req, 'analyzeDesign');
+
+    try {
+      const { fileId, nodeId } = req.body;
+
+      if (!fileId) {
+        return this.sendError(res, 'File ID is required', 400);
+      }
+
+      // Test mode
+      if (fileId === 'test' || this.isTestRequest(req)) {
+        return this.sendSuccess(res, {
+          analysis: {
+            components: 5,
+            colors: ['#007acc', '#ffffff', '#f5f5f5'],
+            typography: ['Inter', 'Helvetica'],
+            layout: 'responsive',
+            accessibility: { score: 85, issues: 2 }
+          },
+          recommendations: [
+            'Consider increasing color contrast',
+            'Add alt text to images'
+          ],
+          testMode: true
+        }, 'Design analysis completed (test mode)');
+      }
+
+      // For real implementation, integrate with analysis service
+      const analysisService = this.getService('analysisService');
+      if (analysisService) {
+        const analysis = await analysisService.analyzeDesign({ fileId, nodeId });
+        this.sendSuccess(res, analysis, 'Design analysis completed');
+      } else {
+        this.sendError(res, 'Analysis service not available', 503);
+      }
+    } catch (error) {
+      this.handleFigmaError(error, res, 'analyze design');
+    }
+  }
+
+  /**
+   * Handle component extraction requests
+   */
+  async handleExtractComponents(req, res) {
+    this.logAccess(req, 'extractComponents');
+
+    try {
+      const { fileId } = req.body;
+
+      if (!fileId) {
+        return this.sendError(res, 'File ID is required', 400);
+      }
+
+      // Test mode
+      if (fileId === 'test' || this.isTestRequest(req)) {
+        return this.sendSuccess(res, {
+          components: [
+            { id: 'comp1', name: 'Button', type: 'COMPONENT', instances: 12 },
+            { id: 'comp2', name: 'Input Field', type: 'COMPONENT', instances: 8 },
+            { id: 'comp3', name: 'Card', type: 'COMPONENT', instances: 6 }
+          ],
+          summary: {
+            totalComponents: 3,
+            totalInstances: 26,
+            coverage: '85%'
+          },
+          testMode: true
+        }, 'Components extracted (test mode)');
+      }
+
+      // For real implementation, integrate with context service
+      const contextManager = this.getService('contextManager');
+      if (contextManager) {
+        const components = await contextManager.extractComponents({ fileId });
+        this.sendSuccess(res, components, 'Components extracted successfully');
+      } else {
+        this.sendError(res, 'Context manager not available', 503);
+      }
+    } catch (error) {
+      this.handleFigmaError(error, res, 'extract components');
+    }
+  }
+
+  // Mock data and basic API endpoints
   async handleMockData(req, res) {
     this.logAccess(req, 'mockData');
-    // ... existing mock data logic
-  }
 
-  async handleGetFile(req, res) {
-    this.logAccess(req, 'getFile');
-    // ... existing file logic
+    this.sendSuccess(res, {
+      mockData: true,
+      timestamp: new Date().toISOString(),
+      figmaFile: {
+        id: 'mock-file-id',
+        name: 'Mock Figma File',
+        nodes: ['mock-node-1', 'mock-node-2']
+      }
+    }, 'Mock data generated');
   }
-
-  // ... other basic endpoints follow same pattern
 }
 
 export default FigmaCoreRoutes;

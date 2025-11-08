@@ -1,0 +1,2454 @@
+openapi: 3.0.3
+info:
+  title: Figma AI Ticket Generator API
+  description: |
+    🎯 **Unified Documentation Generation API**
+    
+    Generate JIRA tickets, Wiki pages, Code documentation, and more from Figma designs using AI.
+    
+    ## 🚀 **Key Features:**
+    - **Unified Generation**: Single endpoint for all documentation formats
+    - **Multiple Strategies**: AI, Template, Enhanced, Legacy, Auto-detection
+    - **Format Support**: JIRA (active), Wiki/Code/Markdown (planned)
+    - **Smart Auto-Detection**: Automatically selects best strategy based on input
+    - **Legacy Compatibility**: Backward compatible with deprecation warnings
+    
+    ## 🎯 **Primary Endpoint:**
+    Use `POST /api/generate` for all documentation generation needs.
+    
+    ## 📋 **Migration Guide:**
+    - `POST /api/generate-ticket` → `POST /api/generate` with `format: "jira"` and `strategy: "template"`
+    - `POST /api/generate-ai-ticket-direct` → `POST /api/generate` with `format: "jira"` and `strategy: "ai"`
+    
+  version: 2.0.0
+  contact:
+    name: Figma AI Support
+    url: https://github.com/figma-ai/ticket-generator
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development Server
+  - url: https://api.figma-ai.com
+    description: Production Server
+
+tags:
+  - name: generate
+    description: 🎯 Unified documentation generation
+  - name: health
+    description: 🏥 System health and monitoring
+  - name: figma
+    description: 🎨 Figma integration and screenshots
+  - name: mcp
+    description: 🔌 Figma Design Context MCP Server (No Ticket Generation)
+  - name: api
+    description: 📡 Core API endpoints (legacy)
+  - name: test
+    description: 🧪 Testing and validation
+  - name: live
+    description: 📡 Live data and real-time features
+  - name: plugin
+    description: 🔌 Figma Plugin API - Modular Context Collection System
+
+paths:
+  /api/generate/strategy-info:
+    get:
+      tags: [generate]
+      summary: 🧠 Strategy Selection Information
+      description: |
+        **Get detailed information about strategy selection logic.**
+        
+        This endpoint explains how the system intelligently chooses between strategies
+        based on user input and component complexity, without requiring users to 
+        understand the internal strategy system.
+        
+        ### 🎯 Strategy Decision Matrix:
+        
+        | User Input | Component Complexity | Final Strategy | Reason |
+        |------------|---------------------|----------------|---------|
+        | `strategy: "ai"` | ≤5 frames | `ai` | Pure AI analysis for simple components |
+        | `strategy: "ai"` | >5 frames + screenshot | `enhanced` | Template reliability + AI insights |
+        | `strategy: "template"` | Any | `template` | Fast, reliable template generation |
+        | `strategy: "enhanced"` | Any | `enhanced` | Template + AI hybrid approach |
+        | `strategy: "auto"` | Complex | Best match | Intelligent auto-selection |
+        
+        ### 🔄 Processing Flow:
+        1. User clicks "Generate AI Ticket" in Figma UI
+        2. System receives `strategy: "ai"` from hardcoded UI
+        3. System analyzes component complexity (frameData.length, screenshot presence)
+        4. System intelligently selects optimal strategy (`ai` vs `enhanced`)
+        5. System executes chosen strategy and returns results
+        6. User receives optimal results without complexity exposure
+      responses:
+        '200':
+          description: Strategy information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      strategies:
+                        type: object
+                        properties:
+                          available:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                description:
+                                  type: string
+                                userSelectable:
+                                  type: boolean
+                                performance:
+                                  type: object
+                                  properties:
+                                    speed:
+                                      type: string
+                                      enum: [fast, medium, slow]
+                                    accuracy:
+                                      type: string
+                                      enum: [good, better, best]
+                            example:
+                              - name: "ai"
+                                description: "Pure AI analysis - intelligent insights"
+                                userSelectable: true
+                                performance: { speed: "slow", accuracy: "best" }
+                              - name: "enhanced" 
+                                description: "Template + AI hybrid - reliability + insights"
+                                userSelectable: false
+                                performance: { speed: "medium", accuracy: "better" }
+                              - name: "template"
+                                description: "Fast template generation"
+                                userSelectable: true
+                                performance: { speed: "fast", accuracy: "good" }
+                      decisionLogic:
+                        type: object
+                        properties:
+                          aiStrategyRules:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                condition:
+                                  type: string
+                                result:
+                                  type: string
+                                reason:
+                                  type: string
+                            example:
+                              - condition: "frameData.length > 5 && screenshot exists"
+                                result: "enhanced"
+                                reason: "Complex components benefit from template reliability with AI enhancement"
+                              - condition: "frameData.length <= 5"
+                                result: "ai"  
+                                reason: "Simple components work well with pure AI analysis"
+                      userExperience:
+                        type: object
+                        properties:
+                          figmaUI:
+                            type: string
+                            example: "Users click 'Generate AI Ticket' button"
+                          systemBehavior:
+                            type: string
+                            example: "Intelligent strategy selection happens automatically"
+                          resultQuality:
+                            type: string
+                            example: "Optimal results without exposing complexity"
+              examples:
+                strategy_info:
+                  summary: Complete Strategy Information
+                  value:
+                    success: true
+                    data:
+                      strategies:
+                        available:
+                          - name: "ai"
+                            description: "Pure AI analysis with intelligent insights"
+                            userSelectable: true
+                            performance: { speed: "slow", accuracy: "best" }
+                          - name: "enhanced"
+                            description: "Template + AI hybrid for complex components" 
+                            userSelectable: false
+                            performance: { speed: "medium", accuracy: "better" }
+                          - name: "template"
+                            description: "Fast, reliable template generation"
+                            userSelectable: true
+                            performance: { speed: "fast", accuracy: "good" }
+                      decisionLogic:
+                        aiStrategyRules:
+                          - condition: "frameData.length > 5 && screenshot"
+                            result: "enhanced"
+                            reason: "Complex components get template reliability + AI insights"
+                          - condition: "frameData.length <= 5"
+                            result: "ai"
+                            reason: "Simple components work well with pure AI"
+                      userExperience:
+                        figmaUI: "Single 'Generate AI Ticket' button"
+                        systemBehavior: "Automatic intelligent strategy selection"
+                        resultQuality: "Optimal results without complexity"
+
+  /api/generate:
+    post:
+      tags: [generate]
+      summary: 🎯 Generate Documentation (Unified Endpoint)
+      description: |
+        **Primary endpoint for all documentation generation needs.**
+        
+        Supports multiple formats (JIRA, Wiki, Code, Markdown) and strategies (AI, Template, Enhanced, Legacy, Auto).
+        
+        ### 🧠 Intelligent Strategy Selection:
+        
+        **When users request AI strategy (`strategy: "ai"`):**
+        - **Complex components** (>5 frames + screenshot) → `enhanced` strategy (Template + AI hybrid) 🏆
+        - **Simple components** (≤5 frames) → `ai` strategy (pure AI analysis) 🤖
+        
+        **Auto-Detection (`strategy: "auto"`):**
+        - **Rich data** (10+ frames + screenshot) → AI strategy
+        - **Medium data** (5+ frames) → Enhanced strategy  
+        - **Basic data** (1+ frames) → Template strategy
+        - **Minimal data** → Legacy strategy
+        
+        **💡 User Experience:**
+        Users simply click "Generate AI Ticket" in Figma, system intelligently selects optimal approach without exposing complexity.
+        
+        ### 📝 Format Support:
+        - `jira` - JIRA tickets (✅ Active)
+        - `wiki` - Wiki pages (🔜 Planned)
+        - `code` - Code documentation (🔜 Planned)
+        - `markdown` - Markdown files (🔜 Planned)
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateRequest'
+            examples:
+              ai_simple_component:
+                summary: Simple Component → Pure AI Strategy
+                description: |
+                  When user requests AI strategy with simple components (≤5 frames), 
+                  system uses pure AI analysis for focused, intelligent insights.
+                value:
+                  frameData:
+                    - type: "button"
+                      content: "Login Button"
+                      properties: { color: "primary", size: "large" }
+                    - type: "input" 
+                      content: "Email Field"
+                      properties: { type: "email", required: true }
+                  format: "jira"
+                  strategy: "ai"
+                  documentType: "story"
+                  techStack: "React, TypeScript"
+                  mockMode: true
+              ai_complex_component:
+                summary: Complex Component → Enhanced Strategy (Template + AI)
+                description: |
+                  When user requests AI strategy with complex components (>5 frames + screenshot), 
+                  system intelligently upgrades to Enhanced strategy for optimal reliability + insights.
+                value:
+                  frameData:
+                    - name: "Header Component"
+                      type: "INSTANCE"
+                    - name: "Navigation Menu"
+                      type: "FRAME"
+                    - name: "Search Bar"
+                      type: "COMPONENT"
+                    - name: "User Avatar"
+                      type: "ELLIPSE"
+                    - name: "Notification Icon"
+                      type: "VECTOR"
+                    - name: "Settings Dropdown"
+                      type: "FRAME"
+                  screenshot: "data:image/png;base64,iVBORw0KGgoAAAANS..."
+                  format: "jira"
+                  strategy: "ai"
+                  documentType: "component"
+                  techStack: "React, TypeScript"
+                  mockMode: true
+              auto_detect:
+                summary: Auto-Strategy Detection (Test Mode)
+                value:
+                  frameData:
+                    - type: "text"
+                      content: "Dashboard Header"
+                    - type: "button"
+                      content: "Export"
+                    - type: "table"
+                      content: "Data Grid"
+                  format: "jira"
+                  strategy: "auto"
+                  documentType: "task"
+                  mockMode: true
+              simple_test:
+                summary: Simple Test (Minimal Data)
+                value:
+                  strategy: "enhanced"
+                  documentType: "task"
+                  mockMode: true
+              wiki_planned:
+                summary: Wiki Generation (Planned)
+                value:
+                  frameData:
+                    - type: "text"
+                      content: "Component Documentation"
+                  format: "wiki"
+                  strategy: "template"
+                  documentType: "documentation"
+                  mockMode: true
+      responses:
+        '200':
+          description: Documentation generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateResponse'
+              examples:
+                success:
+                  summary: Successful Generation
+                  value:
+                    success: true
+                    message: "Documentation generated successfully"
+                    data:
+                      content: "# Login Component\n\n## Description\nImplement login button with email validation..."
+                      format: "jira"
+                      strategy: "ai"
+                      confidence: 0.95
+                      performance:
+                        duration: 1250
+                        cacheHit: false
+                      generatedAt: "2025-10-31T12:00:00.000Z"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/generate-ticket:
+    post:
+      tags: [api]
+      summary: 📋 Generate JIRA Ticket (Legacy - Deprecated)
+      deprecated: true
+      description: |
+        **⚠️ DEPRECATED**: Use `/api/generate` instead.
+        
+        Legacy endpoint for JIRA ticket generation using template strategy.
+        This endpoint adds deprecation headers and redirects to the unified endpoint.
+      parameters:
+        - name: X-Deprecated
+          in: header
+          schema:
+            type: string
+            example: "true"
+          description: Deprecation warning header
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyTicketRequest'
+      responses:
+        '200':
+          description: Ticket generated (via unified endpoint)
+          headers:
+            X-Deprecated:
+              description: Deprecation warning
+              schema:
+                type: string
+                example: "true"
+            X-Deprecation-Message:
+              description: Migration message
+              schema:
+                type: string
+                example: "Use /api/generate instead"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateResponse'
+
+  /api/generate-ai-ticket-direct:
+    post:
+      tags: [api]
+      summary: 🤖 Generate AI Ticket Direct (Legacy - Deprecated)
+      deprecated: true
+      description: |
+        **⚠️ DEPRECATED**: Use `/api/generate` with `strategy: "ai"` instead.
+        
+        Legacy endpoint for direct AI ticket generation.
+        This endpoint adds deprecation headers and redirects to the unified endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyAIRequest'
+      responses:
+        '200':
+          description: AI ticket generated (via unified endpoint)
+          headers:
+            X-Deprecated:
+              description: Deprecation warning
+              schema:
+                type: string
+                example: "true"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateResponse'
+
+  /:
+    get:
+      tags: [health]
+      summary: 🏥 System Health Check
+      description: Get comprehensive system health status
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/figma/screenshot:
+    get:
+      tags: [figma]
+      summary: 📸 Legacy Screenshot Endpoint (GET) - Will Return 500 Error
+      description: |
+        **⚠️ LEGACY ENDPOINT - RETURNS 500 ERROR BY DESIGN**
+        
+        This GET endpoint is deprecated and will return a 500 Internal Server Error 
+        with the message: "Failed to capture screenshot (GET): Missing required fields: fileKey, nodeId"
+        
+        **Fix**: Use `POST /api/figma/screenshot` instead with proper request body.
+        
+        **Expected Error Response:**
+        ```json
+        {
+          "success": false,
+          "error": "Failed to capture screenshot (GET): Missing required fields: fileKey, nodeId",
+          "metadata": {
+            "timestamp": "2025-11-05T21:24:29.249Z",
+            "route": "FigmaCore",
+            "statusCode": 500
+          }
+        }
+        ```
+      parameters:
+        - name: fileKey
+          in: query
+          required: true
+          description: Figma file key (will still cause 500 error)
+          schema:
+            type: string
+        - name: nodeId
+          in: query
+          required: true
+          description: Node ID (will still cause 500 error)
+          schema:
+            type: string
+      responses:
+        '500':
+          description: Expected error - endpoint is deprecated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Failed to capture screenshot (GET): Missing required fields: fileKey, nodeId"
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                      route:
+                        type: string
+                      statusCode:
+                        type: integer
+    post:
+      tags: [figma]
+      summary: 📸 Enhanced Figma Screenshot with Context Layer
+      description: |
+        **Enhanced Figma screenshot capture with Context Layer integration.**
+        
+        New architecture: `Figma API → Context Layer → Semantic Analysis → Structured Output`
+        
+        ### 🆕 Context Layer Features:
+        - **Design Token Extraction**: Automatic colors, typography, spacing analysis
+        - **Component Mapping**: Recognition of reusable UI patterns  
+        - **Layout Intelligence**: Grid systems and alignment pattern detection
+        - **Semantic Relationships**: Component hierarchy understanding
+        - **Accessibility Analysis**: WCAG compliance checking
+        
+        ### 📊 Enhanced Response:
+        - Screenshot data (base64)
+        - Context Layer semantic analysis
+        - Legacy visual analysis (supplementary)
+        - Performance metrics and caching
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [figmaUrl]
+              properties:
+                figmaUrl:
+                  type: string
+                  format: uri
+                  description: Figma file URL
+                  example: "https://www.figma.com/file/ABC123/Design-System"
+                includeAnalysis:
+                  type: boolean
+                  default: false
+                  description: Include Context Layer + legacy analysis
+                testMode:
+                  type: boolean
+                  default: false
+                  description: Use test screenshot instead of real capture
+                format:
+                  type: string
+                  enum: [base64, buffer]
+                  default: base64
+                  description: Screenshot format
+                quality:
+                  type: string
+                  enum: [low, medium, high]
+                  default: high
+                  description: Screenshot quality
+            examples:
+              enhanced_capture:
+                summary: Enhanced Screenshot with Context Analysis
+                value:
+                  figmaUrl: "https://www.figma.com/file/ABC123/Design-System"
+                  includeAnalysis: true
+                  format: "base64"
+                  quality: "high"
+              test_mode:
+                summary: Test Mode (Development)
+                value:
+                  testMode: true
+                  includeAnalysis: true
+      responses:
+        '200':
+          description: Enhanced screenshot captured successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      screenshot:
+                        type: object
+                        properties:
+                          data:
+                            type: string
+                            format: base64
+                          format:
+                            type: string
+                          size:
+                            type: integer
+                          quality:
+                            type: string
+                      contextAnalysis:
+                        type: object
+                        nullable: true
+                        properties:
+                          designTokens:
+                            type: object
+                            properties:
+                              colors:
+                                type: array
+                              spacing:
+                                type: array
+                          components:
+                            type: array
+                          layoutPatterns:
+                            type: array
+                          styleSystem:
+                            type: object
+                          accessibility:
+                            type: object
+                          semantic:
+                            type: object
+                          confidence:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                          processingPipeline:
+                            type: string
+                            example: "figma-api → context-layer → semantic-analysis"
+                      legacyAnalysis:
+                        type: object
+                        nullable: true
+                        description: Supplementary visual analysis
+                      metadata:
+                        type: object
+                        properties:
+                          timestamp:
+                            type: string
+                            format: date-time
+                          processingTime:
+                            type: integer
+                          testMode:
+                            type: boolean
+                          contextLayerEnabled:
+                            type: boolean
+                          architecture:
+                            type: string
+                            example: "enhanced-context-integration"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          description: Cannot access Figma file - check permissions
+        '408':
+          description: Screenshot capture timed out
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/figma/extract-context:
+    post:
+      tags: [figma]
+      summary: 🎨 Extract Context from Figma (NEW)
+      description: |
+        **NEW**: Direct Context Layer endpoint for semantic design analysis.
+        
+        Extract design intelligence without screenshot overhead. Perfect for when you need design tokens, component analysis, and semantic understanding but not visual capture.
+        
+        ### 🧠 Context Extraction Features:
+        - Design system analysis
+        - Component relationship mapping  
+        - Layout pattern recognition
+        - Accessibility compliance checking
+        - Semantic component classification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [figmaUrl]
+              properties:
+                figmaUrl:
+                  type: string
+                  format: uri
+                  description: Figma file URL
+                frameData:
+                  type: array
+                  description: Optional frame data for focused analysis
+                  items:
+                    type: object
+                options:
+                  type: object
+                  description: Context extraction options
+                  properties:
+                    includeDesignTokens:
+                      type: boolean
+                      default: true
+                    includeComponents:
+                      type: boolean  
+                      default: true
+                    includeAccessibility:
+                      type: boolean
+                      default: true
+            examples:
+              full_extraction:
+                summary: Full Context Extraction
+                value:
+                  figmaUrl: "https://www.figma.com/file/ABC123/Design-System"
+                  options:
+                    includeDesignTokens: true
+                    includeComponents: true
+                    includeAccessibility: true
+      responses:
+        '200':
+          description: Context extraction completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      context:
+                        $ref: '#/components/schemas/ContextAnalysis'
+                      source:
+                        type: string
+                        example: "context-layer"
+                      figmaUrl:
+                        type: string
+                      architecture:
+                        type: string
+                        example: "figma-api → context-layer → semantic-analysis"
+                      metadata:
+                        type: object
+                        properties:
+                          timestamp:
+                            type: string
+                            format: date-time
+                          processingTime:
+                            type: integer
+                          contextVersion:
+                            type: string
+                          extractorCount:
+                            type: integer
+        '503':
+          description: Context Layer unavailable
+
+  /api/figma/enhanced-capture:
+    post:
+      tags: [figma]
+      summary: 🚀 Enhanced Capture - Screenshot + Context + AI (NEW)
+      description: |
+        **NEW**: Complete parallel processing endpoint combining screenshot capture, Context Layer analysis, and optional visual AI.
+        
+        ### 🔄 Parallel Processing Features:
+        - Screenshot capture (configurable)
+        - Context Layer semantic analysis (configurable) 
+        - Visual AI analysis (optional)
+        - Optimized performance through parallel execution
+        
+        ### 📊 Use Cases:
+        - Complete design analysis pipeline
+        - Performance-optimized data gathering
+        - Configurable analysis components
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [figmaUrl]
+              properties:
+                figmaUrl:
+                  type: string
+                  format: uri
+                frameData:
+                  type: array
+                  items:
+                    type: object
+                format:
+                  type: string
+                  enum: [base64, buffer]
+                  default: base64
+                quality:
+                  type: string
+                  enum: [low, medium, high]
+                  default: high
+                includeScreenshot:
+                  type: boolean
+                  default: true
+                includeContext:
+                  type: boolean
+                  default: true
+                includeVisualAI:
+                  type: boolean
+                  default: false
+                options:
+                  type: object
+            examples:
+              full_analysis:
+                summary: Complete Analysis Pipeline
+                value:
+                  figmaUrl: "https://www.figma.com/file/ABC123/Design-System"
+                  includeScreenshot: true
+                  includeContext: true
+                  includeVisualAI: true
+              context_only:
+                summary: Context Analysis Only (Fast)
+                value:
+                  figmaUrl: "https://www.figma.com/file/ABC123/Design-System"
+                  includeScreenshot: false
+                  includeContext: true
+                  includeVisualAI: false
+      responses:
+        '200':
+          description: Enhanced capture completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      screenshot:
+                        type: object
+                        nullable: true
+                      contextAnalysis:
+                        $ref: '#/components/schemas/ContextAnalysis'
+                        nullable: true
+                      visualAnalysis:
+                        type: object
+                        nullable: true
+                      source:
+                        type: string
+                        example: "enhanced-capture"
+                      architecture:
+                        type: string
+                        example: "parallel-processing → context-layer + screenshot + visual-ai"
+                      metadata:
+                        type: object
+                        properties:
+                          timestamp:
+                            type: string
+                            format: date-time
+                          processingTime:
+                            type: integer
+                          includeScreenshot:
+                            type: boolean
+                          includeContext:
+                            type: boolean
+                          includeVisualAI:
+                            type: boolean
+                          parallelProcessing:
+                            type: boolean
+
+  /mcp/status:
+    get:
+      tags: [mcp]
+      summary: 🔌 Figma Design Context MCP Status
+      description: Get Figma Design Context MCP server status (design context only, no ticket generation)
+      responses:
+        '200':
+          description: MCP status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [healthy, degraded, unhealthy]
+                  services:
+                    type: object
+                  tools:
+                    type: array
+
+  # 🚀 FIGMA PLUGIN API - MODULAR CONTEXT COLLECTION SYSTEM
+  /plugin/comprehensive-context:
+    post:
+      tags: [plugin]
+      summary: 🚀 Comprehensive Context Collection (Plugin API)
+      description: |
+        **🔌 Figma Plugin Modular API System**
+        
+        This documents the **client-side plugin API** that provides comprehensive context collection 
+        directly from Figma using our modular system. This API operates via `postMessage` 
+        communication between the Figma plugin UI and the plugin code.
+        
+        ### 🏗️ Architecture:
+        ```
+        Figma UI "Preview Context" Button Click 
+          ↓
+        collectComprehensiveContext() [Client-side]
+          ↓
+        9x Modular Collection Functions (Parallel)
+          ↓
+        postMessage() to Figma Plugin
+          ↓
+        6x Plugin Message Handlers
+          ↓
+        Direct Figma API Extraction
+          ↓
+        Structured Data Storage
+        ```
+        
+        ### 📦 **9 Collection Modules:**
+        1. **`figmaSelection`** - Core selection data with hierarchy
+        2. **`figmaComponents`** - Component analysis and variants
+        3. **`figmaStyles`** - Design tokens extraction
+        4. **`figmaInteractions`** - Prototype interactions  
+        5. **`figmaConstraints`** - Auto-layout & responsive data
+        6. **`figmaEffects`** - Shadows, blurs, advanced styling
+        7. **`screenshot`** - High-quality image capture
+        8. **`accessibility`** - A11y analysis from collected data
+        9. **`codeGeneration`** - Implementation readiness specs
+        
+        ### 🎯 **Plugin Message Handlers:**
+        - `get-comprehensive-selection` → `handleGetComprehensiveSelection()`
+        - `analyze-components` → `handleAnalyzeComponents()`
+        - `extract-design-tokens` → `handleExtractDesignTokens()`
+        - `analyze-interactions` → `handleAnalyzeInteractions()`
+        - `analyze-constraints` → `handleAnalyzeConstraints()`
+        - `analyze-effects` → `handleAnalyzeEffects()`
+        
+        ### 💾 **Data Storage:**
+        ```javascript
+        window.comprehensiveContextData = {
+          metadata: { version: '3.0.0', collectedAt: '...', source: '...' },
+          figmaData: { selection: [...], components: [...], interactions: [...] },
+          designTokens: { colors: [...], typography: [...], spacing: [...] },
+          technicalSpecs: { constraints: {...}, effects: {...} },
+          accessibility: { contrastRatios: [...], wcagCompliance: '...' },
+          codeGeneration: { framework: '...', implementation: {...} },
+          screenshot: { url: '...', metadata: {...} }
+        }
+        ```
+        
+        ### ⚡ **Trigger Mechanism:**
+        **Only triggers on "🔍 Preview Context & Generate" button click**
+        
+        **No HTTP requests needed** - all data comes directly from Figma API via plugin context.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [techStack]
+              properties:
+                techStack:
+                  type: string
+                  description: Target technology stack
+                  example: "React with TypeScript"
+                documentType:
+                  type: string
+                  enum: [story, task, bug, epic, component]
+                  default: story
+                  description: Type of documentation to generate
+                enableModules:
+                  type: object
+                  description: Module configuration - enable/disable specific collection modules
+                  properties:
+                    figmaSelection:
+                      type: boolean
+                      default: true
+                      description: Core selection data with hierarchy
+                    figmaComponents:
+                      type: boolean
+                      default: true
+                      description: Component analysis and variants
+                    figmaStyles:
+                      type: boolean
+                      default: true
+                      description: Design tokens extraction
+                    figmaInteractions:
+                      type: boolean
+                      default: true
+                      description: Prototype interactions analysis
+                    figmaConstraints:
+                      type: boolean
+                      default: true
+                      description: Auto-layout & responsive constraints
+                    figmaEffects:
+                      type: boolean
+                      default: true
+                      description: Shadows, blurs, advanced styling
+                    screenshot:
+                      type: boolean
+                      default: true
+                      description: High-quality screenshot capture
+                    accessibility:
+                      type: boolean
+                      default: true
+                      description: Accessibility analysis from data
+                    codeGeneration:
+                      type: boolean
+                      default: true
+                      description: Code generation readiness assessment
+            examples:
+              full_collection:
+                summary: Full Comprehensive Collection
+                description: Collect all 9 modules for maximum context
+                value:
+                  techStack: "React with TypeScript"
+                  documentType: "component"
+                  enableModules:
+                    figmaSelection: true
+                    figmaComponents: true
+                    figmaStyles: true
+                    figmaInteractions: true
+                    figmaConstraints: true
+                    figmaEffects: true
+                    screenshot: true
+                    accessibility: true
+                    codeGeneration: true
+              selective_collection:
+                summary: Selective Module Collection
+                description: Only collect essential modules for speed
+                value:
+                  techStack: "Vue.js"
+                  documentType: "story"
+                  enableModules:
+                    figmaSelection: true
+                    screenshot: true
+                    designTokens: true
+                    accessibility: false
+                    codeGeneration: false
+              minimal_collection:
+                summary: Minimal Data Collection
+                description: Basic selection and screenshot only
+                value:
+                  techStack: "Angular"
+                  documentType: "task"
+                  enableModules:
+                    figmaSelection: true
+                    screenshot: true
+                    # All other modules disabled for speed
+
+      responses:
+        '200':
+          description: Comprehensive context collection completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Comprehensive context collected successfully"
+                  data:
+                    $ref: '#/components/schemas/ComprehensiveContextData'
+                  performance:
+                    type: object
+                    properties:
+                      totalModules:
+                        type: integer
+                        example: 9
+                      completedModules:
+                        type: integer
+                        example: 9
+                      collectionTime:
+                        type: integer
+                        description: Total collection time in milliseconds
+                        example: 3420
+                      averageModuleTime:
+                        type: integer
+                        description: Average time per module in milliseconds
+                        example: 380
+                      dataPoints:
+                        type: integer
+                        description: Total number of data points collected
+                        example: 847
+              examples:
+                successful_collection:
+                  summary: Successful Comprehensive Collection
+                  value:
+                    success: true
+                    message: "Comprehensive context collected from 9 modules"
+                    data:
+                      metadata:
+                        collectedAt: "2025-11-07T15:30:00.000Z"
+                        source: "modular-comprehensive-collection"
+                        version: "3.0.0"
+                        enabledModules: 
+                          figmaSelection: true
+                          figmaComponents: true
+                          figmaStyles: true
+                          screenshot: true
+                      figmaData:
+                        selection: 
+                          - id: "123:456"
+                            name: "Login Button"
+                            type: "INSTANCE"
+                            hierarchy: { layers: 3, componentCount: 1 }
+                        components:
+                          - id: "123:456"
+                            name: "Button Component"
+                            type: "instance"
+                            masterComponent: { id: "789:012", name: "Base Button" }
+                      designTokens:
+                        colors: ["#007AFF", "#34C759", "#FF3B30"]
+                        typography: ["Inter-16px-Medium", "Inter-14px-Regular"]
+                        spacing: [8, 16, 24, 32]
+                        borderRadius: [4, 8, 12]
+                      screenshot:
+                        url: "data:image/png;base64,iVBORw0KGgoAAAANS..."
+                        metadata: { captureTime: "2025-11-07T15:30:00.000Z" }
+                    performance:
+                      totalModules: 9
+                      completedModules: 9
+                      collectionTime: 3420
+                      averageModuleTime: 380
+                      dataPoints: 847
+
+        '400':
+          description: Invalid module configuration or missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Missing required field: techStack"
+                  modules:
+                    type: object
+                    properties:
+                      attempted:
+                        type: array
+                        items:
+                          type: string
+                      failed:
+                        type: array
+                        items:
+                          type: string
+                      succeeded:
+                        type: array
+                        items:
+                          type: string
+
+        '408':
+          description: Module collection timeout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Module collection timed out after 15 seconds"
+                  partialData:
+                    $ref: '#/components/schemas/ComprehensiveContextData'
+                    description: Partial data from completed modules
+                  completedModules:
+                    type: array
+                    items:
+                      type: string
+                    example: ["figmaSelection", "screenshot", "designTokens"]
+                  failedModules:
+                    type: array
+                    items:
+                      type: string
+                    example: ["figmaComponents", "figmaInteractions"]
+
+  /mcp/tools:
+    get:
+      tags: [mcp]
+      summary: 🛠️ List Figma Design Context Tools
+      description: Get available MCP tools for Figma design context extraction (capture_figma_screenshot, extract_figma_context, get_figma_design_tokens)
+      responses:
+        '200':
+          description: MCP tools listed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      tools:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            description:
+                              type: string
+                            inputSchema:
+                              type: object
+
+  /test/ai-ticket-generation:
+    post:
+      tags: [test]
+      summary: 🧪 Test AI Ticket Generation
+      description: |
+        Test ticket generation with various scenarios.
+        
+        **Required Fields**: `description` is mandatory.
+        **Default Strategy**: `enhanced` if not specified.
+        
+        **Example Descriptions**:
+        - "The login button is not responding when clicked on mobile devices"
+        - "Add dark mode support with user preference persistence"
+        - "Page load time is extremely slow (>5 seconds) on the dashboard"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [description]
+              properties:
+                description:
+                  type: string
+                  description: Test scenario description (required)
+                  example: "The login button is not responding when clicked on mobile devices"
+                strategy:
+                  type: string
+                  enum: [ai, template, enhanced, legacy]
+                  default: enhanced
+                  description: Generation strategy to test
+                includeScreenshot:
+                  type: boolean
+                  default: false
+                  description: Whether to include screenshot in generation
+      responses:
+        '200':
+          description: Test completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  ticket:
+                    type: object
+                    description: Generated ticket data
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                      route:
+                        type: string
+                      statusCode:
+                        type: integer
+        '400':
+          description: Missing required fields or invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Missing required fields: description"
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                      route:
+                        type: string
+                      statusCode:
+                        type: integer
+        '500':
+          description: Server error during ticket generation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      scenario:
+                        type: string
+                      strategy:
+                        type: string
+                      performance:
+                        type: object
+
+  /test/unit/context-intelligence:
+    post:
+      tags: [test]
+      summary: 🧪 Test Context Intelligence Layer - Unit Tests
+      description: |
+        Execute unit tests for the Context Intelligence Layer components.
+        
+        Tests all 6 core modules:
+        - ContextIntelligenceOrchestrator
+        - SemanticAnalyzer 
+        - InteractionMapper
+        - AccessibilityChecker
+        - DesignTokenLinker
+        - LayoutIntentExtractor
+        
+        Validates module initialization, basic functionality, and performance benchmarking.
+      responses:
+        '200':
+          description: Unit tests completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  results:
+                    type: object
+                    properties:
+                      totalTests:
+                        type: integer
+                        example: 14
+                      passed:
+                        type: integer
+                        example: 14
+                      failed:
+                        type: integer
+                        example: 0
+                      duration:
+                        type: integer
+                        description: Test execution time in milliseconds
+                        example: 1250
+                      coverage:
+                        type: object
+                        properties:
+                          modules:
+                            type: array
+                            items:
+                              type: string
+                            example: ["ContextIntelligenceOrchestrator", "SemanticAnalyzer", "InteractionMapper"]
+                          percentage:
+                            type: number
+                            example: 95.8
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                      route:
+                        type: string
+                        example: "/api/test/unit/context-intelligence"
+        '500':
+          description: Unit test execution failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Unit test execution failed"
+                  details:
+                    type: object
+
+  /test/integration/context-intelligence:
+    post:
+      tags: [test]
+      summary: 🧪 Test Context Intelligence Layer - Integration Tests
+      description: |
+        Execute integration tests for the Context Intelligence Layer with MockUnifiedContextProvider.
+        
+        Tests multi-component analysis scenarios:
+        - Component hierarchy analysis
+        - Cross-component interaction mapping
+        - Design system integration
+        - Performance benchmarking with realistic data
+        
+        Uses mock providers to simulate real-world integration patterns.
+      responses:
+        '200':
+          description: Integration tests completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  results:
+                    type: object
+                    properties:
+                      totalTests:
+                        type: integer
+                        example: 8
+                      passed:
+                        type: integer
+                        example: 7
+                      failed:
+                        type: integer
+                        example: 1
+                      duration:
+                        type: integer
+                        description: Test execution time in milliseconds
+                        example: 2340
+                      scenarios:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            status:
+                              type: string
+                              enum: [passed, failed]
+                            duration:
+                              type: integer
+                        example:
+                          - name: "Multi-component analysis"
+                            status: "passed"
+                            duration: 450
+                          - name: "Performance benchmarking"
+                            status: "passed"
+                            duration: 890
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                      route:
+                        type: string
+                        example: "/api/test/integration/context-intelligence"
+                      mockProvider:
+                        type: string
+                        example: "MockUnifiedContextProvider"
+        '500':
+          description: Integration test execution failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Integration test execution failed"
+                  details:
+                    type: object
+
+  /context-intelligence/analyze:
+    post:
+      tags: [test]
+      summary: 🧠 Context Intelligence Analysis
+      description: |
+        Perform Context Intelligence analysis on provided design components.
+        
+        This endpoint orchestrates the full Context Intelligence pipeline:
+        1. Semantic analysis of component structure
+        2. Interaction pattern mapping
+        3. Accessibility compliance checking
+        4. Design token linking
+        5. Layout intent extraction
+        
+        Returns comprehensive analysis results with actionable insights.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                components:
+                  type: array
+                  description: Array of design components to analyze
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "button-primary-001"
+                      type:
+                        type: string
+                        example: "button"
+                      properties:
+                        type: object
+                        additionalProperties: true
+                        example:
+                          text: "Submit Form"
+                          variant: "primary"
+                          size: "medium"
+                  minItems: 1
+                  example:
+                    - id: "login-form"
+                      type: "form"
+                      properties:
+                        fields: ["username", "password"]
+                        validation: true
+                    - id: "submit-button"
+                      type: "button"
+                      properties:
+                        text: "Login"
+                        variant: "primary"
+                options:
+                  type: object
+                  properties:
+                    includeAccessibility:
+                      type: boolean
+                      default: true
+                      description: Include accessibility analysis
+                    includeDesignTokens:
+                      type: boolean
+                      default: true
+                      description: Include design token mapping
+                    includePerformance:
+                      type: boolean
+                      default: false
+                      description: Include performance metrics
+                  example:
+                    includeAccessibility: true
+                    includeDesignTokens: true
+                    includePerformance: true
+      responses:
+        '200':
+          description: Context Intelligence analysis completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  analysis:
+                    type: object
+                    properties:
+                      semantic:
+                        type: object
+                        properties:
+                          componentHierarchy:
+                            type: array
+                            items:
+                              type: object
+                          relationships:
+                            type: array
+                            items:
+                              type: object
+                      interactions:
+                        type: object
+                        properties:
+                          patterns:
+                            type: array
+                            items:
+                              type: string
+                          flows:
+                            type: array
+                            items:
+                              type: object
+                      accessibility:
+                        type: object
+                        properties:
+                          score:
+                            type: number
+                            minimum: 0
+                            maximum: 100
+                            example: 92.5
+                          issues:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                type:
+                                  type: string
+                                severity:
+                                  type: string
+                                  enum: [low, medium, high, critical]
+                                description:
+                                  type: string
+                      designTokens:
+                        type: object
+                        properties:
+                          mapped:
+                            type: array
+                            items:
+                              type: object
+                          unmapped:
+                            type: array
+                            items:
+                              type: string
+                      layout:
+                        type: object
+                        properties:
+                          intent:
+                            type: string
+                          structure:
+                            type: object
+                          recommendations:
+                            type: array
+                            items:
+                              type: string
+                  performance:
+                    type: object
+                    properties:
+                      analysisTime:
+                        type: integer
+                        description: Analysis duration in milliseconds
+                        example: 1450
+                      componentsProcessed:
+                        type: integer
+                        example: 2
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                      version:
+                        type: string
+                        example: "1.0.0"
+                      route:
+                        type: string
+                        example: "/api/context-intelligence/analyze"
+        '400':
+          description: Invalid request - missing or malformed components
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Missing required field: components"
+                  details:
+                    type: object
+        '500':
+          description: Context Intelligence analysis failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Context Intelligence analysis failed"
+                  details:
+                    type: object
+
+components:
+  schemas:
+    GenerateRequest:
+      type: object
+      required: [strategy]
+      properties:
+        frameData:
+          type: array
+          description: Design frame data from Figma
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [text, button, input, select, checkbox, link, image, component]
+              content:
+                type: string
+              properties:
+                type: object
+                additionalProperties: true
+          minItems: 1
+        format:
+          type: string
+          enum: [jira, wiki, code, markdown]
+          default: jira
+          description: Output format for generated documentation
+        strategy:
+          type: string
+          enum: [ai, template, enhanced, legacy, auto]
+          default: auto
+          description: Generation strategy (auto selects best based on input)
+        documentType:
+          type: string
+          enum: [story, task, bug, epic, documentation, component]
+          default: task
+          description: Type of documentation to generate
+        figmaUrl:
+          type: string
+          format: uri
+          description: Optional Figma URL for additional context
+        screenshot:
+          type: string
+          format: base64
+          description: Optional screenshot data
+        techStack:
+          type: string
+          description: Technology stack for context
+        teamStandards:
+          type: object
+          description: Team-specific standards and guidelines
+        projectName:
+          type: string
+          description: Project name for context
+        includeScreenshot:
+          type: boolean
+          default: false
+          description: Whether to include screenshot analysis
+        mockMode:
+          type: boolean
+          default: true
+          description: Enable mock responses for testing
+    GenerateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            content:
+              type: string
+              description: Generated documentation content
+            format:
+              type: string
+              description: Output format used
+            strategy:
+              type: string
+              description: Strategy used for generation
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Confidence score of generation
+            performance:
+              type: object
+              properties:
+                duration:
+                  type: integer
+                  description: Generation time in milliseconds
+                cacheHit:
+                  type: boolean
+                  description: Whether result came from cache
+            metadata:
+              type: object
+              description: Additional metadata
+            generatedAt:
+              type: string
+              format: date-time
+              description: Generation timestamp
+
+    LegacyTicketRequest:
+      type: object
+      required: [frameData, platform, documentType]
+      properties:
+        frameData:
+          type: array
+          items:
+            type: object
+        platform:
+          type: string
+          enum: [jira]
+        documentType:
+          type: string
+        teamStandards:
+          type: object
+
+    LegacyAIRequest:
+      type: object
+      required: [enhancedFrameData]
+      properties:
+        enhancedFrameData:
+          type: array
+          items:
+            type: object
+        useAI:
+          type: boolean
+          default: true
+        platform:
+          type: string
+        documentType:
+          type: string
+        techStack:
+          type: string
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        server:
+          type: string
+        architecture:
+          type: string
+        phase:
+          type: string
+        uptime:
+          type: number
+        memory:
+          type: object
+          properties:
+            rss:
+              type: integer
+            heapTotal:
+              type: integer
+            heapUsed:
+              type: integer
+        environment:
+          type: object
+          properties:
+            node:
+              type: string
+            platform:
+              type: string
+            arch:
+              type: string
+        services:
+          type: object
+          additionalProperties:
+            type: boolean
+
+    ContextAnalysis:
+      type: object
+      description: Context Layer semantic analysis results
+      properties:
+        designTokens:
+          type: object
+          description: Extracted design tokens
+          properties:
+            colors:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  value:
+                    type: string
+                  usage:
+                    type: string
+            spacing:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  value:
+                    type: string
+                  unit:
+                    type: string
+            typography:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  fontSize:
+                    type: number
+                  fontFamily:
+                    type: string
+                  fontWeight:
+                    type: string
+        components:
+          type: array
+          description: Identified UI components
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              type:
+                type: string
+                enum: [button, input, text, card, navigation, form, modal, list]
+              properties:
+                type: object
+              relationships:
+                type: array
+                items:
+                  type: string
+        layoutPatterns:
+          type: array
+          description: Detected layout patterns
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [grid, flexbox, stack, sidebar, header, footer]
+              properties:
+                type: object
+              elements:
+                type: array
+                items:
+                  type: string
+        styleSystem:
+          type: object
+          description: Design system analysis
+          properties:
+            consistency:
+              type: number
+              minimum: 0
+              maximum: 1
+            patterns:
+              type: array
+              items:
+                type: string
+            violations:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  description:
+                    type: string
+                  severity:
+                    type: string
+                    enum: [low, medium, high, critical]
+        accessibility:
+          type: object
+          description: Accessibility analysis
+          properties:
+            score:
+              type: number
+              minimum: 0
+              maximum: 100
+            issues:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  description:
+                    type: string
+                  impact:
+                    type: string
+                    enum: [low, medium, high, critical]
+                  wcagLevel:
+                    type: string
+                    enum: [A, AA, AAA]
+            recommendations:
+              type: array
+              items:
+                type: string
+        semantic:
+          type: object
+          description: Semantic understanding
+          properties:
+            purpose:
+              type: string
+              description: Inferred component/screen purpose
+            userFlow:
+              type: array
+              description: Detected user flow steps
+              items:
+                type: object
+                properties:
+                  step:
+                    type: integer
+                  action:
+                    type: string
+                  component:
+                    type: string
+            interactions:
+              type: array
+              description: Interactive elements and behaviors
+              items:
+                type: object
+                properties:
+                  element:
+                    type: string
+                  interaction:
+                    type: string
+                  outcome:
+                    type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Overall confidence score of the analysis
+        extraction:
+          type: object
+          description: Extraction metadata
+          properties:
+            extractors:
+              type: array
+              items:
+                type: string
+            processingTime:
+              type: integer
+            version:
+              type: string
+            architecture:
+              type: string
+
+    ComprehensiveContextData:
+      type: object
+      description: Complete structured data from modular comprehensive context collection
+      properties:
+        metadata:
+          type: object
+          description: Collection metadata
+          properties:
+            collectedAt:
+              type: string
+              format: date-time
+              description: Timestamp when collection completed
+            source:
+              type: string
+              example: "modular-comprehensive-collection"
+              description: Source of the data collection
+            version:
+              type: string
+              example: "3.0.0"
+              description: Collection system version
+            enabledModules:
+              type: object
+              description: Which modules were enabled for collection
+              additionalProperties:
+                type: boolean
+        figmaData:
+          type: object
+          description: Core Figma data from selection and components
+          properties:
+            selection:
+              type: array
+              description: Enhanced selection data with hierarchy
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Figma node ID
+                  name:
+                    type: string
+                    description: Node name
+                  type:
+                    type: string
+                    enum: [FRAME, COMPONENT, INSTANCE, TEXT, RECTANGLE, ELLIPSE, VECTOR, GROUP]
+                    description: Figma node type
+                  position:
+                    type: object
+                    properties:
+                      x:
+                        type: number
+                      y:
+                        type: number
+                  size:
+                    type: object
+                    properties:
+                      width:
+                        type: number
+                      height:
+                        type: number
+                  hierarchy:
+                    type: object
+                    description: Node hierarchy information
+                    properties:
+                      layers:
+                        type: integer
+                        description: Number of nested layers
+                      componentCount:
+                        type: integer
+                        description: Number of component instances
+                      textLayerCount:
+                        type: integer
+                        description: Number of text layers
+            components:
+              type: array
+              description: Component analysis data
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  type:
+                    type: string
+                    enum: [instance, definition, broken-instance]
+                  masterComponent:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      key:
+                        type: string
+            interactions:
+              type: array
+              description: Prototype interactions and flows
+              items:
+                type: object
+                properties:
+                  nodeId:
+                    type: string
+                  nodeName:
+                    type: string
+                  trigger:
+                    type: string
+                    enum: [ON_CLICK, ON_HOVER, ON_PRESS, ON_DRAG, unknown]
+                  action:
+                    type: string
+                    enum: [NAVIGATE, BACK, CLOSE, OVERLAY, unknown]
+                  destination:
+                    type: string
+                    nullable: true
+        designTokens:
+          type: object
+          description: Extracted design tokens from Figma styles
+          properties:
+            colors:
+              type: array
+              description: Color palette
+              items:
+                type: string
+                pattern: '^#[0-9A-Fa-f]{6}$'
+                example: "#007AFF"
+            typography:
+              type: array
+              description: Typography system
+              items:
+                type: string
+                example: "Inter-16px-Medium"
+            spacing:
+              type: array
+              description: Spacing scale (sorted)
+              items:
+                type: number
+              example: [4, 8, 12, 16, 20, 24, 32, 40, 48, 64]
+            borderRadius:
+              type: array
+              description: Border radius values (sorted)
+              items:
+                type: number
+              example: [0, 4, 6, 8, 12, 16, 24]
+            effects:
+              type: array
+              description: Shadow and effect definitions
+              items:
+                type: string
+              example: ["0px 2px 4px rgba(0,0,0,0.1)", "0px 4px 8px rgba(0,0,0,0.15)"]
+        technicalSpecs:
+          type: object
+          description: Technical implementation specifications
+          properties:
+            constraints:
+              type: object
+              description: Layout constraints and auto-layout data
+              properties:
+                autoLayout:
+                  type: array
+                  description: Auto-layout configurations
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      layoutMode:
+                        type: string
+                        enum: [HORIZONTAL, VERTICAL, GRID]
+                      itemSpacing:
+                        type: number
+                      paddingLeft:
+                        type: number
+                      paddingRight:
+                        type: number
+                      paddingTop:
+                        type: number
+                      paddingBottom:
+                        type: number
+                constraints:
+                  type: array
+                  description: Node positioning constraints
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      horizontal:
+                        type: string
+                        enum: [LEFT, RIGHT, LEFT_RIGHT, CENTER, SCALE]
+                      vertical:
+                        type: string
+                        enum: [TOP, BOTTOM, TOP_BOTTOM, CENTER, SCALE]
+            effects:
+              type: object
+              description: Visual effects analysis
+              properties:
+                shadows:
+                  type: array
+                  description: Drop shadow effects
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      offset:
+                        type: object
+                        properties:
+                          x:
+                            type: number
+                          y:
+                            type: number
+                      radius:
+                        type: number
+                      color:
+                        type: object
+                        properties:
+                          r:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                          g:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                          b:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                          a:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                blurs:
+                  type: array
+                  description: Blur effects
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      radius:
+                        type: number
+                blends:
+                  type: array
+                  description: Blend mode effects
+                  items:
+                    type: object
+                    properties:
+                      nodeId:
+                        type: string
+                      nodeName:
+                        type: string
+                      blendMode:
+                        type: string
+                      opacity:
+                        type: number
+                        minimum: 0
+                        maximum: 1
+        accessibility:
+          type: object
+          description: Accessibility analysis from collected data
+          properties:
+            contrastRatios:
+              type: array
+              description: Color contrast ratio analysis
+              items:
+                type: object
+                properties:
+                  foreground:
+                    type: string
+                  background:
+                    type: string
+                  ratio:
+                    type: number
+                  wcagAA:
+                    type: boolean
+                  wcagAAA:
+                    type: boolean
+            altTextCoverage:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Percentage of images with alt text
+            keyboardNavigation:
+              type: boolean
+              description: Whether keyboard navigation is supported
+            semanticStructure:
+              type: string
+              enum: [excellent, good, needs-review, poor]
+              description: Quality of semantic HTML structure
+            wcagCompliance:
+              type: string
+              enum: [compliant, partial, non-compliant]
+              description: Overall WCAG compliance level
+            recommendations:
+              type: array
+              description: Accessibility improvement recommendations
+              items:
+                type: string
+              example: 
+                - "Review color contrast ratios"
+                - "Add alt text for images"
+                - "Ensure keyboard navigation support"
+        codeGeneration:
+          type: object
+          description: Code generation readiness and specifications
+          properties:
+            framework:
+              type: string
+              description: Target development framework
+              example: "React with TypeScript"
+            components:
+              type: array
+              description: Identified components for code generation
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  props:
+                    type: object
+            styles:
+              type: object
+              description: CSS/styling specifications
+              additionalProperties: true
+            structure:
+              type: object
+              description: Component structure and hierarchy
+              additionalProperties: true
+            implementation:
+              type: object
+              description: Implementation readiness assessment
+              properties:
+                ready:
+                  type: boolean
+                  description: Whether design is ready for code generation
+                confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  description: Confidence score for code generation
+                blockers:
+                  type: array
+                  description: Issues preventing code generation
+                  items:
+                    type: string
+                  example: ["Missing component specifications", "Inconsistent spacing system"]
+        screenshot:
+          type: object
+          nullable: true
+          description: High-quality screenshot data
+          properties:
+            url:
+              type: string
+              description: Screenshot data URL (base64 encoded)
+              pattern: '^data:image/(png|jpeg|svg\+xml);base64,'
+            metadata:
+              type: object
+              description: Screenshot capture metadata
+              properties:
+                captureTime:
+                  type: string
+                  format: date-time
+                nodeName:
+                  type: string
+                nodeType:
+                  type: string
+                fileKey:
+                  type: string
+                source:
+                  type: string
+                  enum: [backend-api, direct-export, fallback]
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        message:
+          type: string
+        context:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: "Validation failed"
+            message: "Invalid input data"
+            context:
+              errors:
+                - "frameData is required"
+                - "format must be one of: jira, wiki, code, markdown"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: "Internal server error"
+            message: "Generation failed"
+            context:
+              service: "TicketGenerationService"
+              operation: "generateTicket"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication (when enabled)
+
+security:
+  - {} # No security required for development
+  # - ApiKeyAuth: [] # Uncomment for production
+
+externalDocs:
+  description: Full Documentation
+  url: https://docs.figma-ai.com/api

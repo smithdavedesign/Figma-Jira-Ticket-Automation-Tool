@@ -273,7 +273,7 @@ export class Server {
 
     // Static file serving for documentation
     this.app.use('/docs', express.static('docs'));
-    this.app.use('/api-docs', express.static('app/api-docs'));
+    this.app.use('/api-docs', express.static('ui/api-docs'));
     this.app.use('/ui', express.static('ui'));
     this.app.use('/tests', express.static('tests'));
 

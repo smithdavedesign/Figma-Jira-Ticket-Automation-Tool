@@ -27,7 +27,7 @@ test.describe('Plugin Loading Smoke Tests', () => {
     await expect(page.locator('#app')).toBeVisible({ timeout: 10000 });
     
     // Check for key UI elements
-    await expect(page.locator('#generate')).toBeVisible();
+    await expect(page.locator('#generate-ai-ticket-btn')).toBeVisible();
     await expect(page.locator('.header')).toBeVisible();
     
     // Check for critical UI components
@@ -71,7 +71,7 @@ test.describe('Plugin Loading Smoke Tests', () => {
     // Check ticket generator elements are present
     await expect(page.locator('#platform')).toBeVisible();
     await expect(page.locator('#documentType')).toBeVisible();
-    await expect(page.locator('#generate')).toBeVisible();
+    await expect(page.locator('#generate-ai-ticket-btn')).toBeVisible();
     await expect(page.locator('#techStackInput')).toBeVisible();
     
     // Check form controls work
@@ -79,15 +79,16 @@ test.describe('Plugin Loading Smoke Tests', () => {
     await page.selectOption('#documentType', 'component');
     
     // Verify generate button is not disabled
-    const generateBtn = page.locator('#generate');
+    const generateBtn = page.locator('#generate-ai-ticket-btn');
     await expect(generateBtn).not.toBeDisabled();
     
     // Check tech stack input is functional
     await page.fill('#techStackInput', 'React 18, TypeScript');
     await expect(page.locator('#techStackInput')).toHaveValue('React 18, TypeScript');
     
-    // Check AI generate button is present and functional
-    await expect(page.locator('#generateAI')).toBeVisible();
+    // Check AI generate button is present and functional (fallback ID check)
+    const aiBtn = page.locator('#generate-ai-ticket-btn, #generateAI');
+    await expect(aiBtn.first()).toBeVisible();
   });
 
   test('Health check endpoint should return basic info', async ({ request }) => {

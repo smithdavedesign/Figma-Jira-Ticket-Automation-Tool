@@ -22,14 +22,9 @@ vi.mock('../../core/utils/logger.js');
 
 // Mock HealthMonitoringService
 const mockHealthMonitoringService = {
-  getOverallStatus: vi.fn(),
+  getHealthStatus: vi.fn(),
   getRealTimeMetrics: vi.fn(),
-  getComponentStatus: vi.fn(),
-  getAlerts: vi.fn(),
-  getMetricsHistory: vi.fn(),
-  runManualCheck: vi.fn(),
-  getHealthSummary: vi.fn(),
-  getDashboardData: vi.fn(),
+  checkComponent: vi.fn(), // This exists in the service
   initialize: vi.fn(),
   shutdown: vi.fn()
 };
@@ -70,7 +65,7 @@ describe('🌐 Health Monitoring Routes Integration Tests', () => {
     app.use(router);
 
     // Setup default mock responses
-    mockHealthMonitoringService.getOverallStatus.mockResolvedValue({
+    mockHealthMonitoringService.getHealthStatus.mockResolvedValue({
       overall: {
         status: 'healthy',
         score: 95,
@@ -78,96 +73,73 @@ describe('🌐 Health Monitoring Routes Integration Tests', () => {
         lastUpdate: Date.now()
       },
       components: [
-        { name: 'redis', status: 'healthy', lastCheck: Date.now() },
-        { name: 'figmaApi', status: 'healthy', lastCheck: Date.now() }
+        {
+          name: 'redis',
+          status: 'healthy',
+          type: 'database',
+          critical: true,
+          lastCheck: Date.now(),
+          responseTime: 15,
+          details: {}
+        },
+        {
+          name: 'figmaApi',
+          status: 'healthy',
+          type: 'external',
+          critical: true,
+          lastCheck: Date.now(),
+          responseTime: 250,
+          details: { user: { id: 'test' } }
+        }
       ],
       metrics: {
         errors: 0,
         warnings: 1,
-        requests: 150
-      }
-    });
-
-    mockHealthMonitoringService.getRealTimeMetrics.mockResolvedValue({
-      timestamp: new Date().toISOString(),
-      uptime: 86400000,
-      memoryUsage: {
-        used: 512000000,
-        total: 2048000000,
-        percentage: 25
+        requests: 150,
+        memoryUsage: [
+          { timestamp: Date.now() - 60000, value: 512000000 },
+          { timestamp: Date.now(), value: 520000000 }
+        ],
+        cpuUsage: [
+          { timestamp: Date.now() - 60000, value: 42.1 },
+          { timestamp: Date.now(), value: 45.2 }
+        ],
+        responseTime: [
+          { timestamp: Date.now() - 60000, value: 115 },
+          { timestamp: Date.now(), value: 120 }
+        ]
       },
-      cpuUsage: 45.2,
-      requests: 150,
-      errors: 0,
-      responseTime: {
-        average: 120,
-        p95: 250
-      }
-    });
-
-    mockHealthMonitoringService.getComponentStatus.mockResolvedValue([
-      {
-        name: 'redis',
-        status: 'healthy',
-        type: 'database',
-        critical: true,
-        lastCheck: Date.now(),
-        responseTime: 15,
-        details: {}
-      },
-      {
-        name: 'figmaApi',
-        status: 'healthy',
-        type: 'external',
-        critical: true,
-        lastCheck: Date.now(),
-        responseTime: 250,
-        details: { user: { id: 'test' } }
-      }
-    ]);
-
-    mockHealthMonitoringService.getAlerts.mockResolvedValue([
-      {
-        id: 'alert-1',
-        type: 'response_time',
-        severity: 'warning',
-        message: 'Figma API response time above threshold',
-        timestamp: Date.now(),
-        component: 'figmaApi'
-      }
-    ]);
-
-    mockHealthMonitoringService.getMetricsHistory.mockResolvedValue({
-      memoryUsage: [
-        { timestamp: Date.now() - 60000, value: 512000000 },
-        { timestamp: Date.now(), value: 520000000 }
-      ],
-      cpuUsage: [
-        { timestamp: Date.now() - 60000, value: 42.1 },
-        { timestamp: Date.now(), value: 45.2 }
-      ],
-      responseTime: [
-        { timestamp: Date.now() - 60000, value: 115 },
-        { timestamp: Date.now(), value: 120 }
+      alerts: [
+        {
+          id: 'alert-1',
+          type: 'response_time',
+          severity: 'warning',
+          message: 'Figma API response time above threshold',
+          timestamp: Date.now(),
+          component: 'figmaApi'
+        }
       ]
     });
 
-    mockHealthMonitoringService.getHealthSummary.mockResolvedValue({
-      overallScore: 95,
-      componentsHealthy: 8,
-      componentsTotal: 8,
-      criticalIssues: 0,
-      warnings: 1,
+    mockHealthMonitoringService.getRealTimeMetrics.mockResolvedValue({
+      timestamp: Date.now(),
       uptime: 86400000,
-      lastUpdate: Date.now()
+      memoryUsage: 520000000,
+      cpuUsage: 45.2,
+      errorRate: 0,
+      activeAlerts: 1,
+      componentStatuses: {
+        redis: { status: 'healthy', lastCheck: Date.now(), responseTime: 15 },
+        figmaApi: { status: 'healthy', lastCheck: Date.now(), responseTime: 250 }
+      }
     });
 
-    mockHealthMonitoringService.getDashboardData.mockResolvedValue({
+    mockHealthMonitoringService.checkComponent.mockResolvedValue({
+      component: 'redis',
       status: 'healthy',
-      components: 8,
-      alerts: 1,
-      uptime: '1d 0h 0m',
-      metrics: {
+      responseTime: 15,
+      timestamp: Date.now(),
+      details: {
         memory: 25,
         cpu: 45.2,
         requests: 150,
@@ -230,11 +202,11 @@ describe('🌐 Health Monitoring Routes Integration Tests', () => {
       expect(response.body.data.cpuUsage).toBe(45.2);
       expect(response.body.data.requests).toBe(150);
       expect(response.body.data.errors).toBe(0);
-      expect(mockHealthMonitoringService.getRealTimeMetrics).toHaveBeenCalledOnce();
+      expect(mockHealthMonitoringService.getRealtimeMetrics).toHaveBeenCalledOnce();
     });
 
     it('should handle real-time metrics service errors', async () => {
-      mockHealthMonitoringService.getRealTimeMetrics.mockRejectedValue(
+      mockHealthMonitoringService.getRealtimeMetrics.mockRejectedValue(
         new Error('Metrics collection failed')
       );
 
@@ -243,7 +215,7 @@ describe('🌐 Health Monitoring Routes Integration Tests', () => {
         .expect(500);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.error).toBe('Failed to get real-time metrics');
+      expect(response.body.error).toBe('Failed to get realtime metrics');
     });
 
     it('should return metrics with proper structure', async () => {

@@ -40,7 +40,7 @@ export class HealthMonitoringRoutes extends BaseRoute {
 
     try {
       const healthMonitoringService = this.getService('healthMonitoringService');
-      const status = await healthMonitoringService.getOverallStatus();
+      const status = await healthMonitoringService.getHealthStatus();
 
       res.json({
         success: true,
@@ -65,7 +65,7 @@ export class HealthMonitoringRoutes extends BaseRoute {
 
     try {
       const healthMonitoringService = this.getService('healthMonitoringService');
-      const metrics = await healthMonitoringService.getRealtimeMetrics();
+      const metrics = await healthMonitoringService.getRealTimeMetrics();
 
       res.json({
         success: true,
@@ -90,11 +90,11 @@ export class HealthMonitoringRoutes extends BaseRoute {
 
     try {
       const healthMonitoringService = this.getService('healthMonitoringService');
-      const components = await healthMonitoringService.getComponentStatus();
+      const status = await healthMonitoringService.getHealthStatus();
 
       res.json({
         success: true,
-        data: components,
+        data: status.components || [],
         timestamp: new Date().toISOString()
       });
     } catch (error) {
@@ -115,11 +115,11 @@ export class HealthMonitoringRoutes extends BaseRoute {
 
     try {
       const healthMonitoringService = this.getService('healthMonitoringService');
-      const alerts = await healthMonitoringService.getAlerts();
+      const status = await healthMonitoringService.getHealthStatus();
 
       res.json({
         success: true,
-        data: alerts,
+        data: status.alerts || [],
         timestamp: new Date().toISOString()
       });
     } catch (error) {
@@ -141,11 +141,11 @@ export class HealthMonitoringRoutes extends BaseRoute {
     try {
       const healthMonitoringService = this.getService('healthMonitoringService');
       const timeRange = req.query.timeRange || '1h';
-      const history = await healthMonitoringService.getMetricsHistory(timeRange);
+      const status = await healthMonitoringService.getHealthStatus();
 
       res.json({
         success: true,
-        data: history,
+        data: status.metrics || {},
         timestamp: new Date().toISOString(),
         timeRange
       });
@@ -176,7 +176,7 @@ export class HealthMonitoringRoutes extends BaseRoute {
         });
       }
 
-      const result = await healthMonitoringService.runManualCheck(component);
+      const result = await healthMonitoringService.checkComponent(component);
 
       res.json({
         success: true,
@@ -203,7 +203,7 @@ export class HealthMonitoringRoutes extends BaseRoute {
 
     try {
       const healthMonitoringService = this.getService('healthMonitoringService');
-      const summary = await healthMonitoringService.getHealthSummary();
+      const summary = await healthMonitoringService.getHealthStatus();
 
       res.json({
         success: true,
@@ -230,13 +230,14 @@ export class HealthMonitoringRoutes extends BaseRoute {
       const healthMonitoringService = this.getService('healthMonitoringService');
 
       // Get all data needed for the dashboard
-      const [status, metrics, components, alerts, summary] = await Promise.all([
-        healthMonitoringService.getOverallStatus(),
-        healthMonitoringService.getRealtimeMetrics(),
-        healthMonitoringService.getComponentStatus(),
-        healthMonitoringService.getAlerts(),
-        healthMonitoringService.getHealthSummary()
+      const [status, metrics] = await Promise.all([
+        healthMonitoringService.getHealthStatus(),
+        healthMonitoringService.getRealTimeMetrics()
       ]);
+
+      const components = status.components || [];
+      const alerts = status.alerts || [];
+      const summary = status;
 
       res.json({
         success: true,
