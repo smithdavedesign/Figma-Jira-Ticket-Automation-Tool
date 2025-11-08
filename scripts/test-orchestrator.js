@@ -875,8 +875,7 @@ class TestOrchestrator {
             this.log('📋 Checking UI file structure...', 'info');
             const uiFiles = [
                 'ui/index.html',
-                'ui/ultimate-test-suite-dashboard.html',
-                'ui/context-layer-dashboard.html',
+                'ui/unified-testing-dashboard.html',
                 'ui/figma-tester.html'
             ];
 

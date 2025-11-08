@@ -80,14 +80,14 @@ class UIFigmaIntegrationTester {
         this.log('🎨 UI DASHBOARD TESTING', 'header');
         
         try {
-            // Test 1: Check if Ultimate Test Suite Dashboard HTML exists
-            const dashboardFile = './ui/ultimate-test-suite-dashboard.html';
+            // Test 1: Check if Unified Testing Dashboard HTML exists
+            const dashboardFile = './ui/unified-testing-dashboard.html';
             if (existsSync(dashboardFile)) {
                 this.results.uiDashboard.passed++;
-                this.log('✅ Ultimate Test Suite Dashboard file exists');
+                this.log('✅ Unified Testing Dashboard file exists');
             } else {
                 this.results.uiDashboard.failed++;
-                this.log('❌ Ultimate Test Suite Dashboard file missing', 'error');
+                this.log('❌ Unified Testing Dashboard file missing', 'error');
             }
             this.results.uiDashboard.total++;
 
@@ -156,7 +156,7 @@ class UIFigmaIntegrationTester {
             // Test 1: Check Context Intelligence Dashboard file
             const contextFiles = [
                 './ui/context-intelligence-test-dashboard.html',
-                './ui/context-layer-dashboard.html'
+                './ui/unified-testing-dashboard.html'
             ];
 
             let foundContextDashboard = false;

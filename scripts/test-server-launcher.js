@@ -123,8 +123,7 @@ class TestServerLauncher {
             if (this.isServerReady) {
                 this.log('✅ Server is ready for testing!', 'success');
                 this.log('🌐 Server available at: http://localhost:3000', 'info');
-                this.log('🎯 Ultimate Test Suite: http://localhost:3000/ui/ultimate-test-suite-dashboard.html', 'info');
-                this.log('🧠 Context Dashboard: http://localhost:3000/ui/context-layer-dashboard.html', 'info');
+                this.log('🎯 Unified Testing Dashboard: http://localhost:3000/ui/unified-testing-dashboard.html', 'info');
                 this.log('🎭 Figma Tester: http://localhost:3000/ui/figma-tester.html', 'info');
                 return true;
             } else {
@@ -213,7 +212,7 @@ async function main() {
             const endpoints = [
                 'http://localhost:3000/api/test-suite/status',
                 'http://localhost:3000/api/test-suite/metrics',
-                'http://localhost:3000/ui/ultimate-test-suite-dashboard.html'
+                'http://localhost:3000/ui/unified-testing-dashboard.html'
             ];
 
             for (const endpoint of endpoints) {

@@ -221,8 +221,7 @@ class QuickTestSuite {
             // Check UI file structure
             const uiFiles = [
                 'ui/index.html',
-                'ui/ultimate-test-suite-dashboard.html',
-                'ui/context-layer-dashboard.html'
+                'ui/unified-testing-dashboard.html'
             ];
 
             let foundFiles = 0;
