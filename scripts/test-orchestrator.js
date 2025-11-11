@@ -1001,7 +1001,6 @@ class TestOrchestrator {
             this.log('🔄 Checking for outdated packages...', 'info');
             try {
                 // Use execSync directly to avoid error logging for expected non-zero exit codes
-                const { execSync } = require('child_process');
                 const outdatedOutput = execSync('npm outdated --depth=0', {
                     encoding: 'utf8',
                     stdio: 'pipe',
