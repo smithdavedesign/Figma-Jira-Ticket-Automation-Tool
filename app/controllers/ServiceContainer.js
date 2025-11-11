@@ -221,7 +221,7 @@ export class ServiceContainer {
  * @param {Array<string>} dependencies - Service dependencies
  * @returns {Function} Factory function
  */
-export function createServiceFactory(ServiceClass, dependencies = []) {
+export function createServiceFactory(ServiceClass, _dependencies = []) {
   return (container, ...resolvedDeps) => {
     return new ServiceClass(...resolvedDeps);
   };

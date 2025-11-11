@@ -253,6 +253,12 @@ export class GenerateRoutes extends BaseRoute {
 
     // For 'auto' or no strategy (API consumers), use intelligent selection
     if (request.strategy === 'auto' || !request.strategy) {
+      // PRIORITY: Check if AI is explicitly requested
+      if (request.useAI === true) {
+        this.logger.info('🤖 Auto-selecting AI strategy (useAI: true explicitly set)');
+        return 'ai'; // User wants AI generation
+      }
+
       // NEW ARCHITECTURE: Prefer Context-Template Bridge for fast, reliable generation
       if (this.contextBridge) {
         this.logger.info('🌉 Auto-selecting context-bridge strategy (fast, semantic-aware)');
@@ -315,29 +321,49 @@ export class GenerateRoutes extends BaseRoute {
       };
     }
 
-    // Handle legacy responses (MCP-based)
+    // Handle service-based responses (determine architecture based on actual service used)
+    const generationType = result.metadata?.generationType;
+    const isVisualEnhancedAI = ['visual-enhanced-ai', 'ai-powered-enhanced', 'ai-powered-pure'].includes(generationType);
+    const isTemplateGuided = ['template-guided-ai', 'template-guided-ai-fallback'].includes(generationType);
+
+    let actualArchitecture;
+    if (isTemplateGuided) {
+      actualArchitecture = 'template-guided-ai-service';
+    } else if (isVisualEnhancedAI) {
+      actualArchitecture = 'visual-enhanced-ai-service';
+    } else {
+      actualArchitecture = 'legacy-mcp-based';
+    }
+
     return {
       // Core generated content
       content: result.content,
       format: format, // jira, wiki, code, markdown
 
-      // Metadata
+      // Metadata at top level for UI access
       strategy: result.metadata?.strategy || strategy,
-      confidence: result.metadata?.confidence || 0.75,
+      confidence: result.metadata?.confidence || result.metadata?.ai_confidence || 0.75,
       source: result.metadata?.source || 'unified',
+      generationType: generationType,
+      architecture: actualArchitecture,
+      mcpBypass: isTemplateGuided, // Template-guided bypasses MCP
+      visualEnhancedAI: isVisualEnhancedAI,
 
       // Performance info
       performance: {
-        duration: result.metadata?.duration || 0,
-        cacheHit: result.metadata?.cacheHit || false
+        duration: result.metadata?.duration || result.performance?.duration || 0,
+        cacheHit: result.metadata?.cacheHit || result.performance?.fromCache || false
       },
 
-      // Full metadata for debugging
-      metadata: result.metadata || {},
-
-      // Architecture info
-      architecture: 'legacy-mcp-based',
-      mcpBypass: false,
+      // Full metadata for debugging (also includes top-level metadata)
+      metadata: {
+        ...result.metadata,
+        architecture: actualArchitecture,
+        mcpBypass: isTemplateGuided,
+        visualEnhancedAI: isVisualEnhancedAI,
+        strategy: result.metadata?.strategy || strategy,
+        generationType: generationType
+      },
 
       // Timestamp
       generatedAt: new Date().toISOString()

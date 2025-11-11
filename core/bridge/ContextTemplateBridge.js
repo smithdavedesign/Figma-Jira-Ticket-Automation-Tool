@@ -136,7 +136,7 @@ export class ContextTemplateBridge extends BaseService {
       const contextResult = await this.contextManager.extractContext(figmaData);
 
       // Transform context into template-friendly format
-      const templateContext = this._transformContextForTemplate(contextResult, request);
+      const templateContext = await this._transformContextForTemplate(contextResult, request);
 
       this.logger.info('✅ Context extraction completed', {
         nodesAnalyzed: contextResult.nodeAnalysis?.nodeCount || 0,
@@ -216,7 +216,7 @@ export class ContextTemplateBridge extends BaseService {
    * @param {Object} request - Original request
    * @returns {Object} Template-ready context
    */
-  _transformContextForTemplate(contextResult, request) {
+  async _transformContextForTemplate(contextResult, request) {
     const componentName = request.frameData?.[0]?.name ||
                          request.enhancedFrameData?.[0]?.name ||
                          'Component';
@@ -228,7 +228,7 @@ export class ContextTemplateBridge extends BaseService {
         component_type: this._inferComponentType(contextResult),
         description: this._generateDescription(contextResult, componentName),
         url: request.figmaUrl,
-        live_link: request.figmaUrl,
+        live_link: await this._buildEnhancedFigmaUrl(contextResult, request),
 
         // Rich design data from Context Layer
         design_tokens: contextResult.styleExtraction?.designTokens || {},
@@ -748,6 +748,46 @@ Implement the ${componentName} component based on Figma design specifications.
         reason: 'direct-context-template-flow-only'
       }
     };
+  }
+
+  /**
+   * Build enhanced Figma URL using our debugging-enabled template manager
+   * @param {Object} contextResult - Context Layer result
+   * @param {Object} request - Original request
+   * @returns {string} Enhanced Figma URL
+   */
+  async _buildEnhancedFigmaUrl(contextResult, request) {
+    // Import and use our debugging-enabled TemplateManager
+    try {
+      // Lazy load to avoid circular dependencies
+      const { TemplateManager } = await import('../data/template-manager.js');
+      const templateManager = new TemplateManager();
+      templateManager.redisClient = {
+        get: () => null,
+        set: () => true,
+        del: () => true,
+        exists: () => false,
+        keys: () => []
+      };
+
+      // Build figma context from Context Layer output
+      const figmaContext = {
+        metadata: {
+          id: this.extractFileIdFromUrl(request.figmaUrl),
+          name: request.frameData?.[0]?.name || request.enhancedFrameData?.[0]?.name || 'Component'
+        }
+      };
+
+      // Use our enhanced buildFigmaUrl method with debug logging
+      const enhancedUrl = templateManager.buildFigmaUrl(figmaContext, request);
+
+      this.logger.info('🔗 Enhanced Figma URL built via Context Bridge:', enhancedUrl);
+      return enhancedUrl;
+
+    } catch (error) {
+      this.logger.warn('⚠️ Enhanced URL building failed, using fallback:', error.message);
+      return request.figmaUrl || 'https://www.figma.com/file/unknown';
+    }
   }
 
   /**

@@ -10,7 +10,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AIPromptManager } from './AIPromptManager.js';
-import { join, dirname } from 'path';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -117,7 +117,9 @@ export class TemplateIntegratedAIService {
           processingTime,
           promptType: promptData.metadata.promptType,
           promptVersion: promptData.metadata.version,
-          screenshotProcessed: !!context.screenshot,
+          screenshotProcessed: this.isScreenshotProcessed(context),
+          dataStructuresAnalyzed: this.countDataStructures(context),
+          contextCompressed: this.isContextCompressed(context),
           promptTokens: Math.ceil(promptData.prompt.length / 4),
           responseTokens: Math.ceil(aiResponse.length / 4),
           source: 'hybrid-ai-reasoning'
@@ -149,7 +151,7 @@ export class TemplateIntegratedAIService {
     const enrichedContext = {
       // Figma context
       figma: {
-        component_name: context.componentName || context.figmaContext?.selection?.name || 'Unknown Component',
+        component_name: this._extractComponentName(context),
         file_name: context.figmaContext?.fileName || 'Unknown File',
         file_id: context.figmaContext?.fileKey || context.fileKey || 'unknown',
         live_link: this.buildFigmaUrl(context),
@@ -236,7 +238,7 @@ export class TemplateIntegratedAIService {
 
         // Enhance prompt for retry
         const enhancedParts = [...parts];
-        enhancedParts[0].text += '\n\nIMPORTANT: Ensure output uses proper Jira markup (h1. h2. h3.) and includes comprehensive technical details.';
+        enhancedParts[0].text += '\n\nIMPORTANT: Ensure output uses proper Markdown format (# ## ###) and includes comprehensive technical details.';
 
         return this.generateWithRetry(enhancedParts, options, attempt + 1);
       }
@@ -255,7 +257,7 @@ export class TemplateIntegratedAIService {
   /**
    * Generate mock response for testing
    */
-  generateMockResponse(parts, options = {}) {
+  generateMockResponse(parts, _options = {}) {
     // For structured data output tests, return JSON with expected fields
     const mockStructuredResponse = {
       visualUnderstanding: 'Mock visual analysis of the component design and structure',
@@ -289,8 +291,8 @@ export class TemplateIntegratedAIService {
    * Validate AI output quality
    */
   validateOutput(text) {
-    return text.includes('h1.') &&
-           text.includes('h2.') &&
+    return text.includes('#') &&
+           text.includes('##') &&
            text.length >= 300 &&
            !text.includes('# '); // No markdown headers
   }
@@ -501,6 +503,116 @@ export class TemplateIntegratedAIService {
   }
 
   /**
+   * Extract component name from context with intelligent fallbacks
+   * FIXED: Proper component name extraction to avoid "Unknown Component"
+   */
+  _extractComponentName(context) {
+    // Try multiple paths to find the component name
+    const possibleNames = [
+      context.componentName,
+      context.figmaContext?.selection?.name,
+      context.figmaContext?.selection?.[0]?.name,
+      context.figmaData?.selection?.[0]?.name,
+      context.hierarchicalData?.[0]?.name,
+      context.enhancedFrameData?.[0]?.name,
+      context.frameData?.[0]?.name,
+      context.figma?.component_name,
+      context.figmaContext?.metadata?.name
+    ];
+
+    // Find the first valid name
+    for (const name of possibleNames) {
+      if (name && typeof name === 'string' && name.trim().length > 0) {
+        return name.trim();
+      }
+    }
+
+    // If no name found, try to extract from file context
+    if (context.fileContext?.fileName) {
+      return `Component from ${context.fileContext.fileName}`;
+    }
+
+    // Last resort fallback
+    return 'UI Component'; // More professional than "Unknown Component"
+  }
+
+  /**
+   * Count data structures in context for metadata tracking
+   * FIXED: Proper data structure counting for processing pipeline metadata
+   */
+  countDataStructures(context) {
+    let count = 0;
+
+    // Check for screenshot data
+    if (context.screenshot && (context.screenshot.base64 || context.screenshot.url)) {
+      count++;
+    }
+
+    // Check for visual design context structures
+    if (context.visualDesignContext?.colorPalette?.length > 0) {
+      count++;
+    }
+    if (context.visualDesignContext?.typography?.fonts?.length > 0) {
+      count++;
+    }
+
+    // Check for hierarchical data structures
+    if (context.hierarchicalData?.components?.length > 0) {
+      count++;
+    }
+    if (context.hierarchicalData?.designSystemLinks) {
+      count++;
+    }
+
+    // Check for frame data structures
+    if (context.frameData?.length > 0) {
+      count++;
+    }
+    if (context.enhancedFrameData?.length > 0) {
+      count++;
+    }
+
+    // Check for figma context structures
+    if (context.figmaContext && Object.keys(context.figmaContext).length > 0) {
+      count++;
+    }
+
+    return count;
+  }
+
+  /**
+   * Check if context is compressed
+   * FIXED: Better compression detection logic
+   */
+  isContextCompressed(context) {
+    if (!context) {return false;}
+
+    const contextStr = JSON.stringify(context);
+    const compressionThreshold = 10000; // same as visual-enhanced-ai-service
+    const isLargeContext = contextStr.length > compressionThreshold;
+    const hasScreenshot = !!(context.screenshot?.base64);
+    const hasComplexStructures = this.countDataStructures(context) > 3;
+
+    return isLargeContext || hasScreenshot || hasComplexStructures;
+  }
+
+  /**
+   * Check if screenshot was actually processed
+   * FIXED: Verify screenshot processing status properly
+   */
+  isScreenshotProcessed(context) {
+    if (!context?.screenshot) {return false;}
+
+    // Check if we have actual screenshot data
+    const hasBase64 = !!(context.screenshot.base64);
+    const hasUrl = !!(context.screenshot.url);
+    const hasFormat = !!(context.screenshot.format);
+
+    // Screenshot is considered processed if we have data and it's properly formatted
+    return (hasBase64 || hasUrl) && hasFormat;
+  }
+
+  /**
    * Test service configuration and hybrid AI-template architecture
    */
   async testConfiguration() {
@@ -522,7 +634,7 @@ export class TemplateIntegratedAIService {
       if (this.templateEngine) {
         try {
           outputTemplate = await this.templateEngine.resolveTemplate('platforms', 'jira', 'comp');
-        } catch (error) {
+        } catch (_error) {
           // Template engine might not be available in test mode
           outputTemplate = { _meta: { cacheKey: 'test-template', resolutionPath: 'test-path' } };
         }

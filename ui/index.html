@@ -1641,16 +1641,16 @@ Examples:
         </p>
       </div>
 
-      <!-- Comprehensive Test Suite -->
+      <!-- Ultimate Testing Dashboard Link -->
       <div class="test-panel">
-        <h3>🧪 Comprehensive Test Suite</h3>
+        <h3>🧪 Ultimate Testing Dashboard</h3>
         <div style="text-align: center; margin: 20px 0;">
-          <button id="launchTestSuite" class="button" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; font-size: 16px; padding: 16px 32px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); transition: all 0.2s ease;">
-            🚀 Launch Ultimate Test Suite
+          <button onclick="window.open('ultimate-testing-dashboard.html', '_blank')" class="button" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; font-size: 16px; padding: 16px 32px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); transition: all 0.2s ease;">
+            🚀 Open Testing Dashboard
           </button>
         </div>
         <div style="text-align: center; color: #64748b; font-size: 14px; margin-top: 8px;">
-          All-in-one testing: System • Screenshots • Templates • AI • UI • E2E • Performance
+          Comprehensive testing suite: System Health • Context Intelligence • Performance • API Testing
         </div>
       </div>
 
@@ -1715,6 +1715,30 @@ Examples:
         originalWarn.apply(console, args);
       };
     })();
+
+    // Utility functions for clean debugging (to prevent massive data URL strings in console)
+    function truncateDataUrl(dataUrl, maxLength = 100) {
+      if (!dataUrl || typeof dataUrl !== 'string') return dataUrl;
+      if (dataUrl.startsWith('data:')) {
+        const [header, data] = dataUrl.split(',');
+        if (data && data.length > maxLength) {
+          return `${header},[...${data.length} chars truncated...]`;
+        }
+      }
+      return dataUrl.length > maxLength ? `${dataUrl.substring(0, maxLength)}...[truncated]` : dataUrl;
+    }
+
+    // Utility function to create clean debug object for screenshots
+    function createCleanScreenshotDebug(screenshotData) {
+      if (!screenshotData) return screenshotData;
+      
+      const cleaned = { ...screenshotData };
+      if (cleaned.dataUrl) cleaned.dataUrl = truncateDataUrl(cleaned.dataUrl);
+      if (cleaned.url) cleaned.url = truncateDataUrl(cleaned.url);
+      if (cleaned.screenshotUrl) cleaned.screenshotUrl = truncateDataUrl(cleaned.screenshotUrl);
+      
+      return cleaned;
+    }
 
     const techStackInput = document.getElementById('techStackInput');
     const platformSelect = document.getElementById('platform');
@@ -1964,6 +1988,21 @@ Examples:
       }
     }
 
+    // Format content for better copy-paste experience
+    function formatContentForCopyPaste(content) {
+      if (!content || typeof content !== 'string') {
+        return content;
+      }
+      
+      // Ensure proper line breaks and spacing for different ticket formats
+      return content
+        .replace(/(\*[^*]+\*)/g, '\n$1')  // Add line breaks before bullet points
+        .replace(/(\n\n\n+)/g, '\n\n')   // Normalize multiple line breaks
+        .replace(/^[\s\n]+|[\s\n]+$/g, '') // Trim whitespace from start/end
+        .replace(/([.!?])\s*([A-Z])/g, '$1\n\n$2') // Add spacing between sentences that look like sections
+        .trim();
+    }
+
     // Direct AI Generation (bypasses MCP server)
     async function generateTicketWithDirectAI(params) {
       console.log('🤖 Starting direct AI generation with Visual Enhanced AI Service...');
@@ -1989,6 +2028,15 @@ Examples:
         const result = await response.json();
         console.log('✅ Direct AI generation completed:', result);
         
+        // 🔍 DEBUG: Architecture Information (updated paths)
+        console.log('🏗️ Architecture Details:', {
+          architecture: result.architecture || result.data?.metadata?.architecture || result.data?.architecture,
+          visualEnhancedAI: result.visualEnhancedAI || result.data?.metadata?.visualEnhancedAI || result.data?.visualEnhancedAI,
+          generationType: result.generationType || result.data?.metadata?.generationType || result.data?.generationType,
+          strategy: result.strategy || result.data?.metadata?.strategy || result.data?.strategy,
+          mcpBypass: result.mcpBypass || result.data?.metadata?.mcpBypass || result.data?.mcpBypass
+        });
+        
         // Return the generated ticket content (unified response format)
         if (result.success && result.data && result.data.content) {
           // Handle array format like [{"type":"text","text":"..."}]
@@ -1998,7 +2046,9 @@ Examples:
               .map(item => item.text)
               .join('\n\n');
           }
-          return typeof result.data.content === 'string' ? result.data.content : JSON.stringify(result.data.content);
+          // Ensure content is formatted for easy copy-paste
+          const content = typeof result.data.content === 'string' ? result.data.content : JSON.stringify(result.data.content);
+          return formatContentForCopyPaste(content);
         } else if (result.content && Array.isArray(result.content)) {
           return result.content
             .filter(item => item.type === 'text')
@@ -2144,7 +2194,7 @@ Examples:
                 break;
               case 'screenshot-captured':
                 // Enhanced screenshot handling with detailed logging
-                console.log('📸 Screenshot message received:', msg);
+                console.log('📸 Screenshot message received:', createCleanScreenshotDebug(msg));
                 let screenshotData;
                 
                 // Check for errors first
@@ -2228,6 +2278,10 @@ Examples:
                 handleAITicketData(msg.data);
                 break;
 
+              case 'ai-generation-result':
+                handleAIGenerationResult(msg);
+                break;
+
               case 'advanced-context-data':
                 console.log('🔬 Received advanced context data for dashboard:', msg.data);
                 
@@ -2242,6 +2296,14 @@ Examples:
                 break;
               case 'error':
                 console.error('Figma error:', msg.message);
+                break;
+              case 'comprehensive-selection-data':
+              case 'components-analysis-data':
+              case 'design-tokens-data':
+              case 'interactions-data':
+              case 'constraints-data':
+              case 'effects-data':
+                console.log(`📦 ${msg.type} received and processed`);
                 break;
               default:
                 console.log('Unhandled message type:', msg.type);
@@ -2543,17 +2605,16 @@ Examples:
         `;
         document.body.appendChild(debugDisplay);
         
-        // Use direct AI generation instead of MCP server
-        const generatedContent = await generateTicketWithDirectAI(aiParams);
+        // Send AI request to plugin code (which will make the server call)
+        console.log('📤 Sending AI request to plugin code...');
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'make-ai-request', 
+            params: aiParams 
+          } 
+        }, '*');
         
-        if (!generatedContent) {
-          throw new Error('No content received from AI generation');
-        }
-
-        // Display the AI-generated ticket
-        document.getElementById('generatedContent').value = generatedContent;
-        document.getElementById('results').classList.remove('hidden');
-        document.getElementById('copyBtn').disabled = false;
+        // The result will be handled by the message listener for 'ai-generation-result'
         
         showStatus('✅ AI-powered ticket generated successfully!', 'success');
         console.log('✅ AI ticket generation completed');
@@ -2598,6 +2659,113 @@ Examples:
             showError('All ticket generation methods failed. Please check MCP server connection.');
           }
         }
+        
+      } finally {
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = '🤖 Generate AI Ticket';
+      }
+    }
+
+    // Handle AI generation result from plugin code
+    function handleAIGenerationResult(msg) {
+      console.log('🔄 Received AI generation result:', msg);
+      console.log('🔍 Full message structure:', JSON.stringify(msg, null, 2));
+      
+      const aiBtn = document.getElementById('generate-ai-ticket-btn') || document.getElementById('generateAI');
+      
+      try {
+        if (msg.success) {
+          console.log('✅ AI generation successful');
+          console.log('🔍 msg.data:', msg.data);
+          console.log('🔍 msg.data type:', typeof msg.data);
+          console.log('🔍 msg.data keys:', msg.data ? Object.keys(msg.data) : 'no data');
+          
+          // Try multiple possible content locations based on response structure
+          let rawContent = null;
+          if (msg.data?.data?.content) {
+            rawContent = msg.data.data.content;
+            console.log('📄 Content found in msg.data.data.content');
+          } else if (msg.data?.content) {
+            rawContent = msg.data.content;
+            console.log('📄 Content found in msg.data.content');
+          } else if (msg.content) {
+            rawContent = msg.content;
+            console.log('📄 Content found in msg.content');
+          } else if (typeof msg.data === 'string') {
+            rawContent = msg.data;
+            console.log('📄 Content is msg.data as string');
+          } else {
+            rawContent = 'No content received - debug structure above';
+            console.log('❌ No content found in any expected location');
+          }
+          
+          // Parse and format the content for display
+          let content = rawContent;
+          
+          console.log('🔍 Raw content type:', typeof rawContent);
+          console.log('🔍 Raw content preview:', rawContent?.substring(0, 200) + '...');
+          
+          // Process content for display
+          console.log('🔧 Processing content for display...');
+          
+          if (typeof rawContent === 'string') {
+            // Check if it's still wrapped in JSON (legacy fallback)
+            if (rawContent.trim().startsWith('{') && rawContent.trim().endsWith('}')) {
+              try {
+                const parsed = JSON.parse(rawContent);
+                console.log('📄 Found JSON wrapper, extracting content...');
+                
+                if (parsed.ticket) {
+                  content = parsed.ticket;
+                  console.log('🎯 Extracted ticket from JSON wrapper');
+                } else {
+                  content = rawContent;
+                  console.log('📄 No ticket field in JSON, using raw');
+                }
+              } catch (e) {
+                content = rawContent;
+                console.log('❌ JSON parse failed, using raw content');
+              }
+            } else {
+              content = rawContent;
+              console.log('✅ Clean markdown content received directly');
+            }
+            
+            // Process any remaining escape sequences
+            content = content
+              .replace(/\\n/g, '\n')
+              .replace(/\\"/g, '"')
+              .replace(/\\t/g, '\t')
+              .replace(/\\\\/g, '\\');
+              
+            // Clean up any trailing analysis sections
+            content = content.split(/\n#+\s*Design Analysis/i)[0];
+            content = content.trim();
+              
+            console.log('✅ Final processed content length:', content.length);
+          } else {
+            content = String(rawContent || 'No content available');
+          }
+          
+          console.log('📄 Final content length:', content?.length || 0);
+          
+          document.getElementById('generatedContent').value = content;
+          document.getElementById('results').classList.remove('hidden');
+          document.getElementById('copyBtn').disabled = false;
+          
+          showStatus('✅ AI-powered ticket generated successfully!', 'success');
+          console.log('✅ AI ticket generation completed');
+          
+        } else {
+          throw new Error(msg.error || 'AI generation failed');
+        }
+        
+      } catch (error) {
+        console.error('❌ AI generation result processing failed:', error);
+        showError(`AI ticket generation failed: ${error.message}`);
+        
+        // The existing fallback logic should be triggered here if needed
+        showStatus('❌ AI generation failed - please try again', 'error');
         
       } finally {
         aiBtn.disabled = false;
@@ -2765,20 +2933,41 @@ This ticket was generated when both AI and enhanced fallback systems were unavai
       if (validationElement && aiData.enhancedFrameData) {
         let validationHTML = '';
         
-        aiData.enhancedFrameData.forEach((frameData, index) => {
-          const validation = validateFrameDataSchema(frameData);
+        // Check if this is the new comprehensive context structure
+        const isNewContextStructure = aiData.metadata?.dataSource === 'unified-context';
+        
+        if (isNewContextStructure) {
+          // New structure validation - more lenient
+          validationHTML += `<div class="validation-pass">✅ Comprehensive Context Data: ${aiData.enhancedFrameData.length} selection items collected</div>`;
           
-          if (validation.isValid && validation.warnings.length === 0) {
-            validationHTML += `<div class="validation-pass">✅ Frame ${index + 1} (${frameData.name || 'Unnamed'}): All validations passed</div>`;
+          // Basic validation for new structure
+          if (aiData.enhancedFrameData.length === 0) {
+            validationHTML += `<div class="validation-warning">⚠️ No selection items found</div>`;
           } else {
-            if (validation.errors.length > 0) {
-              validationHTML += `<div class="validation-error">❌ Frame ${index + 1} Errors: ${validation.errors.join(', ')}</div>`;
-            }
-            if (validation.warnings.length > 0) {
-              validationHTML += `<div class="validation-warning">⚠️ Frame ${index + 1} Warnings: ${validation.warnings.join(', ')}</div>`;
+            const hasValidItems = aiData.enhancedFrameData.some(item => item && (item.id || item.name || item.type));
+            if (hasValidItems) {
+              validationHTML += `<div class="validation-pass">✅ Selection items contain valid data</div>`;
+            } else {
+              validationHTML += `<div class="validation-warning">⚠️ Selection items may be incomplete</div>`;
             }
           }
-        });
+        } else {
+          // Legacy validation for old structure
+          aiData.enhancedFrameData.forEach((frameData, index) => {
+            const validation = validateFrameDataSchema(frameData);
+            
+            if (validation.isValid && validation.warnings.length === 0) {
+              validationHTML += `<div class="validation-pass">✅ Frame ${index + 1} (${frameData.name || 'Unnamed'}): All validations passed</div>`;
+            } else {
+              if (validation.errors.length > 0) {
+                validationHTML += `<div class="validation-error">❌ Frame ${index + 1} Errors: ${validation.errors.join(', ')}</div>`;
+              }
+              if (validation.warnings.length > 0) {
+                validationHTML += `<div class="validation-warning">⚠️ Frame ${index + 1} Warnings: ${validation.warnings.join(', ')}</div>`;
+              }
+            }
+          });
+        }
         
         validationElement.innerHTML = validationHTML || '<div class="validation-pass">✅ No data to validate</div>';
       }
@@ -2798,7 +2987,7 @@ This ticket was generated when both AI and enhanced fallback systems were unavai
 
     // Helper function to update screenshot display when data is available
     function updateScreenshotDisplayWithData(screenshotUrl) {
-      console.log('📸 Updating screenshot display with URL:', screenshotUrl);
+      console.log('📸 Updating screenshot display with URL:', truncateDataUrl(screenshotUrl));
       
       const screenshotStatus = document.getElementById('screenshot-status');
       const screenshotContent = document.getElementById('screenshot-content');
@@ -4094,7 +4283,7 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
     // Show context preview
     function showContextPreview(contextData) {
       console.log('🔍 showContextPreview called with data:', contextData);
-      console.log('📸 Screenshot data available:', !!contextData.screenshot, contextData.screenshot);
+      console.log('📸 Screenshot data available:', !!contextData.screenshot, createCleanScreenshotDebug(contextData.screenshot));
       
       // Update tech stack section
       if (contextData.techStack) {
@@ -4136,7 +4325,7 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
         screenshotData.dataUrl = screenshotData.url;
       }
       
-      console.log('📸 Final screenshot data:', screenshotData);
+      console.log('📸 Final screenshot data:', createCleanScreenshotDebug(screenshotData));
       console.log('📸 DataURL/URL length:', screenshotData.dataUrl ? screenshotData.dataUrl.length : 'No dataUrl');
       console.log('📸 Screenshot section element exists:', !!document.querySelector('[data-section="screenshot"]'));
       
@@ -4234,11 +4423,11 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
     }
 
     function updateScreenshotSection(screenshotData) {
-      console.log('📸 updateScreenshotSection called with:', screenshotData);
+      console.log('📸 updateScreenshotSection called with:', createCleanScreenshotDebug(screenshotData));
       
       const section = document.querySelector('[data-section="screenshot"]');
       if (!section) {
-        console.error('❌ Screenshot section not found in DOM!');
+        console.log('ℹ️ Screenshot section not found in current view (normal for some tabs)');
         return;
       }
       
@@ -4479,9 +4668,13 @@ ${successRate === 100 ? '🎉 All template combinations working perfectly!' :
         selectionCount = contextData.figmaContext.selectionCount || 0;
       }
 
-      document.getElementById('richness-score').textContent = `${Math.min(richness, 100)}%`;
-      document.getElementById('confidence-score').textContent = `${confidence}%`;
-      document.getElementById('selection-count').textContent = selectionCount;
+      const richnessEl = document.getElementById('richness-score');
+      const confidenceEl = document.getElementById('confidence-score');
+      const selectionEl = document.getElementById('selection-count');
+      
+      if (richnessEl) richnessEl.textContent = `${Math.min(richness, 100)}%`;
+      if (confidenceEl) confidenceEl.textContent = `${confidence}%`;
+      if (selectionEl) selectionEl.textContent = selectionCount;
     }
 
     // Generate dynamic team standards based on tech stack and document type
@@ -7302,48 +7495,6 @@ Please fix the MCP server connection and try again.`;
           // Initialize tab functionality
           initializeUnifiedTabs();
           
-          // Open unified dashboard in new window with context data
-          setTimeout(() => {
-            const dashboardUrl = 'http://localhost:3000/ui/unified-context-dashboard.html';
-            const dashboardWindow = window.open(dashboardUrl, 'UnifiedDashboard', 'width=1600,height=1000,scrollbars=yes,resizable=yes');
-            
-            if (dashboardWindow) {
-              console.log('� Opening Unified Context Dashboard with integrated data');
-              
-              // Pass context data to dashboard when it loads
-              const timer = setInterval(() => {
-                try {
-                  if (dashboardWindow.document && dashboardWindow.document.readyState === 'complete') {
-                    clearInterval(timer);
-                    dashboardWindow.postMessage({
-                      type: 'figma-context-data',
-                      data: contextData,
-                      source: 'figma-plugin'
-                    }, '*');
-                    console.green('✅ Context data sent to Unified Dashboard');
-                  }
-                } catch (e) {
-                  // Window might not be ready yet, keep trying
-                }
-              }, 100);
-              
-              // Fallback timeout to ensure data is sent
-              setTimeout(() => {
-                clearInterval(timer);
-                try {
-                  dashboardWindow.postMessage({
-                    type: 'figma-context-data',
-                    data: contextData,
-                    source: 'figma-plugin'
-                  }, '*');
-                  console.log('📤 Fallback: Context data sent to dashboard');
-                } catch (e) {
-                  console.warn('⚠️ Could not send context data to dashboard:', e.message);
-                }
-              }, 3000);
-            }
-          }, 500);
-          
         } catch (error) {
           console.error('Context collection failed:', error);
           showError('Failed to collect context. Showing preview anyway...');
@@ -7360,15 +7511,7 @@ Please fix the MCP server connection and try again.`;
       console.warn('⚠️ openUnifiedContextDashboard element not found');
     }
     
-    // Consolidated testing event listener with safety check
-    const launchTestSuiteBtn = document.getElementById('launchTestSuite');
-    if (launchTestSuiteBtn) {
-      launchTestSuiteBtn.addEventListener('click', function() {
-          window.open('http://localhost:3000/tests/integration/test-consolidated-suite.html', '_blank');
-      });
-    } else {
-      console.warn('⚠️ launchTestSuite element not found');
-    }
+    // Test suite now opens via inline onclick handler to Ultimate Testing Dashboard
 
     // Context preview event listeners with safety checks
     if (submitContextBtn) {

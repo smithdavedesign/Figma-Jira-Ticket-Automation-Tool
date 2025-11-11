@@ -18,7 +18,11 @@ const mockContextData = {
     component_name: 'TestComponent',
     component_type: 'FRAME',
     design_status: 'Ready for Development',
+    file_name: 'Test Design File',
+    file_id: 'abc123xyz789',
     screenshot_filename: 'test-component.png',
+    screenshot_url: 'https://example.com/screenshot.png',
+    screenshot_format: 'png',
     live_link: 'https://figma.com/test',
     extracted_colors: ['#FF0000', '#00FF00', '#0000FF'],
     extracted_typography: ['Inter 16px', 'Roboto 14px'],
@@ -70,6 +74,10 @@ const mockContextData = {
   
   // Tech stack reference
   tech: 'React',
+  
+  // Template aliases (for backward compatibility and shorthand) 
+  comp: 'TestComponent', // Shorthand for component name
+  code: 'React, TypeScript', // Shorthand for tech stack
   
   // URLs
   storybook_url: 'https://storybook.example.com',

@@ -21,7 +21,7 @@ echo "- Total Test Coverage: $((CONTEXT_TESTS + HEALTH_TESTS + SERVICE_TESTS)) t
 echo ""
 echo "🧪 Running Context Intelligence Tests..."
 cd /Users/david/Documents/Figa-Jira-Automations-Tool/figma-ticket-generator
-npm test tests/integration/context-intelligence-layer.test.js -- --run --reporter=verbose > test_results_context.txt 2>&1
+npm test tests/integration/context-intelligence-layer.test.js -- --run --reporter=verbose > logs/test_results_context.txt 2>&1
 CONTEXT_EXIT_CODE=$?
 if [ $CONTEXT_EXIT_CODE -eq 0 ]; then
     echo "✅ Context Intelligence Tests: PASSED ($CONTEXT_TESTS/$CONTEXT_TESTS)"
@@ -31,7 +31,7 @@ fi
 
 echo ""
 echo "❤️ Running Health Monitoring Tests..."
-npm test tests/unit/health-monitoring-service.test.js -- --run > test_results_health.txt 2>&1
+npm test tests/unit/health-monitoring-service.test.js -- --run > logs/test_results_health.txt 2>&1
 HEALTH_EXIT_CODE=$?
 if [ $HEALTH_EXIT_CODE -eq 0 ]; then
     echo "✅ Health Monitoring Tests: PASSED ($HEALTH_TESTS/$HEALTH_TESTS)"
@@ -41,7 +41,7 @@ fi
 
 echo ""
 echo "🏗️ Running Service Container Tests..."
-npm test tests/integration/service-container*.test.js -- --run > test_results_service.txt 2>&1
+npm test tests/integration/service-container*.test.js -- --run > logs/test_results_service.txt 2>&1
 SERVICE_EXIT_CODE=$?
 if [ $SERVICE_EXIT_CODE -eq 0 ]; then
     echo "✅ Service Container Tests: PASSED ($SERVICE_TESTS/$SERVICE_TESTS)"

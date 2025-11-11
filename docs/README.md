@@ -150,10 +150,11 @@ docs/                                    # Clean root with essential files only
 │   ├── DESIGN_INTELLIGENCE_API.md      # AI orchestration API
 │   └── MCP_SERVER_API.md               # Model Context Protocol API
 │
-├── � deployment/                      # Deployment Documentation (4 files + README)
+├── 🚀 deployment/                      # Deployment Documentation (5 files + README)
 │   ├── README.md                       # Deployment documentation index
-│   ├── CURRENT_DEPLOYMENT_STATUS.md    # Live production status
+│   ├── CURRENT_DEPLOYMENT_STATUS.md    # Live production status with Docker info
 │   ├── DEPLOYMENT_GUIDE.md             # Complete deployment procedures
+│   ├── DOCKER_DEPLOYMENT_GUIDE.md      # **NEW!** Complete Docker containerization guide
 │   ├── LIVE_DEPLOYMENT_STATUS.md       # Production monitoring
 │   └── PRODUCTION_DEPLOYMENT_COMPLETE.md # Deployment completion report
 │

@@ -20,6 +20,9 @@ An intelligent enterprise platform that transforms Figma designs into comprehens
 - ✅ **Professional Output** - 10,000+ character comprehensive tickets with real AI analysis
 - ✅ **Enterprise Architecture** - Robust error handling, fallbacks, and scalable structure
 - ✅ **TypeScript→JavaScript Migration** - Complete with 86 files successfully converted
+- ✅ **Docker Containerization** - **NEW!** Production-ready containerization with Redis stack and health monitoring
+- ✅ **Security Hardening** - **NEW!** Helmet middleware integration with Figma compatibility
+- ✅ **CI/CD Pipeline** - **NEW!** GitHub Actions workflows with Docker deployment support
 - 🎉 **PRODUCTION READY** - Live Figma testing successful, comprehensive validation complete!
 
 ## ✨ Core Features
@@ -896,11 +899,26 @@ figma-ticket-generator/
 ## 🚀 Quick Start - **PRODUCTION READY** ✅
 
 ### 1. Prerequisites
-- Node.js 18+ installed
+- Node.js 18+ installed (or Docker for containerized deployment)
 - Figma Desktop App
 - Free Google account for Gemini API (optional)
 
-### 2. Installation
+### 2. Installation Options
+
+#### 🐳 **Docker Deployment (Recommended for Production)**
+```bash
+git clone https://github.com/your-repo/figma-ticket-generator
+cd figma-ticket-generator
+
+# Production deployment with Redis stack
+docker-compose up -d
+
+# Verify deployment
+docker-compose ps
+curl http://localhost:3000/health
+```
+
+#### 📦 **Node.js Development Setup**
 ```bash
 git clone https://github.com/your-repo/figma-ticket-generator
 cd figma-ticket-generator
@@ -908,6 +926,18 @@ npm install
 ```
 
 ### 3. **🚀 ENHANCED ONE-COMMAND SETUP (NEW!)**
+
+#### 🐳 **Docker Setup (Production)**
+```bash
+# Production deployment with Redis stack
+docker-compose up -d
+# Server available at http://localhost:3000
+
+# Development with live reload
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+```
+
+#### 📦 **Node.js Setup (Development)**
 ```bash
 # Complete build and server startup
 npm run build && npm run start:server
@@ -1062,6 +1092,23 @@ curl http://localhost:3000/api/generate-ticket  # Test TemplateManager integrati
 ## 🛠️ Development
 
 ### Local Development
+
+#### 🐳 **Docker Development (Recommended)**
+```bash
+# Start development environment with Redis
+docker-compose up -d
+
+# View logs
+docker-compose logs -f app
+
+# Restart after code changes
+docker-compose restart app
+
+# Stop all services
+docker-compose down
+```
+
+#### 📦 **Node.js Development (Traditional)**
 ```bash
 # Install dependencies
 npm install
@@ -1074,6 +1121,17 @@ npm run build
 
 # Run tests
 npm test
+```
+
+### 🐳 **Docker Management Commands**
+```bash
+# Available Docker scripts
+npm run docker:build          # Build Docker image
+npm run docker:run            # Run container locally
+npm run docker:dev            # Development with volume mounts
+npm run docker:prod           # Production deployment
+npm run docker:logs           # View container logs
+npm run docker:clean          # Clean up containers and images
 ```
 
 ### Project Structure
@@ -1098,6 +1156,26 @@ OPENAI_API_KEY=your-openai-key    # Advanced fallback
 # Server configuration
 MCP_SERVER_PORT=3000              # Default: 3000
 LOG_LEVEL=info                    # Default: info
+
+# Docker-specific configuration
+REDIS_URL=redis://redis:6379      # Redis connection (Docker)
+NODE_ENV=production               # Environment mode
+HEALTH_CHECK_INTERVAL=30          # Health check frequency (seconds)
+```
+
+### 🐳 **Docker Configuration**
+```bash
+# Create .env file for Docker deployment
+cat > .env << EOF
+GEMINI_API_KEY=your-free-api-key
+NODE_ENV=production
+LOG_LEVEL=info
+REDIS_URL=redis://redis:6379
+HEALTH_CHECK_INTERVAL=30
+EOF
+
+# Docker Compose override for development
+# docker-compose.override.yml automatically loaded
 ```
 
 ### AI Provider Priority

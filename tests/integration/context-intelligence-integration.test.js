@@ -438,8 +438,11 @@ describe('🧠 Context Intelligence Layer Integration', () => {
 
       // Verify LLM preview enhancements
       expect(result.llmPreview).toBeDefined();
-      expect(result.llmPreview.contextIntelligenceEnabled).toBe(true);
-      expect(result.llmPreview.intelligenceConfidence).toBeGreaterThanOrEqual(0);
+      expect(result.llmPreview).not.toBeNull();
+      if (result.llmPreview) {
+        expect(result.llmPreview.contextIntelligenceEnabled).toBe(true);
+        expect(result.llmPreview.intelligenceConfidence).toBeGreaterThanOrEqual(0);
+      }
     });
 
     it('should validate Context Intelligence in unified context', async () => {

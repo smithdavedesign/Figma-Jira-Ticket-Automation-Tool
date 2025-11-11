@@ -12,6 +12,7 @@
 
 import dotenv from 'dotenv';
 import express from 'express';
+import helmet from 'helmet';
 import { Logger } from '../core/utils/logger.js';
 import { ErrorHandler } from '../core/utils/error-handler.js';
 
@@ -251,7 +252,13 @@ export class Server {
   setupExpressMiddleware() {
     this.logger.info('🔧 Setting up Express middleware...');
 
-    // Enhanced CORS middleware for file:// protocol support (MUST be first)
+    // Security middleware with helmet (configurable for development)
+    this.app.use(helmet({
+      contentSecurityPolicy: false, // Disabled for Figma plugin compatibility
+      crossOriginEmbedderPolicy: false // Allow embedding in Figma
+    }));
+
+    // Enhanced CORS middleware for file:// protocol support (MUST be after helmet)
     this.app.use((req, res, next) => {
       // Handle null origin (file:// protocol)
       const origin = req.headers.origin;

@@ -6,7 +6,7 @@
  */
 
 import FigmaCoreRoutes from './core.js';
-// import FigmaEnhancedRoutes from './enhanced.js'; // Temporarily disabled
+import FigmaEnhancedRoutes from './enhanced.js';
 import FigmaContextRoutes from './context.js';
 import FigmaMetricsRoutes from './metrics.js';
 import { BaseRoute } from '../BaseRoute.js';
@@ -26,7 +26,7 @@ export class FigmaRoutes extends BaseRoute {
 
     // Initialize specialized route modules
     this.coreRoutes = new FigmaCoreRoutes(serviceContainer);
-    // this.enhancedRoutes = new FigmaEnhancedRoutes(serviceContainer); // Temporarily disabled
+    this.enhancedRoutes = new FigmaEnhancedRoutes(serviceContainer);
     this.contextRoutes = new FigmaContextRoutes(serviceContainer);
     this.metricsRoutes = new FigmaMetricsRoutes(serviceContainer);
 
@@ -51,7 +51,7 @@ export class FigmaRoutes extends BaseRoute {
   registerRoutes(router) {
     // Register routes from all modules
     this.coreRoutes.registerRoutes(router);
-    // this.enhancedRoutes.registerRoutes(router); // Temporarily disabled
+    this.enhancedRoutes.registerRoutes(router);
     this.contextRoutes.registerRoutes(router);
     this.metricsRoutes.registerRoutes(router);
 

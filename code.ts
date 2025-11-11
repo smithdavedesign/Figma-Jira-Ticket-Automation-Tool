@@ -205,6 +205,9 @@ figma.ui.onmessage = async (msg: any) => {
       case 'generate-ai-ticket':
         await handleGenerateAITicket();
         break;
+      case 'make-ai-request':
+        await handleMakeAIRequest(msg);
+        break;
       case 'debug-selection':
         await debugCurrentContext();
         break;
@@ -1808,6 +1811,41 @@ async function analyzeComponentNode(node: any, options: any) {
   }
   
   return analysis;
+}
+
+// Handle AI request messages from UI
+async function handleMakeAIRequest(msg: any) {
+  console.log('🤖 Plugin making AI request to server...', msg);
+  
+  try {
+    // The endpoint for AI generation is always /api/generate
+    const endpoint = '/api/generate';
+    const response = await fetch(`http://localhost:3000${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(msg.params)
+    });
+    
+    const responseData = await response.json();
+    
+    figma.ui.postMessage({
+      type: 'ai-generation-result',
+      success: response.ok,
+      data: responseData,
+      requestId: msg.requestId
+    });
+    
+  } catch (error) {
+    console.error('❌ Plugin AI request failed:', error);
+    figma.ui.postMessage({
+      type: 'ai-generation-result', 
+      success: false,
+      error: error instanceof Error ? error.message : 'Network request failed',
+      requestId: msg.requestId
+    });
+  }
 }
 
 console.log('✅ Enhanced Figma Plugin with Modular API Handlers loaded successfully');

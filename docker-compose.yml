@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # Main application service
+  figma-ticket-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - figma-network
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis service for caching and session management
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - figma-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+  # Optional: MCP Server (if enabled)
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3845:3845"
+    environment:
+      - NODE_ENV=production
+      - MCP_PORT=3845
+      - ENABLE_MCP_SERVER=true
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - figma-network
+    profiles:
+      - mcp
+    command: ["node", "-e", "require('./app/services/MCPService.js').startStandalone()"]
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  figma-network:
+    driver: bridge

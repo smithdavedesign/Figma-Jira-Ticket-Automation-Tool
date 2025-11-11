@@ -8,17 +8,17 @@ info:
     
     ## 🚀 **Key Features:**
     - **Unified Generation**: Single endpoint for all documentation formats
-    - **Multiple Strategies**: AI, Template, Enhanced, Legacy, Auto-detection
+    - **Simplified Strategies**: AI-Powered (primary), Emergency (fallback)
     - **Format Support**: JIRA (active), Wiki/Code/Markdown (planned)
-    - **Smart Auto-Detection**: Automatically selects best strategy based on input
+    - **Smart Auto-Detection**: Automatically selects optimal approach based on input
     - **Legacy Compatibility**: Backward compatible with deprecation warnings
     
     ## 🎯 **Primary Endpoint:**
     Use `POST /api/generate` for all documentation generation needs.
     
     ## 📋 **Migration Guide:**
-    - `POST /api/generate-ticket` → `POST /api/generate` with `format: "jira"` and `strategy: "template"`
-    - `POST /api/generate-ai-ticket-direct` → `POST /api/generate` with `format: "jira"` and `strategy: "ai"`
+    - `POST /api/generate-ticket` → `POST /api/generate` with `format: "jira"` and `strategy: "ai-powered"`
+    - `POST /api/generate-ai-ticket-direct` → `POST /api/generate` with `format: "jira"` and `strategy: "ai-powered"`
     
   version: 2.0.0
   contact:
@@ -51,6 +51,8 @@ tags:
     description: 📡 Live data and real-time features
   - name: plugin
     description: 🔌 Figma Plugin API - Modular Context Collection System
+  - name: context-intelligence
+    description: 🧠 Context Intelligence API - Advanced design analysis and semantic understanding
 
 paths:
   /api/generate/strategy-info:
@@ -64,23 +66,23 @@ paths:
         based on user input and component complexity, without requiring users to 
         understand the internal strategy system.
         
-        ### 🎯 Strategy Decision Matrix:
+        ### 🎯 Simplified Strategy Architecture:
         
-        | User Input | Component Complexity | Final Strategy | Reason |
-        |------------|---------------------|----------------|---------|
-        | `strategy: "ai"` | ≤5 frames | `ai` | Pure AI analysis for simple components |
-        | `strategy: "ai"` | >5 frames + screenshot | `enhanced` | Template reliability + AI insights |
-        | `strategy: "template"` | Any | `template` | Fast, reliable template generation |
-        | `strategy: "enhanced"` | Any | `enhanced` | Template + AI hybrid approach |
-        | `strategy: "auto"` | Complex | Best match | Intelligent auto-selection |
+        | User Input | Component Complexity | Final Strategy | Implementation |
+        |------------|---------------------|----------------|----------------|
+        | `strategy: "ai-powered"` | Any | `ai-powered` | Template-Guided AI → Enhanced Template+AI → Pure AI (cascading fallbacks) |
+        | `strategy: "emergency"` | Any | `emergency` | Fast template-only generation when AI services unavailable |
+        | `strategy: "auto"` | Any | `ai-powered` | Auto-detects and uses ai-powered strategy |
         
         ### 🔄 Processing Flow:
         1. User clicks "Generate AI Ticket" in Figma UI
-        2. System receives `strategy: "ai"` from hardcoded UI
-        3. System analyzes component complexity (frameData.length, screenshot presence)
-        4. System intelligently selects optimal strategy (`ai` vs `enhanced`)
-        5. System executes chosen strategy and returns results
-        6. User receives optimal results without complexity exposure
+        2. System receives `strategy: "ai-powered"` from hardcoded UI
+        3. AI-Powered Strategy executes cascading approach:
+           - Template-Guided AI (optimal)
+           - Enhanced Template+AI (fallback 1) 
+           - Pure AI (fallback 2)
+        4. System returns best available result
+        5. User receives optimal quality without complexity exposure
       responses:
         '200':
           description: Strategy information retrieved successfully
@@ -119,16 +121,12 @@ paths:
                                       type: string
                                       enum: [good, better, best]
                             example:
-                              - name: "ai"
-                                description: "Pure AI analysis - intelligent insights"
+                              - name: "ai-powered"
+                                description: "Intelligent cascading AI strategy (Template-Guided AI → Enhanced → Pure AI)"
                                 userSelectable: true
-                                performance: { speed: "slow", accuracy: "best" }
-                              - name: "enhanced" 
-                                description: "Template + AI hybrid - reliability + insights"
-                                userSelectable: false
-                                performance: { speed: "medium", accuracy: "better" }
-                              - name: "template"
-                                description: "Fast template generation"
+                                performance: { speed: "adaptive", accuracy: "best" }
+                              - name: "emergency"
+                                description: "Fast template-only fallback when AI services unavailable"
                                 userSelectable: true
                                 performance: { speed: "fast", accuracy: "good" }
                       decisionLogic:
@@ -146,12 +144,12 @@ paths:
                                 reason:
                                   type: string
                             example:
-                              - condition: "frameData.length > 5 && screenshot exists"
-                                result: "enhanced"
-                                reason: "Complex components benefit from template reliability with AI enhancement"
-                              - condition: "frameData.length <= 5"
-                                result: "ai"  
-                                reason: "Simple components work well with pure AI analysis"
+                              - condition: "AI services available"
+                                result: "ai-powered"
+                                reason: "Use intelligent cascading approach: Template-Guided AI → Enhanced → Pure AI"
+                              - condition: "AI services unavailable"
+                                result: "emergency"
+                                reason: "Fallback to fast template-only generation"
                       userExperience:
                         type: object
                         properties:
@@ -172,30 +170,26 @@ paths:
                     data:
                       strategies:
                         available:
-                          - name: "ai"
-                            description: "Pure AI analysis with intelligent insights"
+                          - name: "ai-powered"
+                            description: "Cascading AI strategy with intelligent fallbacks"
                             userSelectable: true
-                            performance: { speed: "slow", accuracy: "best" }
-                          - name: "enhanced"
-                            description: "Template + AI hybrid for complex components" 
-                            userSelectable: false
-                            performance: { speed: "medium", accuracy: "better" }
-                          - name: "template"
-                            description: "Fast, reliable template generation"
+                            performance: { speed: "adaptive", accuracy: "best" }
+                          - name: "emergency"
+                            description: "Fast template-only fallback"
                             userSelectable: true
                             performance: { speed: "fast", accuracy: "good" }
                       decisionLogic:
                         aiStrategyRules:
-                          - condition: "frameData.length > 5 && screenshot"
-                            result: "enhanced"
-                            reason: "Complex components get template reliability + AI insights"
-                          - condition: "frameData.length <= 5"
-                            result: "ai"
-                            reason: "Simple components work well with pure AI"
+                          - condition: "AI services available"
+                            result: "ai-powered"
+                            reason: "Cascading approach: Template-Guided AI → Enhanced → Pure AI"
+                          - condition: "AI services unavailable"
+                            result: "emergency"
+                            reason: "Fast template-only generation"
                       userExperience:
                         figmaUI: "Single 'Generate AI Ticket' button"
-                        systemBehavior: "Automatic intelligent strategy selection"
-                        resultQuality: "Optimal results without complexity"
+                        systemBehavior: "Cascading AI strategy with intelligent fallbacks"
+                        resultQuality: "Optimal results through progressive enhancement"
 
   /api/generate:
     post:
@@ -208,22 +202,19 @@ paths:
         
         ### 🧠 Intelligent Strategy Selection:
         
-        **When users request AI strategy (`strategy: "ai"`):**
-        - **Complex components** (>5 frames + screenshot) → `enhanced` strategy (Template + AI hybrid) 🏆
-        - **Simple components** (≤5 frames) → `ai` strategy (pure AI analysis) 🤖
+        **When users request AI strategy (`strategy: "ai-powered"`):**
+        - **All components** → `ai-powered` strategy (cascading: Template-Guided AI → Enhanced → Pure AI) 🏆
         
         **Auto-Detection (`strategy: "auto"`):**
-        - **Rich data** (10+ frames + screenshot) → AI strategy
-        - **Medium data** (5+ frames) → Enhanced strategy  
-        - **Basic data** (1+ frames) → Template strategy
-        - **Minimal data** → Legacy strategy
+        - **Any data** → `ai-powered` strategy (automatically uses best available approach)
+        - **AI services unavailable** → `emergency` strategy (template-only fallback)
         
         **💡 User Experience:**
         Users simply click "Generate AI Ticket" in Figma, system intelligently selects optimal approach without exposing complexity.
         
         ### 📝 Format Support:
         - `jira` - JIRA tickets (✅ Active)
-        - `wiki` - Wiki pages (🔜 Planned)
+        - `wiki` - Wiki pages (🔜 Planned)  
         - `code` - Code documentation (🔜 Planned)
         - `markdown` - Markdown files (🔜 Planned)
 
@@ -234,11 +225,11 @@ paths:
             schema:
               $ref: '#/components/schemas/GenerateRequest'
             examples:
-              ai_simple_component:
-                summary: Simple Component → Pure AI Strategy
+              ai_powered_simple:
+                summary: Simple Component → AI-Powered Strategy
                 description: |
-                  When user requests AI strategy with simple components (≤5 frames), 
-                  system uses pure AI analysis for focused, intelligent insights.
+                  AI-Powered strategy with cascading approach: Template-Guided AI → Enhanced → Pure AI.
+                  System automatically selects best available method.
                 value:
                   frameData:
                     - type: "button"
@@ -248,15 +239,15 @@ paths:
                       content: "Email Field"
                       properties: { type: "email", required: true }
                   format: "jira"
-                  strategy: "ai"
+                  strategy: "ai-powered"
                   documentType: "story"
                   techStack: "React, TypeScript"
                   mockMode: true
-              ai_complex_component:
-                summary: Complex Component → Enhanced Strategy (Template + AI)
+              ai_powered_complex:
+                summary: Complex Component → AI-Powered Strategy (Cascading)
                 description: |
-                  When user requests AI strategy with complex components (>5 frames + screenshot), 
-                  system intelligently upgrades to Enhanced strategy for optimal reliability + insights.
+                  AI-Powered strategy automatically handles complex components through cascading:
+                  Template-Guided AI → Enhanced (Template+AI) → Pure AI fallback.
                 value:
                   frameData:
                     - name: "Header Component"
@@ -273,12 +264,12 @@ paths:
                       type: "FRAME"
                   screenshot: "data:image/png;base64,iVBORw0KGgoAAAANS..."
                   format: "jira"
-                  strategy: "ai"
+                  strategy: "ai-powered"
                   documentType: "component"
                   techStack: "React, TypeScript"
                   mockMode: true
               auto_detect:
-                summary: Auto-Strategy Detection (Test Mode)
+                summary: Auto-Strategy Detection → AI-Powered
                 value:
                   frameData:
                     - type: "text"
@@ -291,10 +282,10 @@ paths:
                   strategy: "auto"
                   documentType: "task"
                   mockMode: true
-              simple_test:
-                summary: Simple Test (Minimal Data)
+              emergency_test:
+                summary: Emergency Strategy (Template-Only)
                 value:
-                  strategy: "enhanced"
+                  strategy: "emergency"
                   documentType: "task"
                   mockMode: true
               wiki_planned:
@@ -304,7 +295,7 @@ paths:
                     - type: "text"
                       content: "Component Documentation"
                   format: "wiki"
-                  strategy: "template"
+                  strategy: "ai-powered"
                   documentType: "documentation"
                   mockMode: true
       responses:
@@ -323,7 +314,7 @@ paths:
                     data:
                       content: "# Login Component\n\n## Description\nImplement login button with email validation..."
                       format: "jira"
-                      strategy: "ai"
+                      strategy: "ai-powered"
                       confidence: 0.95
                       performance:
                         duration: 1250
@@ -382,7 +373,7 @@ paths:
       summary: 🤖 Generate AI Ticket Direct (Legacy - Deprecated)
       deprecated: true
       description: |
-        **⚠️ DEPRECATED**: Use `/api/generate` with `strategy: "ai"` instead.
+        **⚠️ DEPRECATED**: Use `/api/generate` with `strategy: "ai-powered"` instead.
         
         Legacy endpoint for direct AI ticket generation.
         This endpoint adds deprecation headers and redirects to the unified endpoint.
@@ -1183,6 +1174,652 @@ paths:
                             inputSchema:
                               type: object
 
+  # 🧠 CONTEXT INTELLIGENCE API - NEW ENDPOINTS
+  /api/context/extract:
+    post:
+      tags: [context-intelligence]
+      summary: 🧠 Extract Context from Figma Data
+      description: |
+        **NEW**: Extract comprehensive context intelligence from Figma data.
+        
+        This endpoint processes Figma URLs or frame data to extract:
+        - Component hierarchy and relationships
+        - Design tokens (colors, typography, spacing)
+        - Layout patterns and structure
+        - Accessibility insights
+        - Interaction flows
+        
+        Uses the enhanced Context Manager with intelligent caching.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                figmaUrl:
+                  type: string
+                  format: uri
+                  description: Figma file URL
+                  example: "https://www.figma.com/file/ABC123/Design-System"
+                fileKey:
+                  type: string
+                  description: Alternative to figmaUrl - just the file key
+                  example: "ABC123"
+                frameData:
+                  type: array
+                  description: Optional frame data for focused analysis
+                  items:
+                    type: object
+              required: [figmaUrl]
+            examples:
+              basic_extraction:
+                summary: Basic Context Extraction
+                value:
+                  figmaUrl: "https://www.figma.com/file/ABC123/Design-System"
+              test_mode:
+                summary: Test Mode (Mock Data)
+                value:
+                  fileKey: "test"
+      responses:
+        '200':
+          description: Context extraction completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    properties:
+                      context:
+                        type: object
+                        properties:
+                          components:
+                            type: array
+                            items:
+                              type: string
+                            example: ["Button", "Input", "Card"]
+                          colors:
+                            type: array
+                            items:
+                              type: string
+                            example: ["#007bff", "#6c757d", "#28a745"]
+                          typography:
+                            type: array
+                            items:
+                              type: string
+                            example: ["Inter", "Roboto"]
+                          layout:
+                            type: string
+                            example: "responsive"
+                      source:
+                        type: string
+                        example: "context-intelligence"
+                      timestamp:
+                        type: string
+                        format: date-time
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                      route:
+                        type: string
+                        example: "FigmaCore"
+        '400':
+          description: Missing required parameters
+        '503':
+          description: Context manager not available
+
+  /api/context/get:
+    get:
+      tags: [context-intelligence]
+      summary: 🗂️ Get Cached Context Data
+      description: |
+        Retrieve previously extracted and cached context data for a Figma file.
+        Uses Redis caching for improved performance.
+      parameters:
+        - name: fileKey
+          in: query
+          required: true
+          description: Figma file key
+          schema:
+            type: string
+            example: "ABC123"
+      responses:
+        '200':
+          description: Context data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      context:
+                        type: object
+                        nullable: true
+                      cached:
+                        type: boolean
+                      message:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+
+  /api/context/search:
+    get:
+      tags: [context-intelligence]
+      summary: 🔍 Search Context Data
+      description: |
+        Search through cached context data to find specific components, patterns, or design tokens.
+        Supports fuzzy matching and confidence scoring.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+            example: "button"
+      responses:
+        '200':
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      query:
+                        type: string
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            fileKey:
+                              type: string
+                            fileName:
+                              type: string
+                            match:
+                              type: string
+                            confidence:
+                              type: number
+                            contextType:
+                              type: string
+                      total:
+                        type: integer
+                      timestamp:
+                        type: string
+                        format: date-time
+
+  /api/context/explore:
+    get:
+      tags: [context-intelligence]
+      summary: 🕸️ Explore Context Relationships
+      description: |
+        Explore relationships and patterns within a specific context.
+        Provides insights into component usage, design patterns, and recommendations.
+      parameters:
+        - name: fileKey
+          in: query
+          required: true
+          description: Figma file key to explore
+          schema:
+            type: string
+            example: "ABC123"
+      responses:
+        '200':
+          description: Context exploration completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      fileKey:
+                        type: string
+                      relationships:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            target:
+                              type: string
+                            strength:
+                              type: number
+                      patterns:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            pattern:
+                              type: string
+                            confidence:
+                              type: number
+                      suggestions:
+                        type: array
+                        items:
+                          type: string
+
+  /api/context/summary:
+    get:
+      tags: [context-intelligence]
+      summary: 📊 Get Context Summary
+      description: |
+        Get a high-level summary of all cached context data, including statistics,
+        top patterns, and recent activity.
+      responses:
+        '200':
+          description: Context summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      totalFiles:
+                        type: integer
+                      totalComponents:
+                        type: integer
+                      totalTokens:
+                        type: integer
+                      recentActivity:
+                        type: array
+                        items:
+                          type: object
+                      topPatterns:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            pattern:
+                              type: string
+                            count:
+                              type: integer
+
+  # 🤖 INTELLIGENCE ANALYSIS API
+  /api/intelligence/semantic:
+    post:
+      tags: [context-intelligence]
+      summary: 🧠 Semantic Analysis
+      description: |
+        Perform semantic analysis on design components to understand their purpose,
+        meaning, and user journey context.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                figmaUrl:
+                  type: string
+                  format: uri
+                content:
+                  type: string
+                  description: Alternative content to analyze
+              required: [figmaUrl]
+      responses:
+        '200':
+          description: Semantic analysis completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      semanticTags:
+                        type: array
+                        items:
+                          type: string
+                        example: ["navigation", "form", "button", "input"]
+                      meaning:
+                        type: string
+                        example: "Login form with primary call-to-action"
+                      intent:
+                        type: string
+                        example: "User authentication interface"
+                      userJourney:
+                        type: string
+                        example: "Account access entry point"
+                      accessibility:
+                        type: object
+                        properties:
+                          role:
+                            type: string
+                          ariaLabel:
+                            type: string
+                          keyboardNavigable:
+                            type: boolean
+                      confidence:
+                        type: number
+                        example: 0.89
+
+  /api/intelligence/accessibility:
+    post:
+      tags: [context-intelligence]
+      summary: ♿ Accessibility Analysis
+      description: |
+        Perform comprehensive accessibility analysis including WCAG compliance,
+        contrast ratios, and accessibility recommendations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                figmaUrl:
+                  type: string
+                  format: uri
+                content:
+                  type: string
+              required: [figmaUrl]
+      responses:
+        '200':
+          description: Accessibility analysis completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      score:
+                        type: integer
+                        example: 85
+                      issues:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            severity:
+                              type: string
+                            message:
+                              type: string
+                      recommendations:
+                        type: array
+                        items:
+                          type: string
+                      wcagLevel:
+                        type: string
+                        example: "AA"
+                      compliant:
+                        type: boolean
+
+  /api/intelligence/design-tokens:
+    post:
+      tags: [context-intelligence]
+      summary: 🎨 Design Tokens Extraction
+      description: |
+        Extract and categorize design tokens including colors, typography,
+        spacing, and effects from design components.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                figmaUrl:
+                  type: string
+                  format: uri
+                content:
+                  type: string
+              required: [figmaUrl]
+      responses:
+        '200':
+          description: Design tokens extracted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      colors:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: string
+                            usage:
+                              type: string
+                      typography:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            size:
+                              type: string
+                            weight:
+                              type: string
+                            family:
+                              type: string
+                      spacing:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: string
+                      effects:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: string
+
+  # 🧩 COMPONENT ANALYSIS API
+  /api/component/analyze:
+    post:
+      tags: [context-intelligence]
+      summary: 🧩 Component Structure Analysis
+      description: |
+        Analyze component structure, variants, states, and properties to understand
+        component architecture and usage patterns.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                figmaUrl:
+                  type: string
+                  format: uri
+                componentData:
+                  type: string
+                  description: Component-specific data to analyze
+              required: [figmaUrl]
+      responses:
+        '200':
+          description: Component analysis completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: "button"
+                      category:
+                        type: string
+                        example: "interactive"
+                      atomicLevel:
+                        type: string
+                        example: "atom"
+                      variants:
+                        type: array
+                        items:
+                          type: string
+                        example: ["primary", "secondary", "ghost"]
+                      states:
+                        type: array
+                        items:
+                          type: string
+                        example: ["default", "hover", "active", "disabled"]
+                      properties:
+                        type: object
+                        properties:
+                          size:
+                            type: array
+                            items:
+                              type: string
+                          color:
+                            type: array
+                            items:
+                              type: string
+                      usage:
+                        type: string
+                      accessibility:
+                        type: object
+                        properties:
+                          role:
+                            type: string
+                          keyboard:
+                            type: boolean
+                          screenReader:
+                            type: boolean
+
+  /api/component/tokens:
+    post:
+      tags: [context-intelligence]
+      summary: 🎯 Component-Specific Tokens
+      description: |
+        Extract design tokens that are specific to a particular component,
+        including component-level colors, spacing, and styling properties.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                figmaUrl:
+                  type: string
+                  format: uri
+                componentData:
+                  type: string
+              required: [figmaUrl]
+      responses:
+        '200':
+          description: Component tokens extracted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      component:
+                        type: string
+                        example: "Button"
+                      tokens:
+                        type: object
+                        properties:
+                          colors:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                property:
+                                  type: string
+                                token:
+                                  type: string
+                                value:
+                                  type: string
+                          typography:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                property:
+                                  type: string
+                                token:
+                                  type: string
+                                value:
+                                  type: string
+                          spacing:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                property:
+                                  type: string
+                                token:
+                                  type: string
+                                value:
+                                  type: string
+                          borders:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                property:
+                                  type: string
+                                token:
+                                  type: string
+                                value:
+                                  type: string
+
   /test/ai-ticket-generation:
     post:
       tags: [test]
@@ -1211,8 +1848,8 @@ paths:
                   example: "The login button is not responding when clicked on mobile devices"
                 strategy:
                   type: string
-                  enum: [ai, template, enhanced, legacy]
-                  default: enhanced
+                  enum: [ai-powered, emergency]
+                  default: ai-powered
                   description: Generation strategy to test
                 includeScreenshot:
                   type: boolean
@@ -1680,9 +2317,9 @@ components:
           description: Output format for generated documentation
         strategy:
           type: string
-          enum: [ai, template, enhanced, legacy, auto]
+          enum: [ai-powered, emergency, auto]
           default: auto
-          description: Generation strategy (auto selects best based on input)
+          description: Generation strategy (auto selects ai-powered, emergency only if AI unavailable)
         documentType:
           type: string
           enum: [story, task, bug, epic, documentation, component]

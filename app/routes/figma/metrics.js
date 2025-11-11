@@ -19,6 +19,7 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
   registerRoutes(router) {
     // Metrics endpoints
     router.get('/api/figma/metrics', this.asyncHandler(this.handleGetMetrics.bind(this)));
+    router.get('/api/figma/metrics/performance', this.asyncHandler(this.handleGetPerformanceMetrics.bind(this)));
     router.get('/api/figma/metrics/:operation', this.asyncHandler(this.handleGetOperationMetrics.bind(this)));
     router.post('/api/figma/metrics/reset', this.asyncHandler(this.handleResetMetrics.bind(this)));
 
@@ -124,6 +125,40 @@ export class FigmaMetricsRoutes extends BaseFigmaRoute {
 
     } catch (error) {
       this.handleFigmaError(error, res, 'get metrics');
+    }
+  }
+
+  /**
+   * Get performance-focused metrics
+   * GET /api/figma/metrics/performance
+   */
+  async handleGetPerformanceMetrics(req, res) {
+    this.logAccess(req, 'getPerformanceMetrics');
+
+    try {
+      const redis = this.getService('redis');
+
+      // Get global metrics
+      const globalMetrics = await redis.hgetall('metrics:figma:global');
+      const processedMetrics = this._processMetrics(globalMetrics);
+
+      const performanceData = {
+        timestamp: new Date().toISOString(),
+        performance: {
+          averageResponseTime: parseFloat(processedMetrics.averageDuration) || 0,
+          successRate: parseFloat(processedMetrics.successRate) || 0,
+          totalRequests: parseInt(processedMetrics.totalRequests) || 0,
+          requestsPerMinute: parseFloat(processedMetrics.requestsPerMinute) || 0
+        },
+        grade: this._calculatePerformanceGrade(processedMetrics),
+        recommendations: this._getPerformanceRecommendations(processedMetrics),
+        healthStatus: this._calculateOverallHealth(globalMetrics)
+      };
+
+      this.sendSuccess(res, performanceData, 'Performance metrics retrieved successfully');
+
+    } catch (error) {
+      this.handleFigmaError(error, res, 'get performance metrics');
     }
   }
 

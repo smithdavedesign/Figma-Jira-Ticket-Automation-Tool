@@ -112,9 +112,9 @@ export class TestRoutes extends BaseRoute {
         screenshotData = await screenshotService.generateTestScreenshot();
       }
 
-      // Generate ticket using specified strategy
+      // Generate ticket using specified strategy (updated for 2-strategy architecture)
       const ticketData = await ticketService.generateTicket({
-        strategy: strategy || 'enhanced', // Use enhanced instead of AI for better test compatibility
+        strategy: strategy || 'ai-powered', // Use ai-powered as default (was 'enhanced')
         scenario: scenario,
         includeScreenshot: includeScreenshot,
         screenshotData: screenshotData,
@@ -123,7 +123,7 @@ export class TestRoutes extends BaseRoute {
 
       const testResult = {
         scenario,
-        strategy: strategy || 'AI',
+        strategy: strategy || 'ai-powered',
         timestamp: new Date().toISOString(),
         success: true,
         ticket: ticketData,
@@ -146,7 +146,7 @@ export class TestRoutes extends BaseRoute {
       const updatedHistory = Array.isArray(history) ? history : [];
       updatedHistory.push({
         scenario,
-        strategy: strategy || 'AI',
+        strategy: strategy || 'ai-powered',
         timestamp: new Date().toISOString(),
         success: true
       });
@@ -165,7 +165,7 @@ export class TestRoutes extends BaseRoute {
 
       const errorResult = {
         scenario,
-        strategy: strategy || 'AI',
+        strategy: strategy || 'ai-powered',
         timestamp: new Date().toISOString(),
         success: false,
         error: error.message
@@ -254,7 +254,7 @@ export class TestRoutes extends BaseRoute {
   async handleTestAITicketGeneration(req, res) {
     this.logAccess(req, 'testAITicketGeneration');
 
-    const { description, strategy = 'enhanced', includeScreenshot = false } = req.body;
+    const { description, strategy = 'ai-powered', includeScreenshot = false } = req.body;
 
     try {
       // Validate required fields
@@ -321,7 +321,7 @@ export class TestRoutes extends BaseRoute {
       },
       {
         name: 'Complex Feature Request',
-        description: 'Test complex feature request with AI strategy',
+        description: 'Test complex feature request with AI-powered strategy',
         scenario: 'Add dark mode support with user preference persistence and system theme detection'
       },
       {
@@ -471,7 +471,7 @@ export class TestRoutes extends BaseRoute {
             fetch('/api/test-ai-scenario', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ scenario, strategy: 'AI', includeScreenshot: true })
+                body: JSON.stringify({ scenario, strategy: 'ai-powered', includeScreenshot: true })
             })
             .then(response => response.json())
             .then(data => {

@@ -998,20 +998,29 @@ class TestOrchestrator {
             this.results.dependencies.total++;
 
             // Test 2: Check for outdated packages
+            this.log('🔄 Checking for outdated packages...', 'info');
             try {
-                const outdatedResult = await this.runCommand(
-                    'npm outdated --depth=0',
-                    'Checking for outdated packages',
-                    { timeout: 30000, silent: true }
-                );
-
-                // npm outdated returns non-zero when packages are outdated, but that's informational
+                // Use execSync directly to avoid error logging for expected non-zero exit codes
+                const { execSync } = require('child_process');
+                const outdatedOutput = execSync('npm outdated --depth=0', {
+                    encoding: 'utf8',
+                    stdio: 'pipe',
+                    timeout: 30000
+                });
+                
+                // Exit code 0 means no outdated packages
                 this.results.dependencies.passed++;
-                this.log('✅ Package freshness check completed');
+                this.log('✅ All packages are up to date');
             } catch (error) {
-                // Don't fail on outdated packages - it's informational
-                this.results.dependencies.passed++;
-                this.log('ℹ️  Package outdated check completed (some packages may be outdated)', 'info');
+                // Exit code 1 means outdated packages found (normal)
+                if (error.status === 1) {
+                    this.results.dependencies.passed++;
+                    this.log('ℹ️  Package freshness check completed (some packages may be outdated)', 'info');
+                } else {
+                    // Other error codes indicate real problems
+                    this.results.dependencies.failed++;
+                    this.log(`❌ Package outdated check failed: ${error.message}`, 'error');
+                }
             }
             this.results.dependencies.total++;
 

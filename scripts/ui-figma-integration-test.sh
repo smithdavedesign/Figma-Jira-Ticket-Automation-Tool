@@ -57,7 +57,7 @@ lsof -ti:3000 | xargs kill -9 2>/dev/null || echo "  ℹ️  No existing process
 
 # Start server in background
 echo "🌐 Starting server..."
-npm start > server.log 2>&1 &
+npm start > logs/server.log 2>&1 &
 SERVER_PID=$!
 
 # Wait for server to be ready

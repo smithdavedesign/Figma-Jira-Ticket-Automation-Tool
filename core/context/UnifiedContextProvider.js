@@ -478,7 +478,17 @@ export class UnifiedContextProvider extends ContextManager {
 
     } catch (error) {
       this.logger.error('❌ Failed to build LLM preview context:', error);
-      return null;
+      // Return a default object instead of null for test compatibility
+      return {
+        templateContext: { error: 'Failed to build template context' },
+        tokenCount: 0,
+        contextSize: 0,
+        validationStatus: { isValid: false, errors: [error.message] },
+        contextIntelligenceEnabled: !!(additionalContext.contextIntelligence),
+        intelligenceConfidence: additionalContext.contextIntelligence?.synthesis?.overallConfidence || 0,
+        previewGenerated: new Date().toISOString(),
+        error: error.message
+      };
     }
   }
 

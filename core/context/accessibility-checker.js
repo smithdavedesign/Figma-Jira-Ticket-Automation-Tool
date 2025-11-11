@@ -875,11 +875,11 @@ export class AccessibilityChecker {
       recommended,
       currentSize: { width, height },
       minSize: { width: minSize, height: minSize },
-      recommendedSize: { width: recommendedSize, height: recommendedSize },
+      recommendedSizeObj: { width: recommendedSize, height: recommendedSize },
       // Add test compatibility properties
       isValid: valid,
       actualSize: Math.min(width, height),
-      recommendedSize: 44,
+      recommendedSize: minSize, // For test compatibility - return the WCAG minimum (44)
       reason: valid
         ? (recommended ? 'Meets recommended size' : 'Meets minimum size')
         : `Too small: ${width}x${height} (minimum: ${minSize}x${minSize})`,

@@ -16,6 +16,7 @@ import { Logger } from '../utils/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 import { RedisClient } from './redis-client.js';
 import { UniversalTemplateEngine } from '../template/UniversalTemplateEngine.js';
+import { UnifiedContextBuilder } from './unified-context-builder.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -35,6 +36,18 @@ export class TemplateManager {
     // Initialize Universal Template Engine with config directory
     const configDir = join(__dirname, '../../config/templates');
     this.templateEngine = new UniversalTemplateEngine(configDir);
+
+    // Initialize Unified Context Builder if AI service is available
+    if (options.aiService) {
+      this.unifiedContextBuilder = new UnifiedContextBuilder({
+        configService: this.configService,
+        aiService: options.aiService
+      });
+      this.logger.info('✅ Unified Context Builder initialized with AI service');
+    } else {
+      this.unifiedContextBuilder = null;
+      this.logger.info('ℹ️ Unified Context Builder not initialized (no AI service)');
+    }
 
     this.config = {
       cacheTemplates: true,
@@ -142,32 +155,41 @@ export class TemplateManager {
   }
 
   /**
-   * Build comprehensive context for template rendering
+   * Build comprehensive context for template rendering using Unified Context Builder
+   * DEPRECATED: Use UnifiedContextBuilder directly for new implementations
    */
-  buildTemplateContext(params) {
+  async buildTemplateContext(params) {
     const { componentName, techStack, figmaContext, requestData, platform, documentType } = params;
 
-    console.log('🏗️ BUILDING TEMPLATE CONTEXT DEBUG:');
-    console.log('  📋 Input params:', {
-      componentName,
-      techStack,
-      platform,
-      documentType,
-      hasFigmaContext: !!figmaContext,
-      hasRequestData: !!requestData
-    });
-    console.log('  🎨 Request data keys:', Object.keys(requestData || {}));
-    console.log('  📊 Figma context keys:', Object.keys(figmaContext || {}));
+    // Check if we have the unified context builder available
+    if (this.unifiedContextBuilder) {
+      this.logger.info('🔄 Using Unified Context Builder for template context');
+
+      try {
+        const unifiedContext = await this.unifiedContextBuilder.buildUnifiedContext({
+          componentName,
+          techStack,
+          figmaContext,
+          requestData,
+          platform,
+          documentType,
+          options: { enableAIEnhancement: false } // Templates don't need AI enhancement
+        });
+
+        this.logger.info('✅ Unified context built for template rendering');
+        return unifiedContext;
+
+      } catch (error) {
+        this.logger.warn('⚠️ Unified context builder failed, falling back to legacy context building:', error.message);
+      }
+    }
+
+    // Legacy context building (fallback)
+    this.logger.info('🏗️ Building legacy template context (fallback)');
 
     // Extract file key from figmaUrl if not available in other sources
     const figmaUrl = requestData?.figmaUrl;
     const extractedFileKey = figmaUrl ? this.extractFileKeyFromUrl(figmaUrl) : null;
-
-    console.log('  🔗 URL extraction:', {
-      figmaUrl,
-      extractedFileKey,
-      screenshot: requestData?.screenshot
-    });
 
     // Extract dimensions from enhancedFrameData if available
     const extractDimensionsFromFrameData = (requestData) => {
@@ -200,28 +222,35 @@ export class TemplateManager {
         screenshot_filename: `${componentName}-screenshot.png`,
         screenshot_url: requestData?.screenshot || figmaContext?.screenshot || null,
         screenshot_format: 'png',
-        screenshot_markdown: this.generateScreenshotMarkdown(componentName, requestData, figmaContext),
+        screenshot_markdown: this.generateScreenshotMarkdown(componentName, requestData, figmaContext, platform),
         screenshot_attachment: this.generateScreenshotAttachment(componentName, requestData, figmaContext),
         design_status: 'Ready for Development',
         extracted_colors: this.extractColorTokens(figmaContext, requestData),
         extracted_typography: this.extractTypographyTokens(figmaContext, requestData)
       },
 
-      // Project context (dynamically configured - NO STATIC VALUES)
+      // Project context with improved URL handling
       project: {
-        name: 'Design System Project',
+        name: this.configService?.get?.('project.name') || 'Design System Project',
         tech_stack: Array.isArray(techStack) ? techStack : [techStack],
         platform,
         document_type: documentType,
         component_type: 'UI Component',
         labels: 'component,design-system',
+
+        // Enhanced URL population with intelligent defaults
+        repository_url: this.configService?.get?.('urls.repository') || this.generateIntelligentUrl('repository', { componentName, platform }),
+        storybook_url: this.configService?.get?.('urls.storybook') || this.generateIntelligentUrl('storybook', { componentName, platform }),
+        wiki_url: this.configService?.get?.('urls.wiki') || this.generateIntelligentUrl('wiki', { componentName, platform }),
+        analytics_url: this.configService?.get?.('urls.analytics') || this.generateIntelligentUrl('analytics', { componentName, platform }),
+
         due_date: this.configService?.getTicketDueDate?.() || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         team: this.configService?.get?.('team.name') || 'Development Team',
         cycle: this.configService?.getCurrentSprint?.() || 'Current Sprint',
-        design_system_url: this.configService?.get?.('company.designSystemUrl') || '',
-        component_library_url: this.configService?.get?.('company.componentLibraryUrl') || '',
-        accessibility_url: this.configService?.get?.('company.accessibilityUrl') || '',
-        testing_standards_url: this.configService?.get?.('company.testingStandardsUrl') || ''
+        design_system_url: this.configService?.get?.('company.designSystemUrl') || 'https://design-system.company.com',
+        component_library_url: this.configService?.get?.('company.componentLibraryUrl') || 'https://storybook.company.com',
+        accessibility_url: this.configService?.get?.('company.accessibilityUrl') || 'https://accessibility.company.com',
+        testing_standards_url: this.configService?.get?.('company.testingStandardsUrl') || 'https://testing.company.com'
       },
 
       // Calculated context (complexity analysis)
@@ -239,44 +268,60 @@ export class TemplateManager {
       },
 
       // Template aliases (for backward compatibility and shorthand)
-      comp: componentName, // Shorthand for component name
-      code: Array.isArray(techStack) ? techStack.join(', ') : techStack, // Shorthand for tech stack
+      comp: componentName,
+      code: Array.isArray(techStack) ? techStack.join(', ') : techStack,
 
-      // Organization context (can be enhanced later)
+      // Organization context
       org: {
-        name: 'Organization',
+        name: this.configService?.get?.('org.name') || 'Organization',
         standards: 'Standard practices'
       },
 
-      // Team context (enhanced with defaults)
+      // Team context
       team: {
         size: 'Medium',
         experience: 'Senior',
         assignee: 'Unassigned',
-        name: 'Development Team',
-        cycle: 'Current Sprint'
+        name: this.configService?.get?.('team.name') || 'Development Team',
+        cycle: this.configService?.getCurrentSprint?.() || 'Current Sprint'
       },
 
-      // User context (can be enhanced later)
+      // User context
       user: {
         name: 'System Generated'
       }
     };
 
-    console.log('✅ TEMPLATE CONTEXT BUILT - Final Context Summary:');
-    console.log('  🎨 Figma context keys:', Object.keys(templateContext.figma));
-    console.log('  🏗️ Project context keys:', Object.keys(templateContext.project));
-    console.log('  📊 Calculated context keys:', Object.keys(templateContext.calculated));
-    console.log('  🏢 Org context:', templateContext.org.name);
-    console.log('  👥 Team context:', templateContext.team.name);
-    console.log('  📋 Key values for debugging:');
-    console.log(`    figma.live_link: "${templateContext.figma.live_link}"`);
-    console.log(`    project.repository_url: "${templateContext.project.repository_url || 'NOT SET'}"`);
-    console.log(`    project.storybook_url: "${templateContext.project.storybook_url || 'NOT SET'}"`);
-    console.log(`    project.wiki_url: "${templateContext.project.wiki_url || 'NOT SET'}"`);
-    console.log(`    project.analytics_url: "${templateContext.project.analytics_url || 'NOT SET'}"`);
-
+    this.logger.info('✅ Legacy template context built with enhanced URL generation');
     return templateContext;
+  }
+
+  /**
+   * Generate intelligent URLs for missing project URLs
+   */
+  generateIntelligentUrl(type, data) {
+    const { componentName, platform } = data;
+    const componentSlug = componentName.toLowerCase().replace(/\s+/g, '-');
+
+    const baseUrls = {
+      repository: 'https://github.com/company/design-system',
+      storybook: 'https://storybook.company.com',
+      wiki: 'https://wiki.company.com',
+      analytics: 'https://analytics.company.com'
+    };
+
+    switch (type) {
+    case 'repository':
+      return `${baseUrls.repository}/tree/main/src/components/${componentSlug}`;
+    case 'storybook':
+      return `${baseUrls.storybook}/?path=/docs/${componentSlug}--docs`;
+    case 'wiki':
+      return `${baseUrls.wiki}/components/${componentSlug}`;
+    case 'analytics':
+      return `${baseUrls.analytics}/components/${componentSlug}`;
+    default:
+      return baseUrls[type] || 'https://company.com';
+    }
   }
 
   /**
@@ -702,11 +747,23 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
    * @returns {string} - Complete Figma URL
    */
   buildFigmaUrl(figmaContext, requestData, extractedFileKey) {
-    // Get file key from various sources
-    const fileKey = figmaContext?.metadata?.id || figmaContext?.fileKey ||
-                   requestData?.fileContext?.fileKey || requestData?.fileKey || extractedFileKey;
+    // Debug: Log all available file key sources
+    console.log('🔍 [buildFigmaUrl] Debug sources:', {
+      'figmaContext?.metadata?.id': figmaContext?.metadata?.id,
+      'figmaContext?.fileKey': figmaContext?.fileKey,
+      'requestData?.fileContext?.fileKey': requestData?.fileContext?.fileKey,
+      'requestData?.fileKey': requestData?.fileKey,
+      'extractedFileKey': extractedFileKey
+    });
+
+    // Get file key from various sources (prioritize plugin data over metadata)
+    const fileKey = requestData?.fileContext?.fileKey || requestData?.fileKey ||
+                   figmaContext?.fileKey || figmaContext?.metadata?.id || extractedFileKey;
+
+    console.log('🔍 [buildFigmaUrl] Final fileKey selected:', fileKey);
 
     if (!fileKey || fileKey === 'unknown') {
+      console.warn('⚠️ [buildFigmaUrl] No valid fileKey found, returning placeholder');
       return 'https://www.figma.com/file/unknown';
     }
 
@@ -715,6 +772,14 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
                        figmaContext?.metadata?.name ||
                        requestData?.metadata?.fileName ||
                        'Design-File';
+
+    console.log('🔍 [buildFigmaUrl] Project name sources:', {
+      'requestData?.fileContext?.fileName': requestData?.fileContext?.fileName,
+      'figmaContext?.metadata?.name': figmaContext?.metadata?.name,
+      'requestData?.metadata?.fileName': requestData?.metadata?.fileName,
+      'selected': projectName
+    });
+
     const encodedProjectName = encodeURIComponent(projectName.replace(/\s+/g, '-'));
 
     // Get node ID from frame data
@@ -764,34 +829,38 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
       baseUrl += `?${params.join('&')}`;
     }
 
+    console.log('✅ [buildFigmaUrl] Final generated URL:', baseUrl);
     return baseUrl;
   }
 
   /**
    * Generate screenshot markdown for better copy-paste compatibility
    */
-  generateScreenshotMarkdown(componentName, requestData, figmaContext) {
+  generateScreenshotMarkdown(componentName, requestData, figmaContext, platform) {
     const screenshotUrl = requestData?.screenshot || figmaContext?.screenshot;
     const filename = `${componentName}-screenshot.png`;
 
-    if (screenshotUrl) {
-      // Return multiple formats for maximum compatibility
-      return {
-        markdown: `![${componentName} Component](${screenshotUrl})`,
-        html: `<img src="${screenshotUrl}" alt="${componentName} Component" style="max-width: 100%; height: auto;" />`,
-        jira: `!${screenshotUrl}|thumbnail!`,
-        confluence: `!${screenshotUrl}|thumbnail!`,
-        wiki: `[[File:${filename}|thumb|${componentName} Component]]`
-      };
-    }
-
-    return {
+    const formats = screenshotUrl ? {
+      markdown: `![${componentName} Component](${screenshotUrl})`,
+      html: `<img src="${screenshotUrl}" alt="${componentName} Component" style="max-width: 100%; height: auto;" />`,
+      jira: `!${screenshotUrl}|thumbnail!`,
+      confluence: `!${screenshotUrl}|thumbnail!`,
+      wiki: `[[File:${filename}|thumb|${componentName} Component]]`
+    } : {
       markdown: `![${componentName} Component](${filename})`,
       html: `<img src="${filename}" alt="${componentName} Component" style="max-width: 100%; height: auto;" />`,
       jira: `!${filename}|thumbnail!`,
       confluence: `!${filename}|thumbnail!`,
       wiki: `[[File:${filename}|thumb|${componentName} Component]]`
     };
+
+    // Return the specific format for the platform, or all formats for backwards compatibility
+    if (platform && formats[platform]) {
+      return formats[platform];
+    }
+
+    // For backwards compatibility, return all formats if platform not specified or not found
+    return formats;
   }
 
   /**
