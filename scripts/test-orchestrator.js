@@ -620,11 +620,11 @@ class TestOrchestrator {
             } else {
                 this.results.mcp.failed++;
                 
-                // Fallback to archived standalone test if current fails
-                this.log('⚠️  Trying archived MCP test as fallback...', 'warning');
+                // Fallback to available MCP test if current fails
+                this.log('⚠️  Trying available MCP test as fallback...', 'warning');
                 const fallbackResult = await this.runCommand(
-                    'node tests/archive/test-standalone.mjs',
-                    'Running archived MCP standalone tests',
+                    'node tests/integration/test-mcp-server.js',
+                    'Running MCP server integration tests',
                     { timeout: 180000 }
                 );
                 

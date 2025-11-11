@@ -394,7 +394,6 @@ You are generating a ${platform.toUpperCase()} ticket that MUST follow the exact
 
 ## EXACT TEMPLATE STRUCTURE - FOLLOW PRECISELY:
 
-\`\`\`
 # ${componentName} - Component Implementation
 
 ## 📋 Project Context & Component Details
@@ -463,7 +462,6 @@ You are generating a ${platform.toUpperCase()} ticket that MUST follow the exact
 
 ## ✅ Acceptance Criteria - MEASURABLE & TESTABLE
 [Generate specific, testable criteria based on component requirements and business impact]
-\`\`\`
 
 ## CONTEXT DATA FOR EXTRACTION:
 ${this.formatDetailedContextForAI(unifiedContext)}
@@ -474,8 +472,10 @@ ${this.formatDetailedContextForAI(unifiedContext)}
 3. **SMART INFERENCE**: When data isn't explicit, make intelligent assumptions based on component type and industry standards
 4. **COMPLETE COVERAGE**: Include ALL design token categories, ALL 5 resources, ALL sections
 5. **PRACTICAL VALUES**: Generate realistic story points, priorities, technical specs
+6. **CRITICAL FILE KEY USAGE**: MUST use the actual file key from context data in ALL Figma URLs - NEVER use "unknown"
 
-**FAILURE TO INCLUDE ALL BASE.YML SECTIONS = INVALID RESPONSE**`;
+**FAILURE TO INCLUDE ALL BASE.YML SECTIONS = INVALID RESPONSE**
+**USING "unknown" IN ANY FIGMA URL = INVALID RESPONSE**`;
 
     return prompt;
   }
@@ -582,12 +582,17 @@ ${this.formatDetailedContextForAI(unifiedContext)}
     // Extract component information
     const componentInfo = this.extractComponentInfo(unifiedContext);
     if (componentInfo) {
+      const figmaUrl = componentInfo.fileKey !== 'unknown' ?
+        `https://www.figma.com/design/${componentInfo.fileKey}/${encodeURIComponent(componentInfo.name.replace(/\s+/g, '-'))}` :
+        'Use file key from context to build URL';
+
       contextSections.push(`**COMPONENT DATA:**
 - Name: "${componentInfo.name}"
 - Type: ${componentInfo.type}
 - File Key: ${componentInfo.fileKey}
 - Page: "${componentInfo.pageName}"
-- Screenshot: Available (${componentInfo.screenshotUrl ? 'Yes' : 'No'})`);
+- Screenshot: Available (${componentInfo.screenshotUrl ? 'Yes' : 'No'})
+- Figma URL: ${figmaUrl}`);
     }
 
     // Extract design data
@@ -606,7 +611,8 @@ ${this.formatDetailedContextForAI(unifiedContext)}
       contextSections.push(`**PROJECT DATA:**
 - Tech Stack: ${projectData.techStack}
 - Platform: ${projectData.platform}
-- Build URLs using file key: ${projectData.fileKey}`);
+- CRITICAL - File Key for URLs: ${projectData.fileKey}
+- MUST USE file key "${projectData.fileKey}" in ALL Figma URLs - NEVER use "unknown"`);
     }
 
     return contextSections.join('\n\n');
@@ -621,13 +627,48 @@ ${this.formatDetailedContextForAI(unifiedContext)}
     const selection = figmaData.selection?.[0] || unifiedContext.selection?.[0] || {};
     const fileContext = figmaData.fileContext || unifiedContext.fileContext || {};
 
+    // Enhanced file key extraction - try multiple paths
+    let fileKey = fileContext.fileKey ||
+                 figmaData.fileKey ||
+                 unifiedContext.fileKey ||
+                 unifiedContext.metadata?.fileKey ||
+                 unifiedContext.requestData?.fileContext?.fileKey ||
+                 unifiedContext.requestData?.fileKey;
+
+    // Try to extract from figmaUrl if available
+    if (!fileKey || fileKey === 'unknown') {
+      const figmaUrl = unifiedContext.figmaUrl ||
+                      figmaData.figmaUrl ||
+                      unifiedContext.requestData?.figmaUrl;
+
+      if (figmaUrl) {
+        const extractedKey = this.extractFileKeyFromUrl(figmaUrl);
+        if (extractedKey && extractedKey !== 'unknown') {
+          fileKey = extractedKey;
+        }
+      }
+    }
+
     return {
       name: selection.name || figmaData.component_name || 'Component',
       type: selection.type || figmaData.component_type || 'INSTANCE',
-      fileKey: fileContext.fileKey || 'unknown',
+      fileKey: fileKey || 'unknown',
       pageName: fileContext.pageName || fileContext.fileName || 'Unknown Page',
       screenshotUrl: unifiedContext.screenshot?.dataUrl || unifiedContext.screenshot?.url
     };
+  }
+
+  /**
+   * Extract file key from Figma URL
+   */
+  extractFileKeyFromUrl(figmaUrl) {
+    if (!figmaUrl || typeof figmaUrl !== 'string') {
+      return null;
+    }
+
+    // Match Figma URLs: https://www.figma.com/file/<fileKey>/* or https://www.figma.com/design/<fileKey>/*
+    const fileMatch = figmaUrl.match(/figma\.com\/(?:file|design)\/([a-zA-Z0-9]{22})/);
+    return fileMatch ? fileMatch[1] : null;
   }
 
   /**
@@ -650,12 +691,12 @@ ${this.formatDetailedContextForAI(unifiedContext)}
    */
   extractProjectData(unifiedContext) {
     const codeGeneration = unifiedContext.codeGeneration || {};
-    const fileContext = unifiedContext.figmaData?.fileContext || unifiedContext.fileContext || {};
+    const componentInfo = this.extractComponentInfo(unifiedContext); // Use our enhanced component info extraction
 
     return {
       techStack: codeGeneration.framework || 'AEM 6.5 with HTL',
       platform: 'AEM',
-      fileKey: fileContext.fileKey || 'unknown'
+      fileKey: componentInfo.fileKey // Use the enhanced file key extraction
     };
   }
 
