@@ -75,8 +75,10 @@ template:
     * TypeScript (recommended)
     {% endif %}
     
+    **Code Formatting Note**: Use {code:techstack}code here{code} format for code blocks (e.g., {code:typescript}, {code:css}, {code:html})
+    
     **Component Structure:**
-    ```
+    {code:bash}
     {{ context.componentName | default(figma.component_name) | default('Component') }}/
     ├── {{ context.componentName | default(figma.component_name) | default('Component') }}.tsx          # Main component
     ├── {{ context.componentName | default(figma.component_name) | default('Component') }}.module.css   # Component styles
@@ -84,7 +86,7 @@ template:
     ├── {{ figma.component_name }}.stories.tsx  # Storybook stories
     ├── types.ts                                # TypeScript interfaces
     └── index.ts                                # Export file
-    ```
+    {code}
     
     {% if calculated.complexity == 'complex' %}
     h2. ⚠️  Complexity Analysis

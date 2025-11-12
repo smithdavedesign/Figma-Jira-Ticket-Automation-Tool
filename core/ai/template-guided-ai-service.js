@@ -501,7 +501,7 @@ Your expertise covers design systems, component architecture, and technical requ
 
     // 🧱 2. Platform-Aware Output Rules
     const platformRules = {
-      Jira: 'Always output using *Jira markup syntax* (h1., h2., *, [text|url], {color}).',
+      Jira: 'Always output using *Jira markup syntax* (h1., h2., *, [text|url], {color}, {code:techstack}code{code}).',
       Wiki: 'Always output using *Wiki markdown* syntax (##, **bold**, -, [link](url)).',
       Notion: 'Always output using *Notion markdown*, optimized for rich blocks and callouts.',
       Confluence: 'Always output using *Confluence markup* (h1., h2., {panel}, {info}, etc.).',
