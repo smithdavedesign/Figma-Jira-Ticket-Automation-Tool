@@ -227,7 +227,8 @@ async function handleGetUnifiedContext(msg) {
     console.log('🔄 Building unified context (combines Design Health + Advanced Context)');
     try {
         const selection = figma.currentPage.selection;
-        const fileKey = figma.fileKey || 'unknown';
+        // Use fileKey from message if provided, otherwise fall back to figma.fileKey or unknown
+        const fileKey = msg.fileKey || figma.fileKey || 'unknown';
         // Build comprehensive figma data
         const figmaData = {
             selection,
@@ -515,7 +516,17 @@ async function handleGetContext() {
                 responded = true;
                 figma.ui.off('message', onMessage);
                 console.log('✅ Got fileKey from UI:', msg.fileKey);
-                sendContext(msg.fileKey || 'BioUSVD6t51ZNeG0g9AcNz');
+                const realFileKey = msg.fileKey || 'BioUSVD6t51ZNeG0g9AcNz';
+                sendContext(realFileKey);
+                // Also trigger unified context with correct fileKey
+                handleGetUnifiedContext({ fileKey: realFileKey }).then((data) => {
+                    figma.ui.postMessage({
+                        type: 'unified-context-response',
+                        data: data
+                    });
+                }).catch(error => {
+                    console.error('❌ Failed to get unified context with real fileKey:', error);
+                });
             }
         }
         figma.ui.on('message', onMessage);
