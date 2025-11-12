@@ -80,6 +80,82 @@ export class TechnicalContextAnalyzer {
   }
 
   /**
+   * Analyze component structure from Figma data
+   */
+  analyzeComponentStructure(figmaData) {
+    if (!figmaData || !figmaData.document) {
+      return {
+        hierarchy: 'flat',
+        componentCount: 0,
+        nestingLevel: 0,
+        structureType: 'simple',
+        compositionPattern: 'basic'
+      };
+    }
+
+    let componentCount = 0;
+    let maxNestingLevel = 0;
+    let currentLevel = 0;
+    const componentTypes = new Set();
+
+    // Traverse the Figma document structure
+    const traverseNode = (node, level = 0) => {
+      if (!node) return;
+      
+      currentLevel = level;
+      maxNestingLevel = Math.max(maxNestingLevel, level);
+      
+      if (node.type === 'COMPONENT' || node.type === 'INSTANCE') {
+        componentCount++;
+        componentTypes.add(node.type);
+      }
+      
+      if (node.children && Array.isArray(node.children)) {
+        node.children.forEach(child => traverseNode(child, level + 1));
+      }
+    };
+
+    traverseNode(figmaData.document);
+
+    // Determine structure characteristics
+    const structureType = this.determineStructureType(componentCount, maxNestingLevel);
+    const hierarchy = maxNestingLevel > 3 ? 'deep' : maxNestingLevel > 1 ? 'moderate' : 'flat';
+    const compositionPattern = this.determineCompositionPattern(componentCount, maxNestingLevel, componentTypes);
+
+    return {
+      hierarchy,
+      componentCount,
+      nestingLevel: maxNestingLevel,
+      structureType,
+      compositionPattern,
+      componentTypes: Array.from(componentTypes),
+      complexity: componentCount > 10 ? 'complex' : componentCount > 5 ? 'moderate' : 'simple'
+    };
+  }
+
+  /**
+   * Determine structure type based on metrics
+   */
+  determineStructureType(componentCount, nestingLevel) {
+    if (componentCount > 15 || nestingLevel > 5) return 'complex';
+    if (componentCount > 8 || nestingLevel > 3) return 'moderate';
+    if (componentCount > 3 || nestingLevel > 1) return 'structured';
+    return 'simple';
+  }
+
+  /**
+   * Determine composition pattern
+   */
+  determineCompositionPattern(componentCount, nestingLevel, componentTypes) {
+    if (componentTypes.has('COMPONENT') && componentTypes.has('INSTANCE')) {
+      return nestingLevel > 3 ? 'nested-composition' : 'component-composition';
+    }
+    if (componentCount > 10) return 'complex-composition';
+    if (componentCount > 5) return 'moderate-composition';
+    return 'basic-composition';
+  }
+
+  /**
    * Analyze component complexity factors
    */
   async analyzeComponentComplexity(figmaData) {

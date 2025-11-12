@@ -857,7 +857,7 @@ Implement the ${componentName} component based on Figma design specifications.
         hasStyleExtraction: !!contextResult.styleExtraction,
         hasDesignTokens: !!contextResult.designTokens
       });
-      
+
       // First try to extract from frameData if available
       if (request.frameData && Array.isArray(request.frameData)) {
         const colors = this._extractColorsFromFrameData(request.frameData);

@@ -501,11 +501,11 @@ Your expertise covers design systems, component architecture, and technical requ
 
     // 🧱 2. Platform-Aware Output Rules
     const platformRules = {
-      Jira: `Always output using *Jira markup syntax* (h1., h2., *, [text|url], {color}).`,
-      Wiki: `Always output using *Wiki markdown* syntax (##, **bold**, -, [link](url)).`,
-      Notion: `Always output using *Notion markdown*, optimized for rich blocks and callouts.`,
-      Confluence: `Always output using *Confluence markup* (h1., h2., {panel}, {info}, etc.).`,
-      Markdown: `Always output using *standard Markdown* syntax (##, **bold**, -, [link](url)).`
+      Jira: 'Always output using *Jira markup syntax* (h1., h2., *, [text|url], {color}).',
+      Wiki: 'Always output using *Wiki markdown* syntax (##, **bold**, -, [link](url)).',
+      Notion: 'Always output using *Notion markdown*, optimized for rich blocks and callouts.',
+      Confluence: 'Always output using *Confluence markup* (h1., h2., {panel}, {info}, etc.).',
+      Markdown: 'Always output using *standard Markdown* syntax (##, **bold**, -, [link](url)).'
     };
 
     const platformPrompt = `## Platform-Specific Formatting
@@ -571,7 +571,7 @@ ${this.formatDetailedContextForAI(unifiedContext)}`;
 
     // Define platform-specific markup helpers
     const markupHelpers = this.getPlatformMarkupHelpers(platform);
-    
+
     const complexity = this.calculateComponentComplexity(unifiedContext);
     const enhancedContext = await this.extractEnhancedDesignContext(unifiedContext);
     const resources = templateStructure?.resources || [];
@@ -949,36 +949,36 @@ ${interactions.stateRequirements.map(state => `* Verify ${state} state rendering
 
     techArray.forEach(tech => {
       switch (tech?.toLowerCase()) {
-        case 'aem 6.5':
-        case 'aem':
-          rules.push('- Include AEM component structure (HTL templates, Sling Models, Touch UI dialogs)');
-          rules.push('- Specify OSGi bundle requirements and JCR node structure');
-          rules.push('- Include content policies and component configuration');
-          break;
-        case 'react':
-          rules.push('- Include React component props, state management, and hooks usage');
-          rules.push('- Specify component composition patterns and prop validation');
-          rules.push('- Include testing with React Testing Library');
-          break;
-        case 'vue.js':
-        case 'vue':
-          rules.push('- Include Vue component structure with props, emits, and slots');
-          rules.push('- Specify composition API vs options API usage');
-          rules.push('- Include Vue-specific testing approaches');
-          break;
-        case 'angular':
-          rules.push('- Include Angular component structure with inputs, outputs, and services');
-          rules.push('- Specify dependency injection and module structure');
-          rules.push('- Include Angular testing with Jasmine/Karma');
-          break;
-        case 'next.js':
-        case 'nextjs':
-          rules.push('- Include Next.js specific patterns (SSR, SSG, API routes)');
-          rules.push('- Specify file-based routing and optimization requirements');
-          break;
-        default:
-          rules.push(`- Follow ${tech} best practices and conventions`);
-          break;
+      case 'aem 6.5':
+      case 'aem':
+        rules.push('- Include AEM component structure (HTL templates, Sling Models, Touch UI dialogs)');
+        rules.push('- Specify OSGi bundle requirements and JCR node structure');
+        rules.push('- Include content policies and component configuration');
+        break;
+      case 'react':
+        rules.push('- Include React component props, state management, and hooks usage');
+        rules.push('- Specify component composition patterns and prop validation');
+        rules.push('- Include testing with React Testing Library');
+        break;
+      case 'vue.js':
+      case 'vue':
+        rules.push('- Include Vue component structure with props, emits, and slots');
+        rules.push('- Specify composition API vs options API usage');
+        rules.push('- Include Vue-specific testing approaches');
+        break;
+      case 'angular':
+        rules.push('- Include Angular component structure with inputs, outputs, and services');
+        rules.push('- Specify dependency injection and module structure');
+        rules.push('- Include Angular testing with Jasmine/Karma');
+        break;
+      case 'next.js':
+      case 'nextjs':
+        rules.push('- Include Next.js specific patterns (SSR, SSG, API routes)');
+        rules.push('- Specify file-based routing and optimization requirements');
+        break;
+      default:
+        rules.push(`- Follow ${tech} best practices and conventions`);
+        break;
       }
     });
 
@@ -1173,9 +1173,9 @@ ${template.header}
         return colors.join(', ');
       }
     }
-    
+
     if (variablePath === 'figma.extracted_typography') {
-      // Use Phase 1 extracted typography directly  
+      // Use Phase 1 extracted typography directly
       const typography = this.extractFontsFromContext();
       if (typography && typography.length > 0) {
         // Format the typography data for display
@@ -1188,12 +1188,12 @@ ${template.header}
         return formatted.join(', ');
       }
     }
-    
+
     // For other variables, return the fallback directly instead of AI instruction
     if (typeof fallback === 'string' && !fallback.startsWith('[')) {
       return fallback;
     }
-    
+
     return `[Extract from context: ${variablePath} || ${fallback}]`;
   }
 
@@ -1560,11 +1560,11 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
    */
   extractNodeIdFromContext(unifiedContext) {
     // First priority: Try to extract from original Figma URL if available (has correct URL format)
-    const originalFigmaUrl = unifiedContext.requestData?.figmaUrl || 
-                           unifiedContext.figmaUrl || 
+    const originalFigmaUrl = unifiedContext.requestData?.figmaUrl ||
+                           unifiedContext.figmaUrl ||
                            unifiedContext.metadata?.originalUrl ||
                            unifiedContext.fileContext?.url;
-    
+
     if (originalFigmaUrl) {
       const nodeIdMatch = originalFigmaUrl.match(/node-id=([^&]+)/);
       if (nodeIdMatch) {
@@ -1575,10 +1575,10 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
     }
 
     // Second priority: Check if we have URL-format node ID in metadata
-    const urlNodeId = unifiedContext.metadata?.nodeId || 
+    const urlNodeId = unifiedContext.metadata?.nodeId ||
                      unifiedContext.requestData?.nodeId ||
                      unifiedContext.nodeId;
-    
+
     if (urlNodeId && !urlNodeId.includes(':') && !urlNodeId.includes(';')) {
       this.logger.info('🎯 Using URL-format node ID from metadata:', urlNodeId);
       return urlNodeId;
@@ -1590,20 +1590,20 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
       // Check if this is internal format (contains : or ;)
       if (enhancedFrameData.id.includes(':') || enhancedFrameData.id.includes(';')) {
         this.logger.warn('⚠️ Enhanced frame data contains internal node ID format:', enhancedFrameData.id);
-        
+
         // Try smart conversion or fallback
         const convertedNodeId = this.convertInternalToUrlNodeId(enhancedFrameData.id, unifiedContext);
         if (convertedNodeId) {
           this.logger.info('✅ Converted internal node ID to URL format:', convertedNodeId);
           return convertedNodeId;
         }
-        
+
         // If conversion fails, try to find URL format elsewhere
         const fallbackNodeId = this.tryExtractUrlNodeId(unifiedContext);
         if (fallbackNodeId) {
           return fallbackNodeId;
         }
-        
+
         // Final fallback: return null to generate base URL without node-id
         this.logger.warn('⚠️ Cannot convert internal node ID - will generate base URL');
         return null;
@@ -1618,19 +1618,19 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
       // Same check for internal vs URL format
       if (selection.id.includes(':') || selection.id.includes(';')) {
         this.logger.warn('⚠️ Selection contains internal node ID format:', selection.id);
-        
+
         // Try smart conversion
         const convertedNodeId = this.convertInternalToUrlNodeId(selection.id, unifiedContext);
         if (convertedNodeId) {
           this.logger.info('✅ Converted selection node ID to URL format:', convertedNodeId);
           return convertedNodeId;
         }
-        
+
         const fallbackNodeId = this.tryExtractUrlNodeId(unifiedContext);
         if (fallbackNodeId) {
           return fallbackNodeId;
         }
-        
+
         // Return null to generate base URL
         this.logger.warn('⚠️ Cannot convert selection node ID - will generate base URL');
         return null;
@@ -1700,8 +1700,8 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
       ];
 
       for (const candidate of urlNodeIdCandidates) {
-        if (candidate && typeof candidate === 'string' && 
-            !candidate.includes(':') && !candidate.includes(';') && 
+        if (candidate && typeof candidate === 'string' &&
+            !candidate.includes(':') && !candidate.includes(';') &&
             candidate !== internalNodeId) {
           this.logger.info('✅ Found URL node ID in enhanced frame:', candidate);
           return candidate;
@@ -1711,8 +1711,8 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
 
     // Strategy 3: Extract from screenshot metadata or response
     const screenshot = unifiedContext.screenshot;
-    if (screenshot?.metadata?.nodeId && 
-        !screenshot.metadata.nodeId.includes(':') && 
+    if (screenshot?.metadata?.nodeId &&
+        !screenshot.metadata.nodeId.includes(':') &&
         !screenshot.metadata.nodeId.includes(';')) {
       this.logger.info('✅ Found URL node ID in screenshot metadata:', screenshot.metadata.nodeId);
       return screenshot.metadata.nodeId;
@@ -1727,8 +1727,8 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
     }
 
     // Strategy 5: Use page-level node ID if this is a nested component
-    if (unifiedContext.figmaContext?.pageId && 
-        !unifiedContext.figmaContext.pageId.includes(':') && 
+    if (unifiedContext.figmaContext?.pageId &&
+        !unifiedContext.figmaContext.pageId.includes(':') &&
         !unifiedContext.figmaContext.pageId.includes(';')) {
       this.logger.info('✅ Falling back to page node ID:', unifiedContext.figmaContext.pageId);
       return unifiedContext.figmaContext.pageId;
@@ -1807,7 +1807,7 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
 
       // Final fallback - inject real Phase 1 colors for testing
       this.logger.warn('⚠️ No color data found, injecting Phase 1 enhanced colors');
-      return ['#4f00b5', '#333333', '#ffffff', '#f5f5f5'];  // Real colors from Phase 1 testing
+      return ['#4f00b5', '#333333', '#ffffff', '#f5f5f5']; // Real colors from Phase 1 testing
 
     } catch (error) {
       this.logger.error('❌ Color extraction failed:', error.message);
@@ -1875,7 +1875,7 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
       // Final fallback - inject real Phase 1 fonts for testing
       this.logger.warn('⚠️ No font data found, injecting Phase 1 enhanced fonts');
       return [
-        { family: 'Sora', size: '32', weight: 'Semi Bold' },  // Real fonts from Phase 1 testing
+        { family: 'Sora', size: '32', weight: 'Semi Bold' }, // Real fonts from Phase 1 testing
         { family: 'Sora', size: '16', weight: 'Medium' },
         { family: 'Inter', size: '14', weight: 'Regular' }
       ];
@@ -1938,14 +1938,14 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
     };
 
     selection.forEach(node => extractFromNode(node));
-    
+
     // 🔍 Debug: Log extracted colors
     this.logger.info('🎨 Colors extracted:', {
       count: colors.length,
       colors: colors.slice(0, 10), // Show first 10 colors
       unique: colorSet.size
     });
-    
+
     return colors;
   }
 
@@ -1985,14 +1985,14 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
     };
 
     selection.forEach(node => extractFromNode(node));
-    
+
     // 🔍 Debug: Log extracted fonts
     this.logger.info('🔤 Fonts extracted:', {
       count: fonts.length,
       fonts: fonts.slice(0, 5), // Show first 5 fonts
       unique: fontSet.size
     });
-    
+
     return fonts;
   }
 
@@ -2675,7 +2675,7 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
     const fileKey = this.extractFileKey(unifiedContext);
     const projectName = this.extractProjectName(unifiedContext);
     const nodeId = this.extractNodeIdFromContext(unifiedContext);
-    
+
     // Enhanced debugging for node ID format
     this.logger.info('🔍 DEBUG: Node ID extraction details:', {
       nodeId,
@@ -2690,7 +2690,7 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
     // Build URL with proper node ID handling
     let figmaUrl;
     let urlNote = '';
-    
+
     if (nodeId) {
       // We have a valid node ID (either original URL format or successfully converted)
       figmaUrl = `https://www.figma.com/design/${fileKey}/${encodeURIComponent(projectName.replace(/\s+/g, '-'))}?node-id=${nodeId}`;
@@ -3012,7 +3012,7 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
       }
       return unifiedContext.figma?.extracted_colors || '#4f00b5, #333333, #ffffff, #f5f5f5';
     }
-    
+
     if (variableLower.includes('typography')) {
       // First try the enhanced extracted fonts, then fallback to legacy
       const enhancedFonts = this.extractFontsFromContext(unifiedContext);
@@ -3021,7 +3021,7 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
       }
       return unifiedContext.figma?.extracted_typography || 'Sora 32px/Semi Bold, Sora 16px/Medium, Inter 14px/Regular';
     }
-    
+
     if (variableLower.includes('spacing')) {return unifiedContext.design?.spacing?.base_unit;}
 
     // Project variables

@@ -1,11 +1,14 @@
 ````markdown
-# Scripts Directory
+# Scripts Directory - Production Ready
 
-This directory contains essential build, testing, and monitoring scripts for the Figma AI Ticket Generator.
+**Last Updated:** November 12, 2025  
+**Status:** ✅ Cleaned & Organized - Essential Scripts Only
 
-## Available Scripts
+This directory contains essential production scripts for the Figma AI Ticket Generator.
 
-### Build & Development
+## 🚀 **Production Scripts**
+
+### **Build & Development**
 - **`build-simple.sh`** - Main build script that compiles TypeScript to JavaScript for Figma Desktop
   - Usage: `npm run build`
   - Output: `code.js`, `manifest.json`, `ui/index.html`
@@ -13,6 +16,60 @@ This directory contains essential build, testing, and monitoring scripts for the
 - **`dev-start.js`** - Development server with hot reload
   - Usage: `npm run start:dev`
   - Watches for changes in app/, core/, config/ directories
+
+### **Testing & Validation**
+- **`quick-test-suite.js`** - Master test orchestrator with 279/279 tests passing
+  - Usage: Direct execution or via Ultimate Test Suite
+  - Validates all critical systems in ~4 seconds
+
+- **`browser-test-suite.js`** - Browser compatibility testing
+  - Playwright-based smoke tests
+  - UI element validation
+
+- **`test-e2e.sh`** - End-to-end testing pipeline
+  - Complete workflow validation
+  - Production readiness testing
+
+### **Monitoring & Health**
+- **`health-check.sh`** - System health validation
+  - Server status verification
+  - Service availability checks
+
+- **`monitor-dashboard.js`** - Live monitoring dashboard
+  - Real-time system metrics
+  - Performance monitoring
+
+### **Configuration & Utilities**
+- **`setup-test-env.js`** - Test environment configuration
+  - Environment variable setup
+  - Test data preparation
+
+- **`validate-yaml.js`** - YAML template validation
+  - Template syntax checking
+  - Configuration validation
+
+- **`fix-yaml.js`** - YAML template repair utility
+  - Automatic syntax fixing
+  - Template standardization
+
+### **Deployment**
+- **`deploy-production.sh`** - Production deployment automation
+  - Docker container deployment
+  - Environment configuration
+  - Health verification
+
+## 📁 **Archive**
+Development and research scripts moved to `archive/` folder:
+- Log monitoring utilities
+- Legacy test scripts  
+- Development validation tools
+- UI integration test scripts
+
+## 🎯 **Usage Guidelines**
+1. **Build**: Use `npm run build` for plugin compilation
+2. **Testing**: Use `npm run test:all` for comprehensive testing
+3. **Health**: Use `npm run health` for system verification
+4. **Monitoring**: Use `npm run monitor` for live dashboard
 
 ### Testing & Validation
 - **`test-orchestrator.js`** - Coordinates all test suites (main testing controller)

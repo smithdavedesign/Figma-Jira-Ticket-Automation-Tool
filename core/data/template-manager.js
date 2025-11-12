@@ -436,6 +436,7 @@ export class TemplateManager {
     this.logger.debug(`🚫 Template cache read DISABLED for testing: ${cacheKey}`);
     return null;
 
+    /* CACHE READ DISABLED FOR TESTING
     try {
       const cached = await this.redis.get(cacheKey);
       if (cached) {
@@ -445,6 +446,7 @@ export class TemplateManager {
       this.logger.warn(`Cache read failed for ${cacheKey}:`, error.message);
     }
     return null;
+    */
   }
 
   /**
@@ -455,12 +457,14 @@ export class TemplateManager {
     this.logger.debug(`🚫 Template cache write DISABLED for testing: ${cacheKey}`);
     return;
 
+    /* CACHE WRITE DISABLED FOR TESTING
     try {
       await this.redis.set(cacheKey, JSON.stringify(ticket), this.config.cacheTTL);
       this.logger.debug(`💾 Cached template ticket: ${cacheKey}`);
     } catch (error) {
       this.logger.warn(`Cache write failed for ${cacheKey}:`, error.message);
     }
+    */
   }
 
   /**
@@ -699,7 +703,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
     }
 
     // Phase 1 Enhanced: Inject real extracted colors for template variables
-    return '#4f00b5, #333333, #ffffff, #f5f5f5';  // Real Phase 1 colors
+    return '#4f00b5, #333333, #ffffff, #f5f5f5'; // Real Phase 1 colors
   }
 
   /**
@@ -730,7 +734,7 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
     }
 
     // Phase 1 Enhanced: Inject real extracted fonts for template variables
-    return 'Sora 32px/Semi Bold, Sora 16px/Medium, Inter 14px/Regular';  // Real Phase 1 fonts
+    return 'Sora 32px/Semi Bold, Sora 16px/Medium, Inter 14px/Regular'; // Real Phase 1 fonts
   }
 
   /**
