@@ -144,8 +144,19 @@ export class VisualEnhancedAIService {
       const isTemplateGuided = options.useTemplateStructure || compressedContext.templateStructure || compressedContext.templateGuidedPrompt;
 
       if (isTemplateGuided) {
-        console.log('🎯 Template-guided mode: returning clean markdown text');
-        return cleanedText;
+        console.log('🎯 Template-guided mode: returning structured object with content');
+        return {
+          content: cleanedText,
+          confidence: this.calculateConfidence(compressedContext, cleanedText),
+          metadata: {
+            processingTime: Date.now() - startTime,
+            contextCompressed: this.isContextCompressed(context),
+            screenshotProcessed: this.isScreenshotProcessed(compressedContext),
+            templateGuided: true,
+            promptTokens: Math.ceil(prompt.length / 4),
+            responseTokens: Math.ceil(cleanedText.length / 4)
+          }
+        };
       }
 
       // Legacy mode: return structured output for backward compatibility

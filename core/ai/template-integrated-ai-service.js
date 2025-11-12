@@ -350,7 +350,24 @@ export class TemplateIntegratedAIService {
    * Build Figma URL from context
    */
   buildFigmaUrl(context) {
-    const fileKey = context.figmaContext?.fileKey || context.fileKey;
+    // Enhanced file key extraction - try multiple paths
+    let fileKey = context.figmaContext?.fileKey ||
+                  context.fileKey ||
+                  context.requestData?.fileContext?.fileKey ||
+                  context.requestData?.fileKey ||
+                  context.figmaContext?.metadata?.id;
+
+    // Try to extract from figmaUrl if still no fileKey
+    if (!fileKey || fileKey === 'unknown') {
+      const figmaUrl = context.figmaUrl || context.figmaContext?.figmaUrl || context.requestData?.figmaUrl;
+      if (figmaUrl) {
+        const extractedKey = this.extractFileKeyFromUrl(figmaUrl);
+        if (extractedKey && extractedKey !== 'unknown') {
+          fileKey = extractedKey;
+        }
+      }
+    }
+
     if (!fileKey || fileKey === 'unknown') {
       return 'https://www.figma.com/file/unknown';
     }
@@ -686,6 +703,19 @@ export class TemplateIntegratedAIService {
         testMode: this.testMode
       };
     }
+  }
+
+  /**
+   * Extract file key from Figma URL
+   */
+  extractFileKeyFromUrl(figmaUrl) {
+    if (!figmaUrl || typeof figmaUrl !== 'string') {
+      return null;
+    }
+
+    // Match Figma URLs: https://www.figma.com/file/<fileKey>/* or https://www.figma.com/design/<fileKey>/*
+    const fileMatch = figmaUrl.match(/figma\.com\/(?:file|design)\/([a-zA-Z0-9]{22})/);
+    return fileMatch ? fileMatch[1] : null;
   }
 }
 

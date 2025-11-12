@@ -13,13 +13,22 @@ import { ErrorHandler } from '../utils/error-handler.js';
 import { ContextManager } from '../context/ContextManager.js';
 import { UniversalTemplateEngine } from '../template/UniversalTemplateEngine.js';
 import { BaseService } from '../../app/services/BaseService.js';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export class ContextTemplateBridge extends BaseService {
   constructor() {
     super('ContextTemplateBridge');
 
     this.contextManager = new ContextManager();
-    this.templateEngine = new UniversalTemplateEngine();
+
+    // Use the correct path for AI templates
+    const templatesPath = join(__dirname, '../ai/templates');
+
+    this.templateEngine = new UniversalTemplateEngine(templatesPath);
     this.errorHandler = new ErrorHandler('ContextTemplateBridge');
 
     // Optional MCP Adapter for advanced workflows
@@ -206,8 +215,14 @@ export class ContextTemplateBridge extends BaseService {
   extractFileIdFromUrl(figmaUrl) {
     if (!figmaUrl) {return 'mock-document';}
 
-    const match = figmaUrl.match(/\/file\/([^/?#]+)/);
-    return match ? match[1] : 'mock-document';
+    // Handle both legacy /file/ and modern /design/ URL formats
+    const legacyMatch = figmaUrl.match(/\/file\/([^/?#]+)/);
+    if (legacyMatch) {return legacyMatch[1];}
+
+    const modernMatch = figmaUrl.match(/\/design\/([^/?#]+)/);
+    if (modernMatch) {return modernMatch[1];}
+
+    return 'mock-document';
   }
 
   /**
@@ -222,6 +237,30 @@ export class ContextTemplateBridge extends BaseService {
                          'Component';
 
     return {
+      // Request context (user-provided values with highest priority)
+      context: {
+        componentName: request.context?.componentName,
+        projectName: request.context?.projectName,
+        priority: request.context?.priority,
+        storyPoints: request.context?.storyPoints,
+        issueType: request.context?.issueType,
+        figma: {
+          live_link: await this._buildEnhancedFigmaUrl(contextResult, request)
+        },
+        project: {
+          component_prefix: request.context?.project?.component_prefix,
+          testing_framework: request.context?.project?.testing_framework,
+          tech_stack: request.context?.project?.tech_stack,
+          component_library_url: request.context?.project?.component_library_url,
+          accessibility_url: request.context?.project?.accessibility_url,
+          testing_standards_url: request.context?.project?.testing_standards_url
+        },
+        calculated: {
+          confidence: request.context?.calculated?.confidence,
+          hours: request.context?.calculated?.hours
+        }
+      },
+
       // Figma context (enhanced by Context Layer)
       figma: {
         component_name: componentName,
@@ -408,6 +447,11 @@ export class ContextTemplateBridge extends BaseService {
    */
   async _generateFromTemplate(template, contextData, request) {
     this.logger.info('⚙️ Phase 3: Generating documentation from template...');
+
+    this.logger.info('🔍 DEBUG - Template context keys:', Object.keys(contextData));
+    this.logger.info('🔍 DEBUG - Context.componentName:', contextData.context?.componentName);
+    this.logger.info('🔍 DEBUG - Context.projectName:', contextData.context?.projectName);
+    this.logger.info('🔍 DEBUG - Request.context:', request.context);
 
     const rendered = await this.templateEngine.renderTemplate(template, contextData);
 
@@ -771,12 +815,20 @@ Implement the ${componentName} component based on Figma design specifications.
       };
 
       // Build figma context from Context Layer output
+      const extractedFileKey = this.extractFileIdFromUrl(request.figmaUrl);
       const figmaContext = {
+        fileKey: extractedFileKey, // Primary location for Template Manager
         metadata: {
-          id: this.extractFileIdFromUrl(request.figmaUrl),
+          id: extractedFileKey,
           name: request.frameData?.[0]?.name || request.enhancedFrameData?.[0]?.name || 'Component'
         }
       };
+
+      this.logger.debug('🔍 Context Bridge file key extraction:', {
+        originalUrl: request.figmaUrl,
+        extractedFileKey: extractedFileKey,
+        requestFileKey: request.fileContext?.fileKey
+      });
 
       // Use our enhanced buildFigmaUrl method with debug logging
       const enhancedUrl = templateManager.buildFigmaUrl(figmaContext, request);

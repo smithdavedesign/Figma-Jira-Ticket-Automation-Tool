@@ -168,7 +168,7 @@ export class GenerateRoutes extends BaseRoute {
       // Context data
       figmaUrl: rawRequest.figmaUrl,
       screenshot: rawRequest.screenshot,
-      documentType: rawRequest.documentType || 'task',
+      documentType: rawRequest.documentType || rawRequest.templateType || 'task',
 
       // Technical requirements
       techStack: rawRequest.techStack || rawRequest.teamStandards?.tech_stack,
@@ -309,10 +309,23 @@ export class GenerateRoutes extends BaseRoute {
    * 📄 Format response consistently across all strategies and formats
    */
   _formatGenerationResponse(result, strategy, format) {
+    // 🔍 DEBUG: Log what we're formatting to identify the indexed format issue
+    this.logger.info('🔍 DEBUG: Formatting generation response:', {
+      strategy,
+      format,
+      resultType: typeof result,
+      resultIsString: typeof result === 'string',
+      resultKeys: typeof result === 'object' && result !== null ? Object.keys(result) : null,
+      contentType: typeof result?.content,
+      contentFirst50: typeof result === 'string' ? result.substring(0, 50) : (typeof result?.content === 'string' ? result.content.substring(0, 50) : 'N/A'),
+      hasMetadata: !!result?.metadata,
+      metadataArchitecture: result?.metadata?.architecture
+    });
+
     // Handle Context-Template Bridge responses (already well-formatted)
     if (strategy === 'context-bridge' && result.metadata?.architecture) {
       return {
-        ...result,
+        ...(typeof result === 'object' && result !== null ? result : { content: result }),
         // Ensure consistent format
         format: format,
         strategy: 'context-bridge',
@@ -357,7 +370,7 @@ export class GenerateRoutes extends BaseRoute {
 
       // Full metadata for debugging (also includes top-level metadata)
       metadata: {
-        ...result.metadata,
+        ...(result.metadata && typeof result.metadata === 'object' ? result.metadata : {}),
         architecture: actualArchitecture,
         mcpBypass: isTemplateGuided,
         visualEnhancedAI: isVisualEnhancedAI,

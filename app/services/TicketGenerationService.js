@@ -206,6 +206,10 @@ export class TicketGenerationService extends BaseService {
    * @returns {Object|null} Cached ticket or null
    */
   async getCachedTicket(cacheKey) {
+    // 🚫 CACHE READ DISABLED FOR TESTING - always generate fresh tickets
+    this.logger.debug(`🚫 Cache read DISABLED for testing: ${cacheKey}`);
+    return null;
+
     if (!this.cacheService) {return null;}
 
     try {
@@ -233,6 +237,10 @@ export class TicketGenerationService extends BaseService {
    * @param {Object} ticket - Generated ticket
    */
   async cacheTicket(cacheKey, ticket) {
+    // 🚫 CACHE DISABLED FOR TESTING - always generate fresh tickets
+    this.logger.debug(`🚫 Cache write DISABLED for testing: ${cacheKey}`);
+    return;
+
     if (!this.cacheService) {return;}
 
     try {
@@ -344,6 +352,15 @@ class AIPoweredGenerationStrategy extends GenerationStrategy {
             contextCompleteness: result.metadata?.context_completeness,
             aiConfidence: result.metadata?.ai_confidence,
             generationType: result.metadata?.generationType
+          });
+
+          // 🔍 DEBUG: Log result structure to identify indexed format issue
+          this.logger.info('🔍 DEBUG: Template-Guided AI result structure:', {
+            contentType: typeof result.content,
+            contentFirst50: result.content?.toString().substring(0, 50),
+            isString: typeof result.content === 'string',
+            resultKeys: Object.keys(result),
+            contentKeys: typeof result.content === 'object' ? Object.keys(result.content) : null
           });
 
           return result;

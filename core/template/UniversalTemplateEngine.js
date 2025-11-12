@@ -48,9 +48,14 @@ export class UniversalTemplateEngine {
     const mappedDocumentType = this.mapDocumentType(documentType);
     const cacheKey = `${platform}-${documentType}-${techStack}`;
 
-    if (this.resolvedCache.has(cacheKey)) {
-      return this.resolvedCache.get(cacheKey);
-    }
+    console.log('🔍 TEMPLATE RESOLUTION DEBUG:');
+    console.log('  📋 Platform:', platform);
+    console.log('  📋 Document Type:', documentType, '→', mappedDocumentType);
+    console.log('  📋 Tech Stack:', techStack);
+    console.log('  📂 Config Dir:', this.configDir);
+
+    // Template caching disabled - each request should get fresh template
+    // Templates are lightweight and context-dependent, no need to cache
 
     // Resolution order with fallback logic
     const resolutionPaths = [
@@ -66,22 +71,33 @@ export class UniversalTemplateEngine {
       // 4. Built-in fallback (we'll generate this)
     ];
 
+    console.log('  🔗 Resolution paths to try:', resolutionPaths);
+
     let resolvedTemplate = null;
     let resolutionPath = null;
 
     for (const path of resolutionPaths) {
       try {
         const fullPath = join(this.configDir, path);
+        console.log(`  📂 Trying: ${fullPath}`);
         await access(fullPath);
+        console.log(`  ✅ File exists: ${fullPath}`);
 
         const template = await this.loadTemplate(fullPath);
+        console.log('  📝 Template loaded:', template ? Object.keys(template) : 'null');
+
         if (template && this.isValidTemplate(template, platform, documentType)) {
+          console.log(`  ✅ Template is valid for ${platform}/${documentType}`);
           // Merge with base template if it inherits from base
           resolvedTemplate = await this.mergeWithBase(template);
           resolutionPath = path;
+          console.log(`  🎯 Template resolved from: ${resolutionPath}`);
           break;
+        } else {
+          console.log(`  ❌ Template validation failed for ${platform}/${documentType}`);
         }
       } catch (error) {
+        console.log(`  ❌ Path failed: ${path} - ${error.message}`);
         // Path doesn't exist, try next one
         continue;
       }
@@ -89,6 +105,7 @@ export class UniversalTemplateEngine {
 
     // If no template found, create a basic fallback
     if (!resolvedTemplate) {
+      console.log('  ⚠️ No template found, creating fallback template');
       resolvedTemplate = this.createFallbackTemplate(platform, documentType, techStack);
       resolutionPath = 'built-in-fallback';
     }
@@ -106,7 +123,10 @@ export class UniversalTemplateEngine {
       }
     };
 
-    this.resolvedCache.set(cacheKey, enhancedTemplate);
+    console.log('  🏁 Final template keys:', Object.keys(enhancedTemplate));
+    console.log('  🏁 Template structure keys:', enhancedTemplate.template ? Object.keys(enhancedTemplate.template) : 'no template structure');
+
+    // Template caching disabled - templates are context-dependent and should be fresh each time
     return enhancedTemplate;
   }
 

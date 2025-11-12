@@ -56,10 +56,10 @@ export class PluginRoutes extends BaseRoute {
 
   registerRoutes(router) {
     // Plugin-specific endpoints
-    router.post('/plugin/comprehensive-context', this.handleComprehensiveContext.bind(this));
-    router.post('/plugin/analyze', this.handlePluginAnalyze.bind(this));
-    router.post('/plugin/generate', this.handlePluginGenerate.bind(this));
-    router.get('/plugin/health', this.handlePluginHealth.bind(this));
+    router.post('/comprehensive-context', this.handleComprehensiveContext.bind(this));
+    router.post('/analyze', this.handlePluginAnalyze.bind(this));
+    router.post('/generate', this.handlePluginGenerate.bind(this));
+    router.get('/health', this.handlePluginHealth.bind(this));
 
     this.logger.info('✅ Plugin routes registered');
   }
@@ -301,6 +301,8 @@ export class PluginRoutes extends BaseRoute {
 
         const result = await this.strategyGenerator.generateTicket({
           frameData: enhancedFrameData,
+          enhancedFrameData,
+          figmaUrl,
           platform: teamStandards.platform || format,
           documentType,
           techStack,

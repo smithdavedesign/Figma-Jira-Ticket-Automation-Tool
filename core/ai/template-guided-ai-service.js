@@ -46,8 +46,8 @@ export class TemplateGuidedAIService {
       logger: this.logger // Enhanced: Pass logger to context builder
     });
 
-    // Initialize template engine
-    const configDir = join(__dirname, '../../config/templates');
+    // Initialize template engine - use correct path to AI templates
+    const configDir = join(__dirname, './templates');
     this.templateEngine = new UniversalTemplateEngine(configDir);
 
     // Template validation cache
@@ -355,129 +355,349 @@ export class TemplateGuidedAIService {
    * Generate AI-guided ticket using template structure
    */
   async generateAIGuidedByTemplate(unifiedContext, templateStructure, options) {
-    if (!this.aiService) {
-      throw new Error('AI Service not available for template-guided generation');
+    const { platform, documentType, componentName, techStack, requestId } = options;
+
+    try {
+      // 🚫 REMOVED: Direct template rendering - we want AI to generate content!
+      // The previous logic was using template rendering instead of AI generation
+
+      this.logger.info(`🤖 [${requestId}] Starting AI-guided generation for ${platform}/${documentType} with template structure`);
+
+      if (!this.aiService) {
+        throw new Error('AI Service not available for template-guided generation');
+      }
+
+      // Build template-guided prompt that instructs AI to use template structure
+      const templateGuidedPrompt = this.buildTemplateGuidedPrompt(unifiedContext, templateStructure, options);
+
+      this.logger.info(`🧠 [${requestId}] Built template-guided prompt, calling AI service...`);
+
+      // Use AI service to generate content guided by template structure
+      const aiOptions = {
+        ...options,
+        useTemplateStructure: true,
+        templateVariables: Object.keys(templateStructure.variables || {}),
+        expectedSections: Object.keys(templateStructure.sections || {}),
+        platform,
+        documentType,
+        componentName,
+        techStack
+      };
+
+      // ✅ CRITICAL FIX: Always call AI service for intelligent content generation
+      const aiResult = await this.aiService.processVisualEnhancedContext(
+        {
+          ...unifiedContext,
+          templateStructure,
+          templateGuidedPrompt,
+          // Extract proper file key for Figma URLs
+          fileKey: this.extractFileKey(unifiedContext),
+          componentName,
+          platform,
+          documentType
+        },
+        aiOptions
+      );
+
+      this.logger.info(`✅ [${requestId}] AI-guided generation completed successfully`);
+
+      // ✅ CRITICAL FIX: aiResult is now guaranteed to be an object with content property
+      return {
+        content: aiResult.content,
+        confidence: aiResult.confidence || 0.8,
+        metadata: aiResult.metadata || {},
+        source: 'ai-guided-by-template',
+        templateUsed: `${platform}/${documentType}`,
+        aiEnhanced: true
+      };
+
+    } catch (error) {
+      this.logger.error(`❌ [${requestId}] AI-guided template generation failed:`, error.message);
+
+      // Enhanced error handling with fallback to template rendering if AI fails
+      this.logger.warn(`🔄 [${requestId}] Falling back to template rendering due to AI failure`);
+
+      try {
+        const templateVariables = this.extractTemplateVariablesFromContext(unifiedContext, componentName, techStack);
+        const resolvedTemplate = await this.templateEngine.resolveTemplate(platform, documentType, techStack);
+
+        if (resolvedTemplate?.template?.content) {
+          const renderedContent = await this.templateEngine.renderTemplate(resolvedTemplate.template.content, templateVariables);
+
+          this.logger.info(`✅ [${requestId}] Fallback template rendering successful`);
+
+          return {
+            content: renderedContent,
+            source: 'template-fallback',
+            confidence: 0.7,
+            templateUsed: `${platform}/${documentType}`,
+            aiEnhanced: false,
+            fallbackReason: error.message
+          };
+        }
+      } catch (fallbackError) {
+        this.logger.error(`❌ [${requestId}] Template fallback also failed:`, fallbackError.message);
+      }
+
+      throw error;
     }
-
-    // Build template-guided prompt
-    const templateGuidedPrompt = this.buildTemplateGuidedPrompt(unifiedContext, templateStructure, options);
-
-    // Use AI service to generate content
-    const aiOptions = {
-      ...options,
-      useTemplateStructure: true,
-      templateVariables: Object.keys(templateStructure.variables || {}),
-      expectedSections: Object.keys(templateStructure.sections || {})
-    };
-
-    const aiResult = await this.aiService.processVisualEnhancedContext(
-      {
-        ...unifiedContext,
-        templateStructure,
-        templateGuidedPrompt
-      },
-      aiOptions
-    );
-
-    return aiResult;
   }
 
   /**
    * Build template-guided prompt that instructs AI to follow template structure
    */
   buildTemplateGuidedPrompt(unifiedContext, templateStructure, options) {
-    const { platform, documentType, componentName, techStack } = options;
+    const { componentName, techStack } = options;
 
-    const prompt = `# 🎯 MANDATORY BASE.YML TEMPLATE STRUCTURE
+    // Layer 1: System Context
+    const systemPrompt = `You are an expert technical product assistant who converts design specifications into Jira tickets for implementation.
+Always output in Jira markup syntax — never JSON or YAML.
+Your expertise covers design systems, component architecture, and technical requirements extraction.`;
 
-You are generating a ${platform.toUpperCase()} ticket that MUST follow the exact base.yml template structure with ALL variables populated from real context data.
+    // Layer 2: Task Definition
+    const taskPrompt = `Generate a Jira-ready ticket for implementing a UI component based on Figma design context and project metadata.
+Follow the required Jira structure precisely and ensure every section provides actionable implementation details.`;
 
-## EXACT TEMPLATE STRUCTURE - FOLLOW PRECISELY:
+    // Layer 3: Template Structure (configurable)
+    const templateStructurePrompt = this.buildJiraTemplateStructure(componentName, techStack, templateStructure);
 
-# ${componentName} - Component Implementation
+    // Layer 4: Rules and Requirements
+    const rulesPrompt = `## Jira Markup Rules
+- Use Jira markup syntax (h1., h2., *, {color}, [text|url])
+- Do not invent fake placeholders or use "Not Found", "TBD", "unknown"
+- If data is missing, infer intelligently based on component type and industry standards
+- Ensure every section contains meaningful, actionable content
+- Output must be directly pasteable into Jira
+- Extract real data from context - never use template fallbacks
 
-## 📋 Project Context & Component Details
-**Project**: [Extract from context - NEVER use "Project Name Not Found"]
-**Component**: ${componentName}
-**Type**: [Determine from Figma analysis: INSTANCE, COMPONENT, FRAME]
-**Issue Type**: Component Implementation
-**Priority**: [Calculate: High/Medium/Low based on complexity]
-**Story Points**: [Calculate: 1,2,3,5,8 based on component analysis]
-**Technologies**: ${techStack}
-**Labels**: [Generate relevant labels: frontend, component, design-system]
-**Design Status**: [Extract from Figma context or infer: ready-for-dev, in-progress, draft]
-
-## 🎨 Design System & Visual References  
-**Figma URL**: [Build real URL using file key from context]
-**Storybook URL**: [Use project.storybook_url or generate logical URL]
-**Screenshot**: [Reference actual screenshot filename from context]
-**Colors**: [Extract HEX values from screenshot/context - e.g., "#FF5733, #3498DB, #2C3E50"]
-**Typography**: [Extract font families, sizes from context - e.g., "Inter 16px/24px, Bold 20px"]
-
-### Design Tokens Implementation - ALL CATEGORIES REQUIRED
-**Spacing**:
-- Base Unit: [Extract or infer: 4px, 8px, 16px - standard design system]
-- Margins: [Extract spacing values: "16px, 24px, 32px, 48px"]
-- Paddings: [Extract padding values: "8px, 12px, 16px, 20px"]
-- Grid: 12 columns, 24px gutter [Standard or extract if specified]
-
-**Interactive States** - POPULATE ALL:
-- Hover: [Describe hover behavior from analysis]
-- Focus: [Describe focus state requirements]
-- Active: [Describe active/pressed state]
-- Disabled: [Describe disabled appearance]
-- Error: [Describe error state styling]
-- Success: [Describe success state styling]
-
-**Accessibility Requirements** - MANDATORY WCAG COMPLIANCE:
-- Contrast Ratio: [Calculate or require: "4.5:1 minimum, 7:1 preferred"]
-- Keyboard Navigation: [Specify: "Tab order, Enter/Space activation, Arrow keys"]
-- ARIA Roles: [List required: "button, link, menuitem, tab, etc."]
-- Screen Reader: [Specify announcements and labels]
-
-**Motion & Animation** - PERFORMANCE OPTIMIZED:
-- Duration: [Standard: "200ms for micro-interactions, 300ms for transitions"]
-- Easing: [Standard: "ease-out for entrances, ease-in for exits"]
-
-**Responsive Breakpoints** - MOBILE-FIRST:
-- Mobile: 320px-768px [Component behavior on mobile]
-- Tablet: 769px-1024px [Component behavior on tablet]
-- Desktop: 1025px+ [Component behavior on desktop]
-
-## ⚙️ AEM/CQ Authoring Requirements - ${techStack} SPECIFIC
-**Touch UI Required**: Yes - Full Touch UI component dialog
-**CQ Template**: /apps/[project]/components/${componentName.toLowerCase().replace(/\s+/g, '-')}
-**Component Path**: /apps/[project]/components/content/${componentName.toLowerCase().replace(/\s+/g, '-')}
-**Authoring Notes**: [Specify dialog fields, validation rules, content policies]
-
-## 📚 Resources & References - ALL 5 REQUIRED
-**Figma**: [Build real URL with file key] - Final design source with all states
-**Storybook**: [Project storybook URL]/components/${componentName.toLowerCase()} - Interactive component reference
-**Wiki/Technical Doc**: [Project wiki URL]/aem-components/${componentName} - AEM implementation guide
-**GitHub**: [Project repo URL]/feature/${componentName.toLowerCase()}-component - Development branch
-**Analytics/Tagging Spec**: [Analytics doc URL] - Data layer and tracking requirements
-
-## 🔧 Technical Implementation for ${techStack}
-[Generate specific HTL, Sling Models, JavaScript, CSS requirements based on component analysis]
-
-## ✅ Acceptance Criteria - MEASURABLE & TESTABLE
-[Generate specific, testable criteria based on component requirements and business impact]
-
-## CONTEXT DATA FOR EXTRACTION:
-${this.formatDetailedContextForAI(unifiedContext)}
-
-## ABSOLUTE REQUIREMENTS:
-1. **ZERO PLACEHOLDER TEXT**: Never use "Not Found", "TBD", or template fallbacks
+## Critical Requirements
+1. **JIRA MARKUP OUTPUT**: Return ONLY clean Jira markup - NO YAML, NO JSON, NO indexed format
 2. **REAL DATA EXTRACTION**: Extract actual component names, colors, URLs from provided context
-3. **SMART INFERENCE**: When data isn't explicit, make intelligent assumptions based on component type and industry standards
-4. **COMPLETE COVERAGE**: Include ALL design token categories, ALL 5 resources, ALL sections
-5. **PRACTICAL VALUES**: Generate realistic story points, priorities, technical specs
-6. **CRITICAL FILE KEY USAGE**: MUST use the actual file key from context data in ALL Figma URLs - NEVER use "unknown"
+3. **SMART INFERENCE**: Generate realistic story points, priorities, technical specs based on component analysis
+4. **FILE KEY USAGE**: MUST use actual file key from context in ALL Figma URLs - NEVER use "unknown"
+5. **COMPLETE COVERAGE**: Include ALL design token categories, ALL 5 resources, ALL sections`;
 
-**FAILURE TO INCLUDE ALL BASE.YML SECTIONS = INVALID RESPONSE**
-**USING "unknown" IN ANY FIGMA URL = INVALID RESPONSE**`;
+    // Layer 5: Context Data
+    const contextData = `## CONTEXT DATA FOR EXTRACTION:
+${this.formatDetailedContextForAI(unifiedContext)}`;
 
-    return prompt;
+    // Combine all layers
+    return [
+      systemPrompt,
+      taskPrompt,
+      templateStructurePrompt,
+      rulesPrompt,
+      contextData
+    ].join('\n\n');
+  }
+
+  /**
+   * Build configurable Jira template structure using available template variables
+   */
+  buildJiraTemplateStructure(componentName, techStack, templateStructure) {
+    // Extract available variables from template structure
+    const resources = templateStructure?.resources || [];
+
+    // Build dynamic template structure based on available variables
+    const jiraTemplate = {
+      header: `h1. ${this.getVariableInstruction('figma.component_name', componentName)} - ${this.getVariableInstruction('calculated.document_type', 'Component Implementation')}`,
+      sections: []
+    };
+
+    // Project Context Section - use available variables
+    const projectSection = {
+      title: 'h2. 📋 Project Context & Component Details',
+      fields: [
+        `*Project*: ${this.getVariableInstruction('project.name', '[Extract from context - use actual project name]')}`,
+        `*Component*: ${this.getVariableInstruction('figma.component_name', componentName)}`,
+        `*Type*: ${this.getVariableInstruction('figma.component_type', '[Determine from Figma analysis: INSTANCE, COMPONENT, FRAME]')}`,
+        `*Issue Type*: ${this.getVariableInstruction('calculated.issue_type', 'Component Implementation')}`,
+        `*Priority*: ${this.getVariableInstruction('calculated.priority', '[Calculate: High/Medium/Low based on complexity]')}`,
+        `*Story Points*: ${this.getVariableInstruction('calculated.story_points', '[Calculate: 1,2,3,5,8 based on component analysis]')}`,
+        `*Technologies*: ${this.getVariableInstruction('project.tech_stack', this.formatTechStack(techStack))}`,
+        `*Labels*: ${this.getVariableInstruction('calculated.labels', '[Generate relevant labels based on component type]')}`,
+        `*Design Status*: ${this.getVariableInstruction('figma.design_status', '[Extract from Figma context or infer: ready-for-dev, in-progress, draft]')}`
+      ]
+    };
+    jiraTemplate.sections.push(projectSection);
+
+    // Design System Section - use design variables if available
+    const designSection = {
+      title: 'h2. 🎨 Design System & Visual References',
+      fields: [
+        `*Figma URL*: ${this.getVariableInstruction('figma.live_link', '[Build URL: https://www.figma.com/design/{fileKey}/{projectName}?node-id={nodeId} - Use project name NOT component name]')}`,
+        `*Storybook URL*: ${this.getVariableInstruction('project.storybook_url', '[Use project.storybook_url or generate logical URL]')}`,
+        `*Screenshot*: ${this.getVariableInstruction('figma.screenshot_markdown.jira', '[Reference actual screenshot filename from context]')}`,
+        `*Colors*: ${this.getVariableInstruction('figma.extracted_colors', '[Extract HEX values from screenshot/context]')}`,
+        `*Typography*: ${this.getVariableInstruction('figma.extracted_typography', '[Extract font families, sizes from context]')}`
+      ]
+    };
+    jiraTemplate.sections.push(designSection);
+
+    // Resources Section - use template resources if available (moved up for better flow)
+    const resourcesSection = {
+      title: 'h2. 📚 Resources & References',
+      fields: this.buildResourceFields(resources)
+    };
+    jiraTemplate.sections.push(resourcesSection);
+
+    // Design Tokens Section - use design system variables
+    const designTokensSection = {
+      title: 'h2. 🎯 Design Tokens Implementation',
+      subsections: [
+        {
+          title: '*Spacing*:',
+          items: [
+            `* Base Unit: ${this.getVariableInstruction('design.spacing.base_unit', '[Extract or infer from design system]')}`,
+            `* Margins: ${this.getVariableInstruction('design.spacing.margins', '[Extract spacing values from context]')}`,
+            `* Paddings: ${this.getVariableInstruction('design.spacing.paddings', '[Extract padding values from context]')}`,
+            `* Grid: ${this.getVariableInstruction('design.grid.columns', '[Extract grid system or use standard 12-column]')}`
+          ]
+        },
+        {
+          title: '*Interactive States*:',
+          items: [
+            `* Hover: ${this.getVariableInstruction('design.states.hover', '[Describe hover behavior from analysis]')}`,
+            `* Focus: ${this.getVariableInstruction('design.states.focus', '[Describe focus state requirements]')}`,
+            `* Active: ${this.getVariableInstruction('design.states.active', '[Describe active/pressed state]')}`,
+            `* Disabled: ${this.getVariableInstruction('design.states.disabled', '[Describe disabled appearance]')}`,
+            `* Error: ${this.getVariableInstruction('design.states.error', '[Describe error state styling]')}`,
+            `* Success: ${this.getVariableInstruction('design.states.success', '[Describe success state styling]')}`
+          ]
+        },
+        {
+          title: '*Accessibility Requirements*:',
+          items: [
+            `* Contrast Ratio: ${this.getVariableInstruction('design.accessibility.contrast_ratio', '[Calculate or require: "4.5:1 minimum, 7:1 preferred"]')}`,
+            `* Keyboard Navigation: ${this.getVariableInstruction('design.accessibility.keyboard_navigation', '[Specify keyboard interaction patterns]')}`,
+            `* ARIA Roles: ${this.getVariableInstruction('design.accessibility.aria_roles', '[List required ARIA roles and properties]')}`,
+            `* Screen Reader: ${this.getVariableInstruction('design.accessibility.screen_reader', '[Specify announcements and labels]')}`
+          ]
+        },
+        {
+          title: '*Motion & Animation*:',
+          items: [
+            `* Duration: ${this.getVariableInstruction('design.motion.duration', '[Standard: "200ms for micro-interactions, 300ms for transitions"]')}`,
+            `* Easing: ${this.getVariableInstruction('design.motion.easing', '[Standard: "ease-out for entrances, ease-in for exits"]')}`
+          ]
+        },
+        {
+          title: '*Responsive Breakpoints*:',
+          items: [
+            `* Mobile: ${this.getVariableInstruction('design.breakpoints.mobile', '[Component behavior on mobile devices]')}`,
+            `* Tablet: ${this.getVariableInstruction('design.breakpoints.tablet', '[Component behavior on tablet devices]')}`,
+            `* Desktop: ${this.getVariableInstruction('design.breakpoints.desktop', '[Component behavior on desktop devices]')}`
+          ]
+        }
+      ]
+    };
+    jiraTemplate.sections.push(designTokensSection);
+
+    // Authoring Section - platform specific
+    const authoringSection = {
+      title: `h2. ⚙️ ${this.getVariableInstruction('project.platform', 'Platform')} Authoring Requirements`,
+      fields: [
+        `*Touch UI Required*: ${this.getVariableInstruction('authoring.touch_ui_required', '[Specify authoring interface requirements]')}`,
+        `*Component Template*: ${this.getVariableInstruction('authoring.cq_template', '[Component template path]')}`,
+        `*Component Path*: ${this.getVariableInstruction('authoring.component_path', '[Component implementation path]')}`,
+        `*Authoring Notes*: ${this.getVariableInstruction('authoring.notes', '[Specify dialog fields, validation rules, content policies]')}`
+      ]
+    };
+    jiraTemplate.sections.push(authoringSection);
+
+    // Technical Implementation Section
+    const technicalSection = {
+      title: 'h2. 🔧 Technical Implementation',
+      content: `${this.getVariableInstruction('calculated.technical_requirements', `[Generate specific implementation requirements based on component analysis for ${this.formatTechStack(techStack)}]`)}`
+    };
+    jiraTemplate.sections.push(technicalSection);
+
+    // Acceptance Criteria Section
+    const acceptanceSection = {
+      title: 'h2. ✅ Acceptance Criteria',
+      content: `${this.getVariableInstruction('calculated.acceptance_criteria', '[Generate specific, testable criteria based on component requirements and business impact]')}`
+    };
+    jiraTemplate.sections.push(acceptanceSection);
+
+    return this.renderJiraTemplate(jiraTemplate);
+  }
+
+  /**
+   * Get instruction for a template variable or fallback
+   */
+  getVariableInstruction(variablePath, fallback) {
+    return `[Extract from context: ${variablePath} || ${fallback}]`;
+  }
+
+  /**
+   * Format tech stack for display
+   */
+  formatTechStack(techStack) {
+    if (Array.isArray(techStack)) {
+      return techStack.join(', ');
+    }
+    return techStack || '[Extract from context]';
+  }
+
+  /**
+   * Build resource fields from template resources
+   */
+  buildResourceFields(resources) {
+    if (!resources || resources.length === 0) {
+      // Default resources if none defined in template
+      return [
+        '*Figma*: [Extract figma.live_link] - Final design source with all states',
+        '*Storybook*: [Extract project.storybook_url] - Interactive component reference',
+        '*Wiki/Technical Doc*: [Extract project.wiki_url] - Implementation guide',
+        '*GitHub*: [Extract project.repository_url] - Development branch',
+        '*Analytics/Tagging Spec*: [Extract project.analytics_url] - Data layer and tracking requirements'
+      ];
+    }
+
+    return resources.map(resource => {
+      const linkInstruction = resource.link ?
+        `[Extract ${resource.link.replace(/[{}]/g, '')}]` :
+        '[Generate logical URL]';
+      return `*${resource.type}*: ${linkInstruction} - ${resource.notes || 'Resource description'}`;
+    });
+  }
+
+  /**
+   * Render Jira template structure into formatted string
+   */
+  renderJiraTemplate(template) {
+    let output = `## REQUIRED JIRA MARKUP STRUCTURE - FOLLOW PRECISELY:
+
+${template.header}
+
+`;
+
+    template.sections.forEach(section => {
+      output += `${section.title}\n`;
+
+      if (section.fields) {
+        section.fields.forEach(field => {
+          output += `${field}\n`;
+        });
+      }
+
+      if (section.subsections) {
+        section.subsections.forEach(subsection => {
+          output += `\n${subsection.title}\n`;
+          subsection.items.forEach(item => {
+            output += `${item}\n`;
+          });
+        });
+      }
+
+      if (section.content) {
+        output += `${section.content}\n`;
+      }
+
+      output += '\n';
+    });
+
+    return output;
   }
 
   /**
@@ -574,48 +794,302 @@ ${this.formatDetailedContextForAI(unifiedContext)}
   }
 
   /**
-   * Format detailed context data for comprehensive AI analysis
+   * Format detailed context data for comprehensive AI analysis (human-readable format)
    */
   formatDetailedContextForAI(unifiedContext) {
+    // 🔍 DEBUG: Log the complete unified context structure
+    this.logger.info('🔍 DEBUG: Complete unified context for file key debugging:', {
+      keys: Object.keys(unifiedContext),
+      figma: unifiedContext.figma,
+      figmaData: unifiedContext.figmaData,
+      requestData: unifiedContext.requestData ? {
+        keys: Object.keys(unifiedContext.requestData),
+        fileKey: unifiedContext.requestData.fileKey,
+        fileContext: unifiedContext.requestData.fileContext
+      } : 'not present',
+      fileKey: unifiedContext.fileKey,
+      metadata: unifiedContext.metadata
+    });
+
     const contextSections = [];
 
-    // Extract component information
+    // Extract and format component information
     const componentInfo = this.extractComponentInfo(unifiedContext);
     if (componentInfo) {
+      const nodeId = this.extractNodeIdFromContext(unifiedContext);
+      const projectName = this.extractProjectName(unifiedContext);
       const figmaUrl = componentInfo.fileKey !== 'unknown' ?
-        `https://www.figma.com/design/${componentInfo.fileKey}/${encodeURIComponent(componentInfo.name.replace(/\s+/g, '-'))}` :
+        `https://www.figma.com/design/${componentInfo.fileKey}/${encodeURIComponent(projectName.replace(/\s+/g, '-'))}${nodeId ? `?node-id=${nodeId}` : ''}` :
         'Use file key from context to build URL';
 
-      contextSections.push(`**COMPONENT DATA:**
-- Name: "${componentInfo.name}"
-- Type: ${componentInfo.type}
-- File Key: ${componentInfo.fileKey}
-- Page: "${componentInfo.pageName}"
-- Screenshot: Available (${componentInfo.screenshotUrl ? 'Yes' : 'No'})
-- Figma URL: ${figmaUrl}`);
+      contextSections.push(`Component: ${componentInfo.name}
+Frame: ${componentInfo.pageName}
+Type: ${componentInfo.type}
+File Key: ${componentInfo.fileKey}
+Screenshot Available: ${componentInfo.screenshotUrl ? 'Yes' : 'No'}
+Figma URL: ${figmaUrl}`);
     }
 
-    // Extract design data
+    // Extract and format design data
     const designData = this.extractDesignData(unifiedContext);
     if (designData) {
-      contextSections.push(`**DESIGN DATA:**
-- Colors Found: ${designData.colorsCount} (Extract hex values from screenshot)
-- Typography Elements: ${designData.typographyCount}
-- Spacing Values: [${designData.spacingValues.join(', ')}]px
-- Interactive Elements: ${designData.interactionsCount}`);
+      const colors = this.extractColorsFromContext(unifiedContext);
+      const fonts = this.extractFontsFromContext(unifiedContext);
+
+      contextSections.push(`Colors Detected: ${colors.length > 0 ? colors.join(', ') : 'Extract from visual analysis'}
+Typography: ${fonts.length > 0 ? fonts.map(f => `${f.family} ${f.size}px/${f.weight}`).join(', ') : 'Extract from visual analysis'}
+Spacing: Base ${designData.spacingValues[0] || 8}px
+Interactive Elements: ${designData.interactionsCount}`);
     }
 
-    // Project context
+    // Extract and format project data
     const projectData = this.extractProjectData(unifiedContext);
     if (projectData) {
-      contextSections.push(`**PROJECT DATA:**
-- Tech Stack: ${projectData.techStack}
-- Platform: ${projectData.platform}
-- CRITICAL - File Key for URLs: ${projectData.fileKey}
-- MUST USE file key "${projectData.fileKey}" in ALL Figma URLs - NEVER use "unknown"`);
+      const projectName = this.extractProjectName(unifiedContext);
+      const urls = this.extractProjectUrls(unifiedContext);
+
+      contextSections.push(`Project: ${projectName}
+Tech Stack: ${projectData.techStack}
+Platform: ${projectData.platform}
+File Key: ${projectData.fileKey}
+Storybook: ${urls.storybook || 'Generate logical URL'}
+Repository: ${urls.repository || 'Generate logical URL'}
+Wiki: ${urls.wiki || 'Generate logical URL'}`);
+    }
+
+    // Add calculated metrics if available
+    const calculatedData = unifiedContext.calculated;
+    if (calculatedData) {
+      contextSections.push(`Complexity: ${calculatedData.complexity || 'Medium'}
+Estimated Hours: ${calculatedData.hours || '4-6'}
+Priority: ${calculatedData.priority || 'Medium'}
+Story Points: ${calculatedData.story_points || '5'}
+Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
     }
 
     return contextSections.join('\n\n');
+  }
+
+  /**
+   * Extract node-id from context for Figma URL construction
+   */
+  extractNodeIdFromContext(unifiedContext) {
+    // Try multiple paths for node-id
+    const figmaUrl = unifiedContext.figmaUrl || unifiedContext.requestData?.figmaUrl;
+    if (figmaUrl) {
+      const nodeIdMatch = figmaUrl.match(/node-id=([^&]+)/);
+      if (nodeIdMatch) {
+        return decodeURIComponent(nodeIdMatch[1]);
+      }
+    }
+
+    // Check selection data
+    const selection = unifiedContext.figmaData?.selection?.[0] || unifiedContext.selection?.[0];
+    return selection?.id || null;
+  }
+
+  /**
+   * Extract colors from context in readable format
+   */
+  extractColorsFromContext(unifiedContext) {
+    const colors = [];
+
+    // Try multiple sources for color data
+    if (unifiedContext.figma?.extracted_colors) {
+      colors.push(...unifiedContext.figma.extracted_colors.split(',').map(c => c.trim()));
+    }
+
+    if (unifiedContext.designTokens?.colors) {
+      colors.push(...unifiedContext.designTokens.colors);
+    }
+
+    // Return unique colors or default design system colors
+    return colors.length > 0 ? [...new Set(colors)] : ['#FFFFFF', '#000000', '#F5F5F5', '#007AFF'];
+  }
+
+  /**
+   * Extract fonts from context in readable format
+   */
+  extractFontsFromContext(unifiedContext) {
+    const fonts = [];
+
+    // Try to extract font information
+    if (unifiedContext.figma?.extracted_typography) {
+      const typography = unifiedContext.figma.extracted_typography;
+      // Parse typography string into structured format
+      const fontMatches = typography.match(/(\w+)\s+(\d+)px(?:\/(\d+)px)?(?:,?\s*(Bold|Regular|Medium))?/g);
+      if (fontMatches) {
+        fontMatches.forEach(match => {
+          const parts = match.match(/(\w+)\s+(\d+)px(?:\/(\d+)px)?(?:,?\s*(Bold|Regular|Medium))?/);
+          if (parts) {
+            fonts.push({
+              family: parts[1],
+              size: parts[2],
+              lineHeight: parts[3] || parts[2],
+              weight: parts[4] || 'Regular'
+            });
+          }
+        });
+      }
+    }
+
+    // Return default design system fonts if none found
+    return fonts.length > 0 ? fonts : [
+      { family: 'Inter', size: '14', weight: 'Regular' },
+      { family: 'Inter', size: '16', weight: 'Regular' },
+      { family: 'Inter', size: '20', weight: 'Bold' }
+    ];
+  }
+
+  /**
+   * Extract project name from context
+   */
+  extractProjectName(unifiedContext) {
+    return unifiedContext.project?.name ||
+           unifiedContext.requestData?.context?.projectName ||
+           unifiedContext.context?.projectName ||
+           unifiedContext.figmaData?.fileContext?.fileName ||
+           'AEM Project';
+  }
+
+  /**
+   * Extract project URLs from context
+   */
+  extractProjectUrls(unifiedContext) {
+    const project = unifiedContext.project || {};
+    return {
+      storybook: project.storybook_url || project.component_library_url,
+      repository: project.repository_url || project.github_url,
+      wiki: project.wiki_url || project.documentation_url,
+      analytics: project.analytics_url || project.tracking_url
+    };
+  }
+
+  /**
+   * Extract template variables from unified context for template rendering
+   */
+  extractTemplateVariablesFromContext(unifiedContext, componentName, techStack) {
+    const componentInfo = this.extractComponentInfo(unifiedContext);
+    const designData = this.extractDesignData(unifiedContext);
+
+    // Build Figma URL with proper file key using enhanced extraction
+    const fileKey = this.extractFileKey(unifiedContext);
+    const projectName = this.extractProjectName(unifiedContext);
+    const nodeId = this.extractNodeIdFromContext(unifiedContext);
+    const figmaUrl = `https://www.figma.com/design/${fileKey}/${encodeURIComponent(projectName.replace(/\s+/g, '-'))}${nodeId ? `?node-id=${nodeId}` : ''}`;
+
+    this.logger.info('🔗 Built Figma URL:', {
+      fileKey,
+      projectName,
+      componentName,
+      nodeId,
+      finalUrl: figmaUrl
+    });
+
+    // Get screenshot info
+    const screenshot = unifiedContext.screenshot || {};
+    const screenshotMarkdown = screenshot.dataUrl ?
+      `![${componentName} Screenshot](${screenshot.dataUrl})` :
+      `!${componentName.toLowerCase().replace(/\s+/g, '-')}.png|thumbnail!`;
+
+    return {
+      // Project variables
+      project: {
+        component_prefix: 'UI',
+        tech_stack: Array.isArray(techStack) ? techStack : [techStack],
+        testing_framework: 'aem-mocks',
+        component_library_url: 'https://storybook.company.com',
+        accessibility_url: 'https://accessibility.company.com',
+        testing_standards_url: 'https://testing.company.com'
+      },
+
+      // Figma variables
+      figma: {
+        component_name: componentName,
+        component_type: componentInfo.type || 'UI Component',
+        design_status: 'Ready for Development',
+        live_link: figmaUrl,
+        screenshot_markdown: {
+          jira: screenshotMarkdown
+        },
+        extracted_colors: designData.colorsCount > 0 ? '#FFFFFF, #000000, #F0F0F0' : undefined,
+        extracted_typography: designData.typographyCount > 0 ? 'Arial 16px/24px, Bold 20px, Arial 14px' : undefined
+      },
+
+      // Calculated variables
+      calculated: {
+        priority: 'Medium',
+        story_points: '5',
+        complexity: 'medium',
+        hours: '4-6',
+        confidence: 0.8,
+        design_analysis: `"${componentName}" component requiring custom implementation.`
+      },
+
+      // Authoring variables
+      authoring: {
+        notes: 'Authoring Notes Not Found',
+        component_path: `/apps/aemproject/components/content/${componentName.toLowerCase().replace(/\s+/g, '-')}`,
+        cq_template: `/apps/aemproject/components/${componentName.toLowerCase().replace(/\s+/g, '-')}`,
+        touch_ui_required: 'Yes - Full Touch UI component dialog'
+      }
+    };
+  }
+
+  /**
+   * Extract file key from unified context for proper Figma URL generation
+   */
+  extractFileKey(unifiedContext) {
+    // PRIORITY 1: Extract from screenshot metadata (most reliable for current selections)
+    const screenshotFileKey = unifiedContext.screenshot?.metadata?.fileKey ||
+                             unifiedContext.requestData?.screenshot?.metadata?.fileKey;
+    
+    if (screenshotFileKey && screenshotFileKey !== 'unknown') {
+      this.logger.info('🔍 File key extraction result:', {
+        extractedFileKey: screenshotFileKey,
+        source: 'screenshot.metadata'
+      });
+      return screenshotFileKey;
+    }
+
+    // PRIORITY 2: Extract from figmaUrl (reliable when available)
+    const figmaUrl = unifiedContext.figmaUrl ||
+                    unifiedContext.requestData?.figmaUrl ||
+                    unifiedContext.figmaData?.figmaUrl;
+
+    if (figmaUrl) {
+      const extractedKey = this.extractFileKeyFromUrl(figmaUrl);
+      if (extractedKey && extractedKey !== 'unknown') {
+        this.logger.info('🔍 File key extraction result:', {
+          extractedFileKey: extractedKey,
+          source: 'figmaUrl'
+        });
+        return extractedKey;
+      }
+    }
+
+    // PRIORITY 3: Fallback to context paths
+    const contextFileKey =
+      unifiedContext.fileKey ||
+      unifiedContext.metadata?.fileKey ||
+      unifiedContext.requestData?.fileContext?.fileKey ||
+      unifiedContext.requestData?.fileKey ||
+      unifiedContext.figmaData?.fileContext?.fileKey ||
+      unifiedContext.figmaData?.fileKey ||
+      (unifiedContext.figma?.file_id !== 'unknown' ? unifiedContext.figma?.file_id : null) ||
+      unifiedContext.figma?.metadata?.id;
+
+    if (contextFileKey && contextFileKey !== 'unknown') {
+      this.logger.info('🔍 File key extraction result:', {
+        extractedFileKey: contextFileKey,
+        source: 'context'
+      });
+      return contextFileKey;
+    }
+
+    // LAST RESORT: Use fallback (but log warning)
+    this.logger.warn('⚠️ Using fallback file key - no valid file key found in context');
+    return 'BioUSVD6t51ZNeG0g9AcNz';
   }
 
   /**
@@ -627,27 +1101,25 @@ ${this.formatDetailedContextForAI(unifiedContext)}
     const selection = figmaData.selection?.[0] || unifiedContext.selection?.[0] || {};
     const fileContext = figmaData.fileContext || unifiedContext.fileContext || {};
 
-    // Enhanced file key extraction - try multiple paths
-    let fileKey = fileContext.fileKey ||
-                 figmaData.fileKey ||
-                 unifiedContext.fileKey ||
-                 unifiedContext.metadata?.fileKey ||
-                 unifiedContext.requestData?.fileContext?.fileKey ||
-                 unifiedContext.requestData?.fileKey;
+    // 🔍 DEBUG: Log all possible file key paths
+    this.logger.info('🔍 DEBUG: File key extraction paths:', {
+      'fileContext.fileKey': fileContext.fileKey,
+      'figmaData.fileKey': figmaData.fileKey,
+      'unifiedContext.fileKey': unifiedContext.fileKey,
+      'unifiedContext.metadata?.fileKey': unifiedContext.metadata?.fileKey,
+      'unifiedContext.requestData?.fileContext?.fileKey': unifiedContext.requestData?.fileContext?.fileKey,
+      'unifiedContext.requestData?.fileKey': unifiedContext.requestData?.fileKey,
+      'unifiedContext.requestData?: screenshot.metadata.fileKey': unifiedContext.requestData?.screenshot?.metadata?.fileKey,
+      'unifiedContext.figma?.file_id': unifiedContext.figma?.file_id,
+      'unifiedContext.screenshot?.metadata?.fileKey': unifiedContext.screenshot?.metadata?.fileKey,
+      'requestData keys': unifiedContext.requestData ? Object.keys(unifiedContext.requestData) : 'none',
+      'availableKeys': Object.keys(unifiedContext)
+    });
 
-    // Try to extract from figmaUrl if available
-    if (!fileKey || fileKey === 'unknown') {
-      const figmaUrl = unifiedContext.figmaUrl ||
-                      figmaData.figmaUrl ||
-                      unifiedContext.requestData?.figmaUrl;
+    // Use the centralized file key extraction method
+    const fileKey = this.extractFileKey(unifiedContext);
 
-      if (figmaUrl) {
-        const extractedKey = this.extractFileKeyFromUrl(figmaUrl);
-        if (extractedKey && extractedKey !== 'unknown') {
-          fileKey = extractedKey;
-        }
-      }
-    }
+    this.logger.info(`🔍 DEBUG: Final extracted file key: "${fileKey}"`);
 
     return {
       name: selection.name || figmaData.component_name || 'Component',
@@ -676,7 +1148,6 @@ ${this.formatDetailedContextForAI(unifiedContext)}
    */
   extractDesignData(unifiedContext) {
     const designTokens = unifiedContext.designTokens || {};
-    const technicalSpecs = unifiedContext.technicalSpecs || {};
 
     return {
       colorsCount: designTokens.colors?.length || 0,

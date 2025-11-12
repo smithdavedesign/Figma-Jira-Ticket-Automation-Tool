@@ -10,39 +10,39 @@ meta:
 template:
   
   # Jira-specific overrides
-  title: "[{{ project.component_prefix | default('UI') }}] {{ figma.component_name }} Component"
+  title: "[{{ context.project.component_prefix | default(project.component_prefix) | default('UI') }}] {{ context.componentName | default(figma.component_name) | default('Component') }}"
   issue_type: Task
-  priority: "{{ calculated.priority | default('Medium') }}"
-  labels: ["component", "ui", "{{ project.tech_stack.0 | lowercase }}"]
+  priority: "{{ context.priority | default(calculated.priority) | default('Medium') }}"
+  labels: ["component", "ui", "{{ context.project.tech_stack.0 | default(project.tech_stack.0) | lowercase }}"]
   
   # Content template for Jira tickets
   content: |
-    ## 🎯 Component Overview
+    h2. 🎯 Component Overview
     
-    Implement the **{{ figma.component_name }}** component from the design specifications.
+    Implement the *{{ context.componentName | default(figma.component_name) | default('Component') }}* component from the design specifications.
     
-    **📋 Quick Details:**
-    - **Component Type**: {{ figma.component_type | default('UI Component') }}
-    - **Tech Stack**: {% if project.tech_stack %}{{ project.tech_stack | join(', ') }}{% else %}🔧 *Enhancement Needed: Tech stack not specified*{% endif %}
-    - **Priority**: {{ calculated.priority | default('Medium') }}
-    - **Story Points**: {{ calculated.story_points | default('5') }}
-    - **Design Status**: {{ figma.design_status | default('Ready for Development') }}
+    *📋 Quick Details:*
+    * *Project*: {{ context.projectName | default(project.name) | default('Project') }}
+    * *Component*: {{ context.componentName | default(figma.component_name) | default('Component') }}
+    * *Issue Type*: {{ context.issueType | default('Component Implementation') }}
+    * *Priority*: {{ context.priority | default(calculated.priority) | default('Medium') }}
+    * *Story Points*: {{ context.storyPoints | default(calculated.story_points) | default('5') }}
     
-    ## 🎨 Design References
+    h2. 🎨 Design References
     
-    **🔗 Figma Design**: [View Component]({{ figma.live_link }})
-    **📸 Screenshot**: {{ figma.screenshot_markdown.jira | default('!screenshot.png|thumbnail!') }}
+    **🔗 Figma Design**: [View Component]({{ context.figma.live_link | default(figma.live_link) }})
+    **📸 Screenshot**: {{ context.figma.screenshot_markdown.jira | default(figma.screenshot_markdown.jira) | default('!screenshot.png|thumbnail!') }}
     
     **🎨 Design Tokens**:
     {% if figma.extracted_colors %}
-    - **Colors**: {{ figma.extracted_colors }}
+    * *Colors*: {{ figma.extracted_colors }}
     {% else %}
-    - **Colors**: 🔧 *Enhancement Needed: Run enhanced context extraction for color tokens*
+    * *Colors*: 🔧 *Enhancement Needed: Run enhanced context extraction for color tokens*
     {% endif %}
     {% if figma.extracted_typography %}
-    - **Typography**: {{ figma.extracted_typography }}
+    * *Typography*: {{ figma.extracted_typography }}
     {% else %}
-    - **Typography**: 🔧 *Enhancement Needed: Run enhanced context extraction for typography*
+    * *Typography*: 🔧 *Enhancement Needed: Run enhanced context extraction for typography*
     {% endif %}
     {% if calculated.design_analysis %}
     
@@ -52,93 +52,93 @@ template:
     **🎯 Design Analysis**: 🔧 *Enhancement Needed: Use AI-powered analysis or enhanced context extraction for detailed design insights*
     {% endif %}
     
-    ## ✅ Acceptance Criteria
+    h2. ✅ Acceptance Criteria
     
-    - [ ] **Visual Accuracy**: Component matches design specifications exactly
-    - [ ] **Responsive Design**: Works across all supported breakpoints (mobile, tablet, desktop)
-    - [ ] **Accessibility**: Meets WCAG 2.1 AA standards with proper ARIA labels
-    - [ ] **Design System Compliance**: Uses approved design tokens and follows naming conventions
-    - [ ] **Testing**: Unit tests with {{ project.testing_framework | default('Jest + RTL') }}
-    - [ ] **Performance**: Component renders efficiently with no unnecessary re-renders
-    - [ ] **Documentation**: Component documented in Storybook with all variants
+    * *Visual Accuracy*: Component matches design specifications exactly
+    * *Responsive Design*: Works across all supported breakpoints (mobile, tablet, desktop)
+    * *Accessibility*: Meets WCAG 2.1 AA standards with proper ARIA labels
+    * *Design System Compliance*: Uses approved design tokens and follows naming conventions
+    * *Testing*: Unit tests with {{ context.project.testing_framework | default(project.testing_framework) | default('Jest + RTL') }}
+    * *Performance*: Component renders efficiently with no unnecessary re-renders
+    * *Documentation*: Component documented in Storybook with all variants
     
-    ## 🔧 Technical Requirements
+    h2. 🔧 Technical Requirements
     
     **Implementation Stack:**
     {% if project.tech_stack %}
     {% for tech in project.tech_stack %}
-    - {{ tech }}
+    * {{ tech }}
     {% endfor %}
     {% else %}
-    - 🔧 *Enhancement Needed: Specify tech stack in request*
-    - React (assumed)
-    - TypeScript (recommended)
+    * 🔧 *Enhancement Needed: Specify tech stack in request*
+    * React (assumed)
+    * TypeScript (recommended)
     {% endif %}
     
     **Component Structure:**
     ```
-    {{ figma.component_name }}/
-    ├── {{ figma.component_name }}.tsx          # Main component
-    ├── {{ figma.component_name }}.module.css   # Component styles
-    ├── {{ figma.component_name }}.test.tsx     # Unit tests
+    {{ context.componentName | default(figma.component_name) | default('Component') }}/
+    ├── {{ context.componentName | default(figma.component_name) | default('Component') }}.tsx          # Main component
+    ├── {{ context.componentName | default(figma.component_name) | default('Component') }}.module.css   # Component styles
+    ├── {{ context.componentName | default(figma.component_name) | default('Component') }}.test.tsx     # Unit tests
     ├── {{ figma.component_name }}.stories.tsx  # Storybook stories
     ├── types.ts                                # TypeScript interfaces
     └── index.ts                                # Export file
     ```
     
     {% if calculated.complexity == 'complex' %}
-    ## ⚠️  Complexity Analysis
+    h2. ⚠️  Complexity Analysis
     
-    **High Complexity Component** ({{ calculated.hours }} hours estimated)
-    - **Confidence Level**: {{ calculated.confidence * 100 }}%
+    *High Complexity Component* ({{ calculated.hours }} hours estimated)
+    * *Confidence Level*: {{ calculated.confidence * 100 }}%
     {% if calculated.risk_factors %}
-    - **Risk Factors**: {{ calculated.risk_factors | join(', ') }}
+    * *Risk Factors*: {{ calculated.risk_factors | join(', ') }}
     {% else %}
-    - **Risk Factors**: 🔧 *Enhancement Needed: Use AI analysis for risk assessment*
+    * *Risk Factors*: 🔧 *Enhancement Needed: Use AI analysis for risk assessment*
     {% endif %}
     {% if calculated.similar_components %}
-    - **Similar Components**: {{ calculated.similar_components | join(', ') }}
+    * *Similar Components*: {{ calculated.similar_components | join(', ') }}
     {% else %}
-    - **Similar Components**: 🔧 *Enhancement Needed: Component similarity analysis not available*
+    * *Similar Components*: 🔧 *Enhancement Needed: Component similarity analysis not available*
     {% endif %}
     {% else %}
-    ## 📊 Complexity Analysis
+    h2. 📊 Complexity Analysis
     
-    **{{ calculated.complexity | capitalize | default('Medium') }} Complexity Component** ({{ calculated.hours | default('4-6') }} hours estimated)
-    - **Confidence Level**: {{ calculated.confidence * 100 | default('75') }}%
-    - **Analysis**: 🔧 *Enhancement Available: Use AI-powered analysis for detailed complexity assessment*
+    *{{ calculated.complexity | capitalize | default('Medium') }} Complexity Component* ({{ calculated.hours | default('4-6') }} hours estimated)
+    * *Confidence Level*: {{ calculated.confidence * 100 | default('75') }}%
+    * *Analysis*: 🔧 *Enhancement Available: Use AI-powered analysis for detailed complexity assessment*
     {% endif %}
     
-    ## 📋 Implementation Tasks
+    h2. 📋 Implementation Tasks
     
-    - [ ] **Setup**: Create component file structure
-    - [ ] **Types**: Define TypeScript interfaces and prop types
-    - [ ] **Styling**: Implement CSS with design tokens
-    - [ ] **Logic**: Add component behavior and state management
-    - [ ] **Testing**: Write comprehensive unit tests
-    - [ ] **Stories**: Create Storybook documentation
-    - [ ] **Review**: Code review and accessibility audit
+    * *Setup*: Create component file structure
+    * *Types*: Define TypeScript interfaces and prop types
+    * *Styling*: Implement CSS with design tokens
+    * *Logic*: Add component behavior and state management
+    * *Testing*: Write comprehensive unit tests
+    * *Stories*: Create Storybook documentation
+    * *Review*: Code review and accessibility audit
     
     {% if authoring.notes != 'Authoring Notes Not Found' %}
-    ## 📝 AEM Authoring Notes
+    h2. 📝 AEM Authoring Notes
     
     {{ authoring.notes }}
     
-    **Technical Details:**
-    - **Component Path**: {{ authoring.component_path }}
-    - **CQ Template**: {{ authoring.cq_template }}
-    - **Touch UI Required**: {{ authoring.touch_ui_required }}
+    *Technical Details:*
+    * *Component Path*: {{ authoring.component_path }}
+    * *CQ Template*: {{ authoring.cq_template }}
+    * *Touch UI Required*: {{ authoring.touch_ui_required }}
     {% endif %}
     
-    ## 🔗 Resources
+    h2. 🔗 Resources
     
-    - **Design System**: [Component Library]({{ project.component_library_url | default('https://storybook.company.com') }})
-    - **Accessibility**: [WCAG Guidelines]({{ project.accessibility_url | default('https://accessibility.company.com') }})
-    - **Testing**: [Testing Standards]({{ project.testing_standards_url | default('https://testing.company.com') }})
-    - **Figma**: [Design Specs]({{ figma.live_link }})
+    * *Design System*: [Component Library|{{ context.project.component_library_url | default(project.component_library_url) | default('https://storybook.company.com') }}]
+    * *Accessibility*: [WCAG Guidelines|{{ context.project.accessibility_url | default(project.accessibility_url) | default('https://accessibility.company.com') }}]
+    * *Testing*: [Testing Standards|{{ context.project.testing_standards_url | default(project.testing_standards_url) | default('https://testing.company.com') }}]
+    * *Figma*: [Design Specs|{{ context.figma.live_link | default(figma.live_link) }}]
     
     ---
     
     **Generated**: {{ 'now' | date('%Y-%m-%d %H:%M') }} via Universal Template System  
     **Template**: jira/component.yml → base.yml  
-        **Confidence**: {{ calculated.confidence * 100 }}% | **Estimated Hours**: {{ calculated.hours }}
+        **Confidence**: {{ context.calculated.confidence | default(calculated.confidence) | default(0.8) * 100 }}% | **Estimated Hours**: {{ context.calculated.hours | default(calculated.hours) | default(8) }}

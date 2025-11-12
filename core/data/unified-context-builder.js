@@ -736,6 +736,8 @@ export class UnifiedContextBuilder {
     const fileKey = figmaContext?.metadata?.id || figmaContext?.fileKey ||
                    requestData?.fileContext?.fileKey || requestData?.fileKey || extractedFileKey;
 
+
+
     if (!fileKey || fileKey === 'unknown') {
       return 'https://www.figma.com/file/unknown';
     }

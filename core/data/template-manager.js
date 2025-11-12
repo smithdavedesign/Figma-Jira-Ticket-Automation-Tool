@@ -429,9 +429,13 @@ export class TemplateManager {
   }
 
   /**
-   * Get cached ticket
+   * Get cached ticket - DISABLED FOR TESTING
    */
   async getCachedTicket(cacheKey) {
+    // 🚫 CACHE READ DISABLED FOR TESTING - always generate fresh tickets
+    this.logger.debug(`🚫 Template cache read DISABLED for testing: ${cacheKey}`);
+    return null;
+
     try {
       const cached = await this.redis.get(cacheKey);
       if (cached) {
@@ -444,9 +448,13 @@ export class TemplateManager {
   }
 
   /**
-   * Cache generated ticket
+   * Cache generated ticket - DISABLED FOR TESTING
    */
   async cacheTicket(cacheKey, ticket) {
+    // 🚫 CACHE DISABLED FOR TESTING - always generate fresh tickets
+    this.logger.debug(`🚫 Template cache write DISABLED for testing: ${cacheKey}`);
+    return;
+
     try {
       await this.redis.set(cacheKey, JSON.stringify(ticket), this.config.cacheTTL);
       this.logger.debug(`💾 Cached template ticket: ${cacheKey}`);
@@ -753,12 +761,35 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
       'figmaContext?.fileKey': figmaContext?.fileKey,
       'requestData?.fileContext?.fileKey': requestData?.fileContext?.fileKey,
       'requestData?.fileKey': requestData?.fileKey,
+      'requestData?.screenshot?.metadata?.fileKey': requestData?.screenshot?.metadata?.fileKey,
       'extractedFileKey': extractedFileKey
     });
 
     // Get file key from various sources (prioritize plugin data over metadata)
-    const fileKey = requestData?.fileContext?.fileKey || requestData?.fileKey ||
-                   figmaContext?.fileKey || figmaContext?.metadata?.id || extractedFileKey;
+    let fileKey = requestData?.fileContext?.fileKey || requestData?.fileKey ||
+                  figmaContext?.fileKey || figmaContext?.metadata?.id || extractedFileKey;
+
+    // If still no fileKey or "unknown", try additional sources
+    if (!fileKey || fileKey === 'unknown') {
+      // Try screenshot metadata (common in plugin data)
+      const screenshotFileKey = requestData?.screenshot?.metadata?.fileKey;
+      if (screenshotFileKey && screenshotFileKey !== 'unknown') {
+        fileKey = screenshotFileKey;
+        console.log('🔍 [buildFigmaUrl] Extracted fileKey from screenshot metadata:', fileKey);
+      }
+    }
+
+    // If still no fileKey, try to extract from figmaUrl if available
+    if (!fileKey || fileKey === 'unknown') {
+      const figmaUrl = requestData?.figmaUrl || figmaContext?.figmaUrl;
+      if (figmaUrl) {
+        const urlFileKey = this.extractFileKeyFromUrl(figmaUrl);
+        if (urlFileKey && urlFileKey !== 'unknown') {
+          fileKey = urlFileKey;
+          console.log('🔍 [buildFigmaUrl] Extracted fileKey from URL:', fileKey);
+        }
+      }
+    }
 
     console.log('🔍 [buildFigmaUrl] Final fileKey selected:', fileKey);
 
@@ -768,12 +799,19 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
     }
 
     // Get project name for URL (encode for URL safety)
-    const projectName = requestData?.fileContext?.fileName ||
+    // Priority: explicit projectName > context componentName > fileContext > metadata
+    const projectName = requestData?.projectName ||
+                       requestData?.context?.projectName ||
+                       requestData?.context?.componentName ||
+                       requestData?.fileContext?.fileName ||
                        figmaContext?.metadata?.name ||
                        requestData?.metadata?.fileName ||
                        'Design-File';
 
     console.log('🔍 [buildFigmaUrl] Project name sources:', {
+      'requestData?.projectName': requestData?.projectName,
+      'requestData?.context?.projectName': requestData?.context?.projectName,
+      'requestData?.context?.componentName': requestData?.context?.componentName,
       'requestData?.fileContext?.fileName': requestData?.fileContext?.fileName,
       'figmaContext?.metadata?.name': figmaContext?.metadata?.name,
       'requestData?.metadata?.fileName': requestData?.metadata?.fileName,
@@ -782,10 +820,22 @@ Generated at ${new Date().toISOString()} via Template Manager (Fallback)`;
 
     const encodedProjectName = encodeURIComponent(projectName.replace(/\s+/g, '-'));
 
-    // Get node ID from frame data
-    const nodeId = requestData?.frameData?.id ||
-                  requestData?.enhancedFrameData?.[0]?.id ||
-                  requestData?.metadata?.nodeId;
+    // Get node ID from frame data or extract from original URL
+    let nodeId = requestData?.frameData?.id ||
+                 requestData?.enhancedFrameData?.[0]?.id ||
+                 requestData?.metadata?.nodeId;
+
+    // If no nodeId found, try to extract from original Figma URL
+    if (!nodeId) {
+      const originalUrl = requestData?.figmaUrl || requestData?.fileContext?.url;
+      if (originalUrl) {
+        const nodeIdMatch = originalUrl.match(/node-id=([^&]+)/);
+        if (nodeIdMatch) {
+          nodeId = decodeURIComponent(nodeIdMatch[1]);
+          console.log('🔍 [buildFigmaUrl] Extracted nodeId from original URL:', nodeId);
+        }
+      }
+    }
 
     // Extract team parameter from original Figma URL if available
     let teamParam = null;
