@@ -206,10 +206,6 @@ export class TicketGenerationService extends BaseService {
    * @returns {Object|null} Cached ticket or null
    */
   async getCachedTicket(cacheKey) {
-    // 🚫 CACHE READ DISABLED FOR TESTING - always generate fresh tickets
-    this.logger.debug(`🚫 Cache read DISABLED for testing: ${cacheKey}`);
-    return null;
-
     if (!this.cacheService) {return null;}
 
     try {
@@ -237,10 +233,6 @@ export class TicketGenerationService extends BaseService {
    * @param {Object} ticket - Generated ticket
    */
   async cacheTicket(cacheKey, ticket) {
-    // 🚫 CACHE DISABLED FOR TESTING - always generate fresh tickets
-    this.logger.debug(`🚫 Cache write DISABLED for testing: ${cacheKey}`);
-    return;
-
     if (!this.cacheService) {return;}
 
     try {
@@ -702,7 +694,7 @@ Implement the ${componentName} component according to design specifications.
 - Testing Requirements: Unit + integration tests
 
 ---
-⚠️ *Generated via Emergency Strategy - AI services were unavailable*
+⚠️ *Generated via Emergency Strategy fallback - AI services were unavailable*
 *This is a functional template with intelligent defaults*
 
 Generated at ${new Date().toISOString()}`;

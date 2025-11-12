@@ -208,7 +208,10 @@ describe('TicketGenerationService', () => {
     });
 
     it('should handle AI generation failures gracefully', async () => {
-      mockVisualAIService.processVisualEnhancedContext.mockRejectedValue(
+      await service.initialize();
+      
+      // Reset the mock after initialization to ensure it's applied to the correct instance
+      service.templateGuidedAIService.aiService.processVisualEnhancedContext = vi.fn().mockRejectedValue(
         new Error('AI service unavailable')
       );
 
@@ -217,10 +220,15 @@ describe('TicketGenerationService', () => {
         enhancedFrameData: [{ name: 'TestComponent' }]
       };
 
-      // Service now has fallback mechanisms, so it should succeed with fallback content
+      // Service now has fallback mechanisms, so it should succeed with template-fallback
       const result = await service.generateTicket(request, 'ai-powered');
       expect(result).toBeDefined();
-      expect(result.content).toContain('fallback'); // Should use fallback generation
+      
+      // Check for template fallback indicators
+      // When AI fails, confidence drops to 0.7 (vs 0.95 for successful AI)
+      // and performance source becomes 'template-guided-ai' with template fallback
+      expect(result.metadata?.ai_confidence === 0.7 && 
+             result.performance?.source === 'template-guided-ai').toBe(true);
     });
 
     it('should handle cache failures gracefully', async () => {

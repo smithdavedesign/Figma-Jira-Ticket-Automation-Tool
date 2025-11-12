@@ -165,7 +165,7 @@ export class TemplateIntegratedAIService {
 
       // Project context
       project: {
-        name: 'Design System Project',
+        name: 'AEM Component Library',
         tech_stack: Array.isArray(techStack) ? techStack : [techStack],
         platform: documentType,
         repository_url: 'https://github.com/company/design-system',

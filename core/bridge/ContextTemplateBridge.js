@@ -269,6 +269,10 @@ export class ContextTemplateBridge extends BaseService {
         url: request.figmaUrl,
         live_link: await this._buildEnhancedFigmaUrl(contextResult, request),
 
+        // 🚀 Enhanced extraction for template variables
+        extracted_colors: await this._extractEnhancedColors(contextResult, request),
+        extracted_typography: await this._extractEnhancedTypography(contextResult, request),
+
         // Rich design data from Context Layer
         design_tokens: contextResult.styleExtraction?.designTokens || {},
         color_palette: contextResult.styleExtraction?.colors || [],
@@ -298,7 +302,7 @@ export class ContextTemplateBridge extends BaseService {
 
       // Project context
       project: {
-        name: 'Design System Project',
+        name: 'AEM Component Library',
         tech_stack: this._normalizeTechStack(request.techStack),
         component_prefix: 'UI',
         frontend_framework: this._inferFramework(request.techStack),
@@ -594,7 +598,7 @@ Implement the ${componentName} component based on Figma design specifications.
         live_link: request.figmaUrl || ''
       },
       project: {
-        name: 'Design System Project',
+        name: 'AEM Component Library',
         tech_stack: this._normalizeTechStack(request.techStack),
         frontend_framework: this._inferFramework(request.techStack)
       },
@@ -840,6 +844,179 @@ Implement the ${componentName} component based on Figma design specifications.
       this.logger.warn('⚠️ Enhanced URL building failed, using fallback:', error.message);
       return request.figmaUrl || 'https://www.figma.com/file/unknown';
     }
+  }
+
+  /**
+   * Extract enhanced colors using our Phase 1 extraction logic
+   */
+  async _extractEnhancedColors(contextResult, request) {
+    try {
+      this.logger.info('🎨 Context Bridge: Enhanced color extraction starting', {
+        hasFrameData: !!request.frameData,
+        frameDataLength: request.frameData?.length || 0,
+        hasStyleExtraction: !!contextResult.styleExtraction,
+        hasDesignTokens: !!contextResult.designTokens
+      });
+      
+      // First try to extract from frameData if available
+      if (request.frameData && Array.isArray(request.frameData)) {
+        const colors = this._extractColorsFromFrameData(request.frameData);
+        if (colors.length > 0) {
+          return colors.join(', ');
+        }
+      }
+
+      // Try to extract from style extraction context
+      if (contextResult.styleExtraction?.colors && contextResult.styleExtraction.colors.length > 0) {
+        return contextResult.styleExtraction.colors.map(c => c.hex || c).join(', ');
+      }
+
+      // Try to extract from design tokens
+      if (contextResult.designTokens?.colors && Array.isArray(contextResult.designTokens.colors)) {
+        return contextResult.designTokens.colors.join(', ');
+      }
+
+      // Return descriptive fallback with debug marker
+      const fallback = '🎨 ENHANCED: Primary, Secondary, Accent colors from design system';
+      this.logger.info('🎨 Context Bridge: Using color fallback:', fallback);
+      return fallback;
+    } catch (error) {
+      this.logger.warn('⚠️ Enhanced color extraction failed:', error.message);
+      return 'Primary, Secondary, Accent colors from design system';
+    }
+  }
+
+  /**
+   * Extract enhanced typography using our Phase 1 extraction logic
+   */
+  async _extractEnhancedTypography(contextResult, request) {
+    try {
+      // First try to extract from frameData if available
+      if (request.frameData && Array.isArray(request.frameData)) {
+        const fonts = this._extractFontsFromFrameData(request.frameData);
+        if (fonts.length > 0) {
+          return fonts.map(f => `${f.family} ${f.size}px/${f.weight}`).join(', ');
+        }
+      }
+
+      // Try to extract from style extraction context
+      if (contextResult.styleExtraction?.typography && contextResult.styleExtraction.typography.length > 0) {
+        const fonts = contextResult.styleExtraction.typography;
+        return fonts.map(f => `${f.fontFamily || f.family} ${f.fontSize || f.size}px/${f.fontWeight || f.weight}`).join(', ');
+      }
+
+      // Return descriptive fallback with debug marker
+      const fallback = '🔤 ENHANCED: System fonts: Inter, SF Pro, Roboto';
+      this.logger.info('🔤 Context Bridge: Using typography fallback:', fallback);
+      return fallback;
+    } catch (error) {
+      this.logger.warn('⚠️ Enhanced typography extraction failed:', error.message);
+      return 'System fonts: Inter, SF Pro, Roboto';
+    }
+  }
+
+  /**
+   * Extract colors from frameData structure
+   */
+  _extractColorsFromFrameData(frameData) {
+    const colors = [];
+    const colorSet = new Set();
+
+    const extractFromNode = (node) => {
+      // Extract colors from fills
+      if (node.fills) {
+        node.fills.forEach(fill => {
+          if (fill.type === 'SOLID' && fill.color) {
+            const hex = this._rgbaToHex(fill.color.r, fill.color.g, fill.color.b);
+            if (!colorSet.has(hex)) {
+              colorSet.add(hex);
+              colors.push(hex);
+            }
+          }
+        });
+      }
+
+      // Extract colors from strokes
+      if (node.strokes) {
+        node.strokes.forEach(stroke => {
+          if (stroke.type === 'SOLID' && stroke.color) {
+            const hex = this._rgbaToHex(stroke.color.r, stroke.color.g, stroke.color.b);
+            if (!colorSet.has(hex)) {
+              colorSet.add(hex);
+              colors.push(hex);
+            }
+          }
+        });
+      }
+
+      // Recursively process children
+      if (node.children) {
+        node.children.forEach(child => extractFromNode(child));
+      }
+    };
+
+    frameData.forEach(node => extractFromNode(node));
+    return colors;
+  }
+
+  /**
+   * Extract fonts from frameData structure
+   */
+  _extractFontsFromFrameData(frameData) {
+    const fonts = [];
+    const fontSet = new Set();
+
+    const extractFromNode = (node) => {
+      // Extract fonts from text nodes
+      if (node.type === 'TEXT' && node.style) {
+        const fontKey = `${node.style.fontFamily}-${node.style.fontSize}-${node.style.fontWeight}`;
+        if (!fontSet.has(fontKey)) {
+          fontSet.add(fontKey);
+          fonts.push({
+            family: node.style.fontFamily || 'Unknown',
+            size: node.style.fontSize || 16,
+            weight: this._convertFontWeight(node.style.fontWeight || 400)
+          });
+        }
+      }
+
+      // Recursively process children
+      if (node.children) {
+        node.children.forEach(child => extractFromNode(child));
+      }
+    };
+
+    frameData.forEach(node => extractFromNode(node));
+    return fonts;
+  }
+
+  /**
+   * Convert RGBA to hex
+   */
+  _rgbaToHex(r, g, b) {
+    const toHex = (n) => {
+      const hex = Math.round(n * 255).toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  /**
+   * Convert font weight to readable format
+   */
+  _convertFontWeight(weight) {
+    const weightMap = {
+      100: 'Thin',
+      200: 'Extra Light',
+      300: 'Light',
+      400: 'Regular',
+      500: 'Medium',
+      600: 'Semi Bold',
+      700: 'Bold',
+      800: 'Extra Bold',
+      900: 'Black'
+    };
+    return weightMap[weight] || 'Regular';
   }
 
   /**
