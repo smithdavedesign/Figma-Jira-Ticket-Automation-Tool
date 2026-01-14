@@ -108,6 +108,60 @@ export class GenerateRoutes extends BaseRoute {
 
     // 2. ARCHITECTURE ROUTING: Based on determined strategy, not original request
 
+    // NEW: Active Orchestration Integration
+    if (request.enableActiveCreation) {
+      try {
+        const orchestrator = this.getService('workItemOrchestrator', false);
+        if (orchestrator) {
+          this.logger.info('🎼 Routing to WorkItemOrchestrator for active creation execution');
+          
+          const orchestrationResult = await orchestrator.run({
+            componentName: request.frameData?.[0]?.name || 'Unknown Component',
+            frameData: request.frameData,
+            projectKey: request.ticketProjectKey,
+            ...request
+          }, {
+            enableActiveCreation: true,
+            wikiSpace: request.wikiSpace,
+            ticketProjectKey: request.ticketProjectKey
+          });
+
+          // Extract Jira content for main response compatibility
+          const jiraResult = orchestrationResult.results.jira;
+          
+          // Handle various content shapes logic to ensure string output
+          let mainContent = "Active creation completed";
+          if (jiraResult?.content) {
+             if (typeof jiraResult.content === 'string') {
+                mainContent = jiraResult.content;
+             } else if (jiraResult.content.description) {
+                // If it's a structured object (jiraData), prefer the description
+                mainContent = jiraResult.content.description;
+             } else if (jiraResult.content.content) {
+                // Nested content property
+                mainContent = jiraResult.content.content;
+             } else {
+                // Fallback for unknown object structure
+                mainContent = JSON.stringify(jiraResult.content, null, 2);
+             }
+          }
+
+          return {
+            content: mainContent,
+            format: request.format,
+            strategy: 'orchestrator-active',
+            metadata: {
+              activeExecution: true,
+              results: orchestrationResult.results
+            }
+          };
+        }
+      } catch (err) {
+        this.logger.error('Orchestration failed, falling back to standard generation', err);
+        // Fallback to standard flow continues below
+      }
+    }
+
     // Use Context-Template Bridge for fast, template-based strategies
     if (this.contextBridge && ['context-bridge', 'template', 'auto'].includes(determinedStrategy)) {
       this.logger.info('🌉 Using Context-Template Bridge (MCP-free architecture)');
@@ -179,6 +233,9 @@ export class GenerateRoutes extends BaseRoute {
       // Options
       includeScreenshot: rawRequest.includeScreenshot || false,
       testMode: rawRequest.testMode || false,
+      enableActiveCreation: rawRequest.enableActiveCreation || false,
+      wikiSpace: rawRequest.wikiSpace,
+      ticketProjectKey: rawRequest.ticketProjectKey,
 
       // Preserve any additional fields
       ...rawRequest

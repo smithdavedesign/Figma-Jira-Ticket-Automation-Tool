@@ -1254,6 +1254,14 @@ Examples:
         </select>
       </div>
 
+      <div class="checkbox-group" style="margin-top: 10px; margin-bottom: 15px; background: rgba(59, 130, 246, 0.1); padding: 10px; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: flex-start; gap: 10px;">
+        <input type="checkbox" id="activeCreation" name="activeCreation" style="margin-top: 4px;">
+        <label for="activeCreation" style="user-select: none; cursor: pointer; display: flex; flex-direction: column;">
+          <span style="font-weight: 500; color: #3b82f6;">🚀 Enable Active Automation</span>
+          <span style="font-size: 11px; color: #64748b; margin-top: 4px;">Automatically create Jira tickets, Confluence pages, and Git branches based on the generated plan.</span>
+        </label>
+      </div>
+
       <div class="form-group">
         <label for="documentType">Document Type</label>
         <select id="documentType" onchange="updateTemplateContext()">
@@ -2558,6 +2566,7 @@ Examples:
           metadata: aiData.metadata,
           useAI: true,
           platform: platformSelect.value,
+          enableActiveCreation: document.getElementById('activeCreation')?.checked || false,
           teamStandards: generateDynamicTeamStandards(techStackDesc, documentType)
         };
         

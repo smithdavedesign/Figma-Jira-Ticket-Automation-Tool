@@ -18,13 +18,15 @@ import { TemplateGuidedAIService } from '../../core/ai/template-guided-ai-servic
 import { UnifiedContextBuilder } from '../../core/data/unified-context-builder.js';
 
 export class TicketGenerationService extends BaseService {
-  constructor(templateManager, visualAIService, aiOrchestrator, cacheService) {
+  constructor(templateManager, visualAIService, aiOrchestrator, cacheService, mcpAdapter, configService) {
     super('TicketGenerationService');
 
     this.templateManager = templateManager;
     this.visualAIService = visualAIService;
     this.aiOrchestrator = aiOrchestrator;
     this.cacheService = cacheService;
+    this.mcpAdapter = mcpAdapter;
+    this.configService = configService;
 
     this.strategies = new Map();
     this.defaultStrategy = 'ai-powered'; // Simplified: only 2 strategies
@@ -85,15 +87,16 @@ export class TicketGenerationService extends BaseService {
       const strategy = this.selectStrategy(request, strategyName);
 
       // Check cache first
-      const cacheKey = this.createCacheKey(request, strategy.name);
-      const cachedResult = await this.getCachedTicket(cacheKey);
-      if (cachedResult) {
-        this.logger.info(`📋 Using cached ticket [${strategy.name}]`);
-        return cachedResult;
-      }
+      // DISABLED BY USER REQUEST: Always force regeneration to avoid stale data/crashes
+      // const cacheKey = this.createCacheKey(request, strategy.name);
+      // const cachedResult = await this.getCachedTicket(cacheKey);
+      // if (cachedResult) {
+      //   this.logger.info(`📋 Using cached ticket [${strategy.name}]`);
+      //   return cachedResult;
+      // }
 
       // Generate ticket
-      this.logger.info(`🎫 Generating ticket using ${strategy.name} strategy`);
+      this.logger.info(`🎫 Generating ticket using ${strategy.name} strategy (fresh generation)`);
       const result = await strategy.generate(request);
 
       // Add metadata
@@ -106,7 +109,8 @@ export class TicketGenerationService extends BaseService {
       };
 
       // Cache the result for future requests
-      await this.cacheTicket(cacheKey, result);
+      // DISABLED BY USER REQUEST
+      // await this.cacheTicket(cacheKey, result);
 
       return result;
     }, { strategy: strategyName, requestType: request.documentType });
@@ -599,6 +603,10 @@ class EmergencyGenerationStrategy extends GenerationStrategy {
           techStack,
           figmaContext,
           requestData: requestData || request,
+          // CRITICAL: Explicitly pass context data for extraction resilience
+          fileContext: request.fileContext,
+          frameData: request.frameData,
+          enhancedFrameData: request.enhancedFrameData,
           platform,
           documentType,
           options: { enableAIEnhancement: false } // No AI for emergency

@@ -22,7 +22,7 @@ const SERVERS = {
     name: '🤖 MCP Server',
     port: 3000,
     command: 'node',
-    args: ['app/server/main.js'], // Updated for MVC structure
+    args: ['app/server.js'], // Updated for MVC structure
     cwd: path.join(__dirname, '..'),
     color: '\x1b[36m' // Cyan
   },

@@ -45,12 +45,26 @@ export class PluginRoutes extends BaseRoute {
       this.logger.warn('TicketGenerationService not available:', error.message);
     }
 
+    try {
+      this.orchestrator = this.getService('workItemOrchestrator');
+    } catch (error) {
+      this.logger.warn('WorkItemOrchestrator not available:', error.message);
+    }
+    
+    try {
+      this.screenshotService = this.getService('screenshotService');
+    } catch (error) {
+      this.logger.warn('ScreenshotService not available:', error.message);
+    }
+
     // Log service availability
     this.logger.info('Plugin services initialized:', {
       contextManager: !!this.contextManager,
       visualAIService: !!this.visualAIService,
       templateManager: !!this.templateManager,
-      strategyGenerator: !!this.strategyGenerator
+      strategyGenerator: !!this.strategyGenerator,
+      orchestrator: !!this.orchestrator,
+      screenshotService: !!this.screenshotService
     });
   }
 
@@ -287,14 +301,60 @@ export class PluginRoutes extends BaseRoute {
         strategy = 'auto',
         techStack,
         documentType = 'component',
-        teamStandards = {}
+        teamStandards = {},
+        enableActiveCreation = false,
+        projectKey,
+        wikiSpace,
+        screenshot // Capture screenshot from body if provided
       } = req.body;
 
       // Validate required data
       if (!figmaUrl && !enhancedFrameData) {
         return this.sendError(res, 'Either figmaUrl or enhancedFrameData is required', 400);
       }
+      
+      // Ensure we have a screenshot for orchestration/AI
+      let captureResult = screenshot;
+      if (!captureResult && figmaUrl && this.screenshotService) {
+         try {
+             // Capture in base64 to ensure we can attach it
+             this.logger.info('📸 Capturing missing screenshot in Plugin Route...');
+             captureResult = await this.screenshotService.captureFromFigma(figmaUrl, { format: 'base64' });
+         } catch(e) {
+             this.logger.warn('Failed to capture screenshot fallback:', e.message);
+         }
+      }
 
+      // 1. ACTIVE ORCHESTRATION PATH (If enabled + Orchestrator available)
+      if (enableActiveCreation && this.orchestrator) {
+        this.logger.info('🚀 Starting Active Orchestration (Creation Mode)');
+        
+        const context = {
+          figmaUrl,
+          frameData: enhancedFrameData,
+          componentName: enhancedFrameData?.[0]?.name || 'Component',
+          techStack,
+          documentType,
+          platform: format,
+          screenshot: captureResult // Pass to context
+        };
+
+        const orchestrationResult = await this.orchestrator.run(context, {
+          enableActiveCreation: true,
+          projectKey,
+          wikiSpace
+        });
+
+        // Format the response to be friendly to the UI
+        return this.sendSuccess(res, {
+            success: true,
+            orchestration: orchestrationResult.results,
+            // Fallback content in case UI wants to display text too
+            content: orchestrationResult.results.jira?.content?.description || "Ticket created via Orchestrator"
+        }, 'Active Orchestration completed successfully');
+      }
+
+      // 2. STANDARD GENERATION PATH (Passive)
       // Use the ticketGenerationService for AI-powered generation
       if (this.strategyGenerator && enhancedFrameData) {
         this.logger.info('🤖 Using AI-powered ticket generation with enhanced frame data');

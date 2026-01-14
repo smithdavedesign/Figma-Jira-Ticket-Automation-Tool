@@ -10,7 +10,7 @@
  * Current: ~200-line orchestrator with clean separation of concerns
  */
 
-import dotenv from 'dotenv';
+import './env-setup.js'; // Must be the first import to ensure env vars are loaded correctly
 import express from 'express';
 import helmet from 'helmet';
 import { Logger } from '../core/utils/logger.js';
@@ -20,15 +20,14 @@ import { ErrorHandler } from '../core/utils/error-handler.js';
 import { ServiceContainer } from './controllers/ServiceContainer.js';
 import { RouteRegistry } from './core/RouteRegistry.js';
 
-// Fix API Key Environment Variable Issue
-// Unset invalid system environment variable before loading .env
-if (process.env.GEMINI_API_KEY === 'AIzaSyCWGu1CMfzSVlg_04QbWUH6TNSxS_t39Ck') {
-  console.log('🔧 Removing invalid system GEMINI_API_KEY override...');
-  delete process.env.GEMINI_API_KEY;
-}
+// Logic moved to app/env-setup.js to handle env var loading priority
 
 // AI Services
 import { AIOrchestrator } from '../core/ai/orchestrator.js';
+
+// Orchestration
+import { WorkItemOrchestrator } from '../core/orchestration/WorkItemOrchestrator.js';
+import { MCPAdapter } from '../core/adapters/MCPAdapter.js';
 
 // Services
 import { TicketGenerationService } from './services/TicketGenerationService.js';
@@ -46,7 +45,7 @@ import { SessionManager } from '../core/data/session-manager.js';
 import { FigmaSessionManager } from '../core/data/figma-session-manager.js';
 
 // Load environment variables
-dotenv.config();
+// dotenv.config(); // Loaded via import 'dotenv/config' at entry
 
 /**
  * Refactored Server Class
@@ -190,8 +189,17 @@ export class Server {
         new TestingService(ticketService, screenshotService, analysisService, redis), true, ['redis', 'configurationService', 'screenshotService', 'analysisService', 'ticketService']);
 
       // Register ticket generation service with correct dependencies
-      this.serviceContainer.register('ticketGenerationService', (container, templateManager, visualAIService, aiOrchestrator, redis) =>
-        new TicketGenerationService(templateManager, visualAIService, aiOrchestrator, redis), true, ['templateManager', 'visualAIService', 'aiOrchestrator', 'redis']);
+      this.serviceContainer.register('ticketGenerationService', (container, templateManager, visualAIService, aiOrchestrator, redis, mcpAdapter, configService) =>
+        new TicketGenerationService(templateManager, visualAIService, aiOrchestrator, redis, mcpAdapter, configService), true, ['templateManager', 'visualAIService', 'aiOrchestrator', 'redis', 'mcpAdapter', 'configurationService']);
+
+      // Register MCP Adapter
+      this.serviceContainer.register('mcpAdapter', (container) => new MCPAdapter({ 
+        mcpServerUrl: process.env.MCP_SERVER_URL || 'http://localhost:3000',
+        enableMultiAgent: true 
+      }), true, []);
+
+      // Register WorkItem Orchestrator
+      this.serviceContainer.register('workItemOrchestrator', (container) => new WorkItemOrchestrator(container), true, ['mcpAdapter', 'ticketGenerationService']);
 
       // Register AI orchestrator
       this.serviceContainer.register('aiOrchestrator', (container, redis, configService) =>
