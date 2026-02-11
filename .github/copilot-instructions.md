@@ -17,3 +17,4 @@ Use the following context when referenced:
 - **`@skill` scaffold**: `.github/skills/scaffold-component.md` (Component Generation)
 - **`@skill` audit**: `.github/skills/audit-visual-accessibility.md` (Visual QA)
 - **`@skill` strategy**: `.github/skills/generate-strategic-brief.md` (Business Logic)
+- **`@skill` validate**: `.github/skills/run-validation-suite.md` (Testing Framework)
