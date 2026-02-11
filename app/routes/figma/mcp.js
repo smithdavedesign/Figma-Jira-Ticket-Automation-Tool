@@ -8,6 +8,11 @@
  */
 
 import { BaseRoute } from '../BaseRoute.js';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import path from 'path';
+
+const execAsync = promisify(exec);
 
 export class MCPRoutes extends BaseRoute {
   constructor(serviceContainer) {
@@ -19,6 +24,10 @@ export class MCPRoutes extends BaseRoute {
    * @param {Express.Router} router - Express router instance
    */
   registerRoutes(router) {
+    // Generic MCP Endpoint (for standard MCP clients)
+    router.post('/api/mcp', this.asyncHandler(this.handleGenericMCPRequest.bind(this)));
+    router.post('/api/mcp/', this.asyncHandler(this.handleGenericMCPRequest.bind(this)));
+
     // MCP status and health endpoints
     router.get('/api/mcp/status', this.asyncHandler(this.handleMCPStatus.bind(this)));
     router.get('/api/mcp/health', this.asyncHandler(this.handleMCPHealth.bind(this)));
@@ -39,6 +48,35 @@ export class MCPRoutes extends BaseRoute {
     router.get('/mcp/resources', this.asyncHandler(this.handleMCPResources.bind(this)));
 
     this.logger.info('✅ MCP routes registered');
+  }
+
+  /**
+   * Handle generic MCP JSON-RPC requests
+   * Dispatches to specific handlers based on method
+   */
+  async handleGenericMCPRequest(req, res) {
+    const { method } = req.body;
+    
+    this.logAccess(req, 'mcpGeneric', { method });
+
+    // Dispatch based on JSON-RPC method
+    if (method === 'initialize') {
+        return this.handleMCPInitialize(req, res);
+    } 
+    if (method === 'tools/call') {
+        return this.handleMCPToolCall(req, res);
+    }
+    if (method === 'tools/list') {
+         return this.handleMCPTools(req, res);
+    }
+    if (method === 'notifications/initialized') {
+        return this.sendSuccess(res, { success: true }, 'Acknowledged');
+    }
+    
+    // Default/Unknown
+    this.logger.warn(`Unknown MCP method: ${method}`);
+    // Respond with generic success/null to avoid breaking clients on optional methods
+    this.sendSuccess(res, null, 'Ignored unknown method');
   }
 
   /**
@@ -165,7 +203,13 @@ export class MCPRoutes extends BaseRoute {
    * Execute MCP tool with provided arguments - Design Context Only
    */
   async handleMCPToolCall(req, res) {
-    const { tool, arguments: toolArgs } = req.body;
+    let { tool, arguments: toolArgs } = req.body;
+
+    // Phase 8: Support JSON-RPC nested params
+    if (!tool && req.body.params && req.body.params.name) {
+      tool = req.body.params.name;
+      toolArgs = req.body.params.arguments;
+    }
 
     this.logAccess(req, 'mcpToolCall', {
       mcpTool: tool,
@@ -174,10 +218,8 @@ export class MCPRoutes extends BaseRoute {
     });
 
     // Validate required fields
-    try {
-      this.validateRequired(req.body, ['tool']);
-    } catch (error) {
-      return this.sendError(res, 'Validation failed: ' + error.message, 400);
+    if (!tool) {
+      return this.sendError(res, 'Validation failed: Missing required fields: tool', 400);
     }
 
     try {
@@ -194,9 +236,12 @@ export class MCPRoutes extends BaseRoute {
       case 'get_figma_design_tokens':
         result = await this.executeGetDesignTokens(toolArgs);
         break;
+      case 'git_create_branch':
+        result = await this.executeGitCreateBranch(toolArgs);
+        break;
       default:
         return this.sendError(res, `Unknown MCP tool: ${tool}`, 400,
-          'Available tools: capture_figma_screenshot, extract_figma_context, get_figma_design_tokens');
+          'Available tools: capture_figma_screenshot, extract_figma_context, get_figma_design_tokens, git_create_branch');
       }
 
       this.logger.info(`✅ MCP tool '${tool}' executed successfully`, {
@@ -330,6 +375,18 @@ export class MCPRoutes extends BaseRoute {
             }
           },
           required: ['figmaUrl']
+        }
+      },
+      {
+        name: 'git_create_branch',
+        description: 'Create a new Git branch in the repository',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: 'Name of the branch' },
+            repository_path: { type: 'string', description: 'Path to repository (optional)' }
+          },
+          required: ['name']
         }
       }
     ];
@@ -500,6 +557,65 @@ export class MCPRoutes extends BaseRoute {
         success: false,
         error: `Design token extraction failed: ${error.message}`,
         timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Execute git create branch tool
+   * @private
+   */
+  async executeGitCreateBranch(args) {
+    const { name, repository_path } = args;
+    const repoPath = repository_path || process.cwd();
+
+    if (!name) {
+      throw new Error('Branch name is required');
+    }
+
+    try {
+      // Check if git is initialized
+      try {
+        await execAsync('git rev-parse --is-inside-work-tree', { cwd: repoPath });
+      } catch (e) {
+         throw new Error('Not a git repository');
+      }
+
+      // Create branch
+      await execAsync(`git checkout -b ${name}`, { cwd: repoPath });
+
+      return {
+        tool: 'git_create_branch',
+        success: true,
+        branchName: name,
+        repositoryPath: repoPath,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      // If branch exists, try checkout
+      if (error.message.includes('already exists') || error.stderr?.includes('already exists')) {
+         try {
+             await execAsync(`git checkout ${name}`, { cwd: repoPath });
+             return {
+                tool: 'git_create_branch',
+                success: true,
+                message: 'Branch existed, checked out successfully',
+                branchName: name,
+                timestamp: new Date().toISOString()
+             };
+         } catch (checkoutError) {
+             return {
+                tool: 'git_create_branch',
+                success: false,
+                error: `Branch exists but checkout failed: ${checkoutError.message}`
+             };
+         }
+      }
+
+      return {
+        tool: 'git_create_branch',
+        success: false,
+        error: `Git branch creation failed: ${error.message}`
       };
     }
   }

@@ -27,6 +27,12 @@ An intelligent enterprise platform that transforms Figma designs into comprehens
 
 ## ✨ Core Features
 
+### 🤖 **Model Context Protocol (MCP) Integration**
+Now featuring a fully integrated MCP server providing direct design context to your AI agents:
+- **Visual Intelligence**: Automated screenshot analysis for design QA.
+- **Context Extraction**: Deep frame analysis converted to semantic JSON.
+- **Design System Bridge**: Direct access to color, typography, and spacing tokens.
+
 ### **🚀 NEW: Phase 9 - Active Orchestration & Multi-Model Architecture (January 2026)**
 - 🎼 **End-to-End Orchestration**: `WorkItemOrchestrator` automatically creates Jira tickets, Confluence pages, and Git branches in a single seamless flow
 - 🔗 **Precision Deep Linking**: **FIXED!** Logic added to `UnifiedContextBuilder` to correctly resolve Figma project slugs and Page IDs, eliminating generic "AEM-Component-Library" links

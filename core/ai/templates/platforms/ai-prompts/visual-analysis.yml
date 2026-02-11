@@ -57,23 +57,6 @@ template:
     - Standalone component implementation required
     {% endif %}
 
-  technical_prompt: |
-    ### 🔧 Technical Implementation Context
-    - **Target Framework**: {{ project.tech_stack | join(', ') }}
-    - **File Key**: {{ figma.file_id }}
-    - **Live Design URL**: {{ figma.live_link }}
-    
-    ### 🎯 Smart Implementation Requirements
-    
-    Based on your analysis, determine:
-    
-    1. **Component Complexity**: {{ calculated.complexity }} ({{ calculated.hours }} hours estimated)
-    2. **Data Requirements**: What props/data does this component need?
-    3. **State Management**: Does it need local state, form handling, or external state?
-    4. **Accessibility Considerations**: What specific ARIA attributes and keyboard interactions are needed?
-    5. **Performance Implications**: Any specific optimization needs?
-    6. **Integration Challenges**: How does this fit into the existing design system?
-
   output_format_prompt: |
     ## Expected Professional Output
     
@@ -103,19 +86,17 @@ template:
     
     h2. 📋 Technical Analysis & Approach  
     - Specific implementation strategy for {{ project.tech_stack | join(', ') }}
-    - Component architecture and data flow
-    - Integration with existing design system
-    - Performance and accessibility considerations
     
     h2. 🎨 Design Implementation Details
     - Specific color values, typography specs, and spacing measurements
-    - Responsive behavior and breakpoint considerations
-    - Interactive states and micro-interactions
     
     h2. ✅ Acceptance Criteria (Specific & Testable)
     - Functional requirements based on the actual design
     - Visual accuracy requirements  
     - Performance benchmarks
+    - Specific color values, typography specs, and spacing measurements
+    - Responsive behavior and breakpoint considerations
+    - Interactive states and micro-interactions
     
     h2. 🔧 Development Guidance
     - Code organization and file structure recommendations

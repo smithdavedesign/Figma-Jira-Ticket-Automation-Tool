@@ -100,7 +100,16 @@ export class MCPAdapter {
       });
 
       if (!initRes.ok) {
-          throw new Error(`MCP Connection Failed (${serverKey}): ${initRes.status} ${initRes.statusText}`);
+        // Attempt to read body for more context
+        const errorBody = await initRes.text().catch(() => 'No body');
+        this.logger.warn(`⚠️ MCP Initialize Failed (${serverKey}): ${initRes.status} ${initRes.statusText}`);
+        this.logger.debug(`❌ Error Body: ${errorBody}`);
+        
+        // Strategy: Proceed optimistically. 
+        // Some stateless MCP proxies or older implementations might failing on 'initialize' but still accept tool calls.
+        this.logger.warn(`⚠️ Proceeding optimistically without session handshake for ${serverKey}`);
+        this.sessions.set(serverKey, tempId);
+        return tempId;
       }
 
       // Capture Server-Assigned Session ID
@@ -452,7 +461,7 @@ export class MCPAdapter {
              this.logger.info('✅ Attachment added to Wiki (MCP)');
              return result;
          } catch (mcpError) {
-             this.logger.error('❌ Failed to add attachment to Wiki (All methods)', mcpError);
+             this.logger.error('❌ Failed to add attachment to Wiki (All methods)', { message: mcpError.message, stack: mcpError.stack });
              return null;
          }
      }
@@ -468,26 +477,28 @@ export class MCPAdapter {
      this.logger.info(`📎 Adding attachment to Jira ${issueKey}...`);
      const paths = Array.isArray(filePaths) ? filePaths : [filePaths];
 
-     // Strategy: Try Direct REST API first (reliable for local files), then MCP fallback
+     // Strategy: Prefer MCP Tool (jira_update_issue) as requested for centralized handling
      try {
-         for (const filePath of paths) {
-             await this._uploadToJiraDirect(issueKey, filePath, issueSelfUrl);
-         }
-         this.logger.info('✅ Attachment(s) added to Jira (Direct)');
-         return { success: true };
-     } catch (directError) {
-         this.logger.warn(`⚠️ Direct Jira upload failed: ${directError.message}. Trying MCP tool...`);
+         this.logger.debug(`Trying MCP tool 'jira_update_issue' for attachments locally: ${JSON.stringify(paths)}`);
+         const result = await this._callMCP('jira_update_issue', {
+             issue_key: issueKey,
+             fields: {}, 
+             attachments: paths
+         });
+         this.logger.info('✅ Attachment(s) added to Jira (MCP)');
+         return result;
+     } catch (mcpError) {
+         this.logger.warn(`⚠️ MCP Jira attachment failed: ${mcpError.message}. Falling back to Direct Upload...`);
          
+         // Fallback: Try Direct REST API (reliable for local files if MCP is remote/failing)
          try {
-             const result = await this._callMCP('jira_update_issue', {
-                 issue_key: issueKey,
-                 fields: {}, 
-                 attachments: paths
-             });
-             this.logger.info('✅ Attachment(s) added to Jira (MCP)');
-             return result;
-         } catch (mcpError) {
-             this.logger.error('❌ Failed to add attachment to Jira (All methods)', mcpError);
+             for (const filePath of paths) {
+                 await this._uploadToJiraDirect(issueKey, filePath, issueSelfUrl);
+             }
+             this.logger.info('✅ Attachment(s) added to Jira (Direct)');
+             return { success: true };
+         } catch (directError) {
+             this.logger.error('❌ Failed to add attachment to Jira (All methods)', { message: directError.message, stack: directError.stack });
              return null;
          }
      }

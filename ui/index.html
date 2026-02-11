@@ -1244,15 +1244,8 @@ Examples:
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="platform">Target Platform</label>
-        <select id="platform" onchange="updateTemplateContext()">
-          <option value="jira">🎫 Jira</option>
-          <option value="confluence">📄 Confluence</option>
-          <option value="wiki">� Wiki</option>
-          <option value="figma">🎨 Figma</option>
-        </select>
-      </div>
+      <!-- Platform selection removed -->
+      <input type="hidden" id="platform" value="jira">
 
       <div class="checkbox-group" style="margin-top: 10px; margin-bottom: 15px; background: rgba(59, 130, 246, 0.1); padding: 10px; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: flex-start; gap: 10px;">
         <input type="checkbox" id="activeCreation" name="activeCreation" style="margin-top: 4px;">
@@ -1262,16 +1255,8 @@ Examples:
         </label>
       </div>
 
-      <div class="form-group">
-        <label for="documentType">Document Type</label>
-        <select id="documentType" onchange="updateTemplateContext()">
-          <option value="component">🧩 Component</option>
-          <option value="feature">✨ Feature</option>
-          <option value="code">💻 Code</option>
-          <option value="service">⚙️ Service</option>
-          <option value="wiki">� Wiki</option>
-        </select>
-      </div>
+      <!-- Document Type selection removed -->
+      <input type="hidden" id="documentType" value="component">
 
       <!-- Context Template Display -->
       <div class="template-preview" id="templatePreview">
@@ -1649,18 +1634,7 @@ Examples:
         </p>
       </div>
 
-      <!-- Ultimate Testing Dashboard Link -->
-      <div class="test-panel">
-        <h3>🧪 Ultimate Testing Dashboard</h3>
-        <div style="text-align: center; margin: 20px 0;">
-          <button onclick="window.open('ultimate-testing-dashboard.html', '_blank')" class="button" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; font-size: 16px; padding: 16px 32px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); transition: all 0.2s ease;">
-            🚀 Open Testing Dashboard
-          </button>
-        </div>
-        <div style="text-align: center; color: #64748b; font-size: 14px; margin-top: 8px;">
-          Comprehensive testing suite: System Health • Context Intelligence • Performance • API Testing
-        </div>
-      </div>
+      <!-- Ultimate Testing Dashboard Link Removed -->
 
       <!-- Debug Panel for Data Layer Validation -->
       <div id="debugPanel" class="debug-panel hidden">

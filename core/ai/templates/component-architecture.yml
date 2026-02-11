@@ -32,15 +32,6 @@ prompt_template: |
   - Recommend state management approach
   - Identify shared state and props interface
 
-  ### 3. Technical Implementation Plan
-  - Suggest implementation phases and priorities
-  - Identify technical dependencies and requirements
-  - Recommend testing and validation strategy
-
-  ### 4. Performance Considerations
-  - Assess rendering performance implications
-  - Recommend optimization strategies
-  - Identify potential performance bottlenecks
 
   Respond with structured JSON focusing on actionable architectural guidance.
 

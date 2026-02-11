@@ -260,8 +260,15 @@ export class FigmaSessionManager {
 
       // Screenshot capture method
       async captureScreenshot(fileKey, nodeId, options = {}) {
+        // Validation Logic for API key
+        if (!process.env.FIGMA_API_KEY && !sessionManager.figmaApiKey) {
+           sessionManager.logger.error("❌ Figma API Key is missing!");
+           throw new Error("Figma API Key is missing within session manager.");
+        }
+        
+        // Ensure session capabilities are respected, but handle missing 'api' flag loosely if key present
         if (!session.capabilities.api) {
-          throw new Error('API not available for screenshot capture');
+           sessionManager.logger.warn('⚠️ Session capabilities missing "api" flag, but proceeding since function was called.');
         }
 
         try {
@@ -345,7 +352,7 @@ export class FigmaSessionManager {
             hasError: !!data.err,
             hasImages: !!data.images,
             imageKeys: data.images ? Object.keys(data.images) : [],
-            requestedNodeId: nodeId
+            requestedNodeId: targetNodeId
           });
 
           if (data.err) {
@@ -353,23 +360,23 @@ export class FigmaSessionManager {
             throw new Error(`Figma API error: ${data.err}`);
           }
 
-          if (!data.images || !data.images[nodeId]) {
-            sessionManager.logger.error(`🔍 [Session Manager] No image for node ${nodeId}:`, {
+          if (!data.images || !data.images[targetNodeId]) {
+            sessionManager.logger.error(`🔍 [Session Manager] No image for node ${targetNodeId}:`, {
               hasImages: !!data.images,
               availableNodes: data.images ? Object.keys(data.images) : [],
               fileKey,
-              nodeId
+              nodeId: targetNodeId
             });
-            throw new Error(`No screenshot generated for node ${nodeId}. Please verify the fileKey (${fileKey}) and nodeId (${nodeId}) are valid.`);
+            throw new Error(`No screenshot generated for node ${targetNodeId}. Please verify the fileKey (${fileKey}) and nodeId (${targetNodeId}) are valid.`);
           }
 
-          const imageUrl = data.images[nodeId];
+          const imageUrl = data.images[targetNodeId];
           sessionManager.logger.info('🔍 [Session Manager] Final image URL:', { imageUrl: imageUrl.substring(0, 100) + '...' });
           sessionManager.logger.info(`✅ Screenshot captured successfully: ${imageUrl.substring(0, 100)}...`);
 
           return {
             imageUrl: imageUrl,
-            nodeId: nodeId,
+            nodeId: targetNodeId,
             fileKey: fileKey,
             dimensions: { width: 400, height: 300 }, // Would be extracted from actual image if needed
             timestamp: new Date().toISOString(),

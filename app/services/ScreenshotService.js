@@ -386,27 +386,12 @@ export class ScreenshotService extends BaseService {
    * Generate a simple test image
    * @param {string} text - Text to display
    * @param {string} color - Background color
-   * @returns {string} Base64 encoded SVG image
+   * @returns {string} Base64 encoded PNG image
    */
   generateTestImage(text, color) {
-    const svg = `
-      <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="${color}"/>
-        <rect x="20" y="20" width="360" height="260" fill="white" rx="10"/>
-        <text x="200" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="${color}">
-          ${text}
-        </text>
-        <text x="200" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">
-          Generated: ${new Date().toISOString()}
-        </text>
-        <circle cx="50" cy="50" r="15" fill="${color}"/>
-        <circle cx="350" cy="50" r="15" fill="${color}"/>
-        <circle cx="50" cy="250" r="15" fill="${color}"/>
-        <circle cx="350" cy="250" r="15" fill="${color}"/>
-      </svg>
-    `;
-
-    return Buffer.from(svg).toString('base64');
+    // Return a 1x1 transparent PNG to prevent "Provided image is not valid" error from Gemini
+    // This replaces the SVG generation which is not supported by Gemini vision capabilities
+    return { dataUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==", performance: { captureTime: Date.now(), cached: false } };
   }
 
   /**

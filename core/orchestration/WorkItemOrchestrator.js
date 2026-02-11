@@ -45,6 +45,7 @@ export class WorkItemOrchestrator {
               const exists = searchResult && (
                   searchResult.id || 
                   searchResult.page || 
+                  (searchResult.metadata && searchResult.metadata.id) || 
                   (searchResult.results && searchResult.results.length > 0) ||
                   (searchResult.size && searchResult.size > 0)
               );
@@ -193,6 +194,11 @@ export class WorkItemOrchestrator {
         let sharedAttachment = null;
         if (context.screenshot || context.imagePath) {
              sharedAttachment = await this._prepareImage(context, `preview-${context.componentName}`);
+             if (!sharedAttachment) {
+                this.logger.warn("⚠️ Screenshot image preparation returned null, check logs for details.");
+             }
+        } else {
+             this.logger.warn("⚠️ No screenshot or imagePath found in context. Skipping attachment.");
         }
 
         try {
@@ -348,8 +354,9 @@ export class WorkItemOrchestrator {
 
               } catch (createErr) {
                   const msg = (createErr.message || '').toLowerCase();
-                  if (msg.includes('exist') || msg.includes('conflict') || msg.includes('unique')) {
-                      this.logger.warn(`⚠️ Title "${finalWikiTitle}" unavailable (Conflict). Retrying...`);
+                  // Include '500' and 'internal server error' as potential indicators of trash-conflict on some Confluence versions
+                  if (msg.includes('exist') || msg.includes('conflict') || msg.includes('unique') || msg.includes('500') || msg.includes('internal server error')) {
+                      this.logger.warn(`⚠️ Title "${finalWikiTitle}" unavailable or server error (Conflict/Trash?). Retrying... Error: ${msg}`);
                       loops++;
                   } else {
                       // If it's not a conflict, it's a real error. Rethrow.

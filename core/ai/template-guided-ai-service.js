@@ -105,6 +105,8 @@ export class TemplateGuidedAIService {
       hasRequestData: !!requestData
     });
 
+    let templateStructure = null;
+
     try {
       // 🔍 DEBUG: Log incoming parameters
       this.logger.info(`🔍 [${requestId}] Template-Guided AI Parameters:`, {
@@ -169,7 +171,7 @@ export class TemplateGuidedAIService {
       const templateStartTime = Date.now();
       this.logger.info(`📋 [${requestId}] Resolving template structure...`);
 
-      const templateStructure = await this.getTemplateStructure(platform, documentType, techStack);
+      templateStructure = await this.getTemplateStructure(platform, documentType, techStack);
       const templateDuration = Date.now() - templateStartTime;
 
       this.logger.info(`✅ [${requestId}] Template structure resolved in ${templateDuration}ms:`, {
@@ -287,7 +289,7 @@ export class TemplateGuidedAIService {
         this.logger.error(`❌ [${requestId}] AI processing failed - check visual AI service`);
       }
 
-      return this.generateFallbackTicket(params, error, requestId);
+      return this.generateFallbackTicket(componentName, { ...params, requestId }, error, templateStructure);
     }
   }
 
@@ -483,6 +485,12 @@ export class TemplateGuidedAIService {
                       base64 = null;
                   }
               } 
+              // Check for SVG data URI before stripping prefix
+              if (base64 && base64.startsWith('data:image/svg+xml')) {
+                  this.logger.warn('⚠️ SVG detected in screenshot data. Replacing with PNG placeholder for AI compatibility.');
+                  // Replace with 1x1 transparent PNG
+                  base64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+              }
               // Strip prefix if present
               else if (base64 && base64.startsWith('data:image')) {
                   base64 = base64.split(',')[1];
@@ -523,27 +531,8 @@ export class TemplateGuidedAIService {
       // Enhanced error handling with fallback to template rendering if AI fails
       this.logger.warn(`🔄 [${requestId}] Falling back to template rendering due to AI failure`);
 
-      try {
-        const templateVariables = this.extractTemplateVariablesFromContext(unifiedContext, componentName, techStack);
-        const resolvedTemplate = await this.templateEngine.resolveTemplate(platform, documentType, techStack);
-
-        if (resolvedTemplate?.template?.content) {
-          const renderedContent = await this.templateEngine.renderTemplate(resolvedTemplate.template.content, templateVariables);
-
-          this.logger.info(`✅ [${requestId}] Fallback template rendering successful`);
-
-          return {
-            content: renderedContent,
-            source: 'template-fallback',
-            confidence: 0.7,
-            templateUsed: `${platform}/${documentType}`,
-            aiEnhanced: false,
-            fallbackReason: error.message
-          };
-        }
-      } catch (fallbackError) {
-        this.logger.error(`❌ [${requestId}] Template fallback also failed:`, fallbackError.message);
-      }
+      const context = { ...unifiedContext, ...options };
+      return this._generateFallbackTicket(componentName, context, error, templateStructure);
 
       throw error;
     }
@@ -652,56 +641,87 @@ ${this.formatDetailedContextForAI(unifiedContext)}`;
     };
 
     // 📋 Project Context Section - Enhanced
-    template.sections.push({
-      title: `${markupHelpers.h2}📋 Project Context & Component Details`,
-      fields: [
-        `${markupHelpers.bold}Project${markupHelpers.bold}: ${this.getVariableInstruction('project.name', '[Extract from context - use actual project name]')}`,
-        `${markupHelpers.bold}Component${markupHelpers.bold}: ${componentName}`,
-        `${markupHelpers.bold}Type${markupHelpers.bold}: ${this.getVariableInstruction('figma.component_type', '[Determine from Figma analysis: INSTANCE, COMPONENT, FRAME]')}`,
-        `${markupHelpers.bold}Issue Type${markupHelpers.bold}: Component Implementation`,
-        `${markupHelpers.bold}Priority${markupHelpers.bold}: ${this.calculatePriorityFromComplexity(complexity)}`,
-        `${markupHelpers.bold}Story Points${markupHelpers.bold}: ${this.calculateStoryPointsFromComplexity(complexity)}`,
-        `${markupHelpers.bold}Technologies${markupHelpers.bold}: ${this.formatTechStack(techStack)}`,
-        `${markupHelpers.bold}Labels${markupHelpers.bold}: ${this.getVariableInstruction('calculated.labels', '[Generate relevant labels based on component type]')}`,
-        `${markupHelpers.bold}Design Status${markupHelpers.bold}: ${this.getVariableInstruction('figma.design_status', '[Extract from Figma context or infer: ready-for-dev, in-progress, draft]')}`
-      ]
-    });
+    // Skip for Jira as requested for simplified view
+    if (platform !== 'Jira') {
+      template.sections.push({
+        title: `${markupHelpers.h2}📋 Project Context & Component Details`,
+        fields: [
+          `${markupHelpers.bold}Project${markupHelpers.bold}: ${this.getVariableInstruction('project.name', '[Extract from context - use actual project name]')}`,
+          `${markupHelpers.bold}Component${markupHelpers.bold}: ${componentName}`,
+          `${markupHelpers.bold}Type${markupHelpers.bold}: ${this.getVariableInstruction('figma.component_type', '[Determine from Figma analysis: INSTANCE, COMPONENT, FRAME]')}`,
+          `${markupHelpers.bold}Issue Type${markupHelpers.bold}: Component Implementation`,
+          `${markupHelpers.bold}Priority${markupHelpers.bold}: ${this.calculatePriorityFromComplexity(complexity)}`,
+          `${markupHelpers.bold}Story Points${markupHelpers.bold}: ${this.calculateStoryPointsFromComplexity(complexity)}`,
+          `${markupHelpers.bold}Technologies${markupHelpers.bold}: ${this.formatTechStack(techStack)}`,
+          `${markupHelpers.bold}Labels${markupHelpers.bold}: ${this.getVariableInstruction('calculated.labels', '[Generate relevant labels based on component type]')}`,
+          `${markupHelpers.bold}Design Status${markupHelpers.bold}: ${this.getVariableInstruction('figma.design_status', '[Extract from Figma context or infer: ready-for-dev, in-progress, draft]')}`
+        ]
+      });
+    }
 
     // 🎨 Design System Section - Enhanced with real data extraction
-    template.sections.push({
-      title: `${markupHelpers.h2}🎨 Design System & Visual References`,
-      fields: [
-        `${markupHelpers.bold}Figma URL${markupHelpers.bold}: ${markupHelpers.link('Design File', this.getVariableInstruction('figma.live_link', '[Build URL with actual fileKey and nodeId]'))}`,
-        `${markupHelpers.bold}Storybook URL${markupHelpers.bold}: ${markupHelpers.link('Storybook Docs', this.getVariableInstruction('project.storybook_url', '[Use project.storybook_url or generate logical URL]'))}`,
-        `${markupHelpers.bold}Screenshot${markupHelpers.bold}: ${this.getVariableInstruction('figma.screenshot_markdown.jira', '[Reference actual screenshot filename from context]')}`,
+    const designFields = [
+      `${markupHelpers.bold}Figma URL${markupHelpers.bold}: ${markupHelpers.link('Design File', this.getVariableInstruction('figma.live_link', '[Build URL with actual fileKey and nodeId]'))}`,
+      `${markupHelpers.bold}Storybook URL${markupHelpers.bold}: ${markupHelpers.link('Storybook Docs', this.getVariableInstruction('project.storybook_url', '[Use project.storybook_url or generate logical URL]'))}`,
+      `${markupHelpers.bold}Screenshot${markupHelpers.bold}: ${this.getVariableInstruction('figma.screenshot_markdown.jira', '[Reference actual screenshot filename from context]')}`
+    ];
+    
+    // Add Colors and Typography for non-Jira platforms
+    if (platform !== 'Jira') {
+      designFields.push(
         `${markupHelpers.bold}Colors${markupHelpers.bold}: ${this.getVariableInstruction('figma.extracted_colors', '[Extract HEX values from screenshot/context]')}`,
         `${markupHelpers.bold}Typography${markupHelpers.bold}: ${this.getVariableInstruction('figma.extracted_typography', '[Extract font families, sizes from context]')}`
-      ]
+      );
+    }
+
+    template.sections.push({
+      title: `${markupHelpers.h2}🎨 Design System & Visual References`,
+      fields: designFields
     });
 
     // 📚 Resources Section - Use template resources
+    let resourceFields = this.buildResourceFieldsWithMarkup(resources, markupHelpers);
+    // Add placeholder for Authoring Guide in Jira
+    if (platform === 'Jira') {
+      resourceFields.push(`Authoring Guide: Link to this to be added based on AEM Field Mapping.`);
+    }
+
     template.sections.push({
       title: `${markupHelpers.h2}📚 Resources & References`,
-      fields: this.buildResourceFieldsWithMarkup(resources, markupHelpers)
+      fields: resourceFields
     });
 
     // 🎯 Design Tokens Section - Platform adaptive
-    template.sections.push({
-      title: `${markupHelpers.h2}🎯 Design Tokens Implementation`,
-      content: this.buildDesignTokensContent(markupHelpers)
-    });
+    if (platform === 'Jira') {
+      // Simplified Design Tokens for Jira (Spacing only initially)
+      template.sections.push({
+        title: `${markupHelpers.h2}🎯 Design Tokens Implementation`,
+        content: this.buildDesignTokensSpacingOnly(markupHelpers)
+      });
+    } else {
+      template.sections.push({
+        title: `${markupHelpers.h2}🎯 Design Tokens Implementation`,
+        content: this.buildDesignTokensContent(markupHelpers)
+      });
+    }
 
     // ⚙️ Platform-specific Authoring Section
-    template.sections.push({
-      title: `${markupHelpers.h2}⚙️ ${this.getVariableInstruction('project.platform', 'Platform')} Authoring Requirements`,
-      fields: this.buildAuthoringFieldsWithMarkup(markupHelpers, techStack)
-    });
+    // Skip for Jira
+    if (platform !== 'Jira') {
+      template.sections.push({
+        title: `${markupHelpers.h2}⚙️ ${this.getVariableInstruction('project.platform', 'Platform')} Authoring Requirements`,
+        fields: this.buildAuthoringFieldsWithMarkup(markupHelpers, techStack)
+      });
+    }
 
     // 🔧 Technical Implementation Section - Enhanced with tech stack specifics
-    template.sections.push({
-      title: `${markupHelpers.h2}🔧 Technical Implementation`,
-      content: this.buildTechnicalImplementationContent(complexity, interactions, techStack, markupHelpers)
-    });
+    // Skip for Jira
+    if (platform !== 'Jira') {
+      template.sections.push({
+        title: `${markupHelpers.h2}🔧 Technical Implementation`,
+        content: this.buildTechnicalImplementationContent(complexity, interactions, techStack, markupHelpers)
+      });
+    }
 
     // 🧪 Testing Requirements Section
     template.sections.push({
@@ -715,7 +735,48 @@ ${this.formatDetailedContextForAI(unifiedContext)}`;
       content: `${this.getVariableInstruction('calculated.acceptance_criteria', '[Generate specific, testable criteria based on component requirements and business impact]')}`
     });
 
+    // Additional Technical details for Jira appended at the end
+    if (platform === 'Jira') {
+      template.sections.push({
+        title: '', // No title
+        content: this.buildJiraExtraDesignTokens(markupHelpers)
+      });
+    }
+
     return this.renderPlatformTemplate(template, markupHelpers);
+  }
+
+  /**
+   * Build simplified design tokens content (Spacing only) for Jira
+   */
+  buildDesignTokensSpacingOnly(markupHelpers) {
+    return `${markupHelpers.bold}Spacing${markupHelpers.bold}:
+${markupHelpers.bullet} Margins: ${this.getVariableInstruction('design.spacing.margins', '[Extract spacing values from context]')}
+${markupHelpers.bullet} Gutter: ${this.getVariableInstruction('design.spacing.gutter', '20px')}
+${markupHelpers.bullet} Paddings: ${this.getVariableInstruction('design.spacing.paddings', '[Extract padding values from context]')}
+${markupHelpers.bullet} Grid: ${this.getVariableInstruction('design.grid.columns', '[Extract grid system or use standard 12-column]')}`;
+  }
+
+  /**
+   * Build extra design tokens content for Jira (appended at bottom)
+   */
+  buildJiraExtraDesignTokens(markupHelpers) {
+    return `${markupHelpers.bold}Interactive States${markupHelpers.bold}:
+${markupHelpers.bullet} Hover: ${this.getVariableInstruction('design.states.hover', '[Describe hover behavior from analysis]')}
+${markupHelpers.bullet} Focus: ${this.getVariableInstruction('design.states.focus', '[Describe focus state requirements]')}
+${markupHelpers.bullet} Active: ${this.getVariableInstruction('design.states.active', '[Describe active/pressed state]')}
+${markupHelpers.bullet} Disabled: ${this.getVariableInstruction('design.states.disabled', '[Describe disabled appearance]')}
+${markupHelpers.bullet} Error: ${this.getVariableInstruction('design.states.error', '[Describe error state styling]')}
+${markupHelpers.bullet} Success: ${this.getVariableInstruction('design.states.success', '[Describe success state styling]')}
+
+${markupHelpers.bold}Motion & Animation${markupHelpers.bold}:
+${markupHelpers.bullet} Duration: ${this.getVariableInstruction('design.motion.duration', '[Standard: "200ms for micro-interactions, 300ms for transitions"]')}
+${markupHelpers.bullet} Easing: ${this.getVariableInstruction('design.motion.easing', '[Standard: "ease-out for entrances, ease-in for exits"]')}
+
+${markupHelpers.bold}Responsive Breakpoints${markupHelpers.bold}:
+${markupHelpers.bullet} Mobile: ${this.getVariableInstruction('design.breakpoints.mobile', '[Component behavior on mobile devices]')}
+${markupHelpers.bullet} Tablet: ${this.getVariableInstruction('design.breakpoints.tablet', '[Component behavior on tablet devices]')}
+${markupHelpers.bullet} Desktop: ${this.getVariableInstruction('design.breakpoints.desktop', '[Component behavior on desktop devices]')}`;
   }
 
   /**
@@ -767,101 +828,48 @@ ${this.formatDetailedContextForAI(unifiedContext)}`;
     };
     jiraTemplate.sections.push(designSection);
 
-    // Design Tokens Section - use design system variables
+    // Design Tokens Section - Simplified
     const designTokensSection = {
-      title: 'h2. 🎯 Design Tokens Implementation',
+      title: 'h2. 🎨 Design Specifications',
       subsections: [
-        {
-          title: '*Spacing*:',
-          items: [
-            `* Base Unit: ${this.getVariableInstruction('design.spacing.base_unit', '[Extract or infer from design system]')}`,
-            `* Margins: ${this.getVariableInstruction('design.spacing.margins', '[Extract spacing values from context]')}`,
-            `* Paddings: ${this.getVariableInstruction('design.spacing.paddings', '[Extract padding values from context]')}`,
-            `* Grid: ${this.getVariableInstruction('design.grid.columns', '[Extract grid system or use standard 12-column]')}`
-          ]
-        },
         {
           title: '*Interactive States*:',
           items: [
-            `* Hover: ${this.getVariableInstruction('design.states.hover', '[Describe hover behavior from analysis]')}`,
+            `* Hover: ${this.getVariableInstruction('design.states.hover', '[Describe hover behavior]')}`,
             `* Focus: ${this.getVariableInstruction('design.states.focus', '[Describe focus state requirements]')}`,
             `* Active: ${this.getVariableInstruction('design.states.active', '[Describe active/pressed state]')}`,
-            `* Disabled: ${this.getVariableInstruction('design.states.disabled', '[Describe disabled appearance]')}`,
-            `* Error: ${this.getVariableInstruction('design.states.error', '[Describe error state styling]')}`,
-            `* Success: ${this.getVariableInstruction('design.states.success', '[Describe success state styling]')}`
+            `* Error: ${this.getVariableInstruction('design.states.error', '[Describe error state styling]')}`
           ]
         },
         {
-          title: '*Accessibility Requirements*:',
+          title: '*Responsive Behavior*:',
           items: [
-            `* Contrast Ratio: ${this.getVariableInstruction('design.accessibility.contrast_ratio', '[Calculate or require: "4.5:1 minimum, 7:1 preferred"]')}`,
-            `* Keyboard Navigation: ${this.getVariableInstruction('design.accessibility.keyboard_navigation', '[Specify keyboard interaction patterns]')}`,
-            `* ARIA Roles: ${this.getVariableInstruction('design.accessibility.aria_roles', '[List required ARIA roles and properties]')}`,
-            `* Screen Reader: ${this.getVariableInstruction('design.accessibility.screen_reader', '[Specify announcements and labels]')}`
-          ]
-        },
-        {
-          title: '*Motion & Animation*:',
-          items: [
-            `* Duration: ${this.getVariableInstruction('design.motion.duration', '[Standard: "200ms for micro-interactions, 300ms for transitions"]')}`,
-            `* Easing: ${this.getVariableInstruction('design.motion.easing', '[Standard: "ease-out for entrances, ease-in for exits"]')}`
-          ]
-        },
-        {
-          title: '*Responsive Breakpoints*:',
-          items: [
-            `* Mobile: ${this.getVariableInstruction('design.breakpoints.mobile', '[Component behavior on mobile devices]')}`,
-            `* Tablet: ${this.getVariableInstruction('design.breakpoints.tablet', '[Component behavior on tablet devices]')}`,
-            `* Desktop: ${this.getVariableInstruction('design.breakpoints.desktop', '[Component behavior on desktop devices]')}`
+            `* Mobile: ${this.getVariableInstruction('design.breakpoints.mobile', '[Component behavior on mobile]')}`,
+            `* Desktop: ${this.getVariableInstruction('design.breakpoints.desktop', '[Component behavior on desktop]')}`
           ]
         }
       ]
     };
     jiraTemplate.sections.push(designTokensSection);
 
-    // Authoring Section - platform specific
-    const authoringSection = {
-      title: `h2. ⚙️ ${this.getVariableInstruction('project.platform', 'Platform')} Authoring Requirements`,
-      fields: [
-        `*Touch UI Required*: ${this.getVariableInstruction('authoring.touch_ui_required', '[Specify authoring interface requirements]')}`,
-        `*Component Template*: ${this.getVariableInstruction('authoring.cq_template', '[Component template path]')}`,
-        `*Component Path*: ${this.getVariableInstruction('authoring.component_path', '[Component implementation path]')}`,
-        `*Authoring Notes*: ${this.getVariableInstruction('authoring.notes', '[Specify dialog fields, validation rules, content policies]')}`
-      ]
-    };
-    jiraTemplate.sections.push(authoringSection);
+    // Platform Authoring - Removed details for brevity
+    // Jira ticket should focus on implementation, detailed authoring specs belong in Wiki
 
-    // Technical Implementation Section with Complexity Analysis
+    // Technical Implementation Section - Simplified
     const interactions = this.analyzeInteractions(unifiedContext);
 
     const technicalSection = {
       title: 'h2. 🔧 Technical Implementation',
-      content: `${this.getVariableInstruction('calculated.technical_requirements', `[Generate specific implementation requirements based on component analysis for ${this.formatTechStack(techStack)}]`)}
-
-*Component Complexity Analysis*:
-* Complexity Level: ${complexity.level} (${complexity.score}/100)
-* Node Count: ${complexity.metrics.nodeCount}
-* Interactive Elements: ${complexity.metrics.interactiveElements}
-* Nesting Levels: ${complexity.metrics.nestedLevels}
-* Unique Colors: ${complexity.metrics.uniqueColors}
-* Typography Variants: ${complexity.metrics.uniqueFonts}
-* Interactions: ${complexity.metrics.interactions}
+      content: `${this.getVariableInstruction('calculated.technical_requirements', `[Generate implementation requirements for ${this.formatTechStack(techStack)}]`)}
 
 *Implementation Recommendations*:
-${complexity.recommendations.map(rec => `* ${rec}`).join('\n')}
-
-*Interaction Analysis*:
-* Total Interactions: ${interactions.totalInteractions}
-* Interaction Types: ${interactions.interactionTypes.join(', ') || 'None'}
-* Required States: ${interactions.stateRequirements.join(', ')}
+${complexity.recommendations.slice(0, 3).map(rec => `* ${rec}`).join('\n')}
 
 *Technical Requirements*:
-${interactions.implementationRequirements.map(req => `* ${req}`).join('\n')}
-
-*Accessibility Requirements*:
-${interactions.accessibilityRequirements.map(req => `* ${req}`).join('\n')}`
+${interactions.implementationRequirements.slice(0, 5).map(req => `* ${req}`).join('\n')}`
     };
     jiraTemplate.sections.push(technicalSection);
+
 
     // Testing Requirements Section
     const testingSection = {
@@ -3161,19 +3169,42 @@ Confidence: ${Math.round((calculatedData.confidence || 0.8) * 100)}%`);
   /**
    * Generate fallback ticket when template-guided AI fails
    */
-  generateFallbackTicket(params, error) {
-    const { platform, componentName, techStack } = params;
+  async _generateFallbackTicket(componentName, context, error, templateStructure = null) {
+    if (templateStructure && templateStructure.template && templateStructure.template.description) {
+      this.logger.info('🔄 Using loaded template for fallback generation');
+      let content = templateStructure.template.description;
+      const replacements = {
+        '{{component_name}}': componentName,
+        '{{platform}}': context.platform || 'jira',
+        '{{tech_stack}}': context.techStack || 'Unknown',
+        '{{figma_url}}': context.figma?.fileKey ? `https://figma.com/file/${context.figma.fileKey}` : 'Pending',
+        '{{repo_url}}': 'Pending',
+        '{{design_analysis}}': '> AI Analysis Unavailable: ' + error.message
+      };
 
-    this.logger.warn('🔄 Using fallback ticket generation');
+      for (const [key, value] of Object.entries(replacements)) {
+        content = content.replace(new RegExp(key, 'g'), value);
+      }
 
-    const fallbackContent = `# ${componentName} Implementation
+      return {
+        content: content,
+        metadata: {
+          confidence: 0.5,
+          usedFallback: true,
+          templateUsed: true
+        }
+      };
+    }
+
+    const { platform, techStack } = context;
+    const fallbackContent = `# \${componentName} Implementation
 
 ## Description
-Implement the ${componentName} component based on design specifications.
+Implement the \${componentName} component based on design specifications.
 
 ## Technical Requirements
-- **Platform**: ${platform}
-- **Tech Stack**: ${Array.isArray(techStack) ? techStack.join(', ') : techStack}
+- **Platform**: \${platform}
+- **Tech Stack**: \${Array.isArray(techStack) ? techStack.join(', ') : techStack}
 
 ## Acceptance Criteria
 - [ ] Component matches design specifications exactly
@@ -3183,10 +3214,10 @@ Implement the ${componentName} component based on design specifications.
 - [ ] Code follows team standards and conventions
 
 ## Notes
-Generated using fallback template due to: ${error.message}
+Generated using fallback template due to: \${error.message}
 
 ---
-Generated at ${new Date().toISOString()} via Template-Guided AI Service (Fallback)`;
+Generated at \${new Date().toISOString()} via Template-Guided AI Service (Fallback)`;
 
     return {
       content: fallbackContent,

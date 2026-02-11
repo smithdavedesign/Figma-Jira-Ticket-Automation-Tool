@@ -392,7 +392,7 @@ export class EnhancedFigmaExtractor {
 
       return {
         success: false,
-        imageUrl: `data:image/svg+xml;base64,${Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="100%" height="100%" fill="#f5f5f5"/><text x="200" y="150" text-anchor="middle" fill="#666" font-family="Arial" font-size="14">Screenshot Error: ${errorMessage}</text></svg>`).toString('base64')}...`,
+        imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
         error: errorMessage,
         status: errorStatus,
         message: `Failed to capture screenshot: ${errorMessage}`

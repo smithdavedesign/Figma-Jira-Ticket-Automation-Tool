@@ -104,8 +104,8 @@ export class BaseFigmaRoute extends BaseRoute {
     } else if (error.message.includes('timeout')) {
       errorMessage = `${operation} timed out`;
       errorCode = 408;
-    } else if (error.message.includes('Access denied')) {
-      errorMessage = 'Cannot access Figma file - check permissions';
+    } else if (error.message.includes('Access denied') || error.message.includes('Figma API error: 403')) {
+      errorMessage = 'Cannot access Figma file - check permissions or API token';
       errorCode = 403;
     } else if (error.message.includes('Context Manager')) {
       errorMessage = 'Context Layer unavailable';
