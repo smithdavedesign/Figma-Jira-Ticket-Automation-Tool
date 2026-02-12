@@ -102,3 +102,58 @@ To visualize this architecture, ask Copilot:
 > "@workspace Explain how a 'create_ticket' action flows from the UI, through the `mcp-adapter.js`, and how `mcp.config.js` determines the destination URL."
 
 <!-- COPILOT_INSTRUCTION: When asked about this file, emphasize that it is a living document for team training. -->
+
+---
+
+## 6. Extending Skills (Tools)
+
+In the Model Context Protocol (MCP), "Skills" (or Tools) are the executable functions that an AI agent can call. Because this project has a complex testing ecosystem—spanning server-side API tests, client-side browser tests, and integration verification—we need a unified skill to manage it.
+
+### Proposed Skill: `run_validation_suite`
+**Purpose:** Orchestrate the project's multi-layered testing framework without requiring the user to memorize individual `npm` scripts or shell arguments.
+
+**Logic Mapping:**
+This skill acts as a facade over your `scripts/` directory and `package.json` commands:
+*   **Unit/Core:** Maps to `npm run test` (Vitest).
+*   **Integration:** Maps to `npm run test:integration:mcp`.
+*   **UI/E2E:** Maps to `npm run test:browser` (Playwright) and serves `tests/integration/test-consolidated-suite.html`.
+*   **API Contract:** Validates against `ui/api-docs/swagger.yaml`.
+
+### Schema Definition
+You can ask Copilot to generate the implementation for this skill using the following structure:
+
+```javascript
+{
+  name: "run_validation_suite",
+  description: "Executes specific test layers to validate system health, API contracts, or UI functionality.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      scope: {
+        type: "string",
+        enum: ["full", "smoke", "mcp-only", "ui-browser", "api-contract"],
+        description: "The depth of testing required."
+      },
+      targetEnv: {
+        type: "string",
+        enum: ["local", "production"],
+        default: "local"
+      },
+      includeReport: {
+        type: "boolean",
+        description: "If true, parses the JUnit/Playwright report and returns a summary."
+      }
+    },
+    required: ["scope"]
+  }
+}
+```
+
+### 🧠 Copilot Use Case: Generating the Skill Logic
+To implement this, you would leverage the existing scripts. Try this prompt in **Edit Mode**:
+
+> "Create a new tool implementation in [`app/routes/figma/mcp.js`](app/routes/figma/mcp.js) called `run_validation_suite`. It should switch on the `scope` argument:
+> 1. If 'full', execute [`scripts/run-all-tests.sh`](scripts/run-all-tests.sh).
+> 2. If 'ui-browser', run [`npm run test:browser`](package.json).
+> 3. If 'mcp-only', run [`npm run test:integration:mcp`](package.json).
+> 4. Ensure it parses the output and returns a structured JSON response indicating pass/fail status."
