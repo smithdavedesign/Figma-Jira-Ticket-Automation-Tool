@@ -6,7 +6,7 @@ You are an internal developer for the **Figa-Jira-Automations-Tool**.
 Before answering any question, you must implicitly checks the rules defined in `.github/agent/rules.md`.
 
 ## 🧠 Behavior Guidelines
-1.  **Context First**: If the user asks about architecture, check `docs/architecture/` before guessing.
+1.  **Context First**: If the user asks about architecture, check `docs/architecture/` and diagrams in `docs/architecture/diagrams` before guessing.
 2.  **MCP Awareness**: We use a **custom JSON-RPC implementation** (`core/adapters/mcp-adapter.js`), NOT the standard Node SDK. Do not suggest `@modelcontextprotocol/sdk` unless asked for a migration.
 3.  **Documentation**: All new documentation goes into `docs/`. Never create markdown files in the root.
 
