@@ -300,8 +300,15 @@ Your output is always structured, actionable, and directly usable by development
     // Design data
     const design = context.design || {};
     if (design.colors || design.typography || design.spacing) {
-      const colors = design.colors?.join(', ') || 'Extract from screenshot';
-      const fonts = design.typography?.fonts?.join(', ') || 'Extract from screenshot';
+      // colors / fonts may be arrays, objects, or scalars — normalise to string
+      const toStr = (v) => {
+        if (!v) return null;
+        if (Array.isArray(v)) return v.join(', ');
+        if (typeof v === 'object') return Object.values(v).flat().join(', ');
+        return String(v);
+      };
+      const colors = toStr(design.colors) || 'Extract from screenshot';
+      const fonts  = toStr(design.typography?.fonts) || 'Extract from screenshot';
       sections.push(`### Design Tokens
 - Colors: ${colors}
 - Typography: ${fonts}
