@@ -10,12 +10,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Logger } from '../utils/logger.js';
 import { UnifiedContextBuilder } from '../data/unified-context-builder.js';
-import { UniversalTemplateEngine } from '../template/UniversalTemplateEngine.js';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 export class GeminiService {
   constructor(options = {}) {
@@ -34,12 +28,8 @@ export class GeminiService {
     // Context builder for merging Figma data into a unified object
     this.contextBuilder = new UnifiedContextBuilder({
       configService: options.configService,
-      logger: this.logger
+      logger: this.logger,
     });
-
-    // Template engine for loading YAML prompt structures
-    const templatesDir = join(__dirname, './templates');
-    this.templateEngine = new UniversalTemplateEngine(templatesDir);
 
     this.logger.info('GeminiService initialized');
   }

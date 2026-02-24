@@ -86,13 +86,18 @@ export class WorkItemOrchestrator {
     let generatedContentForUI = '';
 
     try {
-      // 1. Generate Content (Passive Phase)
-      const generatedResult = await this.ticketGenerator.generateTicket({
-        frameData: context.frameData,
-        ...context
-      }, 'enhanced');
-
-      const ticketContent = generatedResult.content || generatedResult;
+      // 1. Generate Content — use pre-generated content if available
+      let ticketContent;
+      if (context.generatedContent) {
+        this.logger.info('Using pre-generated content from GeminiService');
+        ticketContent = context.generatedContent;
+      } else {
+        const generatedResult = await this.ticketGenerator.generateTicket({
+          frameData: context.frameData,
+          ...context
+        }, 'enhanced');
+        ticketContent = generatedResult.content || generatedResult;
+      }
 
       if (!ticketContent) {
           throw new Error('Ticket generation returned empty content');
