@@ -20,7 +20,7 @@
  * - Integrates with SemanticAnalyzer for semantic accessibility
  */
 
-import { Logger } from '../logging/logger.js';
+import { Logger } from '../utils/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 
 export class AccessibilityChecker {

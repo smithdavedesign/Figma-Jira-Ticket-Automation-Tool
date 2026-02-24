@@ -74,10 +74,6 @@ export class Server {
     // Configuration
     sc.register('configurationService', (_c, redis) => new ConfigurationService(redis), true, ['redis']);
 
-    // Template manager
-    const { TemplateManager } = await import('../core/data/template-manager.js');
-    sc.register('templateManager', (_c, redis, cfg) => new TemplateManager({ redis, configService: cfg }), true, ['redis', 'configurationService']);
-
     // AI — GeminiService (primary generation engine)
     sc.register('geminiService', (_c, _r, cfg) => {
       const apiKey = cfg?.get('ai.gemini.apiKey') || process.env.GEMINI_API_KEY;

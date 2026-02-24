@@ -40,28 +40,6 @@ services:
       - figma-network
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
 
-  # Optional: MCP Server (if enabled)
-  mcp-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "3845:3845"
-    environment:
-      - NODE_ENV=production
-      - MCP_PORT=3845
-      - ENABLE_MCP_SERVER=true
-    env_file:
-      - .env
-    depends_on:
-      - redis
-    restart: unless-stopped
-    networks:
-      - figma-network
-    profiles:
-      - mcp
-    command: ["node", "-e", "require('./app/services/MCPService.js').startStandalone()"]
-
 volumes:
   redis-data:
     driver: local
