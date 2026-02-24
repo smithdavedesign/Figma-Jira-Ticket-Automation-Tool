@@ -1,114 +1,20 @@
 /**
- * Consolidated Figma Routes Module
- *
- * Unified Figma routes combining all specialized modules.
- * This replaces the monolithic figma.js with modular architecture.
+ * Figma Routes — screenshot endpoint only.
  */
 
 import FigmaCoreRoutes from './core.js';
-import FigmaEnhancedRoutes from './enhanced.js';
-import FigmaContextRoutes from './context.js';
-import FigmaMetricsRoutes from './metrics.js';
 import { BaseRoute } from '../BaseRoute.js';
-
-// Optional MCP module (can be enabled via environment variable)
-let FigmaMCPRoutes = null;
-try {
-  const { MCPRoutes } = await import('./mcp.js');
-  FigmaMCPRoutes = MCPRoutes;
-} catch (error) {
-  // MCP module not available or disabled
-}
 
 export class FigmaRoutes extends BaseRoute {
   constructor(serviceContainer) {
     super('Figma', serviceContainer);
-
-    // Initialize specialized route modules
     this.coreRoutes = new FigmaCoreRoutes(serviceContainer);
-    this.enhancedRoutes = new FigmaEnhancedRoutes(serviceContainer);
-    this.contextRoutes = new FigmaContextRoutes(serviceContainer);
-    this.metricsRoutes = new FigmaMetricsRoutes(serviceContainer);
-
-    // Optional MCP routes (if available)
-    this.mcpRoutes = null;
-    if (FigmaMCPRoutes && process.env.ENABLE_FIGMA_MCP !== 'false') {
-      try {
-        this.mcpRoutes = new FigmaMCPRoutes(serviceContainer);
-        this.logger.info('🔌 MCP routes module enabled');
-      } catch (error) {
-        this.logger.warn('⚠️ MCP routes module failed to initialize:', error.message);
-      }
-    }
-
-    this.logger.info('✅ Figma routes initialized with modular architecture');
+    this.logger.info('✅ Figma routes initialized');
   }
 
-  /**
-   * Register all Figma routes
-   * @param {Express.Router} router - Express router instance
-   */
   registerRoutes(router) {
-    // Register routes from all modules
     this.coreRoutes.registerRoutes(router);
-    this.enhancedRoutes.registerRoutes(router);
-    this.contextRoutes.registerRoutes(router);
-    this.metricsRoutes.registerRoutes(router);
-
-    // Register optional MCP routes if available
-    if (this.mcpRoutes) {
-      this.mcpRoutes.registerRoutes(router);
-    }
-
     this.logger.info('✅ All Figma routes registered successfully');
-  }
-
-  /**
-   * Get consolidated health status
-   * @returns {Object} Health status
-   */
-  getHealthStatus() {
-    const baseHealth = super.getHealthStatus();
-
-    return {
-      ...baseHealth,
-      architecture: 'modular-figma-routes',
-      modules: [
-        'figma-core-routes (basic operations, consolidated screenshots)',
-        'figma-enhanced-routes (context layer, AI analysis)',
-        'figma-context-routes (CRUD operations, search)',
-        'figma-metrics-routes (performance monitoring)',
-        ...(this.mcpRoutes ? ['figma-mcp-routes (design context MCP server)'] : [])
-      ],
-      consolidatedFeatures: [
-        'unified-screenshot-logic',
-        'secure-cache-keys',
-        'batched-redis-operations',
-        'schema-validation',
-        'dependency-aware-processing',
-        'enhanced-search-relevance',
-        'atomic-metrics-operations'
-      ],
-      improvements: [
-        'Eliminated code duplication between api.js and figma.js',
-        'Implemented secure SHA-1 cache keys to prevent collisions',
-        'Added Zod schema validation for request safety',
-        'Fixed parallel task dependencies in enhanced capture',
-        'Optimized Redis operations with batching',
-        'Enhanced search relevance with field weighting',
-        'Migrated to Redis hashes for atomic metrics'
-      ]
-    };
-  }
-
-  /**
-   * Update performance metrics (delegates to metrics module)
-   * @param {string} operation - Operation name
-   * @param {number} duration - Duration in milliseconds
-   * @param {boolean} success - Whether operation was successful
-   */
-  async updatePerformanceMetrics(operation, duration, success) {
-    return this.metricsRoutes.updatePerformanceMetrics(operation, duration, success);
   }
 }
 

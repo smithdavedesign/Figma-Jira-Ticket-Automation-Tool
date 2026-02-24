@@ -28,7 +28,6 @@ import { FigmaSessionManager } from '../core/data/figma-session-manager.js';
 // Routes
 import { GenerateRoutes } from './routes/generate.js';
 import { HealthRoutes } from './routes/health.js';
-import { PluginRoutes } from './routes/plugin.js';
 import { FigmaRoutes } from './routes/figma/figma.js';
 
 export class Server {
@@ -172,11 +171,7 @@ export class Server {
     const healthRoutes = new HealthRoutes(sc);
     healthRoutes.registerRoutes(router);
 
-    // Plugin endpoints
-    const pluginRoutes = new PluginRoutes(sc);
-    pluginRoutes.registerRoutes(router);
-
-    // Figma API endpoints (screenshot, context, etc.)
+    // Figma API endpoints (screenshot, etc.)
     const figmaRoutes = new FigmaRoutes(sc);
     figmaRoutes.registerRoutes(router);
 
