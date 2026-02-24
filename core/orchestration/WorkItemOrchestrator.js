@@ -374,16 +374,28 @@ export class WorkItemOrchestrator {
                const pageVersion = wikiResult.version?.number ?? wikiResult.page?.version?.number ?? 1;
                const pageTitle = finalWikiTitle;
 
-               // Resolve Self Link for direct attachment upload
+               // Resolve Self Link for direct attachment upload.
+               // Prefer _links.self (REST API URL like https://wiki.corp/rest/api/content/12345).
+               // Fall back to deriving the origin from the human-readable page URL.
                let pageSelfLink = wikiResult._links?.self || wikiResult.page?._links?.self || null;
+               if (!pageSelfLink && pageId) {
+                   const pageWebUrl = wikiResult.page?.url || wikiResult.url;
+                   if (pageWebUrl) {
+                       try {
+                           const origin = new URL(pageWebUrl).origin;
+                           pageSelfLink = `${origin}/rest/api/content/${pageId}`;
+                           this.logger.info(`🔗 Derived Confluence REST URL from page URL: ${pageSelfLink}`);
+                       } catch (e) { /* ignore bad URL */ }
+                   }
+               }
 
                if (pageId) {
                    try {
                        this.logger.info(`📎 [Step 1/2] Uploading screenshot to Confluence page ${pageId}...`);
                        const wikiAttResult = await this.mcpAdapter.addWikiAttachment(pageId, sharedAttachment.path, pageSelfLink);
 
-                       // Step 2 of 2: Confirmed upload — inject image reference into page body via update
-                       if (wikiAttResult?.success !== false) {
+                       // Step 2 of 2: Only inject image reference if upload was explicitly confirmed
+                       if (wikiAttResult?.success === true) {
                            const imageFilename = sharedAttachment.filename;
                            this.logger.info(`📎 [Step 2/2] Embedding image reference in Confluence page (v${pageVersion} → v${pageVersion + 1}): ![${imageFilename}]`);
                            const imageMarkdown = `\n![Design Preview](${imageFilename})\n`;
@@ -544,7 +556,7 @@ export class WorkItemOrchestrator {
          if (tempFilePath) {
              return {
                  path: tempFilePath,
-                 filename: `preview-${safeId}.png`, // Ensure png extension for Wiki compatibility
+                 filename: `${safeId}.png`, // safeId already contains the caller-supplied prefix (e.g. 'preview-NavBar')
                  cleanup: async () => {
                      if (shouldCleanup && tempFilePath) {
                          try { await fs.unlink(tempFilePath); } catch (e) {}
