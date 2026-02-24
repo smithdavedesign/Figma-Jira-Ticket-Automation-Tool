@@ -403,13 +403,13 @@ export class MCPAdapter {
    * @param {number} version - Current page version number (Confluence requires this for optimistic locking)
    */
   async updateWikiPage(pageId, title, content, version) {
-      this.logger.info(`📝 Updating Wiki Page ${pageId} (v${version} → v${version + 1})...`);
+      this.logger.info(`📝 Updating Wiki Page ${pageId}...`);
+      // Note: confluence_update_page schema does NOT accept a 'version' param —
+      // the server auto-increments it. content_format defaults to 'markdown'.
       return this._callMCP('confluence_update_page', {
           page_id: pageId,
           title,
-          content,
-          content_format: 'markdown',
-          version: version + 1
+          content
       });
   }
 
