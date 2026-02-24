@@ -621,7 +621,7 @@ export class WorkItemOrchestrator {
    * This is used as a zero-upload fallback when direct REST / MCP attachment is unavailable.
    */
   async _getFigmaExportUrl(fileKey, nodeId) {
-    const token = process.env.FIGMA_ACCESS_TOKEN;
+    const token = process.env.FIGMA_ACCESS_TOKEN || process.env.FIGMA_API_KEY;
     if (!token || !fileKey || !nodeId) return null;
     try {
       const apiUrl = `https://api.figma.com/v1/images/${fileKey}?ids=${encodeURIComponent(nodeId)}&format=png&scale=2`;

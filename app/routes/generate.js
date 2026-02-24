@@ -64,7 +64,7 @@ export class GenerateRoutes extends BaseRoute {
       if (!resolvedScreenshot) {
         const fileKey = request.fileContext?.fileKey;
         const nodeId = (request.enhancedFrameData?.[0] || request.frameData?.[0])?.id;
-        const figmaToken = process.env.FIGMA_ACCESS_TOKEN;
+        const figmaToken = process.env.FIGMA_ACCESS_TOKEN || process.env.FIGMA_API_KEY;
         if (fileKey && nodeId && figmaToken) {
           try {
             const figmaApiRes = await fetch(
