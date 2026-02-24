@@ -103,6 +103,10 @@
       font-family: 'SF Mono', Monaco, Menlo, monospace;
     }
     .results .copy-btn { margin-top: 6px; }
+    .btn-debug {
+      background: #0f766e; color: #fff; margin-top: 6px; font-size: .8rem; font-weight: 500;
+    }
+    .btn-debug:hover:not(:disabled) { background: #0d9488; }
 
     /* ─── Status toast ──────────────────────────────────────────── */
     .toast {
@@ -203,6 +207,7 @@
         <label>Generated Content</label>
         <textarea id="generatedContent" readonly></textarea>
         <button id="copyBtn" class="btn btn-secondary copy-btn">📋 Copy to Clipboard</button>
+        <button id="downloadContextBtn" class="btn btn-debug" style="display:none;">⬇️ Download Context JSON</button>
       </div>
     </div>
   </div>
@@ -212,24 +217,27 @@
     'use strict';
 
     // ─── DOM refs ──────────────────────────────────────────────
-    const techStackInput     = document.getElementById('techStack');
-    const generateBtn        = document.getElementById('generateBtn');
-    const refreshBtn         = document.getElementById('refreshBtn');
-    const copyBtn            = document.getElementById('copyBtn');
-    const resultsDiv         = document.getElementById('results');
-    const resultsTextarea    = document.getElementById('generatedContent');
-    const selectionInfoEl    = document.getElementById('selectionInfo');
-    const serverStatusEl     = document.getElementById('serverStatus');
-    const serverTextEl       = document.getElementById('serverText');
-    const screenshotPreview  = document.getElementById('screenshotPreview');
-    const screenshotImg      = document.getElementById('screenshotImg');
+    const techStackInput        = document.getElementById('techStack');
+    const generateBtn           = document.getElementById('generateBtn');
+    const refreshBtn            = document.getElementById('refreshBtn');
+    const copyBtn               = document.getElementById('copyBtn');
+    const downloadContextBtn    = document.getElementById('downloadContextBtn');
+    const resultsDiv            = document.getElementById('results');
+    const resultsTextarea       = document.getElementById('generatedContent');
+    const selectionInfoEl       = document.getElementById('selectionInfo');
+    const serverStatusEl        = document.getElementById('serverStatus');
+    const serverTextEl          = document.getElementById('serverText');
+    const screenshotPreview     = document.getElementById('screenshotPreview');
+    const screenshotImg         = document.getElementById('screenshotImg');
 
     // ─── State ─────────────────────────────────────────────────
-    let frameData      = null;   // last selection-context from Figma
-    let fileInfo       = null;   // last file-context from Figma
+    let frameData         = null;   // last selection-context from Figma
+    let fileInfo          = null;   // last file-context from Figma
     let currentScreenshot = null;
-    let aiTicketData   = null;   // payload from code.ts generate-ai-ticket
-    let generating     = false;
+    let aiTicketData      = null;   // payload from code.ts generate-ai-ticket
+    let generating        = false;
+    let lastRequestParams = null;   // params sent to /api/generate (for context download)
+    let lastApiResponse   = null;   // full response from /api/generate (for context download)
 
     // ─── Tech-stack templates ──────────────────────────────────
     const STACKS = {
@@ -394,6 +402,10 @@
         enableActiveCreation: enableActive
       };
 
+      // Store params for context download
+      lastRequestParams = params;
+      lastApiResponse   = null;
+
       // Send via plugin code (code.ts calls /api/generate)
       parent.postMessage({ pluginMessage: { type: 'make-ai-request', params } }, '*');
     });
@@ -407,16 +419,20 @@
         return;
       }
 
+      // Store full response for context download
+      lastApiResponse = msg.data;
+
       // Extract content from various response shapes
       let content = '';
       const d = msg.data;
-      if (d?.data?.content)          content = unwrap(d.data.content);
-      else if (d?.content)           content = unwrap(d.content);
+      if (d?.data?.content)           content = unwrap(d.data.content);
+      else if (d?.content)            content = unwrap(d.content);
       else if (typeof d === 'string') content = d;
-      else                           content = JSON.stringify(d, null, 2);
+      else                            content = JSON.stringify(d, null, 2);
 
       resultsTextarea.value = content;
       resultsDiv.classList.add('visible');
+      downloadContextBtn.style.display = 'flex';
       toast('Done!', 'success');
     }
 
@@ -437,10 +453,40 @@
 
     // ─── Refresh context ───────────────────────────────────────
     refreshBtn.addEventListener('click', () => {
-      aiTicketData = null;
+      aiTicketData     = null;
+      lastRequestParams = null;
+      lastApiResponse  = null;
       generateBtn.disabled = true;
+      downloadContextBtn.style.display = 'none';
       parent.postMessage({ pluginMessage: { type: 'generate-ai-ticket' } }, '*');
       toast('Refreshing context…', 'loading');
+    });
+
+    // ─── Download Context JSON ───────────────────────────────
+    downloadContextBtn.addEventListener('click', () => {
+      const payload = {
+        _description: 'Full context snapshot sent to the LLM and raw API response. Use this to debug generation quality.',
+        generatedAt: new Date().toISOString(),
+        requestParams: lastRequestParams
+          ? {
+              ...lastRequestParams,
+              // Replace raw base64 screenshot with a summary so the file stays readable
+              screenshot: lastRequestParams.screenshot
+                ? { provided: true, byteLength: JSON.stringify(lastRequestParams.screenshot).length }
+                : null,
+            }
+          : null,
+        apiResponse: lastApiResponse || null,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      a.href     = url;
+      a.download = `llm-context-${ts}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('Context JSON downloaded', 'success');
     });
 
     // ─── Copy to clipboard ─────────────────────────────────────

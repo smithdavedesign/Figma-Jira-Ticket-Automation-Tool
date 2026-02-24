@@ -35,6 +35,26 @@ export class GenerateRoutes extends BaseRoute {
       this.logger.info(`Generating ${request.platform}/${request.documentType} for "${request.componentName}"`);
 
       // ---- Primary path: GeminiService ----------------------------------
+      // Snapshot everything we send to the LLM (strip raw base64 screenshot to keep JSON lean)
+      const contextSnapshot = {
+        sentAt: new Date().toISOString(),
+        request: {
+          componentName: request.componentName,
+          platform: request.platform,
+          documentType: request.documentType,
+          techStack: request.techStack,
+          enableActiveCreation: request.enableActiveCreation,
+          fileContext: request.fileContext,
+          metadata: request.metadata,
+          frameData: request.frameData,
+          enhancedFrameData: request.enhancedFrameData,
+          // Summarise screenshot rather than embed the full base64
+          screenshot: request.screenshot
+            ? { provided: true, type: typeof request.screenshot, length: JSON.stringify(request.screenshot).length }
+            : null,
+        },
+      };
+
       let result;
       try {
         const gemini = this.getService('geminiService');
@@ -55,7 +75,7 @@ export class GenerateRoutes extends BaseRoute {
           content: generated.content,
           format: request.platform,
           strategy: 'gemini',
-          metadata: generated.metadata,
+          metadata: { ...generated.metadata, debugContext: contextSnapshot },
         };
       } catch (aiError) {
         this.logger.warn('GeminiService failed, falling back to YAML templates:', aiError.message);
@@ -65,6 +85,7 @@ export class GenerateRoutes extends BaseRoute {
         const bridge = new ContextTemplateBridge();
         await bridge.initialize();
         result = await bridge.generateDocumentation(request);
+        result.metadata = { ...(result.metadata || {}), debugContext: { ...contextSnapshot, fallbackReason: aiError.message } };
       }
 
       // ---- Optional: Active creation via WorkItemOrchestrator -----------
