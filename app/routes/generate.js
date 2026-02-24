@@ -64,6 +64,7 @@ export class GenerateRoutes extends BaseRoute {
           platform: request.platform,
           documentType: request.documentType,
           figmaContext: request.figmaContext,
+          figmaUrl: request.figmaUrl,
           frameData: request.frameData,
           enhancedFrameData: request.enhancedFrameData,
           screenshot: request.screenshot,

@@ -136,13 +136,39 @@ export class GeminiService {
   // Prompt Building
   // ---------------------------------------------------------------------------
 
+  _buildFigmaDeepLink(context) {
+    // Primary: use the already-built live_link from unified context builder (includes node-id)
+    if (context.figma?.live_link && context.figma.live_link !== 'https://www.figma.com/file/unknown') {
+      return context.figma.live_link;
+    }
+
+    // Fallback: construct manually from available pieces
+    const base = context.figma?.url
+      || context.figmaUrl
+      || null;
+
+    const fileKey = this._extractFileKey(context);
+    if (!fileKey || fileKey === 'unknown') return base || null;
+
+    let url = base ? base.split('?')[0] : `https://www.figma.com/design/${fileKey}`;
+
+    const nodeId = context.figma?.frame_id || context.figma?.node_id;
+    if (nodeId) {
+      const encodedNodeId = nodeId.replace(/:/g, '-').replace(/;/g, '%3B');
+      url += `?node-id=${encodedNodeId}`;
+    }
+    return url;
+  }
+
   _buildPrompt(context, options) {
     const { componentName, techStack, platform, documentType } = options;
     const techStackStr = Array.isArray(techStack) ? techStack.join(' + ') : techStack;
     const markup = this._getMarkupHelpers(platform);
-    const fileKey = this._extractFileKey(context);
-    const figmaUrl = fileKey && fileKey !== 'unknown'
-      ? `https://www.figma.com/design/${fileKey}`
+    const figmaDeepLink = this._buildFigmaDeepLink(context);
+    const figmaLinkText = figmaDeepLink
+      ? (platform === 'jira' || platform === 'Jira'
+          ? `[View in Figma|${figmaDeepLink}]`
+          : `[View in Figma](${figmaDeepLink})`)
       : 'See Figma file context below';
 
     return `${this._systemPrompt(techStackStr, platform)}
@@ -156,8 +182,9 @@ Platform: ${platform}
 
 ## Figma Design Reference
 - Component: ${componentName}
-- Figma URL: ${figmaUrl}
-- File: ${context.figma?.file_name || context.fileContext?.fileName || 'See context'}
+- Figma URL: ${figmaDeepLink || 'Not available'}
+- Figma Link (use this EXACT link text in the Design References section, do not replace it): ${figmaLinkText}
+- File: ${context.figma?.file_name || context.fileContext?.fileName || context.requestData?.fileContext?.fileName || 'See context'}
 ${context.figma?.screenshot_url ? `- Screenshot: Available (sent as image)` : ''}
 
 ## Design Context Data
