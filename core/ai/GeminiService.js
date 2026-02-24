@@ -171,6 +171,10 @@ export class GeminiService {
           : `[View in Figma](${figmaDeepLink})`)
       : 'See Figma file context below';
 
+    // Figma export URL — CDN image of the selected frame (passed from route via requestData)
+    const figmaExportUrl = context.requestData?.figmaExportUrl || null;
+    const hasImage = !!(context.figma?.screenshot_url || figmaExportUrl || context.requestData?.screenshot);
+
     return `${this._systemPrompt(techStackStr, platform)}
 
 ${this._platformRules(platform, markup)}
@@ -185,7 +189,8 @@ Platform: ${platform}
 - Figma URL: ${figmaDeepLink || 'Not available'}
 - Figma Link (use this EXACT link text in the Design References section, do not replace it): ${figmaLinkText}
 - File: ${context.figma?.file_name || context.fileContext?.fileName || context.requestData?.fileContext?.fileName || 'See context'}
-${context.figma?.screenshot_url ? `- Screenshot: Available (sent as image)` : ''}
+${figmaExportUrl ? `- Design Image URL: ${figmaExportUrl}` : ''}
+${hasImage ? `- Screenshot: Attached as image — analyze it carefully for layout, colors, spacing, and components.` : ''}
 
 ## Design Context Data
 ${this._formatContext(context)}
