@@ -516,8 +516,12 @@ export class MCPAdapter {
    * @param {string} filename - Basename of the already-uploaded attachment (e.g. "preview-nav.png")
    */
   async updateJiraDescription(issueKey, currentDescription, filename) {
-     this.logger.info(`🖼️  Embedding image in Jira ${issueKey} description: !${filename}!`);
-     const imageMarkup = `\n\n!${filename}|thumbnail!`;
+     // filename may be either an uploaded attachment name or a full URL (Figma CDN fallback)
+     const isUrl = /^https?:\/\//i.test(filename);
+     const imageMarkup = isUrl
+         ? `\n\n![Design Preview](${filename})`   // markdown for external URL
+         : `\n\n!${filename}|thumbnail!`;           // Jira wiki markup for attachment
+     this.logger.info(`🖼️  Embedding image in Jira ${issueKey} description (${isUrl ? 'URL' : 'attachment'})`);
      const updatedDescription = (currentDescription || '') + imageMarkup;
      try {
          await this._callMCP('jira_update_issue', {
