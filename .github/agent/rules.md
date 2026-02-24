@@ -1,187 +1,68 @@
-# 🤖 AI Assistant Context Rules
+# AI Assistant Context Rules
 
-## 🚨 **CRITICAL DOCUMENTATION RULE**
+## Project: Figma → Jira / Wiki Automation Tool
 
-**ALL documentation files (.md, README, guides, instructions) MUST be placed in the `docs/` directory.**
-
-**✅ DOCUMENTATION ORGANIZATION COMPLETE (November 3, 2025):**
-- **Root-level files moved**: FINAL_HYBRID_STATUS_REPORT.md → docs/architecture/, HYBRID_ARCHITECTURE_REPORT.md → docs/architecture/, PRODUCTION_GUIDE.md → docs/deployment/
-- **Clean root directory**: Only README.md and .ai-context-rules.md remain in project root
-- **Proper categorization**: All documentation files in appropriate docs/ subdirectories
-
-## ⚡ **USER ENFORCEMENT COMMANDS**
-
-**If AI doesn't read context rules first, say:**
-- `"Read context rules first!"`
-- `"Follow .ai-context-rules.md protocol!"`
-- `"Check session start protocol!"`
-- `"Stop! Read MASTER_PROJECT_CONTEXT.md first!"`
-
-## 🧠 **MANDATORY SESSION STARTUP RULE**
-
-### 🚨 **CRITICAL: SESSION START PROTOCOL**
-**AI ASSISTANT MUST SAY:** "I'm reading the context rules first..." then actually read them!
-
-**USER ENFORCEMENT:** If I don't mention reading context rules in my first response, please say:
-- "Read the context rules first!"
-- "Follow the .ai-context-rules.md protocol!"
-- "Check MASTER_PROJECT_CONTEXT.md before proceeding!"
-
-### 🌳 **CURRENT PROJECT STATUS (November 3, 2025)**
-- **Git Branch**: `figma-live-test` (Ready for live Figma testing)
-- **Main Branch**: All production code merged and updated
-- **Documentation**: Organized in proper docs/ subdirectories
-- **System Status**: Production-ready hybrid architecture complete
-
-### ⚡ **ESSENTIAL DOCUMENTATION REVIEW - ALWAYS READ FIRST:**
-
-#### **🎯 CORE PROJECT UNDERSTANDING (MANDATORY)**
-1. **`docs/MASTER_PROJECT_CONTEXT.md`** - Complete project context and current status
-2. **`docs/FEATURE_ROADMAP_2025.md`** - Strategic roadmap and next phases (Phases 7-10)
-3. **`docs/architecture/SYSTEM_ARCHITECTURE.md`** - MCP server integration (NEVER implement direct Figma API)
-4. **`docs/project-phases/CURRENT_STATUS_ACHIEVEMENTS.md`** - Current phase completion status
-
-#### **🔧 TECHNICAL IMPLEMENTATION (REQUIRED)**
-5. **`docs/api/UNIFIED_GENERATE_API_SUCCESS.md`** - MCP server endpoints and data structures
-6. **`docs/implementation/TEMPLATE_SYSTEM_CONSOLIDATION_COMPLETE.md`** - Template system architecture
-7. **`docs/deployment/PRODUCTION_GUIDE.md`** - Production deployment status and process
-8. **`docs/testing/COMPREHENSIVE_TEST_RESULTS_NOV_2025.md`** - Testing approach and validation
-
-#### **🎨 DESIGN INTELLIGENCE FOCUS (KEY DIFFERENTIATOR)**
-9. **`docs/guides/ADVANCED_FEATURES_AI_GUIDE.md`** - AI-powered design analysis capabilities
-10. **`docs/implementation/AI_ORCHESTRATION_GUIDE.md`** - Multi-modal AI integration patterns
-
-#### **🎯 MCP INTEGRATION TOOLS (CRITICAL FOR AUTOMATION)**
-11. **`docs/api/MCP_JIRA_CONFLUENCE_TOOLS.md`** - Complete 55+ tool reference with examples
-12. **`docs/implementation/MCP_INTEGRATION_GUIDE.md`** - MCP server architecture and implementation
-
-#### **📋 QUICK REFERENCE (AS NEEDED)**
-- **`docs/troubleshooting/TROUBLESHOOTING_GUIDE.md`** - Known issues and solutions
-- **`docs/testing/FIGMA_TESTING_GUIDE.md`** - Setup and configuration
-- **`docs/testing/COMPREHENSIVE_TESTING_GUIDE.md`** - Live Figma integration testing
-- **`docs/api/FIGMA_API_EVALUATION_NOVEMBER_2025.md`** - Figma API usage patterns via MCP
-
-### **🎯 STARTUP CHECKLIST:**
-**Before ANY work on this project:**
-- [ ] Read MASTER_PROJECT_CONTEXT.md (current status)
-- [ ] Read FEATURE_ROADMAP_2025.md (strategic direction) 
-- [ ] Understand MCP architecture (no direct Figma API)
-- [ ] Check current phase completion status
-- [ ] Review template system configuration
-- [ ] Understand design intelligence capabilities
-
-### **📊 PROJECT STATUS CONTEXT:**
-- **Current Phase**: Phase 6 Complete (Advanced Template System)
-- **Next Focus**: Phase 7 (Live Figma Integration) 
-- **Key Differentiator**: Design Intelligence (AI-powered design analysis)
-- **Architecture**: MCP Server + Plugin UI (localhost:3000)
-- **Production Status**: Ready for enterprise deployment
-
-### **MANDATORY UPDATE RULE:**
-**ALWAYS update `docs/MASTER_PROJECT_CONTEXT.md` after:**
-- Major architectural changes
-- Phase completions or milestones  
-- Git pushes with significant changes
-- Architecture decisions or clarifications
-- AI service updates (API keys, service availability)
-
-## 🎯 **MCP JIRA & CONFLUENCE TOOL ACCESS (CRITICAL)**
-
-### **⚡ AI ASSISTANTS HAVE FULL ACCESS TO ALL MCP TOOLS BY DEFAULT**
-- ✅ **40+ Jira Functions**: Create, update, search, link, transition, batch process
-- ✅ **15+ Confluence Functions**: Create docs, search, comment, organize  
-- ✅ **200+ Active Projects**: Full enterprise Jira instance access
-- ✅ **Multiple Confluence Spaces**: Complete documentation ecosystem
-- ✅ **Real-time Integration**: Live system connectivity via MCP servers
-- ✅ **Batch Operations**: Efficient bulk processing capabilities
-
-### **🏢 CONNECTED SYSTEMS (PRODUCTION READY)**
-- **Jira**: `https://npsg-jira.elements.local` (Production enterprise instance)
-- **Confluence**: `https://npsg-wiki.elements.local` (Documentation platform)  
-- **MCP Configuration**: VS Code configured with token authentication
-- **Tool Documentation**: Complete reference in `docs/api/MCP_JIRA_CONFLUENCE_TOOLS.md`
-
-**🚨 CRITICAL: All MCP tools are immediately available - no setup required!**
-
-## ✅ **AI INTEGRATION DATA LAYER CONSOLE STATUS**
-
-### **🎯 WORKING COMPONENTS (Verified October 16, 2025)**
-- ✅ **MCP Server Pipeline**: Full data layer processing
-- ✅ **Enhanced Data Validation**: Schema validation passing
-- ✅ **AI Integration Console**: Real-time service status monitoring
-- ✅ **Fallback System**: Graceful degradation when AI unavailable
-- ✅ **Data Flow Visibility**: Complete pipeline transparency
-- ✅ **Professional Output**: High-quality ticket generation
-
-### **🔍 AI CONSOLE OUTPUT ANALYSIS**
-```
-🤖 Starting AI-enhanced ticket generation...
-📋 Document type: jira
-🔮 AI enabled: true  
-🧠 AI Services Status: { gemini: false, geminiVision: false, ... }
-⚠️ No AI services available, falling back to standard generation
-🎫 Generating enhanced tickets for: 0 frames
-🤝 Figma MCP integration: enabled
-✅ AI ticket generation successful
-```
-
-### **🎯 DATA LAYER CONTEXT CONFIRMED**
-The system successfully processes:
-- **Enhanced Frame Data**: Component specs, dimensions, colors
-- **Screenshot Data**: Base64 encoded images  
-- **Tech Stack Context**: Framework and library information
-- **Document Type**: Design system classification
-- **Template Context**: File and page metadata
-- **Accessibility Data**: WCAG compliance information
-- **Typography & Spacing**: Complete design token extraction
-
-## 🚀 **VITAL STARTUP SCRIPTS & RUN MODES**
-
-### **🎯 CRITICAL MCP SERVER COMMANDS**
-```bash
-#### **MCP Server (CRITICAL - Always Start First)**
-```bash
-# Primary startup method (MVC ARCHITECTURE)
-npm run start:server                 # Start app/server/main.js (RECOMMENDED)
-
-# Alternative methods
-npm run start:dev                 # Development mode with file watching
-npm start                         # Direct server startup
-node app/server/main.js           # Direct node execution
-
-# Health check (ALWAYS VERIFY)
-curl -s http://localhost:3000/ --max-time 3
-lsof -i :3000  # Check if port is in use
-```
-
-### **🔧 PLUGIN BUILD & TESTING COMMANDS**
-```bash
-# Build Plugin for Figma (ESSENTIAL)
-npm run build:ts                      # TypeScript compilation
-./scripts/build.sh                    # Development build
-./scripts/bundle-production.sh        # Production bundle
-
-# Testing Commands (COMPREHENSIVE)
-npm run test:all                      # Master test orchestrator
-npm run test:integration:mcp          # MCP server integration
-npm run test:browser:smoke            # Playwright browser tests
-npm run health                        # System health check
-```
-
-## 🚨 **ENFORCEMENT**
-
-**If user says "You violated the context rules":**
-1. **STOP ALL WORK** immediately
-2. **Fix violations** first (move misplaced files)
-3. **Re-read context rules**
-4. **Ask for confirmation** before proceeding
-
-**Zero tolerance for:**
-- Files in wrong locations
-- Skipping context rules
-- Random file creation
-- Architecture violations
+**Branch**: `feature/refactored`  
+**Server**: `http://localhost:3000`  
+**Last major refactor**: February 2026
 
 ---
 
-**📚 Complete rules in:** `docs/MASTER_PROJECT_CONTEXT.md`
+## Architecture (current, accurate)
+
+```
+Figma Plugin (code.ts → code.js)
+  └─ POST /api/generate
+       └─ GeminiService (Gemini 2.0 Flash)
+            └─ WorkItemOrchestrator (when enableActiveCreation = true)
+                 ├─ MCPAdapter → Jira MCP   (creates ticket in AUTOMATION project)
+                 ├─ MCPAdapter → Confluence (creates page in DCUX space)
+                 └─ MCPAdapter → Git        (creates feature branch)
+```
+
+Fallback: When Gemini fails → `ContextTemplateBridge` → YAML templates (no AI).
+
+---
+
+## Services (11 registered at startup)
+
+`redis`, `sessionManager`, `figmaSessionManager`, `configurationService`, `geminiService`, `screenshotService`, `contextManager`, `mcpAdapter`, `ticketGenerationService`, `ticketService`, `workItemOrchestrator`
+
+---
+
+## What Was Removed (do not re-add)
+
+- Multi-strategy AI routing (AI orchestrator, visual AI service, hybrid strategies)
+- RouteRegistry filesystem scanning
+- AnalysisService, TestingService, AIPromptManager
+- 55+ stale route files (plugin.js, enhanced.js, context.js, metrics.js, etc.)
+- Swagger/OpenAPI docs
+- Health monitoring service dashboard
+- All test fixtures, archives, stale scripts
+
+---
+
+## MCP Access
+
+- **Jira**: `https://mcp-jira.usm-cpr.corp.nandps.com/mcp/`
+- **Confluence**: `https://mcp-confluence.usm-cpr.corp.nandps.com/mcp/`  
+- Custom adapter: `core/adapters/MCPAdapter.js` (JSON-RPC 2.0 over HTTP/SSE)
+
+---
+
+## Documentation
+
+- `README.md` — project overview + API reference  
+- `docs/QUICK_START.md` — setup instructions
+- `docs/architecture/ARCHITECTURE.md` — system design
+- `.github/instructions/feature-mcp.md` — output format for ticket/wiki/branch
+
+---
+
+## Mandatory Rules
+
+1. **No new AI providers** — Gemini 2.0 Flash only
+2. **No strategy selectors** — single generation path
+3. **No health dashboards** — the `/health` endpoint is sufficient
+4. **Docs in docs/** — never create .md files in root (except README.md)
+5. **Read ARCHITECTURE.md** before making structural changes
