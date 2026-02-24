@@ -268,12 +268,21 @@ export class WorkItemOrchestrator {
              }
           }
           
-          // Attach Image to Jira
-          // We attach if sharedAttachment exists.
-          if (sharedAttachment && jiraIssueKey) {
+          // Step 1 of 2: Upload attachment to Jira
+          if (sharedAttachment && jiraIssueKey && !existingTicket) {
                try {
-                   this.logger.info(`📎 Attaching screenshot to Jira ${jiraIssueKey}...`);
-                   await this.mcpAdapter.addJiraAttachment(jiraIssueKey, sharedAttachment.path, issueSelfUrl);
+                   this.logger.info(`📎 [Step 1/2] Uploading screenshot to Jira ${jiraIssueKey}...`);
+                   const attResult = await this.mcpAdapter.addJiraAttachment(jiraIssueKey, sharedAttachment.path, issueSelfUrl);
+                   // Step 2 of 2: Only after confirmed upload, patch the description with !filename!
+                   if (attResult?.success && attResult?.filenames?.length) {
+                       const uploadedFilename = attResult.filenames[0];
+                       this.logger.info(`📎 [Step 2/2] Embedding !${uploadedFilename}! in Jira description...`);
+                       await this.mcpAdapter.updateJiraDescription(
+                           jiraIssueKey,
+                           jiraData.description || '',
+                           uploadedFilename
+                       );
+                   }
                } catch(attErr) {
                    this.logger.warn('Failed to add Jira attachment', attErr);
                }
@@ -301,23 +310,6 @@ export class WorkItemOrchestrator {
               }
           }
           
-          // Inject Attachment Reference (Top of page) if we have the file
-          if (sharedAttachment) {
-              // Confluence Markdown Image Syntax: ![Alt Text](filename)
-              // This is safer than Wiki markup '!file!' which might error in markdown mode
-              // IMPORTANT: Using 'ri:url' or just filename matching what is attached.
-              // In Standard Confluence Markdown, ![image.png](image.png) works if attached.
-              
-              // We use the filename provided by sharedAttachment
-              const imageMarkdown = `\n![${sharedAttachment.filename}](${sharedAttachment.filename})\n`;
-              
-              if (finalWikiContent.includes('---\n\n')) {
-                  finalWikiContent = finalWikiContent.replace('---\n\n', `---\n\n${imageMarkdown}\n`);
-              } else {
-                  finalWikiContent = `${imageMarkdown}\n${finalWikiContent}`;
-              }
-          }
-
           // Idempotency: Check if page exists OR create unique if needed
           let wikiResult = null;
           let finalWikiTitle = wikiTitle;
@@ -374,19 +366,40 @@ export class WorkItemOrchestrator {
               throw new Error(`Failed to create Wiki page after ${maxLoops} attempts due to conflicts.`);
           }
           
-          // Upload Attachment to Wiki Page (Reusable shared file)
+          // Two-step image attachment for Confluence:
+          // Step 1: Upload file to page. Step 2: Only if upload confirmed, update page body with image reference.
           if (sharedAttachment && wikiResult && !wikiResult.error) {
-               // Attempt to resolve Page ID from diverse potential response structures
-               const pageId = wikiResult.id || (wikiResult.page ? wikiResult.page.id : null);
-               
-               // Attempt to resolve Self Link for direct attachment upload
-               let pageSelfLink = null;
-               if (wikiResult._links && wikiResult._links.self) pageSelfLink = wikiResult._links.self;
-               else if (wikiResult.page && wikiResult.page._links && wikiResult.page._links.self) pageSelfLink = wikiResult.page._links.self;
+               // Resolve Page ID and version from diverse possible response shapes
+               const pageId = wikiResult.id || wikiResult.page?.id || null;
+               const pageVersion = wikiResult.version?.number ?? wikiResult.page?.version?.number ?? 1;
+               const pageTitle = finalWikiTitle;
+
+               // Resolve Self Link for direct attachment upload
+               let pageSelfLink = wikiResult._links?.self || wikiResult.page?._links?.self || null;
 
                if (pageId) {
                    try {
-                       await this.mcpAdapter.addWikiAttachment(pageId, sharedAttachment.path, pageSelfLink);
+                       this.logger.info(`📎 [Step 1/2] Uploading screenshot to Confluence page ${pageId}...`);
+                       const wikiAttResult = await this.mcpAdapter.addWikiAttachment(pageId, sharedAttachment.path, pageSelfLink);
+
+                       // Step 2 of 2: Confirmed upload — inject image reference into page body via update
+                       if (wikiAttResult?.success !== false) {
+                           const imageFilename = sharedAttachment.filename;
+                           this.logger.info(`📎 [Step 2/2] Embedding image reference in Confluence page (v${pageVersion} → v${pageVersion + 1}): ![${imageFilename}]`);
+                           const imageMarkdown = `\n![Design Preview](${imageFilename})\n`;
+                           let updatedContent = finalWikiContent;
+                           if (updatedContent.includes('---\n\n')) {
+                               updatedContent = updatedContent.replace('---\n\n', `---\n\n${imageMarkdown}\n`);
+                           } else {
+                               updatedContent = `${imageMarkdown}\n${updatedContent}`;
+                           }
+                           try {
+                               await this.mcpAdapter.updateWikiPage(pageId, pageTitle, updatedContent, pageVersion);
+                               this.logger.info('✅ Confluence page updated with image reference');
+                           } catch (updateErr) {
+                               this.logger.warn(`⚠️ Image injected into page failed (attachment still uploaded): ${updateErr.message}`);
+                           }
+                       }
                    } catch (attErr) {
                        this.logger.warn(`Failed to attach to wiki: ${attErr.message}`);
                    }

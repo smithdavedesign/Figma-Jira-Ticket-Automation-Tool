@@ -400,15 +400,16 @@ export class MCPAdapter {
    * @param {string} pageId 
    * @param {string} title 
    * @param {string} content 
-   * @param {number} version 
+   * @param {number} version - Current page version number (Confluence requires this for optimistic locking)
    */
   async updateWikiPage(pageId, title, content, version) {
-      this.logger.info(`📝 Updating Wiki Page ${pageId}...`);
+      this.logger.info(`📝 Updating Wiki Page ${pageId} (v${version} → v${version + 1})...`);
       return this._callMCP('confluence_update_page', {
           page_id: pageId,
           title,
           content,
-          content_format: 'markdown'
+          content_format: 'markdown',
+          version: version + 1
       });
   }
 
@@ -468,7 +469,8 @@ export class MCPAdapter {
   }
 
   /**
-   * Add attachment to Jira Issue
+   * Add attachment to Jira Issue.
+   * Returns { success, filenames } where filenames is an array of uploaded basenames.
    * @param {string} issueKey - Jira Issue Key
    * @param {string|string[]} filePaths - Path(s) to files to attach
    * @param {string} [issueSelfUrl] - Optional full REST API URL for the issue (optimizes upload)
@@ -476,31 +478,57 @@ export class MCPAdapter {
   async addJiraAttachment(issueKey, filePaths, issueSelfUrl) {
      this.logger.info(`📎 Adding attachment to Jira ${issueKey}...`);
      const paths = Array.isArray(filePaths) ? filePaths : [filePaths];
+     const filenames = paths.map(p => path.basename(p));
 
-     // Strategy: Prefer MCP Tool (jira_update_issue) as requested for centralized handling
+     // Strategy: Direct REST API first (multipart/form-data – the only way Jira accepts file uploads).
+     // jira_update_issue does NOT support binary file uploads; removed as primary strategy.
      try {
-         this.logger.debug(`Trying MCP tool 'jira_update_issue' for attachments locally: ${JSON.stringify(paths)}`);
-         const result = await this._callMCP('jira_update_issue', {
-             issue_key: issueKey,
-             fields: {}, 
-             attachments: paths
-         });
-         this.logger.info('✅ Attachment(s) added to Jira (MCP)');
-         return result;
-     } catch (mcpError) {
-         this.logger.warn(`⚠️ MCP Jira attachment failed: ${mcpError.message}. Falling back to Direct Upload...`);
-         
-         // Fallback: Try Direct REST API (reliable for local files if MCP is remote/failing)
+         for (const filePath of paths) {
+             await this._uploadToJiraDirect(issueKey, filePath, issueSelfUrl);
+         }
+         this.logger.info(`✅ Attachment(s) added to Jira (Direct): ${filenames.join(', ')}`);
+         return { success: true, filenames };
+     } catch (directError) {
+         this.logger.warn(`⚠️ Direct Jira upload failed: ${directError.message}. Trying MCP fallback...`);
+         // Fallback: some on-prem MCP servers expose a jira_add_attachment tool
          try {
-             for (const filePath of paths) {
-                 await this._uploadToJiraDirect(issueKey, filePath, issueSelfUrl);
-             }
-             this.logger.info('✅ Attachment(s) added to Jira (Direct)');
-             return { success: true };
-         } catch (directError) {
-             this.logger.error('❌ Failed to add attachment to Jira (All methods)', { message: directError.message, stack: directError.stack });
+             const result = await this._callMCP('jira_add_attachment', {
+                 issue_key: issueKey,
+                 file_path: paths[0]
+             });
+             this.logger.info('✅ Attachment(s) added to Jira (MCP fallback)');
+             return { success: true, filenames, mcpResult: result };
+         } catch (mcpError) {
+             this.logger.error('❌ Failed to add attachment to Jira (all methods)', {
+                 directError: directError.message,
+                 mcpError: mcpError.message
+             });
              return null;
          }
+     }
+  }
+
+  /**
+   * Patch a Jira issue description to embed an uploaded image using Jira Wiki Markup.
+   * Call this AFTER a successful addJiraAttachment to complete the two-step process.
+   * @param {string} issueKey - Jira Issue Key
+   * @param {string} currentDescription - The existing description body
+   * @param {string} filename - Basename of the already-uploaded attachment (e.g. "preview-nav.png")
+   */
+  async updateJiraDescription(issueKey, currentDescription, filename) {
+     this.logger.info(`🖼️  Embedding image in Jira ${issueKey} description: !${filename}!`);
+     const imageMarkup = `\n\n!${filename}|thumbnail!`;
+     const updatedDescription = (currentDescription || '') + imageMarkup;
+     try {
+         await this._callMCP('jira_update_issue', {
+             issue_key: issueKey,
+             fields: { description: updatedDescription }
+         });
+         this.logger.info(`✅ Jira description updated with image reference !${filename}!`);
+         return { success: true };
+     } catch (error) {
+         this.logger.warn(`⚠️ Failed to update Jira description with image: ${error.message}`);
+         return null;
      }
   }
 
