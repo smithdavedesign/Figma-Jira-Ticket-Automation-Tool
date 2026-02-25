@@ -1,8 +1,8 @@
-# Figma → Jira / Wiki Automation
+# Figma → Jira / Wiki / QA Automation
 
 Select a frame. Pick a tech stack. Hit Generate.
 
-The plugin fetches the Figma frame image via Figma's Export API, passes it to **Gemini 2.0 Flash** for vision-based analysis, generates structured documentation, then uses MCP to automatically create a **Jira ticket**, **Confluence wiki page**, and **Git branch** — no copy-pasting required.
+The plugin fetches the Figma frame image via Figma’s Export API, passes it to **Gemini 2.0 Flash** for vision-based analysis, generates structured documentation, then uses MCP to automatically create a **Jira ticket**, **Confluence Implementation Plan wiki**, **QA Test Case wiki**, and optionally a **Git branch** — no copy-pasting required.
 
 ---
 
@@ -12,10 +12,11 @@ When **Auto-create Jira + Wiki** is enabled, one click produces:
 
 | Artifact | Contents |
 |---|---|
-| **Jira ticket** | AI-generated description (Jira wiki markup) + embedded design image + Related Resources section (wiki link, Storybook, QA placeholder) |
-| **Confluence wiki page** | Full implementation spec in markdown, embedded design image, header with Figma/Jira/date/resource links |
-| **Jira remote links** | 3 links in Jira's Links panel: Implementation Plan (wiki), Storybook (TBD), QA Test Case (TBD) |
-| **Git branch** | `feature/<component-name>` (requires local Git MCP) |
+| **Jira ticket** | AI-generated description (Jira wiki markup) + embedded design image + **Related Resources** section (Figma link, Implementation Plan, Storybook TBD, QA Test Case link) |
+| **Implementation Plan wiki** | Full technical spec in markdown — embedded design image, header with Figma link / Jira key / date / resource links, **QA Test Case link back-patched** after QA page is created |
+| **QA Test Case wiki** | Blank test case page under the QA parent — header with links to Jira + Implementation Plan + Storybook TBD, 8-row test scenario table, embedded design screenshot at bottom |
+| **Jira remote links** | 2 live links in Jira’s Links panel: **Implementation Plan** (wiki) + **QA Test Case** (wiki). Storybook added manually once URL is known. |
+| **Git branch** | `feature/<component-name>` (only when `GIT_MCP_URL` is configured) |
 
 ---
 
@@ -72,19 +73,26 @@ Figma Plugin
         └─ WorkItemOrchestrator  ← only when enableActiveCreation = true
              │
              ├─ A. MCP → Jira
-             │     └─ createIssue()  (formatted Jira wiki markup)
+             │     └─ createIssue()  env-var-driven type/assignee/epic/priority
              │     └─ updateDescription() with embedded design image
              │
-             ├─ B. MCP → Confluence
-             │     └─ createWikiPage()  (markdown, parent page DS space)
-             │     └─ wiki header includes Figma link, Jira key, resources
-             │     └─ embedded design image via CDN URL
+             ├─ B. MCP → Confluence — Implementation Plan
+             │     └─ createWikiPage()  title: "Implementation Plan: [Frame] — [Page]"
+             │     └─ embed design image; header: Figma/Jira/date/resources
+             │
+             ├─ E. MCP → Confluence — QA Test Case
+             │     └─ createWikiPage()  under QA_WIKI_PARENT_ID
+             │     └─ title: "[PageName] - [JIRA-KEY] - [ComponentName]"
+             │     └─ content: metadata header + 8-row test table + screenshot
+             │     └─ back-patches Implementation Plan wiki with real QA link
              │
              ├─ C. Cross-linking
-             │     └─ createRemoteLink() × 3  (wiki page, Storybook, QA)
+             │     └─ createRemoteLink() x2  (Implementation Plan, QA Test Case)
              │     └─ updateJiraDescription() injects Related Resources h2
+             │           (Figma link, wiki, Storybook TBD, QA link)
+             │     └─ strips AI’s duplicate “Design References” section
              │
-             └─ D. MCP → Git
+             └─ D. MCP → Git  (skipped when GIT_MCP_URL is blank)
                    └─ createBranch()  feature/<component-name>
 ```
 
@@ -139,23 +147,39 @@ Configured in `config/mcp.config.js`:
 GEMINI_API_KEY=your_key
 FIGMA_API_KEY=your_figma_personal_access_token
 
-# MCP — Jira
+# Direct Jira/Confluence REST (for image attachment uploads)
 JIRA_BASE_URL=https://jira.corp.com
-JIRA_USERNAME=your_user
-JIRA_API_TOKEN=your_token
-
-# MCP — Confluence
 CONFLUENCE_BASE_URL=https://confluence.corp.com
-CONFLUENCE_USERNAME=your_user
-CONFLUENCE_API_TOKEN=your_token
+
+# MCP servers
+MCP_JIRA_URL=https://mcp-jira.corp.com/mcp/
+MCP_JIRA_KEY=your_mcp_jira_token
+MCP_CONFLUENCE_URL=https://mcp-confluence.corp.com/mcp/
+MCP_WIKI_KEY=your_mcp_confluence_token
+
+# Project defaults
+JIRA_PROJECT_KEY=PROJ
+CONFLUENCE_SPACE_KEY=DS
+
+# QA Test Case wiki parent page (page ID from Confluence URL)
+QA_WIKI_PARENT_ID=874419925
+
+# Jira ticket field defaults (all optional — override per-project)
+JIRA_ISSUE_TYPE=Story
+JIRA_DEFAULT_ASSIGNEE=
+JIRA_DEFAULT_EPIC=
+JIRA_STORY_POINTS=1
+JIRA_DEFAULT_PRIORITY=
+
+# Git branch creation — leave blank to skip cleanly (no errors)
+GIT_MCP_URL=
+GIT_REPO_PATH=/path/to/repo
 
 # Optional
 PORT=3000
 REDIS_URL=redis://localhost:6379
 NODE_ENV=development
 ```
-
-> **Note:** The env var for Figma is `FIGMA_API_KEY` (not `FIGMA_ACCESS_TOKEN` — old name).
 
 ---
 
