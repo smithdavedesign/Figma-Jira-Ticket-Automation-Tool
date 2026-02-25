@@ -2,7 +2,7 @@
 
 ## Overview
 
-The system has two parts: a **Figma plugin** (TypeScript) and a **Node.js server** (Express). The plugin collects frame data and sends it to the server, which uses Gemini AI to generate documentation and MCP servers to create work items.
+The system has two parts: a **Figma plugin** (TypeScript) and a **Node.js server** (Express). The plugin fetches the Figma frame image via the Figma Export REST API (CDN URL) and sends it to the server, which uses Gemini AI for vision-based analysis and MCP servers to create work items.
 
 ---
 
@@ -105,6 +105,17 @@ MCPAdapter
 
 On startup it attempts to negotiate SSE sessions with each server. MCP calls are made via `callTool(serverName, toolName, params)`. If a server is unreachable, calls degrade gracefully.
 
+### Corporate Confluence MCP quirks
+
+The enterprise Confluence MCP proxy has a restricted parameter schema:
+
+| Tool | Accepted params | Rejected params |
+|---|---|---|
+| `confluence_create_page` | `space_key`, `title`, `content`, `parent_id` | `content_format`, `version` |
+| `confluence_update_page` | `page_id`, `title`, `content` | `content_format`, `version` |
+
+Both default to markdown. The `MCPAdapter` intentionally omits the rejected params.
+
 ---
 
 ## Figma Plugin
@@ -116,13 +127,13 @@ Key functions:
 | Function | Purpose |
 |---|---|
 | `handleGenerateAITicket()` | Orchestrates the full plugin flow |
-| `fetchScreenshot()` | Exports selected frame as base64 PNG |
+| `fetchFigmaExportUrl()` | Calls Figma Export REST API → returns CDN image URL |
 | `buildHierarchy()` | Traverses Figma node tree → structured JSON |
 | `extractDesignTokens()` | Extracts colors, fonts, spacing |
 | `handleMakeAIRequest()` | POSTs to /api/generate |
 | `resolveFileKey()` | Extracts Figma file key from URL |
 
-Plugin → Server communication is a single `POST /api/generate` with frame data, screenshot, and user-selected options (tech stack, platform, enableActiveCreation).
+Plugin → Server communication is a single `POST /api/generate` with frame data, Figma export URL, and user-selected options (tech stack, platform, enableActiveCreation).
 
 ---
 
@@ -131,12 +142,12 @@ Plugin → Server communication is a single `POST /api/generate` with frame data
 | File | Lines | Role |
 |---|---|---|
 | `app/server.js` | ~250 | Express setup, service + route registration |
-| `app/routes/generate.js` | 143 | POST /api/generate handler |
-| `core/ai/GeminiService.js` | ~450 | Gemini 2.0 Flash integration |
-| `core/adapters/MCPAdapter.js` | ~713 | Multi-server MCP client |
-| `core/orchestration/WorkItemOrchestrator.js` | ~596 | Jira + Wiki + Git creation |
+| `app/routes/generate.js` | ~143 | POST /api/generate handler |
+| `core/ai/GeminiService.js` | ~450 | Gemini 2.0 Flash integration + vision prompts |
+| `core/adapters/MCPAdapter.js` | ~745 | Multi-server MCP client, Jira/Confluence/Git ops |
+| `core/orchestration/WorkItemOrchestrator.js` | ~732 | Full Jira + Wiki + image + links + Git flow |
 | `core/data/unified-context-builder.js` | ~1,144 | Builds rich context for Gemini prompt |
 | `core/bridge/ContextTemplateBridge.js` | 144 | YAML fallback |
 | `core/template/UniversalTemplateEngine.js` | ~876 | YAML template processor |
-| `code.ts` | 440 | Figma plugin source |
-| `ui/index.html` | 469 | Plugin UI |
+| `code.ts` | ~440 | Figma plugin source |
+| `ui/index.html` | ~500 | Plugin UI |

@@ -2,7 +2,20 @@
 
 Select a frame. Pick a tech stack. Hit Generate.
 
-The plugin captures the Figma frame, calls **Gemini 2.0 Flash** to generate documentation, then uses MCP to automatically create a **Jira ticket**, **Confluence wiki page**, and **Git branch** — no copy-pasting required.
+The plugin fetches the Figma frame image via Figma's Export API, passes it to **Gemini 2.0 Flash** for vision-based analysis, generates structured documentation, then uses MCP to automatically create a **Jira ticket**, **Confluence wiki page**, and **Git branch** — no copy-pasting required.
+
+---
+
+## What Gets Created
+
+When **Auto-create Jira + Wiki** is enabled, one click produces:
+
+| Artifact | Contents |
+|---|---|
+| **Jira ticket** | AI-generated description (Jira wiki markup) + embedded design image + Related Resources section (wiki link, Storybook, QA placeholder) |
+| **Confluence wiki page** | Full implementation spec in markdown, embedded design image, header with Figma/Jira/date/resource links |
+| **Jira remote links** | 3 links in Jira's Links panel: Implementation Plan (wiki), Storybook (TBD), QA Test Case (TBD) |
+| **Git branch** | `feature/<component-name>` (requires local Git MCP) |
 
 ---
 
@@ -14,7 +27,7 @@ npm install
 
 # 2. Configure
 cp .env.example .env
-# Set GEMINI_API_KEY, FIGMA_ACCESS_TOKEN, JIRA/CONFLUENCE credentials
+# Set GEMINI_API_KEY, FIGMA_API_KEY, JIRA/CONFLUENCE credentials
 
 # 3. Start
 node app/server.js
@@ -37,6 +50,7 @@ Then in Figma: select a frame → choose tech stack → click **Generate**.
 | Redis | 7+ (running locally or via Docker) |
 | Figma Desktop | Latest |
 | Google Gemini API key | [Get free key](https://makersuite.google.com/app/apikey) |
+| Figma API key | Personal access token from figma.com/settings |
 
 ---
 
@@ -45,18 +59,33 @@ Then in Figma: select a frame → choose tech stack → click **Generate**.
 ```
 Figma Plugin
   └─ select frame + tech stack
-  └─ POST /api/generate
+  └─ fetchFigmaExportUrl() → Figma Export REST API → CDN image URL
+  └─ POST /api/generate  { frameData, exportUrl, techStack, ... }
         │
         ▼
   Express Server :3000
         │
         ├─ GeminiService (Gemini 2.0 Flash)
-        │    └─ generates Jira/Wiki/branch content
+        │    └─ vision analysis of CDN image URL
+        │    └─ generates Jira/Wiki content (markdown)
         │
         └─ WorkItemOrchestrator  ← only when enableActiveCreation = true
-             ├─ MCP → Jira      creates ticket
-             ├─ MCP → Confluence creates wiki page
-             └─ MCP → Git       creates branch
+             │
+             ├─ A. MCP → Jira
+             │     └─ createIssue()  (formatted Jira wiki markup)
+             │     └─ updateDescription() with embedded design image
+             │
+             ├─ B. MCP → Confluence
+             │     └─ createWikiPage()  (markdown, parent page DS space)
+             │     └─ wiki header includes Figma link, Jira key, resources
+             │     └─ embedded design image via CDN URL
+             │
+             ├─ C. Cross-linking
+             │     └─ createRemoteLink() × 3  (wiki page, Storybook, QA)
+             │     └─ updateJiraDescription() injects Related Resources h2
+             │
+             └─ D. MCP → Git
+                   └─ createBranch()  feature/<component-name>
 ```
 
 Full details: [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)
@@ -108,7 +137,7 @@ Configured in `config/mcp.config.js`:
 ```env
 # Required
 GEMINI_API_KEY=your_key
-FIGMA_ACCESS_TOKEN=your_token
+FIGMA_API_KEY=your_figma_personal_access_token
 
 # MCP — Jira
 JIRA_BASE_URL=https://jira.corp.com
@@ -125,6 +154,8 @@ PORT=3000
 REDIS_URL=redis://localhost:6379
 NODE_ENV=development
 ```
+
+> **Note:** The env var for Figma is `FIGMA_API_KEY` (not `FIGMA_ACCESS_TOKEN` — old name).
 
 ---
 
@@ -224,7 +255,15 @@ docker-compose up --build
 | Plugin | TypeScript → ES2017 (Figma API) |
 | Server | Node.js 20, Express 4, ES modules |
 | AI | Google Gemini 2.0 Flash (`@google/generative-ai`) |
+| Image source | Figma Export REST API → CDN URL (not base64) |
 | MCP | JSON-RPC 2.0 over HTTP/SSE |
 | Cache | Redis 7 (ioredis) |
 | Templates | YAML (js-yaml) via UniversalTemplateEngine |
+
+---
+
+## Known Limitations
+
+- **Git branch creation** requires a local Git MCP server at `http://localhost:3000/api/mcp` — this endpoint is not bundled and will log a non-fatal 404 if unavailable.
+- **Corporate Confluence MCP** (`confluence_create_page`, `confluence_update_page`) does not accept `content_format` or `version` params; the server defaults to markdown and auto-increments versions.
 

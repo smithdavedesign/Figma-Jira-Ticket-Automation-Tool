@@ -29,8 +29,10 @@ cp .env.example .env
 Minimum required:
 ```env
 GEMINI_API_KEY=your_key_here
-FIGMA_ACCESS_TOKEN=your_figma_token
+FIGMA_API_KEY=your_figma_personal_access_token
 ```
+
+> `FIGMA_API_KEY` is your Figma personal access token (figma.com → Settings → Account → Personal access tokens). The old name `FIGMA_ACCESS_TOKEN` is no longer used.
 
 For work item creation (Jira + Confluence):
 ```env
@@ -80,11 +82,14 @@ The MCP 406 warnings on startup are **expected** — the enterprise MCP servers 
 5. Click **Generate**
 
 The plugin will:
-- Capture a screenshot of your selection
-- Extract frame hierarchy and design tokens
-- Send everything to the local server
-- Receive AI-generated documentation
-- (If enabled) automatically create the Jira ticket, Confluence page, and Git branch
+- Fetch your frame as an image via **Figma's Export REST API** (CDN URL)
+- Send the image URL + frame metadata to the local server
+- Gemini 2.0 Flash performs vision-based analysis and generates structured documentation
+- (If enabled) automatically create:
+  - **Jira ticket** with embedded design image + Related Resources section
+  - **Confluence wiki page** with embedded design image + resource links in header
+  - **3 Jira remote links** (Implementation Plan wiki, Storybook placeholder, QA Test Case placeholder)
+  - **Git branch** `feature/<component-name>`
 
 ---
 
@@ -112,6 +117,10 @@ This starts the server + Redis together. Server available at `http://localhost:3
 - Normal on startup; these are enterprise servers requiring SSE negotiation
 - Active creation will still work once the server is fully up
 
-**No screenshot captured**
-- Make sure a frame (not just a layer) is selected
-- The selection must be exportable (not locked to external sources)
+**Wiki page creation fails**
+- Ensure `parent_id` in `config/mcp.config.js` matches a real Confluence page ID
+- Corporate Confluence MCP does **not** accept `content_format` or `version` params — the adapter handles this automatically
+
+**Design image not showing in Jira/wiki**
+- Verify `FIGMA_API_KEY` is set and has read access to the file
+- Image is fetched via Figma Export API; ensure the frame is exportable
