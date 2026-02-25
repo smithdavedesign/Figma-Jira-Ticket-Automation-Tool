@@ -424,8 +424,7 @@ export class MCPAdapter {
             title,
             space_key: spaceKey || 'DS',
             content,
-            parent_id: parentId,
-            content_format: 'markdown'
+            parent_id: parentId
       });
 
       this.logger.info('✅ Wiki page created', result);
