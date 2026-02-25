@@ -264,9 +264,14 @@ export class WorkItemOrchestrator {
                 }
              } catch(e) { /* ignore */ }
           }
+          // Fallback: if MCP didn't return a URL, build one from env var
+          if (!webUrl && jiraIssueKey) {
+              const jiraBase = (process.env.JIRA_BASE_URL || process.env.JIRA_URL || '').replace(/\/$/, '');
+              if (jiraBase) webUrl = `${jiraBase}/browse/${jiraIssueKey}`;
+          }
           jiraWebUrl = webUrl;
           
-          results.jira = { status: existingTicket ? 'existing' : 'created', ...jiraResult, url: webUrl, content: jiraData };
+          results.jira = { status: existingTicket ? 'existing' : 'created', ...jiraResult, url: webUrl, issueKey: jiraIssueKey, content: jiraData };
 
           // Link to Epic if needed and configured (Only if newly created or link check logic added)
           if (jiraIssueKey && epicLink && !existingTicket) {

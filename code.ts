@@ -70,6 +70,9 @@ figma.ui.onmessage = async (msg: any) => {
       case 'capture-screenshot':
         await handleCaptureScreenshot();
         break;
+      case 'open-url':
+        if (msg.url) figma.openExternal(msg.url);
+        break;
       case 'close':
         figma.closePlugin();
         break;

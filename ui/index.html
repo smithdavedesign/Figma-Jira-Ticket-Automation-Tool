@@ -138,6 +138,27 @@
       border: 1px solid #e2e8f0; max-height: 180px;
     }
     .screenshot-preview img { width: 100%; display: block; object-fit: cover; }
+
+    /* ─── Creation links ────────────────────────────────────────── */
+    .creation-links {
+      margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      display: flex; flex-direction: column; gap: 7px;
+    }
+    .creation-links-title {
+      font-size: .7rem; font-weight: 700; color: #166534;
+      text-transform: uppercase; letter-spacing: .07em; margin-bottom: 2px;
+    }
+    .creation-link {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 6px; font-size: .82rem;
+      font-weight: 600; cursor: pointer; border: 1px solid;
+      transition: filter .15s; text-decoration: none;
+    }
+    .creation-link:hover:not(.failed) { filter: brightness(.93); }
+    .creation-link.jira  { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .creation-link.wiki  { background: #faf5ff; color: #6d28d9; border-color: #ddd6fe; }
+    .creation-link.failed { background: #fef2f2; color: #991b1b; border-color: #fecaca; cursor: default; }
   </style>
 </head>
 <body>
@@ -208,6 +229,14 @@
         <textarea id="generatedContent" readonly></textarea>
         <button id="copyBtn" class="btn btn-secondary copy-btn">📋 Copy to Clipboard</button>
         <button id="downloadContextBtn" class="btn btn-debug" style="display:none;">⬇️ Download Context JSON</button>
+        <!-- Creation links (shown after active automation completes) -->
+        <div id="creationLinks" class="creation-links" style="display:none;">
+          <div class="creation-links-title">✅ Created</div>
+          <a id="jiraLink"   class="creation-link jira"   href="#" style="display:none;">🎫 <span id="jiraLinkLabel">View Jira Ticket</span></a>
+          <a id="wikiLink"   class="creation-link wiki"   href="#" style="display:none;">📄 View Wiki Page</a>
+          <span id="jiraFailed" class="creation-link failed" style="display:none;">⚠️ Jira ticket creation failed</span>
+          <span id="wikiFailed" class="creation-link failed" style="display:none;">⚠️ Wiki page creation failed</span>
+        </div>
       </div>
     </div>
   </div>
@@ -229,6 +258,12 @@
     const serverTextEl          = document.getElementById('serverText');
     const screenshotPreview     = document.getElementById('screenshotPreview');
     const screenshotImg         = document.getElementById('screenshotImg');
+    const creationLinksEl       = document.getElementById('creationLinks');
+    const jiraLinkEl            = document.getElementById('jiraLink');
+    const jiraLinkLabel         = document.getElementById('jiraLinkLabel');
+    const wikiLinkEl            = document.getElementById('wikiLink');
+    const jiraFailedEl          = document.getElementById('jiraFailed');
+    const wikiFailedEl          = document.getElementById('wikiFailed');
 
     // ─── State ─────────────────────────────────────────────────
     let frameData         = null;   // last selection-context from Figma
@@ -439,6 +474,44 @@
       resultsTextarea.value = content;
       resultsDiv.classList.add('visible');
       downloadContextBtn.style.display = 'flex';
+
+      // ─── Jira / Wiki creation links ──────────────────────────
+      const orch = d?.data?.metadata?.orchestration;
+      if (orch) {
+        const jiraUrl    = orch.jira?.url      || '';
+        const jiraKey    = orch.jira?.issueKey || orch.jira?.issue?.key || '';
+        const jiraStatus = orch.jira?.status   || '';
+        const wikiUrl    = orch.wiki?.url      || '';
+        const wikiStatus = orch.wiki?.status   || '';
+
+        // Reset all rows
+        [jiraLinkEl, wikiLinkEl, jiraFailedEl, wikiFailedEl].forEach(el => el.style.display = 'none');
+        let anyVisible = false;
+
+        if (jiraUrl) {
+          jiraLinkLabel.textContent = jiraKey ? `View Jira Ticket — ${jiraKey}` : 'View Jira Ticket';
+          jiraLinkEl.onclick = (e) => { e.preventDefault(); parent.postMessage({ pluginMessage: { type: 'open-url', url: jiraUrl } }, '*'); };
+          jiraLinkEl.style.display = 'flex';
+          anyVisible = true;
+        } else if (jiraStatus === 'failed') {
+          jiraFailedEl.style.display = 'flex';
+          anyVisible = true;
+        }
+
+        if (wikiUrl) {
+          wikiLinkEl.onclick = (e) => { e.preventDefault(); parent.postMessage({ pluginMessage: { type: 'open-url', url: wikiUrl } }, '*'); };
+          wikiLinkEl.style.display = 'flex';
+          anyVisible = true;
+        } else if (wikiStatus === 'failed_creation') {
+          wikiFailedEl.style.display = 'flex';
+          anyVisible = true;
+        }
+
+        creationLinksEl.style.display = anyVisible ? 'flex' : 'none';
+      } else {
+        creationLinksEl.style.display = 'none';
+      }
+
       toast('Done!', 'success');
     }
 
@@ -464,6 +537,7 @@
       lastApiResponse   = null;
       generateBtn.disabled = true;
       downloadContextBtn.style.display = 'none';
+      creationLinksEl.style.display = 'none';
       // Show a pending state in the label while we wait for fresh context
       selectionInfoEl.className = 'selection-info empty';
       selectionInfoEl.textContent = 'Refreshing context…';
