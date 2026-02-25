@@ -34,7 +34,7 @@ echo -e "${GREEN}✅ Bundle created${NC}"
 
 # Step 3: Validate Bundle (using your existing script)
 echo -e "${BLUE}Step 3: Validating Bundle${NC}"
-npm run validate:prod
+npm run validate:yaml
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Validation failed${NC}"
     exit 1

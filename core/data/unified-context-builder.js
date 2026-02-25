@@ -931,8 +931,7 @@ export class UnifiedContextBuilder {
         .join(', ');
     }
 
-    // Phase 1 Enhanced: Inject real extracted colors for template variables
-    return '#4f00b5, #333333, #ffffff, #f5f5f5'; // Real Phase 1 colors
+    return '';
   }
 
   extractTypographyTokens(figmaContext, requestData) {
@@ -957,8 +956,7 @@ export class UnifiedContextBuilder {
       return parts.length > 0 ? parts.join(' | ') : 'Design system typography';
     }
 
-    // Phase 1 Enhanced: Inject real extracted fonts for template variables
-    return 'Sora 32px/Semi Bold, Sora 16px/Medium, Inter 14px/Regular'; // Real Phase 1 fonts
+    return '';
   }
 
   generateScreenshotMarkdown(componentName, requestData, figmaContext) {

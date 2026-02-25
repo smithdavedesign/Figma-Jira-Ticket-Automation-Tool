@@ -182,17 +182,11 @@ else
     echo -e "   ${YELLOW}⚠️${NC}  Node modules not found - run 'npm install'"
 fi
 
-if [ -d "tests/playwright" ]; then
-    echo -e "   ${GREEN}✅${NC} Browser test setup present"
+# Check smoke test config is present
+if [ -f "playwright.config.js" ]; then
+    echo -e "   ${GREEN}✅${NC} Playwright smoke test config present"
 else
-    echo -e "   ${YELLOW}⚠️${NC}  Browser tests not found in tests/ directory"
-fi
-
-# Check all dependencies are installed (consolidated architecture)
-if [ -d "node_modules" ] && [ -f "node_modules/@playwright/test/package.json" ]; then
-    echo -e "   ${GREEN}✅${NC} All dependencies installed (consolidated)"
-else
-    echo -e "   ${YELLOW}⚠️${NC}  Some dependencies missing - run 'npm install'"
+    echo -e "   ${YELLOW}⚠️${NC}  playwright.config.js missing - smoke tests (npm run test:smoke) will not work"
 fi
 
 echo

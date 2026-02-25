@@ -1,11 +1,10 @@
 /**
  * Redis Client - Data Layer
  *
- * Provides Redis connectivity with graceful fallback to memory-only mode.
- * Handles connection management, health checks, and basic operations.
+ * In-memory cache client. Redis dependency removed; all caching
+ * runs in-process via the Map-based memory store with TTL support.
  */
 
-import Redis from 'ioredis';
 import { Logger } from '../utils/logger.js';
 
 export class RedisClient {
@@ -43,92 +42,22 @@ export class RedisClient {
   }
 
   /**
-   * Connect to Redis server
-   * @returns {Promise<boolean>} - True if connected, false if fallback to memory mode
+   * Initialise the cache (memory-only mode).
+   * @returns {Promise<boolean>} Always false — memory mode, no external connection.
    */
   async connect() {
-    try {
-      this.logger.info('🔗 Attempting Redis connection...');
-
-      // Check if Redis is available by attempting connection
-      this.client = new Redis(this.config);
-
-      // Test connection with ping
-      await this.client.ping();
-
-      this.connected = true;
-      this.logger.info(`✅ Redis connected: ${this.config.host}:${this.config.port}`);
-
-      // Set up event handlers
-      this.setupEventHandlers();
-
-      return true;
-
-    } catch (error) {
-      this.logger.warn('⚠️ Redis connection failed, falling back to memory mode:', error.message);
-
-      // Clean up failed connection attempt
-      if (this.client) {
-        try {
-          await this.client.disconnect();
-        } catch (error) {
-          // Ignore disconnect errors during cleanup
-        }
-        this.client = null;
-      }
-
-      this.connected = false;
-      return false;
-    }
+    this.logger.info('🧠 Cache running in memory-only mode (Redis not configured)');
+    this.connected = false;
+    return false;
   }
 
-  /**
-   * Set up Redis event handlers
-   */
-  setupEventHandlers() {
-    if (!this.client) {return;}
 
-    this.client.on('connect', () => {
-      this.logger.info('📡 Redis connection established');
-      this.connected = true;
-    });
-
-    this.client.on('ready', () => {
-      this.logger.info('🚀 Redis client ready');
-    });
-
-    this.client.on('error', (error) => {
-      this.logger.error('❌ Redis error:', error.message);
-      this.connected = false;
-    });
-
-    this.client.on('close', () => {
-      this.logger.warn('🔌 Redis connection closed');
-      this.connected = false;
-    });
-
-    this.client.on('reconnecting', () => {
-      this.logger.info('🔄 Redis reconnecting...');
-    });
-  }
 
   /**
-   * Disconnect from Redis and cleanup
+   * Teardown — clears the in-memory cache and cleanup timer.
    */
   async disconnect() {
-    if (this.client && this.connected) {
-      try {
-        await this.client.quit();
-        this.logger.info('👋 Redis disconnected gracefully');
-      } catch (error) {
-        this.logger.error('Error during Redis disconnect:', error);
-      }
-    }
-
-    this.client = null;
     this.connected = false;
-
-    // Clean up memory cache
     this.destroyMemoryCache();
   }
 

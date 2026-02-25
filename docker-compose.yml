@@ -11,11 +11,8 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - REDIS_URL=redis://redis:6379
     env_file:
       - .env
-    depends_on:
-      - redis
     restart: unless-stopped
     networks:
       - figma-network
@@ -28,21 +25,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # Redis service for caching and session management
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    restart: unless-stopped
-    networks:
-      - figma-network
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-
 volumes:
-  redis-data:
-    driver: local
 
 networks:
   figma-network:

@@ -12,6 +12,7 @@ import { readFile, readdir, access } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
+import { Logger } from '../utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,6 +20,7 @@ const __dirname = dirname(__filename);
 export class UniversalTemplateEngine {
   constructor(configDir) {
     this.configDir = configDir || join(__dirname, '../../config/templates');
+    this.logger = new Logger('TemplateEngine');
     this.templateCache = new Map();
     this.resolvedCache = new Map();
 
@@ -48,11 +50,11 @@ export class UniversalTemplateEngine {
     const mappedDocumentType = this.mapDocumentType(documentType);
     const cacheKey = `${platform}-${documentType}-${techStack}`;
 
-    console.log('🔍 TEMPLATE RESOLUTION DEBUG:');
-    console.log('  📋 Platform:', platform);
-    console.log('  📋 Document Type:', documentType, '→', mappedDocumentType);
-    console.log('  📋 Tech Stack:', techStack);
-    console.log('  📂 Config Dir:', this.configDir);
+    this.logger.debug('🔍 TEMPLATE RESOLUTION DEBUG:');
+    this.logger.debug('  📋 Platform:', platform);
+    this.logger.debug('  📋 Document Type:', documentType, '→', mappedDocumentType);
+    this.logger.debug('  📋 Tech Stack:', techStack);
+    this.logger.debug('  📂 Config Dir:', this.configDir);
 
     // Template caching disabled - each request should get fresh template
     // Templates are lightweight and context-dependent, no need to cache
@@ -71,7 +73,7 @@ export class UniversalTemplateEngine {
       // 4. Built-in fallback (we'll generate this)
     ];
 
-    console.log('  🔗 Resolution paths to try:', resolutionPaths);
+    this.logger.debug('  🔗 Resolution paths to try:', resolutionPaths);
 
     let resolvedTemplate = null;
     let resolutionPath = null;
@@ -79,25 +81,25 @@ export class UniversalTemplateEngine {
     for (const path of resolutionPaths) {
       try {
         const fullPath = join(this.configDir, path);
-        console.log(`  📂 Trying: ${fullPath}`);
+        this.logger.debug(`  📂 Trying: ${fullPath}`);
         await access(fullPath);
-        console.log(`  ✅ File exists: ${fullPath}`);
+        this.logger.debug(`  ✅ File exists: ${fullPath}`);
 
         const template = await this.loadTemplate(fullPath);
-        console.log('  📝 Template loaded:', template ? Object.keys(template) : 'null');
+        this.logger.debug('  📝 Template loaded:', template ? Object.keys(template) : 'null');
 
         if (template && this.isValidTemplate(template, platform, documentType)) {
-          console.log(`  ✅ Template is valid for ${platform}/${documentType}`);
+          this.logger.debug(`  ✅ Template is valid for ${platform}/${documentType}`);
           // Merge with base template if it inherits from base
           resolvedTemplate = await this.mergeWithBase(template);
           resolutionPath = path;
-          console.log(`  🎯 Template resolved from: ${resolutionPath}`);
+          this.logger.debug(`  🎯 Template resolved from: ${resolutionPath}`);
           break;
         } else {
-          console.log(`  ❌ Template validation failed for ${platform}/${documentType}`);
+          this.logger.debug(`  ❌ Template validation failed for ${platform}/${documentType}`);
         }
       } catch (error) {
-        console.log(`  ❌ Path failed: ${path} - ${error.message}`);
+        this.logger.debug(`  ❌ Path failed: ${path} - ${error.message}`);
         // Path doesn't exist, try next one
         continue;
       }
@@ -105,7 +107,7 @@ export class UniversalTemplateEngine {
 
     // If no template found, create a basic fallback
     if (!resolvedTemplate) {
-      console.log('  ⚠️ No template found, creating fallback template');
+      this.logger.debug('  ⚠️ No template found, creating fallback template');
       resolvedTemplate = this.createFallbackTemplate(platform, documentType, techStack);
       resolutionPath = 'built-in-fallback';
     }
@@ -123,8 +125,8 @@ export class UniversalTemplateEngine {
       }
     };
 
-    console.log('  🏁 Final template keys:', Object.keys(enhancedTemplate));
-    console.log('  🏁 Template structure keys:', enhancedTemplate.template ? Object.keys(enhancedTemplate.template) : 'no template structure');
+    this.logger.debug('  🏁 Final template keys:', Object.keys(enhancedTemplate));
+    this.logger.debug('  🏁 Template structure keys:', enhancedTemplate.template ? Object.keys(enhancedTemplate.template) : 'no template structure');
 
     // Template caching disabled - templates are context-dependent and should be fresh each time
     return enhancedTemplate;
@@ -145,7 +147,7 @@ export class UniversalTemplateEngine {
       this.templateCache.set(filePath, template);
       return template;
     } catch (error) {
-      console.warn(`Failed to load template ${filePath}:`, error.message);
+      this.logger.warn(`Failed to load template ${filePath}:`, error.message);
       return null;
     }
   }
@@ -211,7 +213,7 @@ export class UniversalTemplateEngine {
     }
 
     // Fallback - try to find any renderable content
-    console.warn('No renderable content found in template:', Object.keys(template));
+    this.logger.warn('No renderable content found in template:', Object.keys(template));
     return `# ${context.figma?.component_name || 'Component'}\n\nTemplate structure could not be rendered.\nTemplate keys: ${Object.keys(template).join(', ')}`;
   }
 
@@ -223,7 +225,7 @@ export class UniversalTemplateEngine {
 
     // Safety check for null/undefined templateObj
     if (!templateObj || typeof templateObj !== 'object') {
-      console.warn('Invalid templateObj in processObjectTemplate:', templateObj);
+      this.logger.warn('Invalid templateObj in processObjectTemplate:', templateObj);
       return `# ${context.figma?.component_name || 'Component'}\n\nTemplate object is invalid or missing.`;
     }
 
@@ -527,7 +529,7 @@ Please customize this template for your specific needs.
         }
       }
     } catch (error) {
-      console.error('Failed to list templates:', error);
+      this.logger.error('Failed to list templates:', error);
     }
 
     return templates;
@@ -558,7 +560,7 @@ Please customize this template for your specific needs.
 
       // Add base template variables to context
       if (template.template.resources) {
-        console.log('  🔗 Processing base template resources...');
+        this.logger.debug('  🔗 Processing base template resources...');
         // Resolve template variables in resources
         enrichedContext.resources = template.template.resources.map((resource, index) => {
           const resolvedResource = {
@@ -567,49 +569,49 @@ Please customize this template for your specific needs.
             type: this.substituteVariables(resource.type, context),
             notes: this.substituteVariables(resource.notes, context)
           };
-          console.log(`    Resource ${index + 1}: ${resource.type} -> ${resolvedResource.link}`);
+          this.logger.debug(`    Resource ${index + 1}: ${resource.type} -> ${resolvedResource.link}`);
           return resolvedResource;
         });
-        console.log(`  ✅ Resolved ${enrichedContext.resources.length} resources`);
+        this.logger.debug(`  ✅ Resolved ${enrichedContext.resources.length} resources`);
       }
 
       if (template.template.variables) {
-        console.log('  📝 Processing base template variables...');
+        this.logger.debug('  📝 Processing base template variables...');
         // Merge base template variables but don't override context data
         enrichedContext.base_variables = template.template.variables;
-        console.log('  📝 Base variables keys:', Object.keys(template.template.variables));
+        this.logger.debug('  📝 Base variables keys:', Object.keys(template.template.variables));
 
         // Log some key variables for debugging
         if (template.template.variables.figma_url) {
           const resolved = this.substituteVariables(template.template.variables.figma_url, context);
-          console.log(`    figma_url: "${template.template.variables.figma_url}" -> "${resolved}"`);
+          this.logger.debug(`    figma_url: "${template.template.variables.figma_url}" -> "${resolved}"`);
         }
         if (template.template.variables.github_url) {
           const resolved = this.substituteVariables(template.template.variables.github_url, context);
-          console.log(`    github_url: "${template.template.variables.github_url}" -> "${resolved}"`);
+          this.logger.debug(`    github_url: "${template.template.variables.github_url}" -> "${resolved}"`);
         }
       }
 
       if (template.template.design) {
-        console.log('  🎨 Adding base template design data...');
+        this.logger.debug('  🎨 Adding base template design data...');
         enrichedContext.design = template.template.design;
-        console.log('    Design keys:', Object.keys(template.template.design));
+        this.logger.debug('    Design keys:', Object.keys(template.template.design));
       }
 
       if (template.template.authoring) {
-        console.log('  📝 Merging base template authoring data...');
+        this.logger.debug('  📝 Merging base template authoring data...');
         enrichedContext.authoring = {
           ...template.template.authoring,
           ...enrichedContext.authoring
         };
-        console.log('    Authoring keys:', Object.keys(enrichedContext.authoring));
+        this.logger.debug('    Authoring keys:', Object.keys(enrichedContext.authoring));
       }
 
       this._logEnrichmentCompletion(enrichedContext);
       return enrichedContext;
     }
 
-    console.log('⚠️ No base template data found for enrichment');
+    this.logger.debug('⚠️ No base template data found for enrichment');
     return context;
   }
 
@@ -619,37 +621,37 @@ Please customize this template for your specific needs.
    * @param {Object} template - Template object
    */
   _logContextEnrichment(context, template) {
-    console.log('� CONTEXT ENRICHMENT DEBUG - Enhanced for Context Layer:');
-    console.log('  📊 Input context keys:', Object.keys(context));
+    this.logger.debug('� CONTEXT ENRICHMENT DEBUG - Enhanced for Context Layer:');
+    this.logger.debug('  📊 Input context keys:', Object.keys(context));
 
     // Enhanced logging for Context Layer data
     if (context.figma) {
-      console.log('  🎨 Figma context (Context Layer enhanced):');
-      console.log('    - Component:', context.figma.component_name);
-      console.log('    - Design tokens:', !!context.figma.design_tokens);
-      console.log('    - Color palette:', context.figma.color_palette?.length || 0, 'colors');
-      console.log('    - Typography:', !!context.figma.typography);
-      console.log('    - Variants:', context.figma.variants?.length || 0);
-      console.log('    - Layout patterns:', context.figma.layout_patterns?.length || 0);
-      console.log('    - Interactions:', context.figma.interactions?.length || 0);
+      this.logger.debug('  🎨 Figma context (Context Layer enhanced):');
+      this.logger.debug('    - Component:', context.figma.component_name);
+      this.logger.debug('    - Design tokens:', !!context.figma.design_tokens);
+      this.logger.debug('    - Color palette:', context.figma.color_palette?.length || 0, 'colors');
+      this.logger.debug('    - Typography:', !!context.figma.typography);
+      this.logger.debug('    - Variants:', context.figma.variants?.length || 0);
+      this.logger.debug('    - Layout patterns:', context.figma.layout_patterns?.length || 0);
+      this.logger.debug('    - Interactions:', context.figma.interactions?.length || 0);
     }
 
     if (context.calculated) {
-      console.log('  📊 Calculated metrics (Context Layer):');
-      console.log('    - Complexity:', context.calculated.complexity);
-      console.log('    - Confidence:', context.calculated.confidence);
-      console.log('    - Story points:', context.calculated.story_points);
-      console.log('    - Risk factors:', context.calculated.risk_factors?.length || 0);
+      this.logger.debug('  📊 Calculated metrics (Context Layer):');
+      this.logger.debug('    - Complexity:', context.calculated.complexity);
+      this.logger.debug('    - Confidence:', context.calculated.confidence);
+      this.logger.debug('    - Story points:', context.calculated.story_points);
+      this.logger.debug('    - Risk factors:', context.calculated.risk_factors?.length || 0);
     }
 
     if (context.multiAgentAnalysis) {
-      console.log('  🤖 Multi-agent analysis (MCP enhanced):');
-      console.log('    - Accessibility score:', context.multiAgentAnalysis.accessibilityScore);
-      console.log('    - Performance recommendations:', context.multiAgentAnalysis.performanceRecommendations?.length || 0);
-      console.log('    - Agents consulted:', context.multiAgentAnalysis.agentsConsulted?.length || 0);
+      this.logger.debug('  🤖 Multi-agent analysis (MCP enhanced):');
+      this.logger.debug('    - Accessibility score:', context.multiAgentAnalysis.accessibilityScore);
+      this.logger.debug('    - Performance recommendations:', context.multiAgentAnalysis.performanceRecommendations?.length || 0);
+      this.logger.debug('    - Agents consulted:', context.multiAgentAnalysis.agentsConsulted?.length || 0);
     }
 
-    console.log('  🔧 Base template keys:', Object.keys(template.template));
+    this.logger.debug('  🔧 Base template keys:', Object.keys(template.template));
   }
 
   /**
@@ -782,15 +784,15 @@ Please customize this template for your specific needs.
    * @param {Object} enrichedContext - Final enriched context
    */
   _logEnrichmentCompletion(enrichedContext) {
-    console.log('🔄 CONTEXT ENRICHMENT COMPLETE - Context Layer Enhanced:');
-    console.log('  📊 Final enriched context keys:', Object.keys(enrichedContext));
-    console.log('  🔗 Resources count:', enrichedContext.resources?.length || 0);
-    console.log('  📝 Base variables available:', !!enrichedContext.base_variables);
-    console.log('  🎨 Design data available:', !!enrichedContext.design);
-    console.log('  📝 Authoring data available:', !!enrichedContext.authoring);
-    console.log('  🎨 Enhanced figma data:', !!enrichedContext.figma_enhanced);
-    console.log('  🎯 Design tokens formatted:', !!enrichedContext.design_tokens_formatted);
-    console.log('  🤖 AI insights available:', !!enrichedContext.ai_insights);
+    this.logger.debug('🔄 CONTEXT ENRICHMENT COMPLETE - Context Layer Enhanced:');
+    this.logger.debug('  📊 Final enriched context keys:', Object.keys(enrichedContext));
+    this.logger.debug('  🔗 Resources count:', enrichedContext.resources?.length || 0);
+    this.logger.debug('  📝 Base variables available:', !!enrichedContext.base_variables);
+    this.logger.debug('  🎨 Design data available:', !!enrichedContext.design);
+    this.logger.debug('  📝 Authoring data available:', !!enrichedContext.authoring);
+    this.logger.debug('  🎨 Enhanced figma data:', !!enrichedContext.figma_enhanced);
+    this.logger.debug('  🎯 Design tokens formatted:', !!enrichedContext.design_tokens_formatted);
+    this.logger.debug('  🤖 AI insights available:', !!enrichedContext.ai_insights);
   }
 
   /**
@@ -808,13 +810,13 @@ Please customize this template for your specific needs.
       const baseTemplate = await this.loadTemplate(basePath);
 
       if (!baseTemplate?.template) {
-        console.warn('Base template not found or invalid structure, using template as-is');
+        this.logger.warn('Base template not found or invalid structure, using template as-is');
         return template;
       }
 
-      console.log('🔄 Merging template with base template');
-      console.log('Base template keys:', Object.keys(baseTemplate.template));
-      console.log('Platform template keys:', Object.keys(template.template || {}));
+      this.logger.debug('🔄 Merging template with base template');
+      this.logger.debug('Base template keys:', Object.keys(baseTemplate.template));
+      this.logger.debug('Platform template keys:', Object.keys(template.template || {}));
 
       // Deep merge base template with current template
       const mergedTemplate = {
@@ -825,13 +827,13 @@ Please customize this template for your specific needs.
         )
       };
 
-      console.log('✅ Template merge completed');
-      console.log('Merged template keys:', Object.keys(mergedTemplate.template));
+      this.logger.debug('✅ Template merge completed');
+      this.logger.debug('Merged template keys:', Object.keys(mergedTemplate.template));
 
       return mergedTemplate;
     } catch (error) {
-      console.error('❌ Failed to merge with base template:', error.message);
-      console.error('Error details:', error);
+      this.logger.error('❌ Failed to merge with base template:', error.message);
+      this.logger.error('Error details:', error);
       return template;
     }
   }
