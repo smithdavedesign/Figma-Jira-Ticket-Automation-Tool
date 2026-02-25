@@ -13,7 +13,9 @@ The system has two parts: a **Figma plugin** (TypeScript) and a **Node.js server
 │  Figma Plugin  (code.ts → code.js)       │
 │                                          │
 │  1. User selects frame(s) + tech stack   │
-│  2. fetchScreenshot() → exportAsync()    │
+│  2. fetchFigmaExportUrl()                │
+│     └─ Figma Export REST API             │
+│     └─ returns CDN image URL             │
 │  3. buildHierarchy() + extractDesign     │
 │     Tokens() → structured frame data     │
 │  4. POST /api/generate ──────────────────┼──►
@@ -23,24 +25,40 @@ The system has two parts: a **Figma plugin** (TypeScript) and a **Node.js server
 │  Express Server  (app/server.js :3000)          │
 │                                                 │
 │  GenerateRoutes                                 │
-│   └─ normalizeRequest()                         │
-│   └─ validate()                                 │
+│   └─ normalizeRequest() / validate()            │
 │   └─ GeminiService.generate()  ←── PRIMARY      │
 │       └─ UnifiedContextBuilder (frame + tokens) │
-│       └─ Gemini 2.0 Flash API call              │
+│       └─ Gemini 2.0 Flash (vision: CDN URL)     │
 │       └─ returns { content, metadata }          │
 │                                                 │
 │  [if enableActiveCreation = true]               │
 │   └─ WorkItemOrchestrator.run()                 │
-│       ├─ MCPAdapter → Jira MCP server           │
-│       │   └─ creates ticket in AUTOMATION proj  │
-│       ├─ MCPAdapter → Confluence MCP server     │
-│       │   └─ creates page in DCUX space         │
-│       └─ MCPAdapter → Git (local MCP)           │
-│           └─ creates feature branch             │
 │                                                 │
-│  Response: { content, metadata, orchestration } │
+│  Step A ─ Jira                                  │
+│       └─ createIssue() + embed design image     │
+│                                                 │
+│  Step B ─ Confluence                            │
+│       └─ createWikiPage() + embed design image  │
+│       └─ wiki header: Figma/Jira/date/resources │
+│                                                 │
+│  Step C ─ Cross-link                            │
+│       └─ 3× remote links (wiki, Storybook, QA) │
+│       └─ inject Related Resources h2 in Jira   │
+│                                                 │
+│  Step D ─ Git                                   │
+│       └─ createBranch() feature/<name>          │
+│                                                 │
+│  Response: { content, metadata: { orchestration:│
+│    { jira: { url, issueKey, status },           │
+│      wiki: { url, status } } } }                │
 └─────────────────────────────────────────────────┘
+                         │
+             ┌───────────▼──────────┐
+             │  Plugin UI           │
+             │  ✅ Created panel    │
+             │  🎫 View Jira Ticket │
+             │  📄 View Wiki Page   │
+             └──────────────────────┘
 ```
 
 ---

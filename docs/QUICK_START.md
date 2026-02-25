@@ -78,6 +78,14 @@ The MCP 406 warnings on startup are **expected** — the enterprise MCP servers 
 1. Select a **frame** (or several frames) in your Figma file
 2. Open the plugin panel
 3. Enter your **tech stack** or click a preset pill (AEM, React, Vue, etc.)
+4. Check **Enable Active Automation** to auto-create Jira + Wiki
+5. Click **Generate**
+
+After active creation completes, a green **✅ Created** panel appears with one-click links:
+- **🎫 View Jira Ticket — SDPM-XXXX** → opens the ticket in your browser
+- **📄 View Wiki Page** → opens the Confluence page in your browser
+
+If a step fails (e.g. Confluence is down), a red warning row is shown for that step while the rest still appear.
 4. Toggle **"Auto-create Jira + Wiki"** if you want active creation
 5. Click **Generate**
 
