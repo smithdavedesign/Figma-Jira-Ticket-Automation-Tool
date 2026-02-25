@@ -657,14 +657,14 @@ export class MCPAdapter {
    * @param {string} url - Target URL
    * @param {string} title - Link Title
    */
-  async createRemoteLink(issueKey, url, title) {
+  async createRemoteLink(issueKey, url, title, relationship = 'Wiki Page') {
       this.logger.info(`🔗 Linking Jira ${issueKey} to ${title}...`);
       try {
           const result = await this._callMCP('jira_create_remote_issue_link', {
               issue_key: issueKey,
               url: url,
               title: title,
-              relationship: 'Wiki Page'
+              relationship
           });
           this.logger.info('✅ Remote link created');
           return result;

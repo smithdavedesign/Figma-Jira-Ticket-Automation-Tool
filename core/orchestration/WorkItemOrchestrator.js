@@ -500,10 +500,29 @@ export class WorkItemOrchestrator {
         // --- Step C: Cross-Linking ---
         try {
             if (jiraIssueKey && wikiPageUrl) {
-                await this.mcpAdapter.createRemoteLink(jiraIssueKey, wikiPageUrl, `Implementation Plan: ${context.componentName}`);
+                // Wiki page link (live URL)
+                await this.mcpAdapter.createRemoteLink(
+                    jiraIssueKey,
+                    wikiPageUrl,
+                    `Implementation Plan: ${context.componentName}`,
+                    'Confluence Page'
+                );
             }
         } catch (linkError) {
-             this.logger.warn(`Cross-linking failed: ${linkError.message}`);
+             this.logger.warn(`Cross-linking (wiki) failed: ${linkError.message}`);
+        }
+
+        // Placeholder links — filled in manually once resources exist
+        const placeholderLinks = [
+            { title: 'Storybook',     relationship: 'Storybook',     url: 'about:blank' },
+            { title: 'QA Test Case',  relationship: 'QA Test Case',  url: 'about:blank' },
+        ];
+        for (const link of placeholderLinks) {
+            try {
+                await this.mcpAdapter.createRemoteLink(jiraIssueKey, link.url, link.title, link.relationship);
+            } catch (pErr) {
+                this.logger.warn(`Placeholder link '${link.title}' failed: ${pErr.message}`);
+            }
         }
 
         // --- Step D: Create Git Branch ---
