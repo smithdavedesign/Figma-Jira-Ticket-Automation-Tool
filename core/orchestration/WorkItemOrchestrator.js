@@ -189,6 +189,8 @@ export class WorkItemOrchestrator {
       const wikiContent = this._formatForWiki(fullDescription, context);
       const wikiSpace = context.wikiSpace || options.wikiSpace || mcpConfig.defaults.confluenceSpaceKey;
       const wikiParentId = options.wikiParentId || mcpConfig.defaults.wikiParentId;
+      // Parent page for QA test case wiki pages — override via QA_WIKI_PARENT_ID env var
+      const qaWikiParentId = process.env.QA_WIKI_PARENT_ID || '874419925';
 
       // C. Prepare Git Content
       const branchName = this._generateBranchName(context.componentName, 'feature');
@@ -204,6 +206,7 @@ export class WorkItemOrchestrator {
         let jiraIssueKey = null;
         let jiraWebUrl = null;
         let wikiPageUrl = null;
+        let qaWikiPageUrl = null;
         
         // Prepare Shared Attachment (once for both Jira and Wiki)
         // Returns { path, filename, cleanup }
@@ -506,6 +509,90 @@ export class WorkItemOrchestrator {
           results.wiki.status = 'failed_creation';
         }
 
+        // --- Step E: Create QA Test Case Wiki Page ---
+        try {
+          this.logger.info(`📋 MCP: Creating QA Test Case wiki page...`);
+
+          // Title: "PageName - JIRA-123 - ComponentName" (parts omitted when redundant)
+          const qaTitle = [
+              pageName && pageName !== context.componentName ? pageName : null,
+              jiraIssueKey,
+              context.componentName
+          ].filter(Boolean).join(' - ');
+
+          const qaContent = this._buildQaWikiContent({
+              componentName: context.componentName,
+              jiraIssueKey,
+              jiraWebUrl,
+              wikiPageUrl,
+          });
+
+          const qaResult = await this.mcpAdapter.createWikiPage(qaTitle, qaContent, wikiSpace, qaWikiParentId);
+
+          // Extract page ID and URL from diverse possible response shapes
+          const qaPageId = qaResult?.id || qaResult?.page?.id || null;
+          const qaPageVersion = qaResult?.version?.number ?? qaResult?.page?.version?.number ?? 1;
+          if (qaResult?.page?.url) {
+              qaWikiPageUrl = qaResult.page.url;
+          } else if (qaResult?.page?._links?.base && qaResult?.page?._links?.webui) {
+              qaWikiPageUrl = `${qaResult.page._links.base.replace(/\/+$/, '')}${qaResult.page._links.webui}`;
+          } else if (qaResult?._links?.base) {
+              qaWikiPageUrl = `${qaResult._links.base.replace(/\/+$/, '')}${qaResult._links.webui}`;
+          }
+
+          results.qa = { status: 'created', url: qaWikiPageUrl };
+          this.logger.info(`✅ QA Test Case wiki page created: "${qaTitle}"`);
+
+          // Attach screenshot to bottom of QA page (reuses sharedAttachment — cleanup happens in finally)
+          if (qaPageId && (sharedAttachment || figmaExportUrl)) {
+              let qaImageMarkdown = null;
+
+              // Derive Confluence REST self-link for direct upload
+              let qaSelfLink = qaResult?._links?.self || qaResult?.page?._links?.self || null;
+              if (!qaSelfLink && qaPageId) {
+                  const qaWebUrl = qaResult?.page?.url || qaResult?.url;
+                  if (qaWebUrl) {
+                      try { qaSelfLink = `${new URL(qaWebUrl).origin}/rest/api/content/${qaPageId}`; } catch (e) { /* ignore */ }
+                  }
+              }
+              if (!qaSelfLink) {
+                  const confBase = (process.env.CONFLUENCE_BASE_URL || '').replace(/\/+$/, '');
+                  if (confBase) qaSelfLink = `${confBase}/rest/api/content/${qaPageId}`;
+              }
+
+              if (sharedAttachment) {
+                  try {
+                      const qaAttResult = await this.mcpAdapter.addWikiAttachment(qaPageId, sharedAttachment.path, qaSelfLink);
+                      if (qaAttResult?.success === true) {
+                          qaImageMarkdown = `\n![Design Preview](${sharedAttachment.filename})\n`;
+                          this.logger.info(`📎 QA screenshot uploaded: ${sharedAttachment.filename}`);
+                      } else if (figmaExportUrl) {
+                          qaImageMarkdown = `\n![Design Preview](${figmaExportUrl})\n`;
+                      }
+                  } catch (attErr) {
+                      this.logger.warn(`QA wiki screenshot upload failed: ${attErr.message}`);
+                      if (figmaExportUrl) qaImageMarkdown = `\n![Design Preview](${figmaExportUrl})\n`;
+                  }
+              } else if (figmaExportUrl) {
+                  qaImageMarkdown = `\n![Design Preview](${figmaExportUrl})\n`;
+              }
+
+              if (qaImageMarkdown) {
+                  const updatedQaContent = qaContent.replace('<!-- design-preview -->', qaImageMarkdown);
+                  try {
+                      await this.mcpAdapter.updateWikiPage(qaPageId, qaTitle, updatedQaContent, qaPageVersion);
+                      this.logger.info(`✅ QA wiki page updated with design screenshot`);
+                  } catch (updateErr) {
+                      this.logger.warn(`⚠️ QA wiki screenshot injection failed: ${updateErr.message}`);
+                  }
+              }
+          }
+
+        } catch (qaErr) {
+          this.logger.warn(`QA Test Case wiki creation failed: ${qaErr.message}`);
+          results.qa = { status: 'failed', error: qaErr.message };
+        }
+
         } finally {
             // Shared Cleanup at the very end
             if (sharedAttachment && sharedAttachment.cleanup) {
@@ -516,7 +603,6 @@ export class WorkItemOrchestrator {
         // --- Step C: Cross-Linking ---
         try {
             if (jiraIssueKey && wikiPageUrl) {
-                // Wiki page link (live URL)
                 await this.mcpAdapter.createRemoteLink(
                     jiraIssueKey,
                     wikiPageUrl,
@@ -524,12 +610,19 @@ export class WorkItemOrchestrator {
                     'Confluence Page'
                 );
             }
+            if (jiraIssueKey && qaWikiPageUrl) {
+                await this.mcpAdapter.createRemoteLink(
+                    jiraIssueKey,
+                    qaWikiPageUrl,
+                    `QA Test Case: ${context.componentName}`,
+                    'QA Test Case'
+                );
+            }
         } catch (linkError) {
-             this.logger.warn(`Cross-linking (wiki) failed: ${linkError.message}`);
+             this.logger.warn(`Cross-linking failed: ${linkError.message}`);
         }
 
-        // Note: Storybook / QA Test Case appear as TBD text in the Jira description.
-        // Remote links for those are only created once real URLs exist.
+        // Note: Storybook remote link created once a real URL exists.
 
 
         // Inject Related Resources block into Jira description (now that wikiPageUrl is known)
@@ -538,11 +631,14 @@ export class WorkItemOrchestrator {
                 const wikiLine = wikiPageUrl
                     ? `* [Implementation Plan|${wikiPageUrl}]`
                     : `* Implementation Plan: _TBD_`;
+                const qaLine = qaWikiPageUrl
+                    ? `* [QA Test Case|${qaWikiPageUrl}]`
+                    : `* QA Test Case: _TBD_`;
                 const resourcesBlock =
                     `h2. Related Resources\n\n` +
                     `${wikiLine}\n` +
                     `* Storybook: _TBD_\n` +
-                    `* QA Test Case: _TBD_\n\n`;
+                    `${qaLine}\n\n`;
                 const marker = '*Generated by Figma AI Ticket Generator*\n\n';
                 const updatedDesc = jiraData.description.includes(marker)
                     ? jiraData.description.replace(marker, marker + resourcesBlock)
@@ -735,6 +831,40 @@ export class WorkItemOrchestrator {
       url += `?node-id=${encodedNodeId}`;
     }
     return url;
+  }
+
+  _buildQaWikiContent({ componentName, jiraIssueKey, jiraWebUrl, wikiPageUrl }) {
+      const today = new Date().toLocaleDateString();
+      const jiraLink = jiraIssueKey && jiraWebUrl
+          ? `[${jiraIssueKey}](${jiraWebUrl})`
+          : (jiraIssueKey || '_TBD_');
+      const wikiLink = wikiPageUrl
+          ? `[View Implementation Plan](${wikiPageUrl})`
+          : '_TBD_';
+      return (
+          `# QA Test Case: ${componentName}\n\n` +
+          `**Date:** ${today}\n` +
+          `**Related Jira:** ${jiraLink}\n` +
+          `**Implementation Plan:** ${wikiLink}\n` +
+          `**Storybook:** TBD\n` +
+          `---\n\n` +
+          `## Test Cases\n\n` +
+          `| # | Test Scenario | Steps to Reproduce | Expected Result | Actual Result | Pass/Fail |\n` +
+          `|---|---|---|---|---|---|\n` +
+          `| 1 | Component renders as designed | Navigate to the component | Matches Figma design | | |\n` +
+          `| 2 | Responsive — mobile (< 768px) | Resize to mobile width | Layout adapts correctly | | |\n` +
+          `| 3 | Responsive — tablet (768–1024px) | Resize to tablet width | Layout adapts correctly | | |\n` +
+          `| 4 | Responsive — desktop (> 1024px) | View at full width | Matches desktop design | | |\n` +
+          `| 5 | Keyboard navigation | Tab through all interactive elements | All reachable and operable | | |\n` +
+          `| 6 | Screen reader compatibility | Run with VoiceOver / NVDA | Correct labels announced | | |\n` +
+          `| 7 | Focus indicator visible | Tab to each interactive element | Visible focus ring present | | |\n` +
+          `| 8 | Interactive states (hover / active) | Hover and click elements | States match design spec | | |\n` +
+          `\n---\n\n` +
+          `## Notes\n\n` +
+          `_Add testing notes, known issues, or edge cases here._\n\n` +
+          `---\n\n` +
+          `<!-- design-preview -->\n`
+      );
   }
 
   _formatForWiki(markdown, context) {
