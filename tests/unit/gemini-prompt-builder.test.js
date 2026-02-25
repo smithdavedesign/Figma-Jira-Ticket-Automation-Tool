@@ -287,6 +287,27 @@ describe('GeminiService._fixJiraBullets', () => {
     expect(svc._fixJiraBullets(input)).toBe('** *Focus:* Show a clear focus indicator.');
   });
 
+  it('converts "_ _Label*: text" (asterisk before colon) to "** *Label:* text"', () => {
+    const input = '_ _Hover*: Apply a visual cue on hover.';
+    expect(svc._fixJiraBullets(input)).toBe('** *Hover:* Apply a visual cue on hover.');
+  });
+
+  it('converts full Interactive States block with asterisk-before-colon pattern', () => {
+    const input = [
+      '_ _Hover*: Apply a visual cue on hover.',
+      '_ _Focus*: Use the standard focus ring.',
+      '_ _Active*: Provide visual feedback when clicked.',
+      '_ _Disabled*: Visually disable the button.',
+    ].join('\n');
+    const expected = [
+      '** *Hover:* Apply a visual cue on hover.',
+      '** *Focus:* Use the standard focus ring.',
+      '** *Active:* Provide visual feedback when clicked.',
+      '** *Disabled:* Visually disable the button.',
+    ].join('\n');
+    expect(svc._fixJiraBullets(input)).toBe(expected);
+  });
+
   it('converts "_ _Label:_ text" to "** _Label:_ text"', () => {
     const input = '_ _Hover:_ Slightly darken the background.';
     expect(svc._fixJiraBullets(input)).toBe('** _Hover:_ Slightly darken the background.');

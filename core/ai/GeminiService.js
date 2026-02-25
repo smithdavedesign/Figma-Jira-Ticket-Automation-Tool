@@ -502,7 +502,9 @@ _Active:_ description   ← WRONG: underscore is not a bullet`,
    */
   _fixJiraBullets(text) {
     return text
-      // "_ _Label:* description" → "** *Label:* description"  (nested bullet with bold label)
+      // "_ _Label*: description" → "** *Label:* description"  (asterisk before colon)
+      .replace(/^_ _([^*\n]+)\*:\s*(.*)$/gm, '** *$1:* $2')
+      // "_ _Label:* description" → "** *Label:* description"  (asterisk after colon)
       .replace(/^_ _([^:\n]+):\*\s*(.*)$/gm, '** *$1:* $2')
       // "_ _Label:_ description" → "** _Label:_ description"  (nested bullet with italic label)
       .replace(/^_ _([^:\n]+):_\s*(.*)$/gm, '** _$1:_ $2')
