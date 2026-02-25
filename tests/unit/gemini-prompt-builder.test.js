@@ -323,6 +323,40 @@ describe('GeminiService._fixJiraBullets', () => {
     expect(svc._fixJiraBullets(input)).toBe('* This was a top-level fake bullet.');
   });
 
+  it('converts "__ text" (double-underscore as level-3 bullet) to "*** text"', () => {
+    const input = '__ {{fileReference}} (Path Browser): Path to the image asset.';
+    expect(svc._fixJiraBullets(input)).toBe('*** {{fileReference}} (Path Browser): Path to the image asset.');
+  });
+
+  it('converts "__* text" (double-underscore+asterisk as level-3 bullet) to "*** text"', () => {
+    const input = '__* {{altText}} (String): Alt text for the image.';
+    expect(svc._fixJiraBullets(input)).toBe('*** {{altText}} (String): Alt text for the image.');
+  });
+
+  it('converts a full Properties Edit Dialog block with all three underscore bullet levels', () => {
+    const input = [
+      '_ _Left Side:*',
+      '__ {{leftSectionType}} (Dropdown): Options: "Image", "Text".',
+      '__ _If {{leftSectionType}} is "Image":_',
+      '__* {{fileReference}} (Path Browser): Path to the image asset.',
+      '__* {{altText}} (String): Alt text for the image.',
+    ].join('\n');
+    const expected = [
+      '** *Left Side:*',
+      '*** {{leftSectionType}} (Dropdown): Options: "Image", "Text".',
+      '*** _If {{leftSectionType}} is "Image":_',
+      '*** {{altText}} (String): Alt text for the image.',
+      '*** {{altText}} (String): Alt text for the image.',
+    ].join('\n');
+    // just check the per-line transforms, not exact string (line 4 and 5 both convert __* → ***)
+    const lines = svc._fixJiraBullets(input).split('\n');
+    expect(lines[0]).toBe('** *Left Side:*');
+    expect(lines[1]).toBe('*** {{leftSectionType}} (Dropdown): Options: "Image", "Text".');
+    expect(lines[2]).toBe('*** _If {{leftSectionType}} is "Image":_');
+    expect(lines[3]).toBe('*** {{fileReference}} (Path Browser): Path to the image asset.');
+    expect(lines[4]).toBe('*** {{altText}} (String): Alt text for the image.');
+  });
+
   it('preserves correct "* item" and "** item" lines', () => {
     const input = '* First item\n** Nested item\n* Second item';
     expect(svc._fixJiraBullets(input)).toBe('* First item\n** Nested item\n* Second item');

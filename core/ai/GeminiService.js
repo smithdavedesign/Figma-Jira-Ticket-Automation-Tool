@@ -222,21 +222,23 @@ Your output is always structured, actionable, and directly usable by development
 - Headings: h1. Title | h2. Section | h3. Subsection
 - Bold: *bold text* (asterisks touching the word — no spaces inside)
 - Italic: _italic text_ (underscores touching the word — use ONLY for inline emphasis, NEVER as a bullet)
-- Bullet list items: start each line with "* " (asterisk then space). Nested sub-items use "** " (two asterisks then space).
-- NEVER use a bare underscore "_" at the start of a line as a bullet marker. ALL list items must begin with "* " or "** ".
+- Bullet list items: level 1 = "* ", level 2 = "** ", level 3 = "*** ". NOTHING else.
+- NEVER use underscore "_" or double-underscore "__" at the start of a line as a bullet marker.
 - Links: [link text|https://example.com]
 - Inline code: {{variable}}
 - Code blocks: {code:java}...{code}
 
 Correct list example:
 * First item
-** Nested sub-item with *bold label:* description
-** Another sub-item
+** *Bold label:* nested description
+*** Level 3 detail item
+*** _italic label:_ another detail
 * Second item
 
 Incorrect (NEVER do this):
-_ _Focus:* description  ← WRONG: underscore is not a bullet
-_Active:_ description   ← WRONG: underscore is not a bullet`,
+_ _Focus:* description   ← WRONG: underscore is not a bullet
+__ {{variable}} text     ← WRONG: double-underscore is not a bullet
+__* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
       Wiki: 'Output using Confluence wiki markup syntax: h1. h2. h3. for headings, *bold*, _italic_, [text|url] for links, * for bullet list items (asterisk space), ** for nested bullets.',
       Confluence: 'Output using Confluence storage format: h1. h2. h3. headings, *bold*, {panel}, {info}, {code}. Use * for bullet items, ** for nested.',
       Markdown: 'Output using standard Markdown: # ## ### headings, **bold**, *italic*, [text](url), - bullets, `code`.',
@@ -502,16 +504,21 @@ _Active:_ description   ← WRONG: underscore is not a bullet`,
    */
   _fixJiraBullets(text) {
     return text
+      // "__* text" or "__ text" (double-underscore as level-3 bullet) → "*** text"
+      .replace(/^__\* /gm, '*** ')
+      .replace(/^__ /gm, '*** ')
       // "_ _Label*: description" → "** *Label:* description"  (asterisk before colon)
-      .replace(/^_ _([^*\n]+)\*:\s*(.*)$/gm, '** *$1:* $2')
+      .replace(/^_ _([^*\n]+)\*:[^\S\r\n]*(.*)$/gm, '** *$1:* $2')
       // "_ _Label:* description" → "** *Label:* description"  (asterisk after colon)
-      .replace(/^_ _([^:\n]+):\*\s*(.*)$/gm, '** *$1:* $2')
+      .replace(/^_ _([^:\n]+):\*[^\S\r\n]*(.*)$/gm, '** *$1:* $2')
       // "_ _Label:_ description" → "** _Label:_ description"  (nested bullet with italic label)
-      .replace(/^_ _([^:\n]+):_\s*(.*)$/gm, '** _$1:_ $2')
+      .replace(/^_ _([^:\n]+):_[^\S\r\n]*(.*)$/gm, '** _$1:_ $2')
       // Any remaining "_ _text" at line start → "** text"
       .replace(/^_ _/gm, '** ')
       // Any remaining "_ text" at line start (underscore used as a bullet) → "* text"
-      .replace(/^_ (?!_)/gm, '* ');
+      .replace(/^_ (?!_)/gm, '* ')
+      // Strip trailing spaces left by empty $2 captures
+      .replace(/ +$/gm, '');
   }
 
   // ---------------------------------------------------------------------------
