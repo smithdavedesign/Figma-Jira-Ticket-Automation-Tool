@@ -131,20 +131,22 @@ export class WorkItemOrchestrator {
       
       const projectKey = context.projectKey || options.projectKey || mcpConfig.defaults.jiraProjectKey;
       
-      let issueType = 'Task';
-      let assignee = undefined;
+      // Read configurable defaults from env vars so this tool works across any project.
+      // Fall back to sensible values when not set.
+      let issueType = process.env.JIRA_ISSUE_TYPE || 'Task';
+      let assignee = process.env.JIRA_DEFAULT_ASSIGNEE || undefined;
+      let epicLink = process.env.JIRA_DEFAULT_EPIC || null;
       let additionalFields = {};
-      let epicLink = null;
 
-      // Special handling for SDPM project
-      if (projectKey === 'SDPM') {
-          issueType = 'Story';
-          assignee = 'David.Smith1@solidigm.com'; 
-          additionalFields = {
-              'customfield_10003': 1, // Story Points
-              'priority': { 'name': 'P3-Medium' }
-          };
-          epicLink = 'SDPM-2965'; // Hardcoded based on current project requirements
+      // Optional numeric story points
+      if (process.env.JIRA_STORY_POINTS) {
+          const sp = parseFloat(process.env.JIRA_STORY_POINTS);
+          if (!isNaN(sp)) additionalFields['customfield_10003'] = sp;
+      }
+
+      // Optional priority override (e.g. "P3-Medium", "High")
+      if (process.env.JIRA_DEFAULT_PRIORITY) {
+          additionalFields['priority'] = { name: process.env.JIRA_DEFAULT_PRIORITY };
       }
 
       const jiraData = {
@@ -556,15 +558,22 @@ export class WorkItemOrchestrator {
         }
 
         // --- Step D: Create Git Branch ---
-        try {
-          this.logger.info(`🌿 MCP: Creating Git Branch ${branchName}...`);
-          const gitResult = await this.mcpAdapter.createGitBranch(branchName, repoPath);
-          results.git = { status: 'created', ...gitResult, content: { branchName, repoPath } };
-        } catch (e) {
-          // Log explicitly but don't fail the whole request
-          this.logger.error(`Failed to create Git branch: ${e.message}`);
-          results.git.error = e.message;
-          results.git.status = 'failed_creation';
+        // Only attempt if GIT_MCP_URL is explicitly configured; otherwise skip cleanly.
+        const gitMcpUrl = process.env.GIT_MCP_URL || '';
+        if (!gitMcpUrl) {
+          this.logger.info('⏭️  Git branch creation skipped — GIT_MCP_URL not configured.');
+          results.git = { status: 'skipped', reason: 'GIT_MCP_URL not configured' };
+        } else {
+          try {
+            this.logger.info(`🌿 MCP: Creating Git Branch ${branchName}...`);
+            const gitResult = await this.mcpAdapter.createGitBranch(branchName, repoPath);
+            results.git = { status: 'created', ...gitResult, content: { branchName, repoPath } };
+          } catch (e) {
+            // Log explicitly but don't fail the whole request
+            this.logger.error(`Failed to create Git branch: ${e.message}`);
+            results.git.error = e.message;
+            results.git.status = 'failed_creation';
+          }
         }
 
       } else {
