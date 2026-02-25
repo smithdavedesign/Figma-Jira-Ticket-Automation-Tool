@@ -392,8 +392,8 @@ export class WorkItemOrchestrator {
                   // 2. If fail, derived new title, retry.
                   
                   if (loops > 0) {
-                      // Simple collision avoidance: Append random small ID to be sure
-                      finalWikiTitle = `${wikiTitle} (${Date.now().toString().slice(-4)})`;
+                      // Deterministic suffix — guarantees each retry has a different title
+                      finalWikiTitle = `${wikiTitle} (${loops})`;
                   }
 
                   this.logger.info(`🚀 Attempting creation: "${finalWikiTitle}" (Attempt ${loops + 1})`);
@@ -406,9 +406,12 @@ export class WorkItemOrchestrator {
 
               } catch (createErr) {
                   const msg = (createErr.message || '').toLowerCase();
-                  // Include '500' and 'internal server error' as potential indicators of trash-conflict on some Confluence versions
-                  if (msg.includes('exist') || msg.includes('conflict') || msg.includes('unique') || msg.includes('500') || msg.includes('internal server error')) {
-                      this.logger.warn(`⚠️ Title "${finalWikiTitle}" unavailable or server error (Conflict/Trash?). Retrying... Error: ${msg}`);
+                  // Include '500' and 'internal server error' as potential indicators of trash-conflict on some Confluence versions.
+                  // Also include 'error calling tool' — the Confluence MCP wraps ALL underlying errors
+                  // (duplicate title, trash conflict, etc.) in this generic message, so we must
+                  // treat it as retryable and append a unique suffix on the next attempt.
+                  if (msg.includes('exist') || msg.includes('conflict') || msg.includes('unique') || msg.includes('500') || msg.includes('internal server error') || msg.includes('error calling tool')) {
+                      this.logger.warn(`⚠️ Title "${finalWikiTitle}" unavailable or server error (Conflict/Trash?). Retrying with unique suffix... Error: ${msg}`);
                       loops++;
                   } else {
                       // If it's not a conflict, it's a real error. Rethrow.
