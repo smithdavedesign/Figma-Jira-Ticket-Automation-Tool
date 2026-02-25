@@ -8,7 +8,6 @@
 import { Logger } from '../utils/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 import { RedisClient } from './redis-client.js';
-import { redisConfig } from '../../config/redis.config.js';
 
 export class SessionManager {
   constructor() {

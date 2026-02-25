@@ -1,6 +1,6 @@
 {
-  "name": "Design Intelligence Platform",
-  "id": "design-intelligence-platform-2025",
+  "name": "Figma Ticket Generator",
+  "id": "figma-ticket-generator",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui/index.html",
@@ -8,21 +8,14 @@
   "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": [
-      "https://api.openai.com",
       "https://generativelanguage.googleapis.com",
-      "https://api.anthropic.com",
       "https://api.figma.com",
-      "https://figma-alpha-api.s3.us-west-2.amazonaws.com",
-      "https://your-production-server.com",
-      "https://api.your-domain.com"
+      "https://figma-alpha-api.s3.us-west-2.amazonaws.com"
     ],
     "devAllowedDomains": [
-      "http://localhost:3000", 
-      "http://localhost:3001",
-      "http://localhost:8080",
-      "http://localhost:8085"
+      "http://localhost:3000"
     ],
-    "reasoning": "AI services for ticket generation, Figma API for screenshots, backend API for secure screenshot proxy"
+    "reasoning": "Gemini AI for content generation, Figma API for screenshots"
   },
   "permissions": ["currentuser"]
 }

@@ -86,13 +86,18 @@ export class WorkItemOrchestrator {
     let generatedContentForUI = '';
 
     try {
-      // 1. Generate Content (Passive Phase)
-      const generatedResult = await this.ticketGenerator.generateTicket({
-        frameData: context.frameData,
-        ...context
-      }, 'enhanced');
-
-      const ticketContent = generatedResult.content || generatedResult;
+      // 1. Generate Content — use pre-generated content if available
+      let ticketContent;
+      if (context.generatedContent) {
+        this.logger.info('Using pre-generated content from GeminiService');
+        ticketContent = context.generatedContent;
+      } else {
+        const generatedResult = await this.ticketGenerator.generateTicket({
+          frameData: context.frameData,
+          ...context
+        }, 'enhanced');
+        ticketContent = generatedResult.content || generatedResult;
+      }
 
       if (!ticketContent) {
           throw new Error('Ticket generation returned empty content');
@@ -198,7 +203,17 @@ export class WorkItemOrchestrator {
                 this.logger.warn("⚠️ Screenshot image preparation returned null, check logs for details.");
              }
         } else {
-             this.logger.warn("⚠️ No screenshot or imagePath found in context. Skipping attachment.");
+             this.logger.warn("⚠️ No screenshot or imagePath found in context. Skipping local attachment.");
+        }
+
+        // Figma export URL — used as image source when file upload is unavailable.
+        // Prefer whatever was already fetched by the route; otherwise call Figma API ourselves.
+        const figmaExportUrl = context.figmaExportUrl || await this._getFigmaExportUrl(
+            context.fileContext?.fileKey || context.figmaContext?.fileKey,
+            (context.enhancedFrameData?.[0] || context.frameData?.[0])?.id
+        );
+        if (figmaExportUrl) {
+            this.logger.info(`🖼️  Figma export URL available for wiki/jira image embedding`);
         }
 
         try {
@@ -249,9 +264,14 @@ export class WorkItemOrchestrator {
                 }
              } catch(e) { /* ignore */ }
           }
+          // Fallback: if MCP didn't return a URL, build one from env var
+          if (!webUrl && jiraIssueKey) {
+              const jiraBase = (process.env.JIRA_BASE_URL || process.env.JIRA_URL || '').replace(/\/$/, '');
+              if (jiraBase) webUrl = `${jiraBase}/browse/${jiraIssueKey}`;
+          }
           jiraWebUrl = webUrl;
           
-          results.jira = { status: existingTicket ? 'existing' : 'created', ...jiraResult, url: webUrl, content: jiraData };
+          results.jira = { status: existingTicket ? 'existing' : 'created', ...jiraResult, url: webUrl, issueKey: jiraIssueKey, content: jiraData };
 
           // Link to Epic if needed and configured (Only if newly created or link check logic added)
           if (jiraIssueKey && epicLink && !existingTicket) {
@@ -263,14 +283,41 @@ export class WorkItemOrchestrator {
              }
           }
           
-          // Attach Image to Jira
-          // We attach if sharedAttachment exists.
-          if (sharedAttachment && jiraIssueKey) {
-               try {
-                   this.logger.info(`📎 Attaching screenshot to Jira ${jiraIssueKey}...`);
-                   await this.mcpAdapter.addJiraAttachment(jiraIssueKey, sharedAttachment.path, issueSelfUrl);
-               } catch(attErr) {
-                   this.logger.warn('Failed to add Jira attachment', attErr);
+          // Steps 1+2: Attach design image to Jira ticket
+          // Preferred path: upload file and embed !filename|thumbnail!
+          // Fallback: embed Figma CDN URL directly in description (no upload needed)
+          if (jiraIssueKey && !existingTicket && (sharedAttachment || figmaExportUrl)) {
+               let imageEmbeddedInJira = false;
+               if (sharedAttachment) {
+                   try {
+                       this.logger.info(`📎 [Step 1/2] Uploading screenshot to Jira ${jiraIssueKey}...`);
+                       const attResult = await this.mcpAdapter.addJiraAttachment(jiraIssueKey, sharedAttachment.path, issueSelfUrl);
+                       if (attResult?.success && attResult?.filenames?.length) {
+                           const uploadedFilename = attResult.filenames[0];
+                           this.logger.info(`📎 [Step 2/2] Embedding !${uploadedFilename}! in Jira description...`);
+                           await this.mcpAdapter.updateJiraDescription(
+                               jiraIssueKey,
+                               jiraData.description || '',
+                               uploadedFilename
+                           );
+                           imageEmbeddedInJira = true;
+                       }
+                   } catch(attErr) {
+                       this.logger.warn(`Jira file upload failed: ${attErr.message}`);
+                   }
+               }
+               // Fallback: file upload unavailable — embed Figma export URL directly
+               if (!imageEmbeddedInJira && figmaExportUrl) {
+                   try {
+                       this.logger.info(`📎 Embedding Figma export URL in Jira ${jiraIssueKey} description (no upload)...`);
+                       await this.mcpAdapter.updateJiraDescription(
+                           jiraIssueKey,
+                           jiraData.description || '',
+                           figmaExportUrl
+                       );
+                   } catch(urlErr) {
+                       this.logger.warn(`Failed to embed design image URL in Jira: ${urlErr.message}`);
+                   }
                }
           }
 
@@ -296,23 +343,6 @@ export class WorkItemOrchestrator {
               }
           }
           
-          // Inject Attachment Reference (Top of page) if we have the file
-          if (sharedAttachment) {
-              // Confluence Markdown Image Syntax: ![Alt Text](filename)
-              // This is safer than Wiki markup '!file!' which might error in markdown mode
-              // IMPORTANT: Using 'ri:url' or just filename matching what is attached.
-              // In Standard Confluence Markdown, ![image.png](image.png) works if attached.
-              
-              // We use the filename provided by sharedAttachment
-              const imageMarkdown = `\n![${sharedAttachment.filename}](${sharedAttachment.filename})\n`;
-              
-              if (finalWikiContent.includes('---\n\n')) {
-                  finalWikiContent = finalWikiContent.replace('---\n\n', `---\n\n${imageMarkdown}\n`);
-              } else {
-                  finalWikiContent = `${imageMarkdown}\n${finalWikiContent}`;
-              }
-          }
-
           // Idempotency: Check if page exists OR create unique if needed
           let wikiResult = null;
           let finalWikiTitle = wikiTitle;
@@ -369,24 +399,74 @@ export class WorkItemOrchestrator {
               throw new Error(`Failed to create Wiki page after ${maxLoops} attempts due to conflicts.`);
           }
           
-          // Upload Attachment to Wiki Page (Reusable shared file)
-          if (sharedAttachment && wikiResult && !wikiResult.error) {
-               // Attempt to resolve Page ID from diverse potential response structures
-               const pageId = wikiResult.id || (wikiResult.page ? wikiResult.page.id : null);
-               
-               // Attempt to resolve Self Link for direct attachment upload
-               let pageSelfLink = null;
-               if (wikiResult._links && wikiResult._links.self) pageSelfLink = wikiResult._links.self;
-               else if (wikiResult.page && wikiResult.page._links && wikiResult.page._links.self) pageSelfLink = wikiResult.page._links.self;
+          // Two-step image attachment for Confluence:
+          // Step 1: Upload file to page. Step 2: Only if upload confirmed, update page body with image reference.
+          if ((sharedAttachment || figmaExportUrl) && wikiResult && !wikiResult.error) {
+               // Resolve Page ID and version from diverse possible response shapes
+               const pageId = wikiResult.id || wikiResult.page?.id || null;
+               const pageVersion = wikiResult.version?.number ?? wikiResult.page?.version?.number ?? 1;
+               const pageTitle = finalWikiTitle;
+
+               // Resolve Self Link for direct attachment upload.
+               // Prefer _links.self (REST API URL like https://wiki.corp/rest/api/content/12345).
+               // Fall back to deriving the origin from the human-readable page URL.
+               let pageSelfLink = wikiResult._links?.self || wikiResult.page?._links?.self || null;
+               if (!pageSelfLink && pageId) {
+                   const pageWebUrl = wikiResult.page?.url || wikiResult.url;
+                   if (pageWebUrl) {
+                       try {
+                           const origin = new URL(pageWebUrl).origin;
+                           pageSelfLink = `${origin}/rest/api/content/${pageId}`;
+                           this.logger.info(`🔗 Derived Confluence REST URL from page URL: ${pageSelfLink}`);
+                       } catch (e) { /* ignore bad URL */ }
+                   }
+               }
 
                if (pageId) {
-                   try {
-                       await this.mcpAdapter.addWikiAttachment(pageId, sharedAttachment.path, pageSelfLink);
-                   } catch (attErr) {
-                       this.logger.warn(`Failed to attach to wiki: ${attErr.message}`);
+                   // Determine image markdown to inject.
+                   // Priority: confirmed file upload → Figma export URL fallback.
+                   let imageMarkdownToInject = null;
+
+                   if (sharedAttachment) {
+                       try {
+                           this.logger.info(`📎 [Step 1/2] Uploading screenshot to Confluence page ${pageId}...`);
+                           const wikiAttResult = await this.mcpAdapter.addWikiAttachment(pageId, sharedAttachment.path, pageSelfLink);
+                           if (wikiAttResult?.success === true) {
+                               imageMarkdownToInject = `\n![Design Preview](${sharedAttachment.filename})\n`;
+                               this.logger.info(`📎 [Step 2/2] Confirmed upload. Will embed: ![${sharedAttachment.filename}]`);
+                           } else if (figmaExportUrl) {
+                               imageMarkdownToInject = `\n![Design Preview](${figmaExportUrl})\n`;
+                               this.logger.info(`📎 Upload not confirmed — falling back to Figma export URL.`);
+                           }
+                       } catch (attErr) {
+                           this.logger.warn(`Wiki file upload failed: ${attErr.message}`);
+                           if (figmaExportUrl) {
+                               imageMarkdownToInject = `\n![Design Preview](${figmaExportUrl})\n`;
+                               this.logger.info(`📎 Upload errored — falling back to Figma export URL.`);
+                           }
+                       }
+                   } else if (figmaExportUrl) {
+                       // No local file at all — embed Figma CDN URL directly (no upload step needed)
+                       imageMarkdownToInject = `\n![Design Preview](${figmaExportUrl})\n`;
+                       this.logger.info(`📎 No local attachment — embedding Figma export URL in Confluence page.`);
+                   }
+
+                   if (imageMarkdownToInject) {
+                       let updatedContent = finalWikiContent;
+                       if (updatedContent.includes('---\n\n')) {
+                           updatedContent = updatedContent.replace('---\n\n', `---\n\n${imageMarkdownToInject}\n`);
+                       } else {
+                           updatedContent = `${imageMarkdownToInject}\n${updatedContent}`;
+                       }
+                       try {
+                           await this.mcpAdapter.updateWikiPage(pageId, pageTitle, updatedContent, pageVersion);
+                           this.logger.info(`✅ Confluence page updated with design image (v${pageVersion} → v${pageVersion + 1})`);
+                       } catch (updateErr) {
+                           this.logger.warn(`⚠️ Wiki page image injection failed: ${updateErr.message}`);
+                       }
                    }
                } else {
-                   this.logger.warn('⚠️ Could not determine Page ID for Wiki attachment', wikiResult);
+                   this.logger.warn('⚠️ Could not determine Page ID for Wiki image embedding', wikiResult);
                }
           }
 
@@ -425,10 +505,54 @@ export class WorkItemOrchestrator {
         // --- Step C: Cross-Linking ---
         try {
             if (jiraIssueKey && wikiPageUrl) {
-                await this.mcpAdapter.createRemoteLink(jiraIssueKey, wikiPageUrl, `Implementation Plan: ${context.componentName}`);
+                // Wiki page link (live URL)
+                await this.mcpAdapter.createRemoteLink(
+                    jiraIssueKey,
+                    wikiPageUrl,
+                    `Implementation Plan: ${context.componentName}`,
+                    'Confluence Page'
+                );
             }
         } catch (linkError) {
-             this.logger.warn(`Cross-linking failed: ${linkError.message}`);
+             this.logger.warn(`Cross-linking (wiki) failed: ${linkError.message}`);
+        }
+
+        // Placeholder links — filled in manually once resources exist
+        const placeholderLinks = [
+            { title: 'Storybook',     relationship: 'Storybook',     url: 'about:blank' },
+            { title: 'QA Test Case',  relationship: 'QA Test Case',  url: 'about:blank' },
+        ];
+        for (const link of placeholderLinks) {
+            try {
+                await this.mcpAdapter.createRemoteLink(jiraIssueKey, link.url, link.title, link.relationship);
+            } catch (pErr) {
+                this.logger.warn(`Placeholder link '${link.title}' failed: ${pErr.message}`);
+            }
+        }
+
+        // Inject Related Resources block into Jira description (now that wikiPageUrl is known)
+        if (jiraIssueKey && jiraData.description) {
+            try {
+                const wikiLine = wikiPageUrl
+                    ? `* [Implementation Plan|${wikiPageUrl}]`
+                    : `* Implementation Plan: _TBD_`;
+                const resourcesBlock =
+                    `h2. Related Resources\n\n` +
+                    `${wikiLine}\n` +
+                    `* Storybook: _TBD_\n` +
+                    `* QA Test Case: _TBD_\n\n`;
+                const marker = '*Generated by Figma AI Ticket Generator*\n\n';
+                const updatedDesc = jiraData.description.includes(marker)
+                    ? jiraData.description.replace(marker, marker + resourcesBlock)
+                    : resourcesBlock + jiraData.description;
+                await this.mcpAdapter._callMCP('jira_update_issue', {
+                    issue_key: jiraIssueKey,
+                    fields: { description: updatedDesc }
+                });
+                this.logger.info(`✅ Injected Related Resources block into ${jiraIssueKey} description`);
+            } catch (resErr) {
+                this.logger.warn(`Failed to inject resources block into Jira description: ${resErr.message}`);
+            }
         }
 
         // --- Step D: Create Git Branch ---
@@ -526,7 +650,7 @@ export class WorkItemOrchestrator {
          if (tempFilePath) {
              return {
                  path: tempFilePath,
-                 filename: `preview-${safeId}.png`, // Ensure png extension for Wiki compatibility
+                 filename: `${safeId}.png`, // safeId already contains the caller-supplied prefix (e.g. 'preview-NavBar')
                  cleanup: async () => {
                      if (shouldCleanup && tempFilePath) {
                          try { await fs.unlink(tempFilePath); } catch (e) {}
@@ -538,6 +662,34 @@ export class WorkItemOrchestrator {
          this.logger.warn('Failed to prepare image', { message: e.message, stack: e.stack });
      }
      return null;
+  }
+
+  /**
+   * Fetch a signed CDN export URL for a Figma frame via the Figma Images API.
+   * Returns a temporary (~48h) HTTPS URL that any browser or HTTP client can load.
+   * This is used as a zero-upload fallback when direct REST / MCP attachment is unavailable.
+   */
+  async _getFigmaExportUrl(fileKey, nodeId) {
+    const token = process.env.FIGMA_ACCESS_TOKEN || process.env.FIGMA_API_KEY;
+    if (!token || !fileKey || !nodeId) return null;
+    try {
+      const apiUrl = `https://api.figma.com/v1/images/${fileKey}?ids=${encodeURIComponent(nodeId)}&format=png&scale=2`;
+      const res = await fetch(apiUrl, { headers: { 'X-Figma-Token': token } });
+      if (!res.ok) {
+        this.logger.warn(`Figma Images API returned ${res.status} for ${fileKey}/${nodeId}`);
+        return null;
+      }
+      const data = await res.json();
+      // The response shape is { images: { "<nodeId>": "https://..." } }
+      const exportUrl = data.images?.[nodeId] || Object.values(data.images || {})[0] || null;
+      if (exportUrl) {
+        this.logger.info(`📸 Figma export URL: ${exportUrl.substring(0, 70)}...`);
+      }
+      return exportUrl;
+    } catch (e) {
+      this.logger.warn(`Figma export URL fetch failed: ${e.message}`);
+      return null;
+    }
   }
 
   async _handleAttachments(context, issueKey) {
@@ -562,6 +714,20 @@ export class WorkItemOrchestrator {
       return `*Generated by Figma AI Ticket Generator*\n\n${markdown}`;
   }
 
+  _buildFigmaDeepLink(context) {
+    const base = context.figmaUrl || null;
+    const fileKey = context.fileContext?.fileKey || null;
+    if (!base && !fileKey) return null;
+    let url = base ? base.split('?')[0] : `https://www.figma.com/design/${fileKey}`;
+    const firstFrame = context.enhancedFrameData?.[0] || context.frameData?.[0];
+    const nodeId = firstFrame?.id;
+    if (nodeId) {
+      const encodedNodeId = nodeId.replace(/:/g, '-').replace(/;/g, '%3B');
+      url += `?node-id=${encodedNodeId}`;
+    }
+    return url;
+  }
+
   _formatForWiki(markdown, context) {
       // Wiki should be more detailed.
       // We can prepend metadata or technical specs.
@@ -569,6 +735,12 @@ export class WorkItemOrchestrator {
       let header = `# Technical Design: ${context.componentName}\n\n`;
       header += `**Date:** ${new Date().toLocaleDateString()}\n`;
       header += `**Source:** Figma Component\n`;
+      const figmaDeepLink = this._buildFigmaDeepLink(context);
+      if (figmaDeepLink) {
+        header += `**Figma:** [View Design](${figmaDeepLink})\n`;
+      }
+      header += `**Storybook:** TBD\n`;
+      header += `**QA Test Case:** TBD\n`;
       header += `---\n\n`;
       
       // Basic conversion of Jira Markup to Markdown

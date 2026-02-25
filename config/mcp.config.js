@@ -40,8 +40,9 @@ export default {
     },
     defaults: {
         jiraProjectKey: process.env.JIRA_PROJECT_KEY || 'DS',
-        confluenceSpaceKey: process.env.CONFLUENCE_SPACE_KEY || 'DCUX', // Updated default space
-        wikiParentId: process.env.CONFLUENCE_PARENT_ID || '857702482', // Updated parent page ID
+        confluenceSpaceKey: process.env.CONFLUENCE_SPACE_KEY || 'DCUX',
+        // Parent page: https://npsg-wiki.elements.local/spaces/DCUX/pages/875071563/Figma+Component+Automation
+        wikiParentId: process.env.CONFLUENCE_PARENT_ID || '875071563',
         repoPath: process.env.GIT_REPO_PATH || process.cwd()
     }
 };

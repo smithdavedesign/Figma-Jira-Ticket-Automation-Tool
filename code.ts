@@ -1,639 +1,151 @@
 /// <reference types="@figma/plugin-typings" />
 
-// Show UI
+// ─── Figma Plugin: Frame → Server pipeline ────────────────────────────
+// Extracts frame data, captures a screenshot, sends everything to the
+// Express server at localhost:3000 for AI ticket / wiki generation.
+// ───────────────────────────────────────────────────────────────────────
+
 figma.showUI(__html__, { width: 500, height: 700 });
 
-// Screenshot API Configuration
-const SCREENSHOT_CONFIG = {
-  DEVELOPMENT_API: 'http://localhost:3000/api/figma/screenshot',
-  PRODUCTION_API: 'https://your-production-server.com/api/figma/screenshot',
-  DEFAULT_FORMAT: 'png',
-  DEFAULT_SCALE: 2,
-  TIMEOUT_MS: 15000,
-  MAX_RETRIES: 3,
-  RETRY_DELAY: 1000
-};
+// ─── Constants ─────────────────────────────────────────────────────────
+const API_BASE = 'http://localhost:3000';
+const SCREENSHOT_API = `${API_BASE}/api/figma/screenshot`;
+const GENERATE_API = `${API_BASE}/api/generate`;
+const MAX_RETRIES = 3;
 
-// Screenshot utility functions
-async function fetchScreenshot(fileKey: string, nodeId: string, options: any = {}): Promise<string> {
-  const {
-    format = SCREENSHOT_CONFIG.DEFAULT_FORMAT,
-    scale = SCREENSHOT_CONFIG.DEFAULT_SCALE,
-    timeout = SCREENSHOT_CONFIG.TIMEOUT_MS,
-    retries = SCREENSHOT_CONFIG.MAX_RETRIES
-  } = options;
+// ─── Screenshot helpers ────────────────────────────────────────────────
 
-  const baseUrl = SCREENSHOT_CONFIG.DEVELOPMENT_API; // For now, use development endpoint
-  
-  // Manual parameter building for Figma plugin compatibility (no URLSearchParams)
-  const paramPairs = [
-    `fileKey=${encodeURIComponent(fileKey)}`,
-    `nodeId=${encodeURIComponent(nodeId)}`,
-    `format=${encodeURIComponent(format)}`,
-    `scale=${encodeURIComponent(scale.toString())}`
-  ];
-  
-  const requestUrl = `${baseUrl}?${paramPairs.join('&')}`;
-  console.log(`📸 Fetching screenshot from backend: ${nodeId} in ${fileKey}`);
+async function fetchScreenshot(fileKey: string, nodeId: string): Promise<string | null> {
+  const url = `${SCREENSHOT_API}?fileKey=${encodeURIComponent(fileKey)}&nodeId=${encodeURIComponent(nodeId)}&format=png&scale=2`;
 
   let lastError: Error | undefined;
-  
-  for (let attempt = 1; attempt <= retries; attempt++) {
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      console.log(`📸 Attempt ${attempt}/${retries}: ${requestUrl}`);
-      
-      const response = await fetch(requestUrl, {
+      const res = await fetch(url, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Design-Intelligence-MCP-Client/1.0.0'
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
-      
-      if (!response.ok) {
-        let errorMessage = `Screenshot API error: ${response.status} ${response.statusText}`;
-        try {
-          const errorData = await response.json();
-          if (errorData.message) {
-            errorMessage += `. ${errorData.message}`;
-          }
-          // Check for API key configuration issues
-          if (errorData.message && errorData.message.includes('Figma API key')) {
-            errorMessage = 'Figma API key not configured properly on server';
-          }
-        } catch {
-          // Ignore JSON parse errors for error responses
-        }
-        throw new Error(errorMessage);
-      }
-      
-      const response_data = await response.json();
-      
-      // Handle both direct and nested response formats
-      const imageUrl = response_data.data?.imageUrl || 
-                      response_data.data?.screenshotUrl || 
-                      response_data.imageUrl || 
-                      response_data.screenshotUrl;
-      
-      if (!imageUrl) {
-        console.error('❌ Screenshot API response structure:', response_data);
-        throw new Error('No image URL returned from screenshot API');
-      }
-      
-      console.log(`✅ Screenshot fetched successfully:`, {
-        nodeId,
-        fileKey,
-        cached: response_data.data?.performance?.cached || response_data.cached,
-        imageUrl: imageUrl.substring(0, 50) + '...',
-        requestTime: response_data.metadata?.timestamp || response_data.metadata?.requestTime
-      });
-      
-      return imageUrl;
-      
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Unknown error');
-      console.error(`❌ Screenshot fetch attempt ${attempt} failed:`, lastError.message);
-      
-      if (lastError.message.includes('400') || lastError.message.includes('404')) {
-        throw lastError;
-      }
-      
-      if (attempt < retries) {
-        const delay = SCREENSHOT_CONFIG.RETRY_DELAY * Math.pow(2, attempt - 1);
-        console.log(`⏳ Waiting ${delay}ms before retry...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+      if (!res.ok) throw new Error(`Screenshot API ${res.status}`);
+      const json = await res.json();
+      return json.data?.imageUrl || json.data?.screenshotUrl || json.imageUrl || json.screenshotUrl || null;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < MAX_RETRIES) {
+        await new Promise(r => setTimeout(r, 1000 * attempt));
       }
     }
   }
-  
-  throw lastError || new Error('Screenshot fetch failed after all retries');
+  console.warn('Screenshot API failed after retries:', lastError?.message);
+  return null;
 }
 
-function getFallbackScreenshot(nodeId: string, nodeName: string = 'Unknown'): any {
-  const svgContent = `
-    <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="#f0f0f0" stroke="#ddd" stroke-width="2"/>
-      <text x="50%" y="40%" text-anchor="middle" font-family="Arial" font-size="16" fill="#666">
-        Screenshot Unavailable
-      </text>
-      <text x="50%" y="55%" text-anchor="middle" font-family="Arial" font-size="12" fill="#999">
-        ${nodeName}
-      </text>
-      <text x="50%" y="70%" text-anchor="middle" font-family="Arial" font-size="10" fill="#999">
-        Backend API not available
-      </text>
-    </svg>
-  `.trim();
-  
-  // For Figma plugin environment, manually encode UTF-8 (no TextEncoder available)
-  function stringToUint8Array(str: string): Uint8Array {
-    const bytes = [];
-    for (let i = 0; i < str.length; i++) {
-      const code = str.charCodeAt(i);
-      if (code < 0x80) {
-        bytes.push(code);
-      } else if (code < 0x800) {
-        bytes.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f));
-      } else if (code < 0xd800 || code >= 0xe000) {
-        bytes.push(0xe0 | (code >> 12), 0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f));
-      } else {
-        // Surrogate pair
-        i++;
-        const hi = code;
-        const lo = str.charCodeAt(i);
-        const codePoint = 0x10000 + (((hi & 0x3ff) << 10) | (lo & 0x3ff));
-        bytes.push(0xf0 | (codePoint >> 18), 0x80 | ((codePoint >> 12) & 0x3f), 0x80 | ((codePoint >> 6) & 0x3f), 0x80 | (codePoint & 0x3f));
-      }
+/** Try exportAsync as local fallback when backend is unreachable */
+async function exportNodeAsBase64(node: SceneNode): Promise<string | null> {
+  try {
+    const bytes = await node.exportAsync({
+      format: 'PNG',
+      constraint: { type: 'SCALE', value: 2 }
+    });
+    if (bytes && bytes.length > 0) {
+      return `data:image/png;base64,${figma.base64Encode(bytes)}`;
     }
-    return new Uint8Array(bytes);
-  }
-  
-  const base64Content = figma.base64Encode(stringToUint8Array(svgContent));
-  const placeholderUrl = `data:image/svg+xml;base64,${base64Content}`;
-  
-  return {
-    imageUrl: placeholderUrl,
-    metadata: {
-      nodeId,
-      nodeName,
-      fallback: true,
-      source: 'placeholder',
-      fileKey: 'unknown',
-      captureTime: new Date().toISOString()
-    }
-  };
+  } catch { /* swallow */ }
+  return null;
 }
 
-// Plugin main logic
+// ─── Message handler ───────────────────────────────────────────────────
+
 figma.ui.onmessage = async (msg: any) => {
-  console.log('🔌 Plugin received message:', msg.type);
-
   try {
     switch (msg.type) {
-      case 'get-context':
-        await handleGetContext();
-        break;
-      case 'get-unified-context':
-        await handleGetUnifiedContext(msg);
-        break;
-      case 'get-advanced-context':
-        // DEPRECATED: Use 'get-unified-context' instead
-        await handleGetAdvancedContext();
-        break;
-      // 🚀 NEW MODULAR API HANDLERS
-      case 'get-comprehensive-selection':
-        await handleGetComprehensiveSelection(msg);
-        break;
-      case 'analyze-components':
-        await handleAnalyzeComponents(msg);
-        break;
-      case 'extract-design-tokens':
-        await handleExtractDesignTokens(msg);
-        break;
-      case 'analyze-interactions':
-        await handleAnalyzeInteractions(msg);
-        break;
-      case 'analyze-constraints':
-        await handleAnalyzeConstraints(msg);
-        break;
-      case 'analyze-effects':
-        await handleAnalyzeEffects(msg);
-        break;
-      case 'capture-screenshot':
-        await handleCaptureScreenshot();
-        break;
       case 'generate-ai-ticket':
         await handleGenerateAITicket();
         break;
       case 'make-ai-request':
         await handleMakeAIRequest(msg);
         break;
-      case 'debug-selection':
-        await debugCurrentContext();
+      case 'get-context':
+        await handleGetContext();
         break;
-      case 'precise-screenshot':
-        await handlePreciseScreenshot();
+      case 'capture-screenshot':
+        await handleCaptureScreenshot();
         break;
-      case 'analyze-design-health':
-        // DEPRECATED: Use 'get-unified-context' instead
-        await handleAnalyzeDesignHealth(msg);
-        break;
-      case 'real-file-key-response':
-        // This is handled by the callback system, no action needed
-        console.log('File key response received');
-        break;
-      case 'file-key-response':
-        // This is handled by the callback system, no action needed
-        console.log('File key response received');
-        break;
-      case 'file-key-response-for-screenshot':
-        // This is handled by the callback system, no action needed
-        console.log('File key response for screenshot received');
+      case 'open-url':
+        if (msg.url) figma.openExternal(msg.url);
         break;
       case 'close':
         figma.closePlugin();
         break;
+      // File-key callback responses — handled inline, nothing to do here
+      case 'real-file-key-response':
+      case 'file-key-response':
+      case 'file-key-response-for-screenshot':
+        break;
       default:
-        console.log('Unhandled message type:', msg.type);
+        console.log('Unhandled message:', msg.type);
     }
   } catch (error) {
     console.error('Plugin error:', error);
     figma.ui.postMessage({
       type: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error instanceof Error ? error.message : 'Unknown plugin error'
     });
   }
 };
 
-// 🔄 NEW: Unified Context Handler
-async function handleGetUnifiedContext(msg: any) {
-  console.log('🔄 Building unified context (combines Design Health + Advanced Context)');
-  
-  try {
-    const selection = figma.currentPage.selection;
-    // Use fileKey from message if provided, otherwise fall back to figma.fileKey or unknown
-    const fileKey = msg.fileKey || figma.fileKey || 'unknown';
-    
-    // Build comprehensive figma data
-    const figmaData = {
-      selection,
-      fileKey,
-      fileName: figma.root.name,
-      pageName: figma.currentPage.name,
-      timestamp: new Date().toISOString(),
-      selectionCount: selection.length
-    };
-    
-    // Extract design tokens from selection
-    const designTokens = await extractDesignTokens(selection.length > 0 ? selection[0] : figma.currentPage);
-    
-    // Build node hierarchy
-    const nodes = [];
-    for (const node of selection) {
-      nodes.push(await buildHierarchy(node));
-    }
-    
-    // Calculate design health metrics (from old Design Health tab)
-    const healthMetrics = {
-      componentCoverage: calculateComponentCoverage(selection),
-      consistencyScore: calculateConsistencyScore(selection),
-      performanceGrade: calculatePerformanceGrade(selection),
-      colorPaletteMatch: checkColorPaletteMatch(designTokens),
-      typographyIssues: countTypographyIssues(selection),
-      spacingGridOk: checkSpacingGrid(selection),
-      overallScore: 0.85, // Calculated score
-      recommendations: generateHealthRecommendations(selection)
-    };
-    
-    // Build advanced context (from old Advanced Context Dashboard)
-    const advancedContext = {
-      nodeCount: selection.length,
-      componentTypes: analyzeComponentTypes(selection),
-      hierarchyDepth: calculateHierarchyDepth(selection),
-      designComplexity: calculateDesignComplexity(selection, designTokens),
-      interactionMaps: analyzeInteractions(selection),
-      layoutPatterns: identifyLayoutPatterns(selection)
-    };
-    
-    // Performance metrics
-    const performanceMetrics = {
-      processingTime: Date.now(),
-      memoryUsage: 'N/A', // Not available in plugin context
-      nodeProcessingRate: selection.length > 0 ? selection.length / 1 : 0,
-      cacheStatus: 'none' // Plugin doesn't have persistent cache
-    };
-    
-    // Build unified context object
-    const unifiedContext = {
-      // Base context
-      figma: figmaData,
-      nodes,
-      designTokens,
-      
-      // Health metrics (from Design Health tab)
-      healthMetrics,
-      
-      // Advanced context (from Advanced Context Dashboard)
-      advancedContext,
-      
-      // Performance metrics
-      performanceMetrics,
-      
-      // Context metadata
-      contextMetadata: {
-        version: '2.0.0',
-        generatedAt: new Date().toISOString(),
-        source: 'UnifiedContextProvider',
-        features: ['healthMetrics', 'advancedContext', 'performanceMetrics']
-      }
-    };
-    
-    // Send unified context to UI
-    figma.ui.postMessage({
-      type: 'unified-context-result',
-      data: unifiedContext,
-      success: true,
-      message: 'Unified context generated successfully'
-    });
-    
-    console.log('✅ Unified context sent to UI');
-    
-  } catch (error) {
-    console.error('❌ Failed to build unified context:', error);
-    figma.ui.postMessage({
-      type: 'unified-context-result',
-      data: null,
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
+// ─── Resolve file key ──────────────────────────────────────────────────
+
+function resolveFileKey(): string {
+  if (figma.fileKey && figma.fileKey !== 'dev-file') return figma.fileKey;
+  return 'BioUSVD6t51ZNeG0g9AcNz'; // fallback for dev environment
 }
 
-// Helper functions for unified context
-function calculateComponentCoverage(selection: readonly SceneNode[]): number {
-  const componentCount = selection.filter(n => n.type === 'COMPONENT' || n.type === 'INSTANCE').length;
-  return selection.length > 0 ? Math.round((componentCount / selection.length) * 100) : 0;
-}
+// ─── Best screenshot target from selection ─────────────────────────────
 
-function calculateConsistencyScore(selection: readonly SceneNode[]): number {
-  // Simplified consistency calculation
-  return 85;
-}
-
-function calculatePerformanceGrade(selection: readonly SceneNode[]): string {
-  const nodeCount = selection.length;
-  if (nodeCount < 10) return 'A';
-  if (nodeCount < 25) return 'B';
-  if (nodeCount < 50) return 'C';
-  return 'D';
-}
-
-function checkColorPaletteMatch(designTokens: any): boolean {
-  return designTokens.colors && designTokens.colors.length > 0;
-}
-
-function countTypographyIssues(selection: readonly SceneNode[]): number {
-  const textNodes = selection.filter(n => n.type === 'TEXT');
-  return Math.floor(textNodes.length * 0.1); // Assume 10% have issues
-}
-
-function checkSpacingGrid(selection: readonly SceneNode[]): boolean {
-  return true; // Simplified - assume grid is okay
-}
-
-function generateHealthRecommendations(selection: readonly SceneNode[]): string[] {
-  const recommendations = [];
-  
+function pickScreenshotTarget(selection: readonly SceneNode[]): SceneNode | null {
   if (selection.length === 0) {
-    recommendations.push('Select design elements to analyze');
+    return figma.currentPage.findOne(n => n.type === 'FRAME') as SceneNode | null;
   }
-  
-  const componentCount = selection.filter(n => n.type === 'COMPONENT' || n.type === 'INSTANCE').length;
-  if (componentCount === 0) {
-    recommendations.push('Consider using components for reusability');
-  }
-  
-  const textNodes = selection.filter(n => n.type === 'TEXT');
-  if (textNodes.length > 5) {
-    recommendations.push('Consider consolidating text styles');
-  }
-  
-  return recommendations;
-}
+  if (selection.length === 1) return selection[0];
 
-function analyzeComponentTypes(selection: readonly SceneNode[]): { [key: string]: number } {
-  const types: { [key: string]: number } = {};
-  
-  for (const node of selection) {
-    types[node.type] = (types[node.type] || 0) + 1;
-  }
-  
-  return types;
-}
-
-function calculateHierarchyDepth(selection: readonly SceneNode[]): number {
-  let maxDepth = 0;
-  
-  function getDepth(node: SceneNode, depth: number = 0): number {
-    let currentDepth = depth;
-    if ('children' in node && node.children) {
-      for (const child of node.children) {
-        currentDepth = Math.max(currentDepth, getDepth(child, depth + 1));
-      }
-    }
-    return currentDepth;
-  }
-  
-  for (const node of selection) {
-    maxDepth = Math.max(maxDepth, getDepth(node));
-  }
-  
-  return maxDepth;
-}
-
-function calculateDesignComplexity(selection: readonly SceneNode[], designTokens: any): number {
-  const nodeComplexity = selection.length * 0.1;
-  const tokenComplexity = (designTokens.colors?.length || 0) * 0.05;
-  const hierarchyComplexity = calculateHierarchyDepth(selection) * 0.2;
-  
-  return Math.round((nodeComplexity + tokenComplexity + hierarchyComplexity) * 100) / 100;
-}
-
-function analyzeInteractions(selection: readonly SceneNode[]): any[] {
-  return []; // Simplified - interactions not easily accessible in plugin
-}
-
-function identifyLayoutPatterns(selection: readonly SceneNode[]): string[] {
-  const patterns = [];
-  
-  const frames = selection.filter(n => n.type === 'FRAME');
-  if (frames.length > 0) patterns.push('Frame-based layout');
-  
-  const groups = selection.filter(n => n.type === 'GROUP'); 
-  if (groups.length > 0) patterns.push('Grouped elements');
-  
-  return patterns;
-}
-
-// Handler for design health analysis
-async function handleAnalyzeDesignHealth(msg: any) {
-  // Analyze current selection for design health metrics
-  const selection = figma.currentPage.selection;
-  let componentCoverage = 0;
-  let consistencyScore = 0;
-  let performanceGrade = 'B';
-  let colorPaletteMatch = true;
-  let typographyIssues = 0;
-  let spacingGridOk = true;
-
-  if (selection.length > 0) {
-    // Example metrics: count components, check for font size consistency, color token usage
-    const componentCount = selection.filter(n => n.type === 'COMPONENT' || n.type === 'INSTANCE').length;
-    componentCoverage = Math.round((componentCount / selection.length) * 100);
-
-    // Consistency: check if all text nodes use the same font size
-    const textNodes = selection.filter(n => n.type === 'TEXT');
-    const fontSizes = Array.from(new Set(textNodes.map(n => n.fontSize)));
-    typographyIssues = fontSizes.length > 1 ? fontSizes.length - 1 : 0;
-    consistencyScore = 100 - typographyIssues * 3;
-    if (consistencyScore < 0) consistencyScore = 0;
-
-    // Performance: check if all frames/components are visible and not locked
-    const allVisible = selection.every(n => n.visible);
-    const allUnlocked = selection.every(n => !n.locked);
-    performanceGrade = allVisible && allUnlocked ? 'A+' : 'B';
-
-    // Color palette: check if fills use design tokens (simulate)
-    colorPaletteMatch = selection.every(n => {
-      if ('fills' in n && Array.isArray(n.fills) && n.fills.length > 0) {
-        return n.fills.some((fill: any) => fill.type === 'SOLID');
-      }
-      return true;
+  // Multiple selections → find common parent frame
+  const first = selection[0];
+  let parent = first.parent;
+  while (parent && parent.type !== 'PAGE') {
+    const containsAll = selection.every(node => {
+      let a: BaseNode | null = node.parent;
+      while (a && a !== parent) a = a.parent;
+      return a === parent;
     });
-
-    // Spacing grid: check if frames have width/height multiples of 8
-    spacingGridOk = selection.every(n => {
-      if ('width' in n && 'height' in n) {
-        return n.width % 8 === 0 && n.height % 8 === 0;
-      }
-      return true;
-    });
-  }
-
-  // Send results to UI
-  figma.ui.postMessage({
-    type: 'design-health-results',
-    data: {
-      componentCoverage,
-      consistencyScore,
-      performanceGrade,
-      colorPaletteMatch,
-      typographyIssues,
-      spacingGridOk,
-      selectionCount: selection.length
+    if (containsAll && (parent.type === 'FRAME' || parent.type === 'COMPONENT')) {
+      return parent as SceneNode;
     }
-  });
+    parent = parent.parent;
+  }
+  return first;
 }
 
-// Get current context (selection + file info)
-async function handleGetContext() {
+// ─── Core: generate-ai-ticket ──────────────────────────────────────────
+
+async function handleGenerateAITicket() {
   const selection = figma.currentPage.selection;
-
-  // Helper to send file context and selection
-  function sendContext(fileKey: string) {
-    const fileInfo = {
-      fileKey: fileKey,
-      fileName: figma.root.name || 'Figma Design',
-      pageId: figma.currentPage.id,
-      pageName: figma.currentPage.name
-    };
-
-    figma.ui.postMessage({
-      type: 'file-context',
-      data: fileInfo
-    });
-
-    if (selection.length > 0) {
-      const selectionData = selection.map((node: any) => {
-        const nodeInfo: any = {
-          id: node.id,
-          name: node.name,
-          type: node.type,
-          x: node.x,
-          y: node.y,
-          width: node.width,
-          height: node.height,
-          visible: node.visible,
-          locked: node.locked
-        };
-        if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
-          nodeInfo.fills = node.fills.map((fill: any) => ({
-            type: fill.type,
-            color: fill.type === 'SOLID' ? fill.color : null
-          }));
-        }
-        if ('characters' in node) {
-          nodeInfo.text = node.characters;
-          nodeInfo.fontSize = node.fontSize;
-          nodeInfo.fontName = node.fontName;
-        }
-        return nodeInfo;
-      });
-      figma.ui.postMessage({
-        type: 'selection-context',
-        data: selectionData
-      });
-    } else {
-      figma.ui.postMessage({
-        type: 'selection-context',
-        data: []
-      });
-    }
+  if (selection.length === 0) {
+    figma.notify('Select at least one frame first.');
+    return;
   }
 
-  // If fileKey is missing or 'dev-file', request from UI with timeout fallback
-  if (!figma.fileKey || figma.fileKey === 'dev-file') {
-    console.log('🔍 Requesting real fileKey from UI...');
-    const callbackId = 'fileKeyCallback_' + Date.now();
-    let responded = false;
-    
-    // Set up response handler
-    function onMessage(msg: any) {
-      if (msg.type === 'real-file-key-response' && msg.callback === callbackId && !responded) {
-        responded = true;
-        figma.ui.off('message', onMessage);
-        console.log('✅ Got fileKey from UI:', msg.fileKey);
-        const realFileKey = msg.fileKey || 'BioUSVD6t51ZNeG0g9AcNz';
-        sendContext(realFileKey);
-        
-        // Also trigger unified context with correct fileKey
-        handleGetUnifiedContext({ fileKey: realFileKey }).then((data) => {
-          figma.ui.postMessage({
-            type: 'unified-context-response',
-            data: data
-          });
-        }).catch(error => {
-          console.error('❌ Failed to get unified context with real fileKey:', error);
-        });
-      }
-    }
-    figma.ui.on('message', onMessage);
-    
-    // Request file key from UI
-    figma.ui.postMessage({ type: 'get-real-file-key', callback: callbackId });
-    
-    // Fallback after timeout
-    setTimeout(() => {
-      if (!responded) {
-        responded = true;
-        figma.ui.off('message', onMessage);
-        console.log('⚠️ UI fileKey request timed out, using fallback');
-        sendContext('BioUSVD6t51ZNeG0g9AcNz');
-      }
-    }, 2000);
-  } else {
-    sendContext(figma.fileKey);
-  }
-}
+  const fileKey = resolveFileKey();
+  const fileInfo = {
+    fileKey,
+    fileName: figma.root.name || 'Figma Design',
+    pageId: figma.currentPage.id,
+    pageName: figma.currentPage.name
+  };
 
-// Handle advanced context dashboard request
-async function handleGetAdvancedContext() {
-  console.log('🔍 Getting advanced context for dashboard...');
-  
-  const selection = figma.currentPage.selection;
-  
-  // Helper to send advanced context data
-  async function sendAdvancedContext(fileKey: string) {
-    const fileInfo = {
-      fileKey: fileKey,
-      fileName: figma.root.name || 'Figma Design',
-      pageId: figma.currentPage.id,
-      pageName: figma.currentPage.name
-    };
-    
-    // Process selection data with proper async handling for components
-    const selectionData = await Promise.all(selection.map(async (node: any) => {
-      const nodeInfo: any = {
+  // Extract enhanced data for every selected node
+  const enhancedFrameData = await Promise.all(
+    selection.map(async (node) => {
+      const base: any = {
         id: node.id,
         name: node.name,
         type: node.type,
@@ -642,429 +154,61 @@ async function handleGetAdvancedContext() {
         width: node.width,
         height: node.height,
         visible: node.visible,
-        locked: node.locked
+        locked: node.locked,
+        dimensions: { width: node.width, height: node.height, x: node.x, y: node.y }
       };
-      
-      // Add fills data
-      if ('fills' in node && Array.isArray(node.fills) && node.fills.length > 0) {
-        nodeInfo.fills = node.fills.map((fill: any) => ({
-          type: fill.type,
-          color: fill.type === 'SOLID' ? fill.color : null
-        }));
+
+      // Fills / colours
+      const colors: string[] = [];
+      if ('fills' in node && Array.isArray((node as any).fills)) {
+        base.fills = (node as any).fills.map((fill: any) => {
+          if (fill.type === 'SOLID' && fill.color) {
+            const hex = rgbToHex(fill.color.r * 255, fill.color.g * 255, fill.color.b * 255);
+            colors.push(hex);
+            return { type: 'SOLID', hex };
+          }
+          return { type: fill.type };
+        });
       }
-      
-      // Add text data
+
+      // Text
       if ('characters' in node) {
-        nodeInfo.text = node.characters;
-        nodeInfo.fontSize = node.fontSize;
-        nodeInfo.fontName = node.fontName;
+        base.text = (node as any).characters;
+        base.fontSize = (node as any).fontSize;
+        base.fontName = (node as any).fontName;
       }
-      
-      // Add component/instance data using async method
+
+      // Component instance
       if (node.type === 'INSTANCE') {
         try {
-          const masterComponent = await node.getMainComponentAsync();
-          if (masterComponent) {
-            nodeInfo.componentId = masterComponent.id;
-            nodeInfo.componentName = masterComponent.name;
-          }
-        } catch (error) {
-          console.log('⚠️ Could not get master component for node:', node.name, error);
-          // Set fallback values
-          nodeInfo.componentId = 'unknown';
-          nodeInfo.componentName = 'Unknown Component';
-        }
-      }
-      
-      return nodeInfo;
-    }));
-    
-    // Gather comprehensive context data
-    const contextData = {
-      fileContext: fileInfo,
-      selection: selectionData,
-      pageInfo: {
-        name: figma.currentPage.name,
-        id: figma.currentPage.id,
-        totalNodes: figma.currentPage.children.length
-      },
-      metrics: {
-        totalComponents: selection.filter(n => n.type === 'INSTANCE').length,
-        totalFrames: selection.filter(n => n.type === 'FRAME').length,
-        totalTexts: selection.filter(n => n.type === 'TEXT').length,
-        selectionCount: selection.length
-      }
-    };
-    
-    // Send the advanced context data
-    figma.ui.postMessage({
-      type: 'advanced-context-data',
-      data: contextData
-    });
-  }
-  
-  // If fileKey is missing or 'dev-file', request from UI with timeout fallback
-  if (!figma.fileKey || figma.fileKey === 'dev-file') {
-    console.log('🔍 Requesting real fileKey from UI for advanced context...');
-    const callbackId = 'advancedFileKeyCallback_' + Date.now();
-    let responded = false;
-    
-    // Set up response handler
-    async function onMessage(msg: any) {
-      if (msg.type === 'real-file-key-response' && msg.callback === callbackId && !responded) {
-        responded = true;
-        figma.ui.off('message', onMessage);
-        console.log('✅ Got fileKey from UI for advanced context:', msg.fileKey);
-        await sendAdvancedContext(msg.fileKey || 'BioUSVD6t51ZNeG0g9AcNz');
-      }
-    }
-    figma.ui.on('message', onMessage);
-    
-    // Request file key from UI
-    figma.ui.postMessage({ type: 'get-real-file-key', callback: callbackId });
-    
-    // Fallback after timeout
-    setTimeout(async () => {
-      if (!responded) {
-        responded = true;
-        figma.ui.off('message', onMessage);
-        console.log('⚠️ UI fileKey request timed out for advanced context, using fallback');
-        await sendAdvancedContext('BioUSVD6t51ZNeG0g9AcNz');
-      }
-    }, 2000);
-  } else {
-    await sendAdvancedContext(figma.fileKey);
-  }
-}
-
-// Capture screenshot using backend API proxy
-async function handleCaptureScreenshot() {
-  console.log('📸 Capturing screenshot via backend API...');
-
-  try {
-    const selection = figma.currentPage.selection;
-    let targetNode: any;
-
-    // Smart node selection for better screenshots
-    if (selection.length === 0) {
-      const firstFrame = figma.currentPage.findOne(n => n.type === 'FRAME');
-      if (!firstFrame) {
-        figma.notify('⚠️ No frame found to export.');
-        return;
-      }
-      targetNode = firstFrame;
-    } else if (selection.length === 1) {
-      targetNode = selection[0];
-      console.log(`📸 Capturing single selection: ${targetNode.name} (${targetNode.type})`);
-    } else {
-      const firstNode = selection[0];
-      let bestParent = null;
-      let currentParent = firstNode.parent;
-      while (currentParent && currentParent.type !== 'PAGE') {
-        const containsAll = selection.every(node => {
-          let ancestor = node.parent;
-          while (ancestor && ancestor !== currentParent) {
-            ancestor = ancestor.parent;
-          }
-          return ancestor === currentParent;
-        });
-        if (containsAll && (currentParent.type === 'FRAME' || currentParent.type === 'COMPONENT')) {
-          bestParent = currentParent;
-          break;
-        }
-        currentParent = currentParent.parent;
-      }
-      targetNode = bestParent || firstNode;
-      console.log(`📸 Multiple selections, capturing: ${targetNode.name} (${targetNode.type})`);
-    }
-
-    // Helper to continue screenshot logic after fileKey is resolved
-    async function continueScreenshot(fileKey: string) {
-      const nodeId = targetNode.id;
-      console.log(`📸 handleCaptureScreenshot final fileKey: "${fileKey}"`);
-      console.log(`📸 Fetching screenshot from backend API: ${nodeId} in ${fileKey}`);
-      const screenshotUrl = await fetchScreenshot(fileKey, nodeId);
-      if (!screenshotUrl) {
-        throw new Error('No screenshot URL returned from backend API');
-      }
-      figma.ui.postMessage({
-        type: 'screenshot-captured',
-        screenshotUrl: screenshotUrl,
-        metadata: {
-          nodeName: targetNode.name,
-          nodeType: targetNode.type,
-          nodeId: targetNode.id,
-          fileKey: fileKey,
-          captureTime: new Date().toISOString(),
-          source: 'backend-api'
-        }
-      });
-      console.log(`✅ Screenshot captured successfully from backend API: ${screenshotUrl.substring(0, 50)}...`);
-    }
-
-    // If fileKey is missing or 'dev-file', request from UI with timeout fallback
-    if (!figma.fileKey || figma.fileKey === 'dev-file') {
-      console.log('🔍 Requesting real fileKey from UI for screenshot...');
-      const callbackId = 'fileKeyScreenshot_' + Date.now();
-      let responded = false;
-      
-      // Set up response handler
-      function onMessage(msg: any) {
-        if (msg.type === 'real-file-key-response' && msg.callback === callbackId && !responded) {
-          responded = true;
-          figma.ui.off('message', onMessage);
-          console.log('✅ Got fileKey from UI for screenshot:', msg.fileKey);
-          continueScreenshot(msg.fileKey || 'BioUSVD6t51ZNeG0g9AcNz');
-        }
-      }
-      figma.ui.on('message', onMessage);
-      
-      // Request file key from UI
-      figma.ui.postMessage({ type: 'get-real-file-key', callback: callbackId });
-      
-      // Fallback after timeout
-      setTimeout(() => {
-        if (!responded) {
-          responded = true;
-          figma.ui.off('message', onMessage);
-          console.log('⚠️ UI fileKey request timed out for screenshot, using fallback');
-          continueScreenshot('BioUSVD6t51ZNeG0g9AcNz');
-        }
-      }, 2000);
-    } else {
-      await continueScreenshot(figma.fileKey);
-    }
-  } catch (error) {
-    console.error('❌ Screenshot capture failed:', error);
-    const targetNode = figma.currentPage.selection[0] || { id: 'unknown', name: 'Unknown' };
-    const fallback = getFallbackScreenshot(targetNode.id, targetNode.name);
-    figma.ui.postMessage({
-      type: 'screenshot-captured',
-      screenshotUrl: fallback.imageUrl,
-      error: {
-        message: error instanceof Error ? error.message : 'Screenshot capture failed',
-        stack: error instanceof Error ? error.stack : undefined,
-        selection: figma.currentPage.selection.map(node => ({
-          id: node.id,
-          name: node.name,
-          type: node.type
-        }))
-      }
-    });
-  }
-}
-
-// Generate AI ticket with enhanced data
-async function handleGenerateAITicket() {
-  console.log('🤖 Generating AI ticket with enhanced data...');
-
-  const selection = figma.currentPage.selection;
-  
-  // Use consistent file key logic
-  let fileKey = 'unknown-file';
-  if (figma.fileKey && figma.fileKey !== 'dev-file') {
-    fileKey = figma.fileKey;
-  } else {
-    fileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Your actual file key
-  }
-  
-  const fileInfo = {
-    fileKey: fileKey,
-    fileName: figma.root.name || 'Figma Design',
-    pageId: figma.currentPage.id,
-    pageName: figma.currentPage.name
-  };
-
-  // Prepare enhanced frame data
-  const enhancedFrameData = await Promise.all(selection.map(async (node: any) => {
-    const baseData: any = {
-      id: node.id,
-      name: node.name,
-      type: node.type,
-      x: node.x,
-      y: node.y,
-      width: node.width,
-      height: node.height,
-      visible: node.visible,
-      locked: node.locked
-    };
-
-    // Add dimensions (required field)
-    baseData.dimensions = {
-      width: node.width,
-      height: node.height,
-      x: node.x,
-      y: node.y
-    };
-
-    // Add fills/colors
-    const colors: any[] = [];
-    if ('fills' in node && node.fills) {
-      baseData.fills = node.fills.map((fill: any) => {
-        if (fill.type === 'SOLID') {
-          const color = fill.color;
-          const hexColor = rgbToHex(color.r * 255, color.g * 255, color.b * 255);
-          colors.push(hexColor);
-          return {
-            type: 'SOLID',
-            color: {
-              r: Math.round(color.r * 255),
-              g: Math.round(color.g * 255),
-              b: Math.round(color.b * 255)
-            },
-            hex: hexColor
-          };
-        }
-        return { type: fill.type };
-      });
-    }
-
-    // Add text properties
-    if ('characters' in node) {
-      baseData.text = node.characters;
-      baseData.fontSize = node.fontSize;
-      baseData.fontName = node.fontName;
-    }
-
-    // Add component properties
-    if (node.type === 'INSTANCE') {
-      try {
-        const masterComponent = await node.getMainComponentAsync();
-        baseData.masterComponent = {
-          id: masterComponent ? masterComponent.id : undefined,
-          name: masterComponent ? masterComponent.name : undefined
-        };
-      } catch (error) {
-        console.warn('Could not access master component:', error);
-        baseData.masterComponent = {
-          id: undefined,
-          name: undefined
-        };
-      }
-    }
-
-    // Build hierarchy information (required field)
-    const hierarchy = await buildHierarchy(node);
-    baseData.hierarchy = hierarchy;
-
-    // Build metadata (required field)
-    baseData.metadata = {
-      colors: colors,
-      semanticRole: determineSemanticRole(node),
-      extractedAt: new Date().toISOString(),
-      figmaType: node.type,
-      hasText: 'characters' in node && !!node.characters,
-      isComponent: node.type === 'INSTANCE' || node.type === 'COMPONENT',
-      childCount: 'children' in node ? (node.children && node.children.length) || 0 : 0
-    };
-
-    return baseData;
-  }));
-
-  // Capture high-quality screenshot for AI analysis
-  let screenshot = null;
-  try {
-    let targetNode: any;
-
-    // Use the same smart selection logic as handleCaptureScreenshot
-    if (selection.length === 0) {
-      const firstFrame = figma.currentPage.findOne(n => n.type === 'FRAME');
-      if (!firstFrame) {
-        figma.notify('⚠️ No frame found to export.');
-        return;
-      }
-      targetNode = firstFrame;
-    } else if (selection.length === 1) {
-      targetNode = selection[0];
-    } else {
-      // For multiple selections, find the best parent frame
-      const firstNode = selection[0];
-      let bestParent = null;
-
-      let currentParent = firstNode.parent;
-      while (currentParent && currentParent.type !== 'PAGE') {
-        const containsAll = selection.every(node => {
-          let ancestor = node.parent;
-          while (ancestor && ancestor !== currentParent) {
-            ancestor = ancestor.parent;
-          }
-          return ancestor === currentParent;
-        });
-
-        if (containsAll && (currentParent.type === 'FRAME' || currentParent.type === 'COMPONENT')) {
-          bestParent = currentParent;
-          break;
-        }
-        currentParent = currentParent.parent;
+          const master = await (node as InstanceNode).getMainComponentAsync();
+          base.masterComponent = { id: master?.id, name: master?.name };
+        } catch { base.masterComponent = {}; }
       }
 
-      targetNode = bestParent || firstNode;
-    }
+      // Hierarchy + design tokens
+      base.hierarchy = await buildHierarchy(node);
 
-    console.log(`📸 AI Analysis: Capturing ${targetNode.name} (${targetNode.type}) via backend API`);
+      base.metadata = {
+        colors,
+        semanticRole: determineSemanticRole(node),
+        extractedAt: new Date().toISOString(),
+        figmaType: node.type,
+        hasText: 'characters' in node && !!(node as any).characters,
+        isComponent: node.type === 'INSTANCE' || node.type === 'COMPONENT',
+        childCount: 'children' in node ? ((node as any).children?.length || 0) : 0
+      };
 
-    try {
-      // Get file key for backend API - comprehensive approach
-      console.log('🔍 figma.fileKey value:', figma.fileKey);
-      console.log('🔍 figma.fileKey type:', typeof figma.fileKey);
-      console.log('🔍 figma.fileKey === null:', figma.fileKey === null);
-      console.log('🔍 figma.fileKey === undefined:', figma.fileKey === undefined);
-      
-      // Try multiple approaches to get file key
-      let fileKey = 'unknown-file';
-      
-      // Approach 1: Direct figma.fileKey
-      if (figma.fileKey && figma.fileKey !== 'dev-file') {
-        fileKey = figma.fileKey;
-        console.log('✅ Got file key from figma.fileKey:', fileKey);
-      }
-      // Approach 2: Use known fallback file key
-      else {
-        console.log('🔍 Figma root name:', (figma.root && figma.root.name) || 'Unknown');
-        console.log('⚠️ Cannot determine file key from figma.fileKey, using known fallback');
-        // Use the known file key from your Solidigm project
-        fileKey = 'BioUSVD6t51ZNeG0g9AcNz'; // Your actual file key
-        console.log('🔧 Using hardcoded known file key for testing:', fileKey);
-      }
-      
-      const nodeId = targetNode.id;
-      
-      console.log(`📸 Final resolved fileKey: "${fileKey}"`);
-      console.log(`📸 Fetching AI screenshot from backend: ${nodeId} in ${fileKey}`);
-      
-      // Use backend API for screenshot
-      const screenshotUrl = await fetchScreenshot(fileKey, nodeId, {
-        format: 'png',
-        scale: 2
-      });
-      
-      if (screenshotUrl) {
-        screenshot = screenshotUrl;
-        console.log(`📸 AI screenshot captured via backend API: ${screenshotUrl.substring(0, 50)}...`);
-      } else {
-        throw new Error('Backend API returned no screenshot URL');
-      }
-    } catch (apiError) {
-      console.warn('⚠️ Backend API failed, falling back to direct export:', apiError);
-      
-      // Fallback to direct export if backend fails
-      const screenshotBytes = await targetNode.exportAsync({
-        format: 'PNG',
-        constraint: { type: 'SCALE', value: 2 },
-        ...(targetNode.type === 'FRAME' && { contentsOnly: false })
-      });
+      return base;
+    })
+  );
 
-      if (screenshotBytes && screenshotBytes.length > 0) {
-        const base64 = figma.base64Encode(screenshotBytes);
-        screenshot = `data:image/png;base64,${base64}`;
-        console.log(`📸 Fallback screenshot captured: ${screenshotBytes.length} bytes`);
-      } else {
-        console.warn('⚠️ Screenshot export returned empty data');
-      }
-    }
-  } catch (error) {
-    console.warn('⚠️ Screenshot capture failed for AI analysis:', error);
-    screenshot = null;
+  // Screenshot
+  let screenshot: string | null = null;
+  const target = pickScreenshotTarget(selection);
+  if (target) {
+    screenshot = await fetchScreenshot(fileKey, target.id);
+    if (!screenshot) screenshot = await exportNodeAsBase64(target);
   }
 
   figma.ui.postMessage({
@@ -1072,787 +216,76 @@ async function handleGenerateAITicket() {
     data: {
       enhancedFrameData,
       fileContext: fileInfo,
-      screenshot: screenshot,
+      screenshot,
       metadata: {
         selectionCount: selection.length,
-        pageInfo: {
-          id: figma.currentPage.id,
-          name: figma.currentPage.name
-        }
+        pageInfo: { id: figma.currentPage.id, name: figma.currentPage.name }
       }
     }
   });
 }
 
-// Helper function to convert RGB to hex
-function rgbToHex(r: number, g: number, b: number): string {
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
+// ─── Simple context (selection + file info) ────────────────────────────
 
-// Helper function to build hierarchy information with enhanced token extraction
-async function buildHierarchy(node: any): Promise<any> {
-  const layers: any[] = [];
-  const designTokens = {
-    colors: new Set<string>(),
-    typography: new Set<string>(),
-    spacing: new Set<number>(),
-    borderRadius: new Set<number>(),
-    shadows: new Set<string>()
-  };
-  let totalDepth = 1;
-  let componentCount = 0;
-  let textLayerCount = 0;
-
-  // Enhanced node analysis with design token extraction
-  async function analyzeNode(currentNode: any, depth: number = 1): Promise<void> {
-    totalDepth = Math.max(totalDepth, depth);
-
-    if (currentNode.type === 'INSTANCE' || currentNode.type === 'COMPONENT') {
-      componentCount++;
-    }
-
-    if (currentNode.type === 'TEXT') {
-      textLayerCount++;
-    }
-
-    // Extract design tokens from this node
-    const nodeTokens = await extractDesignTokens(currentNode);
-
-    // Collect extracted tokens
-    if (nodeTokens.colors) nodeTokens.colors.forEach((c: string) => designTokens.colors.add(c));
-    if (nodeTokens.typography) nodeTokens.typography.forEach((t: string) => designTokens.typography.add(t));
-    if (nodeTokens.spacing) nodeTokens.spacing.forEach((s: number) => designTokens.spacing.add(s));
-    if (nodeTokens.borderRadius) nodeTokens.borderRadius.forEach((r: number) => designTokens.borderRadius.add(r));
-    if (nodeTokens.shadows) nodeTokens.shadows.forEach((sh: string) => designTokens.shadows.add(sh));
-
-    // Enhanced layer information
-    const layerInfo: any = {
-      id: currentNode.id,
-      name: currentNode.name,
-      type: currentNode.type,
-      depth: depth,
-      position: { x: currentNode.x, y: currentNode.y },
-      size: { width: currentNode.width, height: currentNode.height },
-      visible: currentNode.visible,
-      semanticRole: determineSemanticRole(currentNode),
-      tokens: nodeTokens
-    };
-
-    // Add component-specific information
-    if (currentNode.type === 'INSTANCE') {
-      try {
-        const masterComponent = await currentNode.getMainComponentAsync();
-        layerInfo.masterComponent = {
-          id: masterComponent && masterComponent.id,
-          name: masterComponent && masterComponent.name
-        };
-
-        // Extract component properties and variants
-        if (currentNode.componentProperties) {
-          layerInfo.componentProperties = currentNode.componentProperties;
-        }
-
-        // Extract variant properties if available
-        if (masterComponent && 'variantProperties' in masterComponent) {
-          layerInfo.variantProperties = masterComponent.variantProperties;
-        }
-      } catch (error) {
-        console.warn('Could not access master component:', error);
-      }
-    }
-
-    layers.push(layerInfo);
-
-    // Recursively analyze children
-    if ('children' in currentNode && currentNode.children) {
-      for (const child of currentNode.children) {
-        await analyzeNode(child, depth + 1);
-      }
-    }
-  }
-
-  await analyzeNode(node);
-
-  return {
-    layers: layers,
-    totalDepth: totalDepth,
-    componentCount: componentCount,
-    textLayerCount: textLayerCount,
-    designTokens: {
-      colors: Array.from(designTokens.colors),
-      typography: Array.from(designTokens.typography),
-      spacing: Array.from(designTokens.spacing),
-      borderRadius: Array.from(designTokens.borderRadius),
-      shadows: Array.from(designTokens.shadows)
-    }
-  };
-}
-
-// Enhanced design token extraction function
-async function extractDesignTokens(node: any): Promise<any> {
-  const tokens: any = {
-    colors: [],
-    typography: [],
-    spacing: [],
-    borderRadius: [],
-    shadows: []
-  };
-
-  try {
-    // Extract color tokens
-    if ('fills' in node && Array.isArray(node.fills)) {
-      node.fills.forEach((fill: any) => {
-        if (fill.type === 'SOLID' && fill.color) {
-          const hex = rgbToHex(
-            Math.round(fill.color.r * 255),
-            Math.round(fill.color.g * 255),
-            Math.round(fill.color.b * 255)
-          );
-          tokens.colors.push(hex);
-        }
-      });
-    }
-
-    // Extract stroke colors
-    if ('strokes' in node && Array.isArray(node.strokes)) {
-      node.strokes.forEach((stroke: any) => {
-        if (stroke.type === 'SOLID' && stroke.color) {
-          const hex = rgbToHex(
-            Math.round(stroke.color.r * 255),
-            Math.round(stroke.color.g * 255),
-            Math.round(stroke.color.b * 255)
-          );
-          tokens.colors.push(hex);
-        }
-      });
-    }
-
-    // Extract typography tokens
-    if (node.type === 'TEXT') {
-      const fontSize = node.fontSize || 16;
-      const fontFamily = (node.fontName && node.fontName.family) || 'Inter';
-      const fontWeight = (node.fontName && node.fontName.style) || 'Regular';
-      const lineHeight = (node.lineHeight && node.lineHeight.value) || fontSize * 1.2;
-
-      const typographyToken = `${fontFamily}-${fontSize}px-${fontWeight}`;
-      tokens.typography.push(typographyToken);
-
-      // Extract letter spacing if available
-      if (node.letterSpacing && node.letterSpacing.value !== 0) {
-        tokens.spacing.push(node.letterSpacing.value);
-      }
-    }
-
-    // Extract spacing tokens from layout properties
-    if ('paddingLeft' in node || 'paddingTop' in node) {
-      [node.paddingLeft, node.paddingRight, node.paddingTop, node.paddingBottom].forEach((padding: any) => {
-        if (padding && padding > 0) {
-          tokens.spacing.push(padding);
-        }
-      });
-    }
-
-    // Extract spacing from positioning (relative to siblings)
-    if ('x' in node && 'y' in node) {
-      // Common spacing values: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64
-      const spacingValues = [4, 8, 12, 16, 20, 24, 32, 40, 48, 64];
-      spacingValues.forEach(value => {
-        if (node.x % value === 0 || node.y % value === 0) {
-          tokens.spacing.push(value);
-        }
-      });
-    }
-
-    // Extract border radius tokens
-    if ('cornerRadius' in node && node.cornerRadius > 0) {
-      tokens.borderRadius.push(node.cornerRadius);
-    }
-
-    // Extract individual corner radii
-    if ('topLeftRadius' in node) {
-      [node.topLeftRadius, node.topRightRadius, node.bottomLeftRadius, node.bottomRightRadius].forEach((radius: any) => {
-        if (radius && radius > 0) {
-          tokens.borderRadius.push(radius);
-        }
-      });
-    }
-
-    // Extract shadow tokens
-    if ('effects' in node && node.effects) {
-      node.effects.forEach((effect: any) => {
-        if (effect.type === 'DROP_SHADOW') {
-          const shadow = `${(effect.offset && effect.offset.x) || 0}px ${(effect.offset && effect.offset.y) || 0}px ${effect.radius || 0}px`;
-          tokens.shadows.push(shadow);
-        }
-      });
-    }
-
-  } catch (error) {
-    console.warn('Error extracting design tokens:', error);
-  }
-
-  // Remove duplicates and sort
-  tokens.colors = [...new Set(tokens.colors)];
-  tokens.typography = [...new Set(tokens.typography)];
-  tokens.spacing = ([...new Set(tokens.spacing)] as number[]).sort((a, b) => a - b);
-  tokens.borderRadius = ([...new Set(tokens.borderRadius)] as number[]).sort((a, b) => a - b);
-  tokens.shadows = [...new Set(tokens.shadows)];
-
-  return tokens;
-}
-
-// Helper function to determine semantic role
-function determineSemanticRole(node: any): string {
-  // Determine semantic role based on node type and properties
-  switch (node.type) {
-    case 'TEXT':
-      return 'text';
-    case 'RECTANGLE':
-    case 'ELLIPSE':
-    case 'POLYGON':
-      return 'shape';
-    case 'FRAME':
-      return 'container';
-    case 'GROUP':
-      return 'group';
-    case 'INSTANCE':
-      return 'component-instance';
-    case 'COMPONENT':
-      return 'component-definition';
-    case 'VECTOR':
-      return 'icon';
-    default: {
-      // Try to infer from name
-      const name = node.name.toLowerCase();
-      if (name.includes('button')) return 'button';
-      if (name.includes('input') || name.includes('field')) return 'input';
-      if (name.includes('header') || name.includes('title')) return 'header';
-      if (name.includes('nav') || name.includes('menu')) return 'navigation';
-      if (name.includes('card')) return 'card';
-      if (name.includes('modal') || name.includes('dialog')) return 'modal';
-      return 'unknown';
-    }
-  }
-}
-
-/**
- * Debug function to capture and log all context data
- */
-async function debugCurrentContext() {
-  console.log('🔍 === DEBUG CONTEXT CAPTURE ===');
-  
+async function handleGetContext() {
   const selection = figma.currentPage.selection;
-  const fileKey = figma.fileKey || 'BioUSVD6t51ZNeG0g9AcNz'; // Use fallback if undefined
-  const currentPage = figma.currentPage;
-  
-  // Log basic info
-  console.log('📋 Basic Info:');
-  console.log(`  File Key: "${fileKey}"`);
-  console.log(`  Page: "${currentPage.name}" (${currentPage.id})`);
-  console.log(`  Selection Count: ${selection.length}`);
-  
-  // Log detailed selection
-  console.log('📋 Selection Details:');
-  selection.forEach((node, index) => {
-    console.log(`  ${index + 1}. "${node.name}" (${node.type})`);
-    console.log(`      ID: ${node.id}`);
-    console.log(`      Visible: ${node.visible}`);
-    console.log(`      Locked: ${node.locked}`);
-    
-    // Log parent info
-    if (node.parent && node.parent.type !== 'PAGE') {
-      console.log(`      Parent: "${node.parent.name}" (${node.parent.type})`);
-    }
-  });
-  
-  // Test API URL construction
-  if (selection.length > 0) {
-    const nodeIds = selection.map(n => n.id);
-    const singleNodeId = nodeIds[0];
-    const multipleNodeIds = nodeIds.join(',');
-    
-    console.log('📋 API URLs would be:');
-    console.log(`  Single: http://localhost:3000/api/figma/screenshot?fileKey=${fileKey}&nodeId=${singleNodeId}`);
-    console.log(`  Multiple: http://localhost:3000/api/figma/screenshot?fileKey=${fileKey}&nodeId=${multipleNodeIds}`);
-  }
-  
-  // Send debug data to UI
   figma.ui.postMessage({
-    type: 'debug-complete',
-    debug: {
-      fileKey: fileKey,
-      isValidFileKey: fileKey && fileKey !== 'dev-file',
-      pageInfo: {
-        id: currentPage.id,
-        name: currentPage.name
-      },
-      selection: {
-        count: selection.length,
-        nodes: selection.map(node => ({
-          id: node.id,
-          name: node.name,
-          type: node.type,
-          visible: node.visible,
-          locked: node.locked,
-          hasParent: node.parent && node.parent.type !== 'PAGE'
-        }))
-      },
-      apiUrls: selection.length > 0 ? {
-        single: `http://localhost:3000/api/figma/screenshot?fileKey=${fileKey}&nodeId=${selection[0].id}`,
-        multiple: `http://localhost:3000/api/figma/screenshot?fileKey=${fileKey}&nodeId=${selection.map(n => n.id).join(',')}`
-      } : null,
-      timestamp: new Date().toISOString()
+    type: 'selection-context',
+    data: selection.map(n => ({
+      id: n.id, name: n.name, type: n.type,
+      width: n.width, height: n.height,
+      x: n.x, y: n.y
+    }))
+  });
+  figma.ui.postMessage({
+    type: 'file-context',
+    data: {
+      fileKey: resolveFileKey(),
+      fileName: figma.root.name || 'Figma Design',
+      pageId: figma.currentPage.id,
+      pageName: figma.currentPage.name
     }
   });
-  
-  console.log('🔍 === DEBUG COMPLETE ===');
 }
 
-/**
- * Enhanced screenshot function that captures exactly what's selected
- */
-async function handlePreciseScreenshot() {
-  console.log('📸 === PRECISE SCREENSHOT CAPTURE ===');
-  
-  try {
-    const selection = figma.currentPage.selection;
-    const fileKey = figma.fileKey;
-    
-    // Validate inputs
-    if (!fileKey || fileKey === 'dev-file') {
-      throw new Error('Invalid file key - are you in a real Figma file?');
-    }
-    
-    if (selection.length === 0) {
-      figma.notify('⚠️ Please select elements to capture');
-      return;
-    }
-    
-    // Prepare node IDs - Figma API supports multiple nodes with comma separation
-    const nodeIds = selection.map(node => node.id);
-    const nodeIdParam = nodeIds.join(',');
-    
-    console.log(`📸 Capturing ${selection.length} nodes:`, 
-      selection.map(n => `"${n.name}" (${n.type})`));
-    console.log(`📸 File Key: ${fileKey}`);
-    console.log(`📸 Node IDs: ${nodeIdParam}`);
-    
-    // Call backend API
-    const screenshotUrl = await fetchScreenshot(fileKey, nodeIdParam);
-    
-    if (!screenshotUrl) {
-      throw new Error('Backend API returned no screenshot URL');
-    }
-    
-    // Success!
-    console.log(`✅ Screenshot captured: ${screenshotUrl}`);
-    figma.notify(`✅ Screenshot captured: ${selection.length} items`);
-    
-    figma.ui.postMessage({
-      type: 'precise-screenshot-success',
-      data: {
-        screenshotUrl,
-        capturedNodes: selection.map(node => ({
-          id: node.id,
-          name: node.name,
-          type: node.type
-        })),
-        fileKey,
-        timestamp: new Date().toISOString()
-      }
-    });
-    
-  } catch (error) {
-    console.error('❌ Precise screenshot failed:', error);
-    figma.notify(`❌ Screenshot failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    
-    figma.ui.postMessage({
-      type: 'precise-screenshot-error',
-      error: {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        fileKey: figma.fileKey,
-        selectionCount: figma.currentPage.selection.length,
-        timestamp: new Date().toISOString()
-      }
-    });
-  }
-  
-  console.log('📸 === PRECISE SCREENSHOT COMPLETE ===');
-}
+// ─── Capture screenshot on demand ──────────────────────────────────────
 
-// 🚀 NEW MODULAR API HANDLERS
+async function handleCaptureScreenshot() {
+  const target = pickScreenshotTarget(figma.currentPage.selection);
+  if (!target) { figma.notify('No frame found to screenshot.'); return; }
 
-async function handleGetComprehensiveSelection(msg: any) {
-  console.log('📦 Getting comprehensive selection data...');
-  
-  try {
-    const selection = figma.currentPage.selection;
-    const fileKey = figma.fileKey || 'unknown';
-    
-    const comprehensiveData = [];
-    
-    for (const node of selection) {
-      const nodeData = await buildComprehensiveNodeData(node, msg.options || {});
-      comprehensiveData.push(nodeData);
-    }
-    
-    const fileContext = {
+  const fileKey = resolveFileKey();
+  let url = await fetchScreenshot(fileKey, target.id);
+  if (!url) url = await exportNodeAsBase64(target);
+
+  figma.ui.postMessage({
+    type: 'screenshot-captured',
+    screenshotUrl: url,
+    metadata: {
+      nodeName: target.name,
+      nodeType: target.type,
+      nodeId: target.id,
       fileKey,
-      fileName: figma.root.name,
-      pageName: figma.currentPage.name,
-      pageId: figma.currentPage.id
-    };
-    
-    figma.ui.postMessage({
-      type: 'comprehensive-selection-data',
-      data: comprehensiveData,
-      fileContext: fileContext
-    });
-    
-  } catch (error) {
-    console.error('❌ Comprehensive selection failed:', error);
-    figma.ui.postMessage({
-      type: 'comprehensive-selection-data',
-      data: [],
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
+      captureTime: new Date().toISOString(),
+      source: url?.startsWith('data:') ? 'figma-export' : 'backend-api'
+    }
+  });
 }
 
-async function handleAnalyzeComponents(msg: any) {
-  console.log('🎨 Analyzing components...');
-  
-  try {
-    const selection = figma.currentPage.selection;
-    const componentAnalysis = [];
-    
-    for (const node of selection) {
-      if (node.type === 'INSTANCE' || node.type === 'COMPONENT') {
-        const analysis = await analyzeComponentNode(node, msg.options || {});
-        componentAnalysis.push(analysis);
-      }
-    }
-    
-    figma.ui.postMessage({
-      type: 'components-analysis-data',
-      data: componentAnalysis
-    });
-    
-  } catch (error) {
-    console.error('❌ Component analysis failed:', error);
-    figma.ui.postMessage({
-      type: 'components-analysis-data',
-      data: [],
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}
+// ─── Proxy AI request to server ────────────────────────────────────────
 
-async function handleExtractDesignTokens(msg: any) {
-  console.log('🎭 Extracting design tokens...');
-  
-  try {
-    const selection = figma.currentPage.selection;
-    const designTokens = {
-      colors: new Set<string>(),
-      typography: new Set<string>(),
-      spacing: new Set<number>(),
-      borderRadius: new Set<number>(),
-      effects: new Set<string>()
-    };
-    
-    for (const node of selection) {
-      const tokens = await extractDesignTokens(node);
-      if (tokens.colors) tokens.colors.forEach((c: string) => designTokens.colors.add(c));
-      if (tokens.typography) tokens.typography.forEach((t: string) => designTokens.typography.add(t));
-      if (tokens.spacing) tokens.spacing.forEach((s: number) => designTokens.spacing.add(s));
-      if (tokens.borderRadius) tokens.borderRadius.forEach((r: number) => designTokens.borderRadius.add(r));
-      if (tokens.shadows) tokens.shadows.forEach((e: string) => designTokens.effects.add(e));
-    }
-    
-    figma.ui.postMessage({
-      type: 'design-tokens-data',
-      data: {
-        colors: Array.from(designTokens.colors),
-        typography: Array.from(designTokens.typography),
-        spacing: Array.from(designTokens.spacing).sort((a, b) => a - b),
-        borderRadius: Array.from(designTokens.borderRadius).sort((a, b) => a - b),
-        effects: Array.from(designTokens.effects)
-      }
-    });
-    
-  } catch (error) {
-    console.error('❌ Design token extraction failed:', error);
-    figma.ui.postMessage({
-      type: 'design-tokens-data',
-      data: {},
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}
-
-async function handleAnalyzeInteractions(msg: any) {
-  console.log('⚡ Analyzing interactions...');
-  
-  try {
-    const selection = figma.currentPage.selection;
-    const interactions = [];
-    
-    for (const node of selection) {
-      if ('reactions' in node && node.reactions) {
-        for (const reaction of node.reactions) {
-          interactions.push({
-            nodeId: node.id,
-            nodeName: node.name,
-            trigger: reaction.trigger?.type || 'unknown',
-            action: reaction.action?.type || 'unknown',
-            destination: (reaction.action as any)?.destinationId || null
-          });
-        }
-      }
-    }
-    
-    figma.ui.postMessage({
-      type: 'interactions-data',
-      data: interactions
-    });
-    
-  } catch (error) {
-    console.error('❌ Interaction analysis failed:', error);
-    figma.ui.postMessage({
-      type: 'interactions-data',
-      data: [],
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}
-
-async function handleAnalyzeConstraints(msg: any) {
-  console.log('📐 Analyzing constraints...');
-  
-  try {
-    const selection = figma.currentPage.selection;
-    const constraints = {
-      autoLayout: [] as any[],
-      constraints: [] as any[],
-      responsive: [] as any[]
-    };
-    
-    for (const node of selection) {
-      // Auto Layout analysis
-      if ('layoutMode' in node && node.layoutMode !== 'NONE') {
-        constraints.autoLayout.push({
-          nodeId: node.id,
-          nodeName: node.name,
-          layoutMode: node.layoutMode,
-          itemSpacing: node.itemSpacing,
-          paddingLeft: node.paddingLeft,
-          paddingRight: node.paddingRight,
-          paddingTop: node.paddingTop,
-          paddingBottom: node.paddingBottom
-        });
-      }
-      
-      // Constraints analysis
-      if ('constraints' in node) {
-        constraints.constraints.push({
-          nodeId: node.id,
-          nodeName: node.name,
-          horizontal: node.constraints.horizontal,
-          vertical: node.constraints.vertical
-        });
-      }
-    }
-    
-    figma.ui.postMessage({
-      type: 'constraints-data',
-      data: constraints
-    });
-    
-  } catch (error) {
-    console.error('❌ Constraints analysis failed:', error);
-    figma.ui.postMessage({
-      type: 'constraints-data',
-      data: {},
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}
-
-async function handleAnalyzeEffects(msg: any) {
-  console.log('✨ Analyzing effects...');
-  
-  try {
-    const selection = figma.currentPage.selection;
-    const effects = {
-      shadows: [] as any[],
-      blurs: [] as any[],
-      blends: [] as any[]
-    };
-    
-    for (const node of selection) {
-      if ('effects' in node && node.effects) {
-        for (const effect of node.effects) {
-          if (effect.type === 'DROP_SHADOW') {
-            effects.shadows.push({
-              nodeId: node.id,
-              nodeName: node.name,
-              offset: effect.offset,
-              radius: effect.radius,
-              color: effect.color,
-              visible: effect.visible
-            });
-          } else if (effect.type === 'LAYER_BLUR') {
-            effects.blurs.push({
-              nodeId: node.id,
-              nodeName: node.name,
-              radius: effect.radius,
-              visible: effect.visible
-            });
-          }
-        }
-      }
-      
-      if ('blendMode' in node && node.blendMode !== 'NORMAL') {
-        effects.blends.push({
-          nodeId: node.id,
-          nodeName: node.name,
-          blendMode: node.blendMode,
-          opacity: node.opacity
-        });
-      }
-    }
-    
-    figma.ui.postMessage({
-      type: 'effects-data',
-      data: effects
-    });
-    
-  } catch (error) {
-    console.error('❌ Effects analysis failed:', error);
-    figma.ui.postMessage({
-      type: 'effects-data',
-      data: {},
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}
-
-// Helper function to build comprehensive node data
-async function buildComprehensiveNodeData(node: any, options: any) {
-  const nodeData: any = {
-    id: node.id,
-    name: node.name,
-    type: node.type,
-    visible: node.visible,
-    locked: node.locked,
-    position: { x: node.x, y: node.y },
-    size: { width: node.width, height: node.height }
-  };
-  
-  // Add fills
-  if ('fills' in node && node.fills) {
-    nodeData.fills = node.fills.map((fill: any) => ({
-      type: fill.type,
-      color: fill.type === 'SOLID' ? fill.color : null,
-      opacity: fill.opacity || 1
-    }));
-  }
-  
-  // Add text properties
-  if (node.type === 'TEXT') {
-    nodeData.text = {
-      characters: node.characters,
-      fontSize: node.fontSize,
-      fontName: node.fontName,
-      textAlignHorizontal: node.textAlignHorizontal,
-      textAlignVertical: node.textAlignVertical
-    };
-  }
-  
-  // Add component properties
-  if (node.type === 'INSTANCE') {
-    try {
-      const masterComponent = await node.getMainComponentAsync();
-      nodeData.component = {
-        id: masterComponent?.id,
-        name: masterComponent?.name,
-        key: masterComponent?.key
-      };
-    } catch (error) {
-      nodeData.component = { id: null, name: null, key: null };
-    }
-  }
-  
-  // Add children if requested
-  if (options.includeChildren && 'children' in node && node.children) {
-    nodeData.children = [];
-    for (const child of node.children) {
-      const childData = await buildComprehensiveNodeData(child, { ...options, depth: (options.depth || 1) - 1 });
-      nodeData.children.push(childData);
-    }
-  }
-  
-  return nodeData;
-}
-
-// Helper function to analyze component nodes
-async function analyzeComponentNode(node: any, options: any) {
-  const analysis: any = {
-    id: node.id,
-    name: node.name,
-    type: node.type,
-    componentType: 'unknown'
-  };
-  
-  if (node.type === 'INSTANCE') {
-    try {
-      const masterComponent = await node.getMainComponentAsync();
-      analysis.masterComponent = {
-        id: masterComponent?.id,
-        name: masterComponent?.name,
-        key: masterComponent?.key
-      };
-      analysis.componentType = 'instance';
-    } catch (error) {
-      analysis.componentType = 'broken-instance';
-    }
-  } else if (node.type === 'COMPONENT') {
-    analysis.componentType = 'definition';
-    analysis.key = node.key;
-  }
-  
-  return analysis;
-}
-
-// Handle AI request messages from UI
 async function handleMakeAIRequest(msg: any) {
-  console.log('🤖 Plugin making AI request to server...', msg);
-  
   try {
-    // The endpoint for AI generation is always /api/generate
-    const endpoint = '/api/generate';
-    const response = await fetch(`http://localhost:3000${endpoint}`, {
+    const res = await fetch(GENERATE_API, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(msg.params)
     });
-    
-    const responseData = await response.json();
-    
+    const data = await res.json();
+    figma.ui.postMessage({ type: 'ai-generation-result', success: res.ok, data, requestId: msg.requestId });
+  } catch (error) {
     figma.ui.postMessage({
       type: 'ai-generation-result',
-      success: response.ok,
-      data: responseData,
-      requestId: msg.requestId
-    });
-    
-  } catch (error) {
-    console.error('❌ Plugin AI request failed:', error);
-    figma.ui.postMessage({
-      type: 'ai-generation-result', 
       success: false,
       error: error instanceof Error ? error.message : 'Network request failed',
       requestId: msg.requestId
@@ -1860,4 +293,151 @@ async function handleMakeAIRequest(msg: any) {
   }
 }
 
-console.log('✅ Enhanced Figma Plugin with Modular API Handlers loaded successfully');
+// ─── Hierarchy builder (recursive) ────────────────────────────────────
+
+async function buildHierarchy(node: SceneNode): Promise<any> {
+  const layers: any[] = [];
+  const tokens = { colors: new Set<string>(), typography: new Set<string>(), spacing: new Set<number>(), borderRadius: new Set<number>(), shadows: new Set<string>() };
+  let maxDepth = 1, componentCount = 0, textCount = 0;
+
+  async function walk(n: SceneNode, depth: number) {
+    maxDepth = Math.max(maxDepth, depth);
+    if (n.type === 'INSTANCE' || n.type === 'COMPONENT') componentCount++;
+    if (n.type === 'TEXT') textCount++;
+
+    const extracted = extractDesignTokens(n);
+    extracted.colors.forEach((c: string) => tokens.colors.add(c));
+    extracted.typography.forEach((t: string) => tokens.typography.add(t));
+    extracted.spacing.forEach((s: number) => tokens.spacing.add(s));
+    extracted.borderRadius.forEach((r: number) => tokens.borderRadius.add(r));
+    extracted.shadows.forEach((sh: string) => tokens.shadows.add(sh));
+
+    const layer: any = {
+      id: n.id, name: n.name, type: n.type, depth,
+      position: { x: n.x, y: n.y },
+      size: { width: n.width, height: n.height },
+      visible: n.visible,
+      semanticRole: determineSemanticRole(n),
+      tokens: extracted
+    };
+
+    if (n.type === 'INSTANCE') {
+      try {
+        const master = await (n as InstanceNode).getMainComponentAsync();
+        layer.masterComponent = { id: master?.id, name: master?.name };
+        if ((n as any).componentProperties) layer.componentProperties = (n as any).componentProperties;
+      } catch { /* skip */ }
+    }
+
+    layers.push(layer);
+
+    if ('children' in n && (n as any).children) {
+      for (const child of (n as any).children) await walk(child, depth + 1);
+    }
+  }
+
+  await walk(node, 1);
+
+  return {
+    layers,
+    totalDepth: maxDepth,
+    componentCount,
+    textLayerCount: textCount,
+    designTokens: {
+      colors: [...tokens.colors],
+      typography: [...tokens.typography],
+      spacing: [...tokens.spacing].sort((a, b) => a - b),
+      borderRadius: [...tokens.borderRadius].sort((a, b) => a - b),
+      shadows: [...tokens.shadows]
+    }
+  };
+}
+
+// ─── Design-token extraction (single node) ─────────────────────────────
+
+function extractDesignTokens(node: SceneNode): any {
+  const t: any = { colors: [], typography: [], spacing: [], borderRadius: [], shadows: [] };
+  try {
+    // Fills
+    if ('fills' in node && Array.isArray((node as any).fills)) {
+      for (const fill of (node as any).fills) {
+        if (fill.type === 'SOLID' && fill.color) {
+          t.colors.push(rgbToHex(fill.color.r * 255, fill.color.g * 255, fill.color.b * 255));
+        }
+      }
+    }
+    // Stroke colours
+    if ('strokes' in node && Array.isArray((node as any).strokes)) {
+      for (const s of (node as any).strokes) {
+        if (s.type === 'SOLID' && s.color) {
+          t.colors.push(rgbToHex(s.color.r * 255, s.color.g * 255, s.color.b * 255));
+        }
+      }
+    }
+    // Typography
+    if (node.type === 'TEXT') {
+      const n = node as TextNode;
+      const family = (n.fontName as FontName | typeof figma.mixed)?.toString() !== '[object Object]'
+        ? 'Mixed' : ((n.fontName as FontName)?.family || 'Inter');
+      const size = typeof n.fontSize === 'number' ? n.fontSize : 16;
+      t.typography.push(`${family}-${size}px`);
+    }
+    // Padding → spacing
+    const any_n = node as any;
+    for (const key of ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']) {
+      if (any_n[key] > 0) t.spacing.push(any_n[key]);
+    }
+    // Item spacing (auto-layout)
+    if (any_n.itemSpacing > 0) t.spacing.push(any_n.itemSpacing);
+    // Border radius
+    if ('cornerRadius' in node && (node as any).cornerRadius > 0) {
+      t.borderRadius.push((node as any).cornerRadius);
+    }
+    // Shadows
+    if ('effects' in node && (node as any).effects) {
+      for (const e of (node as any).effects) {
+        if (e.type === 'DROP_SHADOW') {
+          t.shadows.push(`${e.offset?.x || 0}px ${e.offset?.y || 0}px ${e.radius || 0}px`);
+        }
+      }
+    }
+  } catch { /* safe */ }
+
+  // Deduplicate
+  t.colors = [...new Set(t.colors)];
+  t.typography = [...new Set(t.typography)];
+  t.spacing = [...new Set(t.spacing as number[])].sort((a: number, b: number) => a - b);
+  t.borderRadius = [...new Set(t.borderRadius as number[])].sort((a: number, b: number) => a - b);
+  t.shadows = [...new Set(t.shadows)];
+  return t;
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────
+
+function rgbToHex(r: number, g: number, b: number): string {
+  return '#' + ((1 << 24) + (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b)).toString(16).slice(1);
+}
+
+function determineSemanticRole(node: SceneNode): string {
+  switch (node.type) {
+    case 'TEXT': return 'text';
+    case 'RECTANGLE': case 'ELLIPSE': case 'POLYGON': return 'shape';
+    case 'FRAME': return 'container';
+    case 'GROUP': return 'group';
+    case 'INSTANCE': return 'component-instance';
+    case 'COMPONENT': return 'component-definition';
+    case 'VECTOR': return 'icon';
+    default: {
+      const name = node.name.toLowerCase();
+      if (name.includes('button')) return 'button';
+      if (name.includes('input') || name.includes('field')) return 'input';
+      if (name.includes('header') || name.includes('title')) return 'header';
+      if (name.includes('nav') || name.includes('menu')) return 'navigation';
+      if (name.includes('card')) return 'card';
+      if (name.includes('modal') || name.includes('dialog')) return 'modal';
+      return 'element';
+    }
+  }
+}
+
+console.log('✅ Figma Plugin loaded');
