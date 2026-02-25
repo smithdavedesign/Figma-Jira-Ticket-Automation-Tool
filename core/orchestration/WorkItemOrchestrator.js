@@ -119,12 +119,19 @@ export class WorkItemOrchestrator {
       generatedContentForUI = fullDescription;
 
       // A. Prepare Jira Content (User/Product Focused)
+      const pageName = context.fileContext?.pageName || '';
       let jiraTitle = `Implement ${context.componentName}`;
       
       // Try to extract title safely if ticketContent is an object
       if (typeof ticketContent === 'object' && ticketContent !== null) {
           if (ticketContent.title) jiraTitle = ticketContent.title;
           else if (ticketContent.content && ticketContent.content.title) jiraTitle = ticketContent.content.title;
+      }
+
+      // Append Figma page name for traceability — helps when the same component
+      // appears on multiple pages, and makes Jira search results self-explanatory.
+      if (pageName && pageName !== context.componentName && !jiraTitle.includes(pageName)) {
+          jiraTitle = `${jiraTitle} — ${pageName}`;
       }
       
       const jiraDescription = this._formatForJira(fullDescription);
@@ -174,7 +181,9 @@ export class WorkItemOrchestrator {
 
       // B. Prepare Wiki Content (Technical/Dev Focused)
       // Standard title without timestamp to allow for idempotency (Search-Updates)
-      const wikiTitle = `Implementation Plan: ${context.componentName}`; 
+      const wikiTitle = pageName && pageName !== context.componentName
+          ? `Implementation Plan: ${context.componentName} — ${pageName}`
+          : `Implementation Plan: ${context.componentName}`;
       
       // Add extra technical context to Wiki version if available
       const wikiContent = this._formatForWiki(fullDescription, context);
