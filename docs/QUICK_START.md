@@ -106,19 +106,6 @@ After active creation completes, a green **✅ Created** panel appears with one-
 - **🧪 View QA Test Case** → opens the QA Test Case wiki page
 
 If a step fails (e.g. Confluence is down), a red warning row is shown for that step while the rest still appear.
-4. Toggle **"Auto-create Jira + Wiki"** if you want active creation
-5. Click **Generate**
-
-The plugin will:
-- Fetch your frame as an image via **Figma's Export REST API** (CDN URL)
-- Send the image URL + frame metadata to the local server
-- Gemini 2.0 Flash performs vision-based analysis and generates structured documentation
-- (If enabled) automatically create:
-  - **Jira ticket** with embedded design image + Related Resources section (Figma link, wiki, Storybook TBD, QA link)
-  - **Implementation Plan wiki** with embedded design image + resource links in header (QA link back-patched after QA page is created)
-  - **QA Test Case wiki** under `QA_WIKI_PARENT_ID` with 8-row test table + embedded screenshot
-  - **2 Jira remote links** (Implementation Plan, QA Test Case) visible in Jira’s Links panel
-  - **Git branch** `feature/<component-name>` (only when `GIT_MCP_URL` is configured)
 
 ---
 

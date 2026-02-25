@@ -1,48 +1,79 @@
 # Skill: Run Validation Suite
 
-**Trigger:** `run_validation_suite`, "Run tests", "Validate system health"
-**Description:** Orchestrates the project's multi-layered testing framework (Unit, Integration, E2E, API) via a single unified interface.
+**Trigger:** `run_validation_suite`, "Run tests", "Validate", "Check if everything works"
+**Description:** Reference for the project's test and validation commands, mapped to their actual implementations.
 
-## 🛠️ Usage Specification
+## Working Commands
 
-Acts as an execution facade over the `scripts/` directory and `package.json` test runners.
+| Command | What it does | When to use |
+|---------|-------------|-------------|
+| `npm run lint` | ESLint with auto-fix | Before committing |
+| `npm run test:run` | Vitest (all unit tests, no watch) | CI / quick check |
+| `npm run test:coverage` | Vitest with coverage report | Before PR |
+| `npm run test:watch` | Vitest watch mode | During development |
+| `npm run build` | Build plugin (TSC + copy files) | After code.ts changes |
+| `npm run build:ts` | TypeScript compile only | Quick TS check |
+| `npm run validate:yaml` | Validate YAML template files | After editing `core/template/` |
+| `npm run validate` | Full: test + build + validate:yaml | Pre-push check |
+| `npm run audit` | npm security audit | Security review |
+| `npm run test:mcp` | MCP server connectivity test | After MCP config changes |
+| `npm run health` | Server health check script | Server troubleshooting |
 
-### Inputs
-*   `scope` (string, required):
-    *   `full`: Runs the complete suite (`scripts/run-all-tests.sh`).
-    *   `smoke`: Runs critical path sanity checks (`scripts/health-check.sh`).
-    *   `mcp-only`: Validates MCP server connectivity (`scripts/test-external-mcp.js`).
-    *   `ui-browser`: Runs Playwright E2E tests (`npm run test:browser`).
-    *   `api-contract`: Validates Swagger/OpenAPI specs (`validate-yaml.js`).
-*   `targetEnv` (string): `local` (default) or `production`.
-*   `includeReport` (boolean): Returns parsed test summary JSON if true.
+## Recommended Pre-Push Sequence
 
-### 🧠 Logic Flow
-1.  **Resolve Command:** Map `scope` to the corresponding shell script or npm command.
-2.  **Environment Setup:** Load `.env` or `.env.production` based on `targetEnv`.
-3.  **Execute:** Run command using `child_process.exec` or `spawn`.
-4.  **Parse Output:** Capture `stdout`/`stderr`. If `includeReport` is true, parse JUnit XML or JSON reporters.
-5.  **Return:** Structued JSON: `{ status: 'PASS'|'FAIL', duration: '2ms', failedTests: [] }`.
+```bash
+npm run lint          # fix lint issues first
+npm run test:run      # must pass
+npm run build         # must succeed
+npm run validate:yaml # catches broken templates
+```
 
-## 💻 Implementation Snippet (Reference)
+Or in one command: `npm run validate`
+
+## Known Broken / Do Not Use
+
+| Command | Why it's broken |
+|---------|-----------------|
+| `npm run test:browser:smoke/regression/ci/visual` | Playwright tests reference non-existent DOM IDs |
+| `npm run test:all` | `scripts/test-orchestrator.js` imports removed modules |
+| `npm run test:architecture` | References old architecture modules |
+| `npm run test:hybrid` | References removed hybrid strategy layer |
+| `npm run test:e2e:system` | References removed services |
+| `npm run monitor` | `scripts/monitor-dashboard.js` is stale |
+
+## Coverage Location
+
+After `npm run test:coverage`:
+- `coverage/coverage-summary.json` — JSON summary
+- `coverage/lcov.info` — LCOV for editor integration
+
+## Logic Reference
+
 ```javascript
-// app/routes/figma/mcp.js - NEW TOOL IMPLEMENTATION
+// How to run tests programmatically if needed
 const { exec } = require('child_process');
 const util = require('util');
 const execAsync = util.promisify(exec);
 
-async function runValidation(scope) {
+async function runValidation(scope = 'unit') {
   const commands = {
-    'full': './scripts/run-all-tests.sh',
-    'ui-browser': 'npm run test:browser',
-    'mcp-only': 'npm run test:integration:mcp'
+    'unit':     'npm run test:run',
+    'coverage': 'npm run test:coverage',
+    'lint':     'npm run lint',
+    'build':    'npm run build',
+    'yaml':     'npm run validate:yaml',
+    'full':     'npm run validate',
+    'mcp':      'npm run test:mcp',
   };
   
+  const cmd = commands[scope];
+  if (!cmd) throw new Error(`Unknown scope: ${scope}. Valid: ${Object.keys(commands).join(', ')}`);
+  
   try {
-    const { stdout } = await execAsync(commands[scope]);
-    return { status: 'PASS', logs: stdout.slice(-500) };
+    const { stdout, stderr } = await execAsync(cmd, { cwd: process.cwd() });
+    return { status: 'PASS', output: stdout.slice(-1000) };
   } catch (error) {
-    return { status: 'FAIL', error: error.message };
+    return { status: 'FAIL', error: error.message, output: error.stdout?.slice(-500) };
   }
 }
 ```

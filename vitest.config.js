@@ -6,11 +6,8 @@ export default defineConfig({
     // Minimal configuration for maximum CI compatibility
     environment: 'node',
 
-    // Test file patterns - keep simple
-    include: [
-      'tests/**/*.{test,spec}.{js,mjs}',
-      'tests/unit/context-intelligence*.test.js'
-    ],
+    // Test file patterns — unit tests only (smoke/playwright excluded below)
+    include: ['tests/unit/**/*.{test,spec}.{js,mjs}'],
 
     // Basic excludes - make sure to exclude Playwright tests and template tests
     exclude: [
@@ -25,14 +22,9 @@ export default defineConfig({
     // Basic timeouts
     testTimeout: 30000,
 
-    // Disable threading for CI compatibility
-    threads: false,
-
     // Use default reporter for maximum compatibility
     reporter: 'default',
 
-    // Disable features that might cause Node.js compatibility issues
-    watch: false,
     isolate: true, // Enable isolation for better test reliability
 
     // Simple environment

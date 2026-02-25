@@ -4,7 +4,6 @@
  */
 
 import { vi } from 'vitest';
-import logger from '../../core/logging/logger.js';
 
 // Mock console methods to reduce noise during tests
 const originalConsole = { ...console };
