@@ -260,6 +260,65 @@ describe('GeminiService._cleanResponse', () => {
     const raw = 'h1. NavBar\n\nh2. Overview\nContent here.';
     expect(svc._cleanResponse(raw)).toBe(raw);
   });
+
+  it('applies Jira bullet fix when platform is Jira', () => {
+    const raw = '_ _Focus:* Show focus indicator.\n_ _Active:* No active state.';
+    const result = svc._cleanResponse(raw, 'Jira');
+    expect(result).toContain('** *Focus:*');
+    expect(result).toContain('** *Active:*');
+    expect(result).not.toMatch(/^_ _/m);
+  });
+
+  it('does NOT apply Jira bullet fix for non-Jira platforms', () => {
+    const raw = '_ _Focus:* Show focus indicator.';
+    const result = svc._cleanResponse(raw, 'Markdown');
+    expect(result).toBe(raw);
+  });
+});
+
+// ── _fixJiraBullets ───────────────────────────────────────────────────────────
+
+describe('GeminiService._fixJiraBullets', () => {
+  let svc;
+  beforeEach(() => { svc = makeService(); });
+
+  it('converts "_ _Label:* text" to "** *Label:* text"', () => {
+    const input = '_ _Focus:* Show a clear focus indicator.';
+    expect(svc._fixJiraBullets(input)).toBe('** *Focus:* Show a clear focus indicator.');
+  });
+
+  it('converts "_ _Label:_ text" to "** _Label:_ text"', () => {
+    const input = '_ _Hover:_ Slightly darken the background.';
+    expect(svc._fixJiraBullets(input)).toBe('** _Hover:_ Slightly darken the background.');
+  });
+
+  it('converts remaining "_ _text" lines to "** text"', () => {
+    const input = '_ _Some unlabelled sub-item';
+    expect(svc._fixJiraBullets(input)).toBe('** Some unlabelled sub-item');
+  });
+
+  it('converts "_ text" (underscore as bullet) to "* text"', () => {
+    const input = '_ This was a top-level fake bullet.';
+    expect(svc._fixJiraBullets(input)).toBe('* This was a top-level fake bullet.');
+  });
+
+  it('preserves correct "* item" and "** item" lines', () => {
+    const input = '* First item\n** Nested item\n* Second item';
+    expect(svc._fixJiraBullets(input)).toBe('* First item\n** Nested item\n* Second item');
+  });
+
+  it('handles the full Interactive States block', () => {
+    const input = [
+      'h2. Interactive States',
+      '_Search Field:_',
+      '_ _Focus:* Show a clear focus indicator.',
+      '_ _Active:* No specific active state required.',
+    ].join('\n');
+    const result = svc._fixJiraBullets(input);
+    expect(result).toContain('** *Focus:* Show a clear focus indicator.');
+    expect(result).toContain('** *Active:* No specific active state required.');
+    expect(result).not.toMatch(/^_ _/m);
+  });
 });
 
 // ── _formatContext ────────────────────────────────────────────────────────────
