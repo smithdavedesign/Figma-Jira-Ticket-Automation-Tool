@@ -35,30 +35,43 @@ The system has two parts: a **Figma plugin** (TypeScript) and a **Node.js server
 │   └─ WorkItemOrchestrator.run()                 │
 │                                                 │
 │  Step A ─ Jira                                  │
-│       └─ createIssue() + embed design image     │
+│       └─ createIssue()  env-var-driven fields   │
+│       └─ embed design image in description      │
 │                                                 │
-│  Step B ─ Confluence                            │
+│  Step B ─ Confluence  (Implementation Plan)     │
 │       └─ createWikiPage() + embed design image  │
-│       └─ wiki header: Figma/Jira/date/resources │
+│       └─ title: "Implementation Plan: [Frame]"  │
+│       └─ header: Figma/Jira/date/resources       │
+│       └─ track wikiPageId for later back-patch  │
+│                                                 │
+│  Step E ─ Confluence  (QA Test Case)            │
+│       └─ createWikiPage() under QA_WIKI_PARENT  │
+│       └─ title: "[Page] - [KEY] - [Component]" │
+│       └─ 8-row test table + screenshot          │
+│       └─ back-patches Impl Plan with QA link    │
 │                                                 │
 │  Step C ─ Cross-link                            │
-│       └─ 3× remote links (wiki, Storybook, QA) │
+│       └─ createRemoteLink() ×2  (Impl + QA)    │
 │       └─ inject Related Resources h2 in Jira   │
+│          (Figma, wiki, Storybook TBD, QA link)  │
+│       └─ strip duplicate Design References h2  │
 │                                                 │
-│  Step D ─ Git                                   │
+│  Step D ─ Git  (skipped when GIT_MCP_URL blank) │
 │       └─ createBranch() feature/<name>          │
 │                                                 │
 │  Response: { content, metadata: { orchestration:│
 │    { jira: { url, issueKey, status },           │
-│      wiki: { url, status } } } }                │
+│      wiki: { url, status },                     │
+│      qa:   { url, status } } } }                │
 └─────────────────────────────────────────────────┘
                          │
-             ┌───────────▼──────────┐
-             │  Plugin UI           │
-             │  ✅ Created panel    │
-             │  🎫 View Jira Ticket │
-             │  📄 View Wiki Page   │
-             └──────────────────────┘
+             ┌───────────▼────────────────┐
+             │  Plugin UI                 │
+             │  ✅ Created panel          │
+             │  🎫 View Jira Ticket       │
+             │  📄 View Implementation Plan│
+             │  🧪 View QA Test Case      │
+             └────────────────────────────┘
 ```
 
 ---
@@ -136,6 +149,90 @@ Both default to markdown. The `MCPAdapter` intentionally omits the rejected para
 
 ---
 
+## Mermaid: Full Orchestration Sequence
+
+```mermaid
+sequenceDiagram
+    participant FP as Figma Plugin
+    participant SRV as Express Server :3000
+    participant GEM as Gemini 2.0 Flash
+    participant JIRA as Jira MCP
+    participant CONF as Confluence MCP
+    participant GIT as Git MCP
+
+    FP->>SRV: POST /api/generate { frameData, exportUrl, enableActiveCreation }
+    SRV->>GEM: vision analysis (CDN image URL)
+    GEM-->>SRV: { jiraContent, wikiContent, markdown }
+
+    alt enableActiveCreation = true
+        Note over SRV: Step A — Jira
+        SRV->>JIRA: createIssue (env-var fields)
+        JIRA-->>SRV: issueKey, issueId
+        SRV->>JIRA: updateDescription (embed image)
+
+        Note over SRV: Step B — Implementation Plan Wiki
+        SRV->>CONF: createWikiPage (Implementation Plan)
+        CONF-->>SRV: wikiPageId, wikiUrl
+        SRV->>CONF: addAttachment (design screenshot)
+
+        Note over SRV: Step E — QA Test Case Wiki
+        SRV->>CONF: createWikiPage (QA Test Case, parent=QA_WIKI_PARENT_ID)
+        CONF-->>SRV: qaPageId, qaUrl
+        SRV->>CONF: addAttachment (design screenshot)
+        SRV->>CONF: updateWikiPage (Impl Plan v3, QA link back-patched)
+
+        Note over SRV: Step C — Cross-link
+        SRV->>JIRA: createRemoteLink (Implementation Plan)
+        SRV->>JIRA: createRemoteLink (QA Test Case)
+        SRV->>JIRA: updateDescription (inject Related Resources)
+
+        Note over SRV: Step D — Git (optional)
+        alt GIT_MCP_URL configured
+            SRV->>GIT: createBranch feature/<name>
+        end
+    end
+
+    SRV-->>FP: { content, metadata.orchestration: { jira, wiki, qa } }
+    FP->>FP: render ✅ Created panel (Jira + Wiki + QA links)
+```
+
+---
+
+## Mermaid: System Overview
+
+```mermaid
+flowchart TD
+    subgraph Plugin["Figma Plugin (code.ts → code.js)"]
+        SEL["Select frame + tech stack"]
+        EXP["fetchFigmaExportUrl()\nFigma Export REST API"]
+        POST["POST /api/generate"]
+    end
+
+    subgraph Server["Express Server :3000"]
+        GEN["GenerateRoutes"]
+        GEMINI["GeminiService\nGemini 2.0 Flash\n(vision analysis)"]
+        ORCH["WorkItemOrchestrator"]
+    end
+
+    subgraph External["External Services"]
+        JIRA_SVC["Jira MCP\n(ticket + remote links)"]
+        CONF_SVC["Confluence MCP\n(Impl Plan + QA wiki)"]
+        GIT_SVC["Git MCP\n(optional branch)"]    
+    end
+
+    SEL --> EXP --> POST --> GEN
+    GEN --> GEMINI
+    GEMINI --> ORCH
+    ORCH -->|"Step A"| JIRA_SVC
+    ORCH -->|"Step B"| CONF_SVC
+    ORCH -->|"Step E"| CONF_SVC
+    ORCH -->|"Step C"| JIRA_SVC
+    ORCH -->|"Step D"| GIT_SVC
+    ORCH --> ResultUI["Plugin UI\n🎫 Jira | 📄 Wiki | 🧪 QA"]
+```
+
+---
+
 ## Figma Plugin
 
 `code.ts` compiled to `code.js` via `config/tsconfig.json` (target: ES2017, module: None, outFile: `../code.js`).
@@ -163,9 +260,9 @@ Plugin → Server communication is a single `POST /api/generate` with frame data
 | `app/routes/generate.js` | ~143 | POST /api/generate handler |
 | `core/ai/GeminiService.js` | ~450 | Gemini 2.0 Flash integration + vision prompts |
 | `core/adapters/MCPAdapter.js` | ~745 | Multi-server MCP client, Jira/Confluence/Git ops |
-| `core/orchestration/WorkItemOrchestrator.js` | ~732 | Full Jira + Wiki + image + links + Git flow |
+| `core/orchestration/WorkItemOrchestrator.js` | ~903 | Full Jira + Impl-Wiki + QA-Wiki + back-patch + cross-links + Git flow |
 | `core/data/unified-context-builder.js` | ~1,144 | Builds rich context for Gemini prompt |
 | `core/bridge/ContextTemplateBridge.js` | 144 | YAML fallback |
 | `core/template/UniversalTemplateEngine.js` | ~876 | YAML template processor |
 | `code.ts` | ~440 | Figma plugin source |
-| `ui/index.html` | ~500 | Plugin UI |
+| `ui/index.html` | ~550 | Plugin UI (3 creation link buttons) |

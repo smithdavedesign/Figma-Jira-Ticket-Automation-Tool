@@ -34,15 +34,34 @@ FIGMA_API_KEY=your_figma_personal_access_token
 
 > `FIGMA_API_KEY` is your Figma personal access token (figma.com → Settings → Account → Personal access tokens). The old name `FIGMA_ACCESS_TOKEN` is no longer used.
 
-For work item creation (Jira + Confluence):
+For work item creation (Jira + Confluence via MCP):
 ```env
+# Direct REST (required for image attachment uploads)
 JIRA_BASE_URL=https://jira.corp.com
-JIRA_USERNAME=your_user
-JIRA_API_TOKEN=your_token
-
 CONFLUENCE_BASE_URL=https://confluence.corp.com
-CONFLUENCE_USERNAME=your_user
-CONFLUENCE_API_TOKEN=your_token
+
+# MCP servers (Enterprise SSE)
+MCP_JIRA_URL=https://mcp-jira.corp.com/mcp/
+MCP_JIRA_KEY=your_mcp_jira_token
+MCP_CONFLUENCE_URL=https://mcp-confluence.corp.com/mcp/
+MCP_WIKI_KEY=your_mcp_confluence_token
+
+# Project keys
+JIRA_PROJECT_KEY=PROJ
+CONFLUENCE_SPACE_KEY=DS
+
+# QA Test Case wiki parent page ID (from Confluence URL)
+QA_WIKI_PARENT_ID=874419925
+
+# Optional Jira field defaults
+JIRA_ISSUE_TYPE=Story
+JIRA_STORY_POINTS=1
+```
+
+For Git branch creation (optional — leave blank to skip):
+```env
+GIT_MCP_URL=http://localhost:3000/api/mcp
+GIT_REPO_PATH=/path/to/repo
 ```
 
 ---
@@ -82,8 +101,9 @@ The MCP 406 warnings on startup are **expected** — the enterprise MCP servers 
 5. Click **Generate**
 
 After active creation completes, a green **✅ Created** panel appears with one-click links:
-- **🎫 View Jira Ticket — SDPM-XXXX** → opens the ticket in your browser
-- **📄 View Wiki Page** → opens the Confluence page in your browser
+- **🎫 View Jira Ticket — PROJ-XXXX** → opens the ticket in your browser
+- **📄 View Implementation Plan** → opens the Confluence wiki page
+- **🧪 View QA Test Case** → opens the QA Test Case wiki page
 
 If a step fails (e.g. Confluence is down), a red warning row is shown for that step while the rest still appear.
 4. Toggle **"Auto-create Jira + Wiki"** if you want active creation
@@ -94,10 +114,11 @@ The plugin will:
 - Send the image URL + frame metadata to the local server
 - Gemini 2.0 Flash performs vision-based analysis and generates structured documentation
 - (If enabled) automatically create:
-  - **Jira ticket** with embedded design image + Related Resources section
-  - **Confluence wiki page** with embedded design image + resource links in header
-  - **3 Jira remote links** (Implementation Plan wiki, Storybook placeholder, QA Test Case placeholder)
-  - **Git branch** `feature/<component-name>`
+  - **Jira ticket** with embedded design image + Related Resources section (Figma link, wiki, Storybook TBD, QA link)
+  - **Implementation Plan wiki** with embedded design image + resource links in header (QA link back-patched after QA page is created)
+  - **QA Test Case wiki** under `QA_WIKI_PARENT_ID` with 8-row test table + embedded screenshot
+  - **2 Jira remote links** (Implementation Plan, QA Test Case) visible in Jira’s Links panel
+  - **Git branch** `feature/<component-name>` (only when `GIT_MCP_URL` is configured)
 
 ---
 
