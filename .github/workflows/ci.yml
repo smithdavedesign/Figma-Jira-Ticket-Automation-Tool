@@ -9,44 +9,39 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
+
+    - name: Use Node.js 20
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: '20'
         cache: 'npm'
-    
+
     - name: Install dependencies
       run: npm ci
-    
+
     - name: Run linting
       run: npm run lint
-    
-    - name: Run tests (without coverage)
+
+    - name: Run unit tests
       run: npm run test:run
-    
-    - name: Run tests with coverage (when supported)
-      run: npm run test:coverage || echo "Coverage skipped due to environment limitations"
+
+    - name: Run tests with coverage
+      run: npm run test:coverage
       continue-on-error: true
-    
-    - name: Build application
+
+    - name: Build plugin
       run: npm run build
-    
-    - name: Validate production build
-      run: npm run validate:basic || echo "Production validation not available in CI"
-      continue-on-error: true
+
+    - name: Validate YAML templates
+      run: npm run validate:yaml
 
   security:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Run security audit
-      run: npm audit --production || echo "Security audit completed with warnings"
+    - name: Security audit
+      run: npm audit --production
       continue-on-error: true
