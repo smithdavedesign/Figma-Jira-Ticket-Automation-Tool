@@ -338,6 +338,12 @@
           generateBtn.disabled = false;
           toast('Context ready — hit Generate', 'success');
 
+          // Sync frameData from the fresh context so the selection label is up-to-date
+          if (aiTicketData.enhancedFrameData && aiTicketData.enhancedFrameData.length > 0) {
+            frameData = aiTicketData.enhancedFrameData;
+            updateSelectionUI();
+          }
+
           // Auto-show screenshot if available
           if (aiTicketData.screenshot) {
             currentScreenshot = aiTicketData.screenshot;
@@ -453,11 +459,14 @@
 
     // ─── Refresh context ───────────────────────────────────────
     refreshBtn.addEventListener('click', () => {
-      aiTicketData     = null;
+      aiTicketData      = null;
       lastRequestParams = null;
-      lastApiResponse  = null;
+      lastApiResponse   = null;
       generateBtn.disabled = true;
       downloadContextBtn.style.display = 'none';
+      // Show a pending state in the label while we wait for fresh context
+      selectionInfoEl.className = 'selection-info empty';
+      selectionInfoEl.textContent = 'Refreshing context…';
       parent.postMessage({ pluginMessage: { type: 'generate-ai-ticket' } }, '*');
       toast('Refreshing context…', 'loading');
     });
