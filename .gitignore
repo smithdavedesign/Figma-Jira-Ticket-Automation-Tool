@@ -22,6 +22,7 @@ production-bundle/
 !app/**/*.js
 !scripts/**/*.js
 !core/**/*.js
+!ui/**/*.js
 !code.js
 
 # Environment variables

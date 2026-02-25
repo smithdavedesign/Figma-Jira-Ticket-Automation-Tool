@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node app/server.js",
     "start:dev": "nodemon --watch app/ --watch core/ --watch config/ --ext js app/server.js",
-    "start:server": "node app/server.js",
     "dev": "npm run start:dev",
     "build": "./scripts/build-simple.sh",
     "build:ts": "tsc -p config/tsconfig.json",
@@ -23,7 +22,6 @@
     "test:coverage": "VITEST_COVERAGE=true vitest run --coverage",
     "test:integration": "node scripts/test-external-mcp.js",
     "test:smoke": "npx playwright test tests/smoke",
-    "test:mcp": "node tests/integration/test-mcp-server.js",
     "test:all": "npm run test && npm run validate:yaml && npm run build && echo '✅ All checks passed'",
 
     "health": "./scripts/health-check.sh",
@@ -57,10 +55,7 @@
     "@eslint/js": "^9.37.0",
     "@figma/plugin-typings": "^1.118.0",
     "@playwright/test": "^1.56.1",
-    "@types/fs-extra": "^11.0.4",
-    "@types/inquirer": "^9.0.9",
     "@types/js-yaml": "^4.0.9",
-    "@types/lodash": "^4.17.20",
     "@types/node": "^24.9.1",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
@@ -68,11 +63,7 @@
     "@vitest/ui": "^4.0.2",
     "eslint": "^9.37.0",
     "globals": "^16.4.0",
-    "happy-dom": "^20.0.8",
-    "jsdom": "^27.0.1",
     "nodemon": "^3.1.10",
-    "playwright": "^1.56.1",
-    "supertest": "^7.1.4",
     "typescript": "^5.0.0",
     "vitest": "^4.0.2",
     "yaml-lint": "^1.7.0"
@@ -86,16 +77,9 @@
     "@google/generative-ai": "^0.24.1",
     "@modelcontextprotocol/sdk": "^1.21.0",
     "chalk": "^5.6.2",
-    "commander": "^14.0.2",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "fs-extra": "^11.3.2",
     "helmet": "^8.1.0",
-    "inquirer": "^12.10.0",
-    "ioredis": "^5.8.2",
-    "js-yaml": "^4.1.0",
-    "lodash": "^4.17.21",
-    "node-fetch": "^3.3.2",
-    "zod": "^4.1.12"
+    "js-yaml": "^4.1.0"
   }
 }

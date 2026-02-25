@@ -27,9 +27,9 @@ Fallback: When Gemini fails → `ContextTemplateBridge` → YAML templates (no A
 
 ---
 
-## Services (11 registered at startup)
+## Services (10 registered at startup)
 
-`redis`, `sessionManager`, `figmaSessionManager`, `configurationService`, `geminiService`, `screenshotService`, `contextManager`, `mcpAdapter`, `ticketGenerationService`, `ticketService`, `workItemOrchestrator`
+`sessionManager`, `figmaSessionManager`, `configurationService`, `geminiService`, `screenshotService`, `contextManager`, `mcpAdapter`, `ticketGenerationService`, `ticketService`, `workItemOrchestrator`
 
 ---
 

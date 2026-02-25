@@ -24,26 +24,6 @@ export const aiConfig = {
         enabled: true,
         model: 'gemini-2.0-flash'
       }
-    },
-
-    claude: {
-      enabled: Boolean(process.env.CLAUDE_API_KEY),
-      apiKey: process.env.CLAUDE_API_KEY,
-      model: 'claude-3-sonnet-20240229',
-      maxTokens: 4096,
-      temperature: 0.7
-    },
-
-    gpt4: {
-      enabled: Boolean(process.env.OPENAI_API_KEY),
-      apiKey: process.env.OPENAI_API_KEY,
-      model: 'gpt-4-turbo-preview',
-      maxTokens: 4096,
-      temperature: 0.7,
-      vision: {
-        enabled: true,
-        model: 'gpt-4-vision-preview'
-      }
     }
   },
 
@@ -51,7 +31,7 @@ export const aiConfig = {
   fallback: {
     enabled: true,
     strategy: 'waterfall', // 'waterfall' or 'round-robin'
-    order: ['gemini', 'claude', 'gpt4', 'standard']
+    order: ['gemini', 'standard']
   },
 
   // Rate limiting
@@ -59,14 +39,6 @@ export const aiConfig = {
     gemini: {
       requestsPerMinute: 60,
       tokensPerDay: 100000
-    },
-    claude: {
-      requestsPerMinute: 50,
-      tokensPerDay: 50000
-    },
-    gpt4: {
-      requestsPerMinute: 30,
-      tokensPerDay: 30000
     }
   },
 
@@ -74,7 +46,7 @@ export const aiConfig = {
   templates: {
     enabled: true,
     useHandlebars: true,
-    platforms: ['jira', 'github', 'linear', 'notion', 'ui'],
+    platforms: ['jira'],
     documentTypes: ['component', 'feature', 'code'],
     techStacks: ['react', 'vue', 'aem', 'generic']
   },
