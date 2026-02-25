@@ -489,12 +489,12 @@ export class WorkItemOrchestrator {
                   // Direct URL provided (often from REST API v2 or simplified response)
                   wikiPageUrl = wikiResult.page.url;
              } else if (wikiResult.page._links && wikiResult.page._links.base && wikiResult.page._links.webui) {
-                  // Standard REST API v1
-                  wikiPageUrl = `${wikiResult.page._links.base}${wikiResult.page._links.webui}`;
+                  // Standard REST API v1 — strip trailing slash from base to avoid double //
+                  wikiPageUrl = `${wikiResult.page._links.base.replace(/\/+$/, '')}${wikiResult.page._links.webui}`;
              }
           } else if (wikiResult && wikiResult._links && wikiResult._links.base) {
              // Fallback for top-level result
-             wikiPageUrl = `${wikiResult._links.base}${wikiResult._links.webui}`;
+             wikiPageUrl = `${wikiResult._links.base.replace(/\/+$/, '')}${wikiResult._links.webui}`;
           }
           
           // Ensure URL is available in the result for UI
@@ -528,18 +528,9 @@ export class WorkItemOrchestrator {
              this.logger.warn(`Cross-linking (wiki) failed: ${linkError.message}`);
         }
 
-        // Placeholder links — filled in manually once resources exist
-        const placeholderLinks = [
-            { title: 'Storybook',     relationship: 'Storybook',     url: 'about:blank' },
-            { title: 'QA Test Case',  relationship: 'QA Test Case',  url: 'about:blank' },
-        ];
-        for (const link of placeholderLinks) {
-            try {
-                await this.mcpAdapter.createRemoteLink(jiraIssueKey, link.url, link.title, link.relationship);
-            } catch (pErr) {
-                this.logger.warn(`Placeholder link '${link.title}' failed: ${pErr.message}`);
-            }
-        }
+        // Note: Storybook / QA Test Case appear as TBD text in the Jira description.
+        // Remote links for those are only created once real URLs exist.
+
 
         // Inject Related Resources block into Jira description (now that wikiPageUrl is known)
         if (jiraIssueKey && jiraData.description) {
