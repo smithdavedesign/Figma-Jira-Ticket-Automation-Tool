@@ -525,12 +525,16 @@ export class WorkItemOrchestrator {
         try {
           this.logger.info(`📋 MCP: Creating QA Test Case wiki page...`);
 
+          // Brief pause to avoid Confluence MCP rate-limiting immediately after solution-wiki creation
+          await new Promise(resolve => setTimeout(resolve, 2000));
+
           // Title: "PageName - JIRA-123 - ComponentName" (parts omitted when redundant)
-          const qaTitle = [
+          let qaTitle = [
               pageName && pageName !== context.componentName ? pageName : null,
               jiraIssueKey,
               context.componentName
           ].filter(Boolean).join(' - ');
+          const qaBaseTitle = qaTitle;
 
           const qaContent = this._buildQaWikiContent({
               componentName: context.componentName,
@@ -539,7 +543,33 @@ export class WorkItemOrchestrator {
               wikiPageUrl,
           });
 
-          const qaResult = await this.mcpAdapter.createWikiPage(qaTitle, qaContent, wikiSpace, qaWikiParentId);
+          // Robust retry loop — same pattern as Solution Wiki creation
+          let qaResult = null;
+          let qaCreated = false;
+          let qaLoops = 0;
+          const maxQaLoops = 5;
+
+          while (!qaCreated && qaLoops < maxQaLoops) {
+              try {
+                  const currentQaTitle = qaLoops > 0 ? `${qaBaseTitle} (${qaLoops})` : qaBaseTitle;
+                  this.logger.info(`🚀 QA Attempting creation: "${currentQaTitle}" (Attempt ${qaLoops + 1})`);
+                  qaResult = await this.mcpAdapter.createWikiPage(currentQaTitle, qaContent, wikiSpace, qaWikiParentId);
+                  qaTitle = currentQaTitle; // capture final title (may have suffix)
+                  qaCreated = true;
+              } catch (qaCreateErr) {
+                  const qmsg = (qaCreateErr.message || '').toLowerCase();
+                  if (qmsg.includes('exist') || qmsg.includes('conflict') || qmsg.includes('unique') || qmsg.includes('500') || qmsg.includes('internal server error') || qmsg.includes('error calling tool')) {
+                      this.logger.warn(`⚠️ QA title unavailable or server error (Attempt ${qaLoops + 1}). Retrying... Error: ${qmsg}`);
+                      qaLoops++;
+                  } else {
+                      throw qaCreateErr;
+                  }
+              }
+          }
+
+          if (!qaCreated) {
+              throw new Error(`Failed to create QA wiki page after ${maxQaLoops} attempts.`);
+          }
 
           // Extract page ID and URL from diverse possible response shapes
           const qaPageId = qaResult?.id || qaResult?.page?.id || null;
