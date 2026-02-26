@@ -244,11 +244,14 @@ export class MCPAdapter {
           
           // Check for Tool Execution Error (inside the result)
           if (result && result.isError) {
-             // Log full error details for debugging
-             this.logger.error("❌ MCP Tool Execution Failed. Response:", JSON.stringify(result, null, 2));
-             
-             const content = result.content && result.content[0] ? result.content[0].text : 'Unknown Tool Error';
-             throw new Error(`Tool Execution Error: ${content}`);
+             // Collect ALL content items for a full error message
+             const allErrorText = (result.content || [])
+               .map(c => c.text || '')
+               .filter(Boolean)
+               .join(' | ');
+             const errorMessage = allErrorText || 'Unknown Tool Error';
+             this.logger.error(`❌ MCP Tool Execution Failed (${method}): ${errorMessage}`, { response: JSON.stringify(result, null, 2) });
+             throw new Error(`Tool Execution Error: ${errorMessage}`);
           }
            // Some tools return text content that is JSON stringified
            if (result && result.content && result.content[0] && result.content[0].text) {
@@ -414,26 +417,80 @@ export class MCPAdapter {
   }
 
   /**
-   * Create a Confluence Wiki page via MCP
+   * Create a Confluence Wiki page via MCP.
+   *
+   * Strategy:
+   * 1. Try creating with full content (fast for small pages).
+   * 2. If that fails (Confluence MCP times out on large payloads), create a
+   *    minimal stub page first (always fast), then immediately update it with
+   *    the full content via a second call.  updateWikiPage is more tolerant of
+   *    large payloads than the create endpoint.
    */
   async createWikiPage(title, content, spaceKey, parentId) {
-    this.logger.info('docx Creating Wiki page via MCP...', { title, spaceKey });
+    this.logger.info('📄 Creating Wiki page via MCP...', { title, spaceKey, parentId, contentLength: content?.length });
+    this.logger.debug('📄 Wiki content preview:', content?.substring(0, 300));
 
+    // --- Attempt 1: create with full content ---
     try {
       const result = await this._callMCP('confluence_create_page', {
             title,
-            space_key: spaceKey || 'DS',
+            space_key: spaceKey || 'DCUX',
             content,
-            parent_id: parentId
+            parent_id: parentId,
+            content_format: 'markdown'
       });
-
-      this.logger.info('✅ Wiki page created', result);
+      this.logger.info('✅ Wiki page created (full content)', result);
       return result;
-
-    } catch (error) {
-      this.logger.error('❌ Failed to create Wiki page', { message: error.message, stack: error.stack });
-      throw error;
+    } catch (firstError) {
+      this.logger.warn(`⚠️ Full-content creation failed (${firstError.message}). Falling back to stub-then-update strategy...`);
     }
+
+    // --- Attempt 2: create stub, then update with full content ---
+    // The create endpoint in the Confluence MCP can time out on large payloads.
+    // Creating a tiny stub always succeeds, and updateWikiPage handles large
+    // content reliably because it goes through the update (PUT) code path.
+    const stubContent = `# ${title}\n\n_Generating content — please wait…_\n`;
+    this.logger.info('📄 Creating stub Wiki page...', { title });
+    let stubResult;
+    try {
+      stubResult = await this._callMCP('confluence_create_page', {
+            title,
+            space_key: spaceKey || 'DCUX',
+            content: stubContent,
+            parent_id: parentId,
+            content_format: 'markdown'
+      });
+      this.logger.info('✅ Stub page created', stubResult);
+    } catch (stubError) {
+      // Both strategies failed — surface the original error so the retry loop can handle it
+      this.logger.error('❌ Failed to create Wiki page (both strategies failed)', { message: stubError.message, stack: stubError.stack });
+      throw stubError;
+    }
+
+    // Extract page ID from response (handle multiple response shapes)
+    const pageId = stubResult?.id || stubResult?.page?.id || null;
+    const pageVersion = stubResult?.version?.number ?? stubResult?.page?.version?.number ?? 1;
+
+    if (!pageId) {
+      this.logger.warn('⚠️ Stub created but no page ID returned — skipping content update');
+      return stubResult;
+    }
+
+    // Update the stub with full content
+    this.logger.info(`📝 Updating stub page ${pageId} with full content...`);
+    try {
+      await this._callMCP('confluence_update_page', {
+          page_id: pageId,
+          title,
+          content
+      });
+      this.logger.info(`✅ Wiki page ${pageId} updated with full content`);
+    } catch (updateError) {
+      // Update failed — return the stub result so the caller still gets a usable page
+      this.logger.warn(`⚠️ Content update failed (${updateError.message}). Page exists as stub.`);
+    }
+
+    return stubResult;
   }
 
   /**

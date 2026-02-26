@@ -106,7 +106,7 @@ export class GeminiService {
       const generatedText = await this._callWithRetry(parts);
 
       // 5. Clean up response
-      const content = this._cleanResponse(generatedText);
+      const content = this._cleanResponse(generatedText, platform);
       const duration = Date.now() - startTime;
 
       this.logger.info(`Generation complete in ${duration}ms (${content.length} chars)`);
@@ -218,9 +218,29 @@ Your output is always structured, actionable, and directly usable by development
 
   _platformRules(platform, markup) {
     const rules = {
-      Jira: 'Output using Jira markup syntax: h1. h2. h3. for headings, * for bold, _ for italic, [text|url] for links, * for bullets, {{code}} for inline code, {code:lang}...{code} for blocks.',
-      Wiki: 'Output using Confluence wiki markup syntax: h1. h2. h3. for headings, * for bold, _ for italic, [text|url] for links.',
-      Confluence: 'Output using Confluence storage format: h1. h2. h3. headings, * bold, {panel}, {info}, {code}.',
+      Jira: `Output ONLY in Jira wiki markup syntax. Follow these rules EXACTLY:
+- Headings: h1. Title | h2. Section | h3. Subsection
+- Bold: *bold text* (asterisks touching the word — no spaces inside)
+- Italic: _italic text_ (underscores touching the word — use ONLY for inline emphasis, NEVER as a bullet)
+- Bullet list items: level 1 = "* ", level 2 = "** ", level 3 = "*** ". NOTHING else.
+- NEVER use underscore "_" or double-underscore "__" at the start of a line as a bullet marker.
+- Links: [link text|https://example.com]
+- Inline code: {{variable}}
+- Code blocks: {code:java}...{code}
+
+Correct list example:
+* First item
+** *Bold label:* nested description
+*** Level 3 detail item
+*** _italic label:_ another detail
+* Second item
+
+Incorrect (NEVER do this):
+_ _Focus:* description   ← WRONG: underscore is not a bullet
+__ {{variable}} text     ← WRONG: double-underscore is not a bullet
+__* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
+      Wiki: 'Output using Confluence wiki markup syntax: h1. h2. h3. for headings, *bold*, _italic_, [text|url] for links, * for bullet list items (asterisk space), ** for nested bullets.',
+      Confluence: 'Output using Confluence storage format: h1. h2. h3. headings, *bold*, {panel}, {info}, {code}. Use * for bullet items, ** for nested.',
       Markdown: 'Output using standard Markdown: # ## ### headings, **bold**, *italic*, [text](url), - bullets, `code`.',
     };
     return `## Formatting Rules\n${rules[platform] || rules.Jira}`;
@@ -465,13 +485,40 @@ Your output is always structured, actionable, and directly usable by development
   // Response cleanup
   // ---------------------------------------------------------------------------
 
-  _cleanResponse(text) {
+  _cleanResponse(text, platform) {
     let cleaned = text;
     // Remove trailing "Design Analysis" sections Gemini sometimes appends
     cleaned = cleaned.split(/\n#+\s*Design Analysis/i)[0];
     // Remove markdown code fences that wrap the entire output
     cleaned = cleaned.replace(/^```(?:markdown|jira|text)?\n/i, '').replace(/\n```\s*$/, '');
+    // Fix Jira bullet formatting: AI sometimes emits "_ _Label:* text" instead of "** *Label:* text"
+    if (platform === 'Jira' || platform === 'jira') {
+      cleaned = this._fixJiraBullets(cleaned);
+    }
     return cleaned.trim();
+  }
+
+  /**
+   * Post-process Jira markdown to fix AI-generated _ _ pseudo-bullets.
+   * Converts patterns like "_ _Focus:* desc" → "** *Focus:* desc"
+   */
+  _fixJiraBullets(text) {
+    return text
+      // "__* text" or "__ text" (double-underscore as level-3 bullet) → "*** text"
+      .replace(/^__\* /gm, '*** ')
+      .replace(/^__ /gm, '*** ')
+      // "_ _Label*: description" → "** *Label:* description"  (asterisk before colon)
+      .replace(/^_ _([^*\n]+)\*:[^\S\r\n]*(.*)$/gm, '** *$1:* $2')
+      // "_ _Label:* description" → "** *Label:* description"  (asterisk after colon)
+      .replace(/^_ _([^:\n]+):\*[^\S\r\n]*(.*)$/gm, '** *$1:* $2')
+      // "_ _Label:_ description" → "** _Label:_ description"  (nested bullet with italic label)
+      .replace(/^_ _([^:\n]+):_[^\S\r\n]*(.*)$/gm, '** _$1:_ $2')
+      // Any remaining "_ _text" at line start → "** text"
+      .replace(/^_ _/gm, '** ')
+      // Any remaining "_ text" at line start (underscore used as a bullet) → "* text"
+      .replace(/^_ (?!_)/gm, '* ')
+      // Strip trailing spaces left by empty $2 captures
+      .replace(/ +$/gm, '');
   }
 
   // ---------------------------------------------------------------------------

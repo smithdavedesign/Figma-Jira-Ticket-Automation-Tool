@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Plugin Loading Smoke Tests', () => {
   test('Test server should be healthy', async ({ request }) => {
-    const response = await request.get('/api/health');
+    const response = await request.get('/health');
     expect(response.ok()).toBeTruthy();
 
     const health = await response.json();
@@ -65,7 +65,7 @@ test.describe('Plugin Loading Smoke Tests', () => {
   });
 
   test('Health check endpoint should return basic info', async ({ request }) => {
-    const response = await request.get('/api/health');
+    const response = await request.get('/health');
     expect(response.ok()).toBeTruthy();
 
     const health = await response.json();

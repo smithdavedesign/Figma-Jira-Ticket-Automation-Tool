@@ -392,8 +392,8 @@ export class WorkItemOrchestrator {
                   // 2. If fail, derived new title, retry.
                   
                   if (loops > 0) {
-                      // Simple collision avoidance: Append random small ID to be sure
-                      finalWikiTitle = `${wikiTitle} (${Date.now().toString().slice(-4)})`;
+                      // Deterministic suffix — guarantees each retry has a different title
+                      finalWikiTitle = `${wikiTitle} (${loops})`;
                   }
 
                   this.logger.info(`🚀 Attempting creation: "${finalWikiTitle}" (Attempt ${loops + 1})`);
@@ -406,9 +406,12 @@ export class WorkItemOrchestrator {
 
               } catch (createErr) {
                   const msg = (createErr.message || '').toLowerCase();
-                  // Include '500' and 'internal server error' as potential indicators of trash-conflict on some Confluence versions
-                  if (msg.includes('exist') || msg.includes('conflict') || msg.includes('unique') || msg.includes('500') || msg.includes('internal server error')) {
-                      this.logger.warn(`⚠️ Title "${finalWikiTitle}" unavailable or server error (Conflict/Trash?). Retrying... Error: ${msg}`);
+                  // Include '500' and 'internal server error' as potential indicators of trash-conflict on some Confluence versions.
+                  // Also include 'error calling tool' — the Confluence MCP wraps ALL underlying errors
+                  // (duplicate title, trash conflict, etc.) in this generic message, so we must
+                  // treat it as retryable and append a unique suffix on the next attempt.
+                  if (msg.includes('exist') || msg.includes('conflict') || msg.includes('unique') || msg.includes('500') || msg.includes('internal server error') || msg.includes('error calling tool')) {
+                      this.logger.warn(`⚠️ Title "${finalWikiTitle}" unavailable or server error (Conflict/Trash?). Retrying with unique suffix... Error: ${msg}`);
                       loops++;
                   } else {
                       // If it's not a conflict, it's a real error. Rethrow.
@@ -516,18 +519,24 @@ export class WorkItemOrchestrator {
           this.logger.error(`Failed to create Wiki page: ${e.message}`, e);
           results.wiki.error = e.message;
           results.wiki.status = 'failed_creation';
+          // Surface enough context for the UI to offer a one-click retry
+          results.wiki.retryContext = { title: finalWikiTitle, content: safeContent, spaceKey: wikiSpace, parentId: wikiParentId };
         }
 
         // --- Step E: Create QA Test Case Wiki Page ---
         try {
           this.logger.info(`📋 MCP: Creating QA Test Case wiki page...`);
 
+          // Brief pause to avoid Confluence MCP rate-limiting immediately after solution-wiki creation
+          await new Promise(resolve => setTimeout(resolve, 2000));
+
           // Title: "PageName - JIRA-123 - ComponentName" (parts omitted when redundant)
-          const qaTitle = [
+          let qaTitle = [
               pageName && pageName !== context.componentName ? pageName : null,
               jiraIssueKey,
               context.componentName
           ].filter(Boolean).join(' - ');
+          const qaBaseTitle = qaTitle;
 
           const qaContent = this._buildQaWikiContent({
               componentName: context.componentName,
@@ -536,7 +545,33 @@ export class WorkItemOrchestrator {
               wikiPageUrl,
           });
 
-          const qaResult = await this.mcpAdapter.createWikiPage(qaTitle, qaContent, wikiSpace, qaWikiParentId);
+          // Robust retry loop — same pattern as Solution Wiki creation
+          let qaResult = null;
+          let qaCreated = false;
+          let qaLoops = 0;
+          const maxQaLoops = 5;
+
+          while (!qaCreated && qaLoops < maxQaLoops) {
+              try {
+                  const currentQaTitle = qaLoops > 0 ? `${qaBaseTitle} (${qaLoops})` : qaBaseTitle;
+                  this.logger.info(`🚀 QA Attempting creation: "${currentQaTitle}" (Attempt ${qaLoops + 1})`);
+                  qaResult = await this.mcpAdapter.createWikiPage(currentQaTitle, qaContent, wikiSpace, qaWikiParentId);
+                  qaTitle = currentQaTitle; // capture final title (may have suffix)
+                  qaCreated = true;
+              } catch (qaCreateErr) {
+                  const qmsg = (qaCreateErr.message || '').toLowerCase();
+                  if (qmsg.includes('exist') || qmsg.includes('conflict') || qmsg.includes('unique') || qmsg.includes('500') || qmsg.includes('internal server error') || qmsg.includes('error calling tool')) {
+                      this.logger.warn(`⚠️ QA title unavailable or server error (Attempt ${qaLoops + 1}). Retrying... Error: ${qmsg}`);
+                      qaLoops++;
+                  } else {
+                      throw qaCreateErr;
+                  }
+              }
+          }
+
+          if (!qaCreated) {
+              throw new Error(`Failed to create QA wiki page after ${maxQaLoops} attempts.`);
+          }
 
           // Extract page ID and URL from diverse possible response shapes
           const qaPageId = qaResult?.id || qaResult?.page?.id || null;
@@ -614,7 +649,8 @@ export class WorkItemOrchestrator {
 
         } catch (qaErr) {
           this.logger.warn(`QA Test Case wiki creation failed: ${qaErr.message}`);
-          results.qa = { status: 'failed', error: qaErr.message };
+          // Surface enough context for the UI to offer a one-click retry
+          results.qa = { status: 'failed', error: qaErr.message, retryContext: { title: qaBaseTitle, content: qaContent, spaceKey: wikiSpace, parentId: qaWikiParentId } };
         }
 
         } finally {
@@ -914,20 +950,43 @@ export class WorkItemOrchestrator {
       header += `**Storybook:** TBD\n`;
       header += `**QA Test Case:** TBD\n`;
       header += `---\n\n`;
-      
-      // Basic conversion of Jira Markup to Markdown
-      // Note: This is a simple regex-based conversion. For full fidelity, a parser is needed.
-      let converted = markdown
-          .replace(/^h1\. (.*)$/gm, '# $1')      // h1. -> #
-          .replace(/^h2\. (.*)$/gm, '## $1')     // h2. -> ##
-          .replace(/^h3\. (.*)$/gm, '### $1')    // h3. -> ###
-          .replace(/^h4\. (.*)$/gm, '#### $1')   // h4. -> ####
-          .replace(/\{code(:[a-z]+)?\}/g, '```') // {code} -> ```
-          .replace(/\[(.+)\|(.+)\]/g, '[$1]($2)') // [text|url] -> [text](url)
-          .replace(/_(.+)_/g, '*$1*')            // _italic_ -> *italic* (Markdown uses * or _)
-          .replace(/\*(.+)\*/g, '**$1**')        // *bold* -> **bold**
-          .replace(/^{noformat}/gm, '```')        // {noformat} -> ```
-          .replace(/^----/gm, '---');            // ---- -> ---
+
+      let converted = markdown;
+
+      // Step 1: Convert {code:lang}...{code} to fenced code blocks FIRST
+      // so subsequent regexes don't corrupt the code content.
+      // Mark opening tag with language hint, closing tag stays as ```
+      converted = converted.replace(/\{code:([a-z]+)\}/g, '```$1');
+      converted = converted.replace(/\{code\}/g, '```');
+      converted = converted.replace(/\{noformat\}/g, '```');
+
+      // Step 2: Convert Jira headings
+      converted = converted
+          .replace(/^h1\. (.*)$/gm, '# $1')
+          .replace(/^h2\. (.*)$/gm, '## $1')
+          .replace(/^h3\. (.*)$/gm, '### $1')
+          .replace(/^h4\. (.*)$/gm, '#### $1');
+
+      // Step 3: Convert Jira bullet levels to Markdown.
+      // Must be done BEFORE bold/italic conversions to avoid corrupting ** prefixes.
+      converted = converted
+          .replace(/^\*{3} /gm, '      - ')  // *** → 3rd level
+          .replace(/^\*{2} /gm, '   - ')     // **  → 2nd level
+          .replace(/^\* /gm,    '- ');        // *   → 1st level
+
+      // Step 4: Convert inline {{code}} to `code`
+      converted = converted.replace(/\{\{([^}]+)\}\}/g, '`$1`');
+
+      // Step 5: Convert Jira links [text|url] → [text](url)
+      converted = converted.replace(/\[([^\]|]+)\|([^\]]+)\]/g, '[$1]($2)');
+
+      // Step 6: Convert Jira bold *text* → **text** and italic _text_ → _text_
+      // Use word-boundary-style anchors to avoid matching bullet dashes or loose asterisks.
+      // Only match *...* where preceded/followed by non-asterisk (avoids **bold** already done).
+      converted = converted.replace(/(?<!\*)\*(?!\s)([^*\n]+?)(?<!\s)\*(?!\*)/g, '**$1**');
+
+      // Step 7: Normalise horizontal rules
+      converted = converted.replace(/^----$/gm, '---');
 
       return header + converted;
   }
