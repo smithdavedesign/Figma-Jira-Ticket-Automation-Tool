@@ -328,7 +328,8 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
 7. Responsive Behavior (mobile, tablet, desktop)
 8. Interactive States (hover, focus, active, disabled, error)
 9. Testing Requirements
-10. Acceptance Criteria (specific, testable)`;
+10. Acceptance Criteria (specific, testable)
+11. Exact Design Spec (reproduce the exact values from Design Context Data above: hex colors with roles, font family/weight/size/line-height, spacing values, border-radius values — no guesses or placeholders)`;
   }
 
   // ---------------------------------------------------------------------------
@@ -338,53 +339,134 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
   _formatContext(context) {
     const sections = [];
 
-    // Component info
+    // ── Pull hierarchy from first enhanced frame ────────────────────────────
+    const enhancedFrame = context.requestData?.enhancedFrameData?.[0];
+    const hierarchy = enhancedFrame?.hierarchy || context.hierarchy;
+    const dt = hierarchy?.designTokens || {};
+
+    // ── Component info ──────────────────────────────────────────────────────
     const comp = context.figma || {};
-    if (comp.component_name || comp.file_name) {
-      sections.push(`### Component Info
-- Name: ${comp.component_name || 'See frame data'}
-- File: ${comp.file_name || 'Unknown'}
-- Page: ${comp.page_name || 'Unknown'}
-- Type: ${comp.component_type || 'FRAME'}
-- File Key: ${comp.file_key || 'Unknown'}`);
+    const frameName = comp.component_name || enhancedFrame?.name || 'See frame data';
+    if (frameName || comp.file_name) {
+      const w = enhancedFrame?.width || '?', h = enhancedFrame?.height || '?';
+      sections.push(`### Component Info\n- Name: ${frameName}\n- File: ${comp.file_name || 'Unknown'}\n- Page: ${comp.page_name || 'Unknown'}\n- Type: ${comp.component_type || enhancedFrame?.type || 'FRAME'}\n- Size: ${w}\u00d7${h}px`);
     }
 
-    // Design data
-    const design = context.design || {};
-    if (design.colors || design.typography || design.spacing) {
-      // colors / fonts may be arrays, objects, or scalars — normalise to string
-      const toStr = (v) => {
-        if (!v) return null;
-        if (Array.isArray(v)) return v.join(', ');
-        if (typeof v === 'object') return Object.values(v).flat().join(', ');
-        return String(v);
-      };
-      const colors = toStr(design.colors) || 'Extract from screenshot';
-      const fonts  = toStr(design.typography?.fonts) || 'Extract from screenshot';
-      sections.push(`### Design Tokens
-- Colors: ${colors}
-- Typography: ${fonts}
-- Spacing: ${design.spacing?.base_unit || '8px base unit'}`);
+    // ── Auto-layout ─────────────────────────────────────────────────────────
+    const rootLayer = hierarchy?.layers?.find(l => l.depth === 1);
+    const rootLayout = rootLayer?.layout;
+    if (rootLayout?.mode && rootLayout.mode !== 'NONE') {
+      const dir = rootLayout.mode === 'HORIZONTAL' ? 'row' : 'column';
+      const { paddingTop: pt = 0, paddingRight: pr = 0, paddingBottom: pb = 0, paddingLeft: pl = 0 } = rootLayout;
+      const padding = (pt === pr && pr === pb && pb === pl) ? `${pt}px` : `${pt}px ${pr}px ${pb}px ${pl}px`;
+      sections.push(`### Auto-Layout\n- Direction: ${dir} (${rootLayout.mode})\n- Gap: ${rootLayout.gap}px\n- Padding: ${padding}\n- Primary axis: ${rootLayout.primaryAlign || 'MIN'}\n- Cross axis: ${rootLayout.counterAlign || 'MIN'}`);
     }
 
-    // Frame data (raw from Figma plugin)
-    if (context.requestData?.enhancedFrameData?.length) {
-      const frames = context.requestData.enhancedFrameData.slice(0, 5);
-      const frameInfo = frames.map(f =>
-        `  - ${f.name} (${f.type}, ${f.width}x${f.height})`
-      ).join('\n');
-      sections.push(`### Frame Hierarchy\n${frameInfo}`);
+    // ── Color tokens ────────────────────────────────────────────────────────
+    const rawColors = dt.colors?.length ? dt.colors : (() => {
+      const v = context.design?.colors;
+      if (!v) return [];
+      if (Array.isArray(v)) return v;
+      if (typeof v === 'object') return Object.values(v).flat();
+      return String(v).split(', ');
+    })();
+    if (rawColors.length > 0) {
+      // Infer semantic role from the first layer that uses each hex
+      const colorRoles = new Map();
+      for (const layer of (hierarchy?.layers || [])) {
+        const layerName = (layer.name || '').toLowerCase();
+        const role = layer.semanticRole || '';
+        for (const hex of (layer.tokens?.colors || [])) {
+          if (colorRoles.has(hex)) continue;
+          let label = role;
+          if (layerName.includes('bg') || layerName.includes('background')) label = 'background';
+          else if (layerName.includes('border') || layerName.includes('stroke')) label = 'border';
+          else if (layer.type === 'TEXT') label = 'text';
+          else if (layerName.includes('btn') || layerName.includes('button')) label = 'button-fill';
+          else if (layerName.includes('icon') || role === 'icon') label = 'icon';
+          colorRoles.set(hex, label);
+        }
+      }
+      const colorLines = rawColors.map(hex => {
+        const role = colorRoles.get(hex);
+        return role ? `  ${hex}  (${role})` : `  ${hex}`;
+      });
+      sections.push(`### Color Tokens\n${colorLines.join('\n')}`);
     }
 
-    // Tech stack
+    // ── Typography ──────────────────────────────────────────────────────────
+    if (dt.typographyRich?.length > 0) {
+      const typoLines = dt.typographyRich.map(t => {
+        const lh = t.lineHeight && t.lineHeight !== 'auto' ? ` / lh ${t.lineHeight}` : '';
+        const ls = t.letterSpacing && t.letterSpacing !== 0 ? ` / ls ${t.letterSpacing}` : '';
+        return `  ${t.role || 'text'}: ${t.family} / ${t.weight} / ${t.size}px${lh}${ls}`;
+      });
+      sections.push(`### Typography Roles\n${typoLines.join('\n')}`);
+    } else {
+      // Fallback to legacy format
+      const fonts = (() => {
+        const v = context.design?.typography?.fonts;
+        if (!v) return [];
+        if (Array.isArray(v)) return v;
+        if (typeof v === 'object') return Object.values(v).flat();
+        return String(v).split(', ');
+      })();
+      if (fonts.length > 0) sections.push(`### Typography\n${fonts.map(f => `  ${f}`).join('\n')}`);
+    }
+
+    // ── Spacing / border-radius / shadows ───────────────────────────────────
+    if (dt.spacing?.length) {
+      sections.push(`### Spacing Scale\n  ${dt.spacing.map(v => `${v}px`).join(', ')}`);
+    } else if (context.design?.spacing?.base_unit) {
+      sections.push(`### Spacing\n  Base unit: ${context.design.spacing.base_unit}`);
+    }
+    if (dt.borderRadius?.length) {
+      sections.push(`### Border Radius\n  ${dt.borderRadius.map(r => `${r}px`).join(', ')}`);
+    }
+    if (dt.shadows?.length) {
+      sections.push(`### Shadows\n${dt.shadows.map(s => `  ${s}`).join('\n')}`);
+    }
+
+    // ── Component variants (Figma REST API — Part B) ─────────────────────────
+    const variants = context.requestData?.figmaRestData?.variants;
+    if (variants && Object.keys(variants).length > 0) {
+      const varLines = Object.entries(variants).map(([k, v]) => `  ${k}: ${Array.isArray(v) ? v.join(' | ') : v}`);
+      sections.push(`### Component Variants\n${varLines.join('\n')}`);
+    }
+
+    // ── Code Connect (Figma dev_resources — Part C) ──────────────────────────
+    const cc = context.requestData?.codeConnect;
+    if (cc?.component) {
+      const ccLines = [`  Component: ${cc.component}`];
+      if (cc.importPath) ccLines.push(`  Import: import { ${cc.componentName || 'Component'} } from '${cc.importPath}'`);
+      if (cc.props) ccLines.push(`  Props: ${JSON.stringify(cc.props)}`);
+      sections.push(`### Code Component Mapping\n${ccLines.join('\n')}`);
+    }
+
+    // ── Project ─────────────────────────────────────────────────────────────
     if (context.project?.tech_stack) {
-      sections.push(`### Project
-- Tech Stack: ${context.project.tech_stack}
-- Platform: ${context.project.platform || 'web'}`);
+      sections.push(`### Project\n- Tech Stack: ${context.project.tech_stack}\n- Platform: ${context.project.platform || 'web'}`);
     }
 
     if (sections.length === 0) {
       sections.push('Context data limited — infer from screenshot and component name.');
+    }
+
+    // ── Full layer tree (always at the bottom) ───────────────────────────────
+    if (hierarchy?.layers?.length > 0) {
+      const treeLines = hierarchy.layers.map(layer => {
+        const indent = '  '.repeat((layer.depth || 1) - 1);
+        const w = Math.round(layer.size?.width || 0);
+        const h = Math.round(layer.size?.height || 0);
+        const layoutTag = layer.layout?.mode
+          ? ` [${layer.layout.mode === 'HORIZONTAL' ? 'row' : 'col'}, gap:${layer.layout.gap}px]`
+          : '';
+        const typoTag = layer.type === 'TEXT' && layer.tokens?.typographyRich?.[0]
+          ? ` "${layer.tokens.typographyRich[0].family} ${layer.tokens.typographyRich[0].weight} ${layer.tokens.typographyRich[0].size}px"`
+          : '';
+        return `${indent}${layer.name} (${layer.type}, ${w}\u00d7${h})${layoutTag}${typoTag}`;
+      });
+      sections.push(`### Layer Tree\n${treeLines.join('\n')}`);
     }
 
     return sections.join('\n\n');

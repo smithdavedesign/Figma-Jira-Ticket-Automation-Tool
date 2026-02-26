@@ -279,9 +279,10 @@ async function handleMakeAIRequest(msg) {
 // ─── Hierarchy builder (recursive) ────────────────────────────────────
 async function buildHierarchy(node) {
     const layers = [];
-    const tokens = { colors: new Set(), typography: new Set(), spacing: new Set(), borderRadius: new Set(), shadows: new Set() };
+    const tokens = { colors: new Set(), typography: new Set(), spacing: new Set(), borderRadius: new Set(), shadows: new Set(), typographyRichMap: new Map() };
     let maxDepth = 1, componentCount = 0, textCount = 0;
     async function walk(n, depth) {
+        var _a;
         maxDepth = Math.max(maxDepth, depth);
         if (n.type === 'INSTANCE' || n.type === 'COMPONENT')
             componentCount++;
@@ -290,17 +291,11 @@ async function buildHierarchy(node) {
         const extracted = extractDesignTokens(n);
         extracted.colors.forEach((c) => tokens.colors.add(c));
         extracted.typography.forEach((t) => tokens.typography.add(t));
+        (_a = extracted.typographyRich) === null || _a === void 0 ? void 0 : _a.forEach((t) => { const k = `${t.family}-${t.size}-${t.weight}`; tokens.typographyRichMap.set(k, t); });
         extracted.spacing.forEach((s) => tokens.spacing.add(s));
         extracted.borderRadius.forEach((r) => tokens.borderRadius.add(r));
         extracted.shadows.forEach((sh) => tokens.shadows.add(sh));
-        const layer = {
-            id: n.id, name: n.name, type: n.type, depth,
-            position: { x: n.x, y: n.y },
-            size: { width: n.width, height: n.height },
-            visible: n.visible,
-            semanticRole: determineSemanticRole(n),
-            tokens: extracted
-        };
+        const layer = Object.assign({ id: n.id, name: n.name, type: n.type, depth, position: { x: n.x, y: n.y }, size: { width: n.width, height: n.height }, visible: n.visible, semanticRole: determineSemanticRole(n), tokens: extracted }, (extracted.layout ? { layout: extracted.layout } : {}));
         if (n.type === 'INSTANCE') {
             try {
                 const master = await n.getMainComponentAsync();
@@ -308,7 +303,7 @@ async function buildHierarchy(node) {
                 if (n.componentProperties)
                     layer.componentProperties = n.componentProperties;
             }
-            catch ( /* skip */_a) { /* skip */ }
+            catch ( /* skip */_b) { /* skip */ }
         }
         layers.push(layer);
         if ('children' in n && n.children) {
@@ -325,6 +320,7 @@ async function buildHierarchy(node) {
         designTokens: {
             colors: [...tokens.colors],
             typography: [...tokens.typography],
+            typographyRich: [...tokens.typographyRichMap.values()],
             spacing: [...tokens.spacing].sort((a, b) => a - b),
             borderRadius: [...tokens.borderRadius].sort((a, b) => a - b),
             shadows: [...tokens.shadows]
@@ -333,8 +329,8 @@ async function buildHierarchy(node) {
 }
 // ─── Design-token extraction (single node) ─────────────────────────────
 function extractDesignTokens(node) {
-    var _a, _b, _c, _d;
-    const t = { colors: [], typography: [], spacing: [], borderRadius: [], shadows: [] };
+    var _a, _b;
+    const t = { colors: [], typography: [], typographyRich: [], spacing: [], borderRadius: [], shadows: [], layout: null };
     try {
         // Fills
         if ('fills' in node && Array.isArray(node.fills)) {
@@ -352,16 +348,53 @@ function extractDesignTokens(node) {
                 }
             }
         }
-        // Typography
+        // Typography — full extraction including weight, lineHeight, letterSpacing
         if (node.type === 'TEXT') {
             const n = node;
-            const family = ((_a = n.fontName) === null || _a === void 0 ? void 0 : _a.toString()) !== '[object Object]'
-                ? 'Mixed' : (((_b = n.fontName) === null || _b === void 0 ? void 0 : _b.family) || 'Inter');
+            let family = 'Inter', style = 'Regular';
+            try {
+                if (n.fontName && typeof n.fontName.family === 'string') {
+                    family = n.fontName.family;
+                    style = n.fontName.style || 'Regular';
+                }
+            }
+            catch ( /* mixed font */_c) { /* mixed font */ }
             const size = typeof n.fontSize === 'number' ? n.fontSize : 16;
+            const weight = _styleToWeight(style);
+            let lineHeight = 'auto';
+            try {
+                const lh = n.lineHeight;
+                if (lh && lh.unit === 'PIXELS' && lh.value)
+                    lineHeight = `${Math.round(lh.value)}px`;
+                else if (lh && lh.unit === 'PERCENT' && lh.value)
+                    lineHeight = `${Math.round(lh.value)}%`;
+            }
+            catch ( /* mixed */_d) { /* mixed */ }
+            let letterSpacing = 0;
+            try {
+                const ls = n.letterSpacing;
+                if (ls && ls.value && ls.value !== 0)
+                    letterSpacing = ls.unit === 'PIXELS' ? `${ls.value}px` : `${ls.value}%`;
+            }
+            catch ( /* mixed */_e) { /* mixed */ }
             t.typography.push(`${family}-${size}px`);
+            t.typographyRich.push({ family, style, size, weight, lineHeight, letterSpacing, role: determineSemanticRole(node) });
+        }
+        // Auto-layout properties
+        const any_n = node;
+        if (any_n.layoutMode && any_n.layoutMode !== 'NONE') {
+            t.layout = {
+                mode: any_n.layoutMode,
+                gap: any_n.itemSpacing || 0,
+                paddingTop: any_n.paddingTop || 0,
+                paddingRight: any_n.paddingRight || 0,
+                paddingBottom: any_n.paddingBottom || 0,
+                paddingLeft: any_n.paddingLeft || 0,
+                primaryAlign: any_n.primaryAxisAlignItems || null,
+                counterAlign: any_n.counterAxisAlignItems || null,
+            };
         }
         // Padding → spacing
-        const any_n = node;
         for (const key of ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']) {
             if (any_n[key] > 0)
                 t.spacing.push(any_n[key]);
@@ -377,15 +410,24 @@ function extractDesignTokens(node) {
         if ('effects' in node && node.effects) {
             for (const e of node.effects) {
                 if (e.type === 'DROP_SHADOW') {
-                    t.shadows.push(`${((_c = e.offset) === null || _c === void 0 ? void 0 : _c.x) || 0}px ${((_d = e.offset) === null || _d === void 0 ? void 0 : _d.y) || 0}px ${e.radius || 0}px`);
+                    t.shadows.push(`${((_a = e.offset) === null || _a === void 0 ? void 0 : _a.x) || 0}px ${((_b = e.offset) === null || _b === void 0 ? void 0 : _b.y) || 0}px ${e.radius || 0}px`);
                 }
             }
         }
     }
-    catch ( /* safe */_e) { /* safe */ }
+    catch ( /* safe */_f) { /* safe */ }
     // Deduplicate
     t.colors = [...new Set(t.colors)];
     t.typography = [...new Set(t.typography)];
+    // typographyRich: deduplicate by family+size+weight
+    const _richSeen = new Set();
+    t.typographyRich = t.typographyRich.filter((r) => {
+        const k = `${r.family}-${r.size}-${r.weight}`;
+        if (_richSeen.has(k))
+            return false;
+        _richSeen.add(k);
+        return true;
+    });
     t.spacing = [...new Set(t.spacing)].sort((a, b) => a - b);
     t.borderRadius = [...new Set(t.borderRadius)].sort((a, b) => a - b);
     t.shadows = [...new Set(t.shadows)];
@@ -394,6 +436,27 @@ function extractDesignTokens(node) {
 // ─── Helpers ───────────────────────────────────────────────────────────
 function rgbToHex(r, g, b) {
     return '#' + ((1 << 24) + (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b)).toString(16).slice(1);
+}
+// Map Figma font style string to CSS font-weight number
+function _styleToWeight(style) {
+    const s = (style || '').toLowerCase();
+    if (s.includes('thin') || s.includes('hairline'))
+        return 100;
+    if (s.includes('extralight') || s.includes('ultralight'))
+        return 200;
+    if (s.includes('light'))
+        return 300;
+    if (s.includes('semibold') || s.includes('demibold'))
+        return 600;
+    if (s.includes('extrabold') || s.includes('ultrabold'))
+        return 800;
+    if (s.includes('black') || s.includes('heavy'))
+        return 900;
+    if (s.includes('bold'))
+        return 700;
+    if (s.includes('medium'))
+        return 500;
+    return 400; // Regular / Normal / Roman
 }
 function determineSemanticRole(node) {
     switch (node.type) {

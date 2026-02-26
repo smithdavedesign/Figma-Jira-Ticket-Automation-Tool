@@ -88,6 +88,36 @@ export class GenerateRoutes extends BaseRoute {
         }
       }
 
+      // ---- Parallel Figma REST enrichment (Part B: node variants, Part C: Code Connect) ----
+      let figmaRestData = null, codeConnect = null;
+      {
+        const enrichToken = process.env.FIGMA_ACCESS_TOKEN || process.env.FIGMA_API_KEY;
+        const enrichFileKey = request.fileContext?.fileKey;
+        const enrichNodeId = (request.enhancedFrameData?.[0] || request.frameData?.[0])?.id;
+        if (enrichFileKey && enrichNodeId && enrichToken) {
+          try {
+            const { FigmaRestClient } = await import('../../core/figma/FigmaRestClient.js');
+            const client = new FigmaRestClient(enrichToken, this.logger);
+            const [nodeResult, ccResult] = await Promise.allSettled([
+              client.fetchNodeData(enrichFileKey, enrichNodeId),
+              client.fetchDevResources(enrichFileKey, enrichNodeId),
+            ]);
+            if (nodeResult.status === 'fulfilled' && nodeResult.value) {
+              figmaRestData = nodeResult.value;
+              this.logger.info('Figma REST node enrichment: ok');
+            }
+            if (ccResult.status === 'fulfilled' && ccResult.value) {
+              codeConnect = ccResult.value;
+              this.logger.info(`Figma Code Connect mapping found: ${codeConnect.componentName}`);
+            }
+          } catch (enrichErr) {
+            this.logger.warn('Figma REST enrichment skipped:', enrichErr.message);
+          }
+        }
+      }
+      request.figmaRestData = figmaRestData;
+      request.codeConnect = codeConnect;
+
       let result;
       try {
         const gemini = this.getService('geminiService');
@@ -103,6 +133,8 @@ export class GenerateRoutes extends BaseRoute {
           screenshot: resolvedScreenshot,
           figmaExportUrl: request.figmaExportUrl,
           fileContext: request.fileContext,
+          figmaRestData: request.figmaRestData,
+          codeConnect: request.codeConnect,
           metadata: request.metadata,
         });
 

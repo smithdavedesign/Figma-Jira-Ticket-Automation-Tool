@@ -297,7 +297,7 @@ async function handleMakeAIRequest(msg: any) {
 
 async function buildHierarchy(node: SceneNode): Promise<any> {
   const layers: any[] = [];
-  const tokens = { colors: new Set<string>(), typography: new Set<string>(), spacing: new Set<number>(), borderRadius: new Set<number>(), shadows: new Set<string>() };
+  const tokens = { colors: new Set<string>(), typography: new Set<string>(), spacing: new Set<number>(), borderRadius: new Set<number>(), shadows: new Set<string>(), typographyRichMap: new Map<string, any>() };
   let maxDepth = 1, componentCount = 0, textCount = 0;
 
   async function walk(n: SceneNode, depth: number) {
@@ -308,6 +308,7 @@ async function buildHierarchy(node: SceneNode): Promise<any> {
     const extracted = extractDesignTokens(n);
     extracted.colors.forEach((c: string) => tokens.colors.add(c));
     extracted.typography.forEach((t: string) => tokens.typography.add(t));
+    extracted.typographyRich?.forEach((t: any) => { const k = `${t.family}-${t.size}-${t.weight}`; tokens.typographyRichMap.set(k, t); });
     extracted.spacing.forEach((s: number) => tokens.spacing.add(s));
     extracted.borderRadius.forEach((r: number) => tokens.borderRadius.add(r));
     extracted.shadows.forEach((sh: string) => tokens.shadows.add(sh));
@@ -318,7 +319,8 @@ async function buildHierarchy(node: SceneNode): Promise<any> {
       size: { width: n.width, height: n.height },
       visible: n.visible,
       semanticRole: determineSemanticRole(n),
-      tokens: extracted
+      tokens: extracted,
+      ...(extracted.layout ? { layout: extracted.layout } : {}),
     };
 
     if (n.type === 'INSTANCE') {
@@ -346,6 +348,7 @@ async function buildHierarchy(node: SceneNode): Promise<any> {
     designTokens: {
       colors: [...tokens.colors],
       typography: [...tokens.typography],
+      typographyRich: [...tokens.typographyRichMap.values()],
       spacing: [...tokens.spacing].sort((a, b) => a - b),
       borderRadius: [...tokens.borderRadius].sort((a, b) => a - b),
       shadows: [...tokens.shadows]
@@ -356,7 +359,7 @@ async function buildHierarchy(node: SceneNode): Promise<any> {
 // ─── Design-token extraction (single node) ─────────────────────────────
 
 function extractDesignTokens(node: SceneNode): any {
-  const t: any = { colors: [], typography: [], spacing: [], borderRadius: [], shadows: [] };
+  const t: any = { colors: [], typography: [], typographyRich: [], spacing: [], borderRadius: [], shadows: [], layout: null };
   try {
     // Fills
     if ('fills' in node && Array.isArray((node as any).fills)) {
@@ -374,16 +377,47 @@ function extractDesignTokens(node: SceneNode): any {
         }
       }
     }
-    // Typography
+    // Typography — full extraction including weight, lineHeight, letterSpacing
     if (node.type === 'TEXT') {
       const n = node as TextNode;
-      const family = (n.fontName as FontName | typeof figma.mixed)?.toString() !== '[object Object]'
-        ? 'Mixed' : ((n.fontName as FontName)?.family || 'Inter');
+      let family = 'Inter', style = 'Regular';
+      try {
+        if (n.fontName && typeof (n.fontName as any).family === 'string') {
+          family = (n.fontName as FontName).family;
+          style = (n.fontName as FontName).style || 'Regular';
+        }
+      } catch { /* mixed font */ }
       const size = typeof n.fontSize === 'number' ? n.fontSize : 16;
+      const weight = _styleToWeight(style);
+      let lineHeight = 'auto';
+      try {
+        const lh = n.lineHeight as any;
+        if (lh && lh.unit === 'PIXELS' && lh.value) lineHeight = `${Math.round(lh.value)}px`;
+        else if (lh && lh.unit === 'PERCENT' && lh.value) lineHeight = `${Math.round(lh.value)}%`;
+      } catch { /* mixed */ }
+      let letterSpacing: string | number = 0;
+      try {
+        const ls = n.letterSpacing as any;
+        if (ls && ls.value && ls.value !== 0) letterSpacing = ls.unit === 'PIXELS' ? `${ls.value}px` : `${ls.value}%`;
+      } catch { /* mixed */ }
       t.typography.push(`${family}-${size}px`);
+      t.typographyRich.push({ family, style, size, weight, lineHeight, letterSpacing, role: determineSemanticRole(node) });
+    }
+    // Auto-layout properties
+    const any_n = node as any;
+    if (any_n.layoutMode && any_n.layoutMode !== 'NONE') {
+      t.layout = {
+        mode: any_n.layoutMode,
+        gap: any_n.itemSpacing || 0,
+        paddingTop: any_n.paddingTop || 0,
+        paddingRight: any_n.paddingRight || 0,
+        paddingBottom: any_n.paddingBottom || 0,
+        paddingLeft: any_n.paddingLeft || 0,
+        primaryAlign: any_n.primaryAxisAlignItems || null,
+        counterAlign: any_n.counterAxisAlignItems || null,
+      };
     }
     // Padding → spacing
-    const any_n = node as any;
     for (const key of ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']) {
       if (any_n[key] > 0) t.spacing.push(any_n[key]);
     }
@@ -406,6 +440,13 @@ function extractDesignTokens(node: SceneNode): any {
   // Deduplicate
   t.colors = [...new Set(t.colors)];
   t.typography = [...new Set(t.typography)];
+  // typographyRich: deduplicate by family+size+weight
+  const _richSeen = new Set<string>();
+  t.typographyRich = t.typographyRich.filter((r: any) => {
+    const k = `${r.family}-${r.size}-${r.weight}`;
+    if (_richSeen.has(k)) return false;
+    _richSeen.add(k); return true;
+  });
   t.spacing = [...new Set(t.spacing as number[])].sort((a: number, b: number) => a - b);
   t.borderRadius = [...new Set(t.borderRadius as number[])].sort((a: number, b: number) => a - b);
   t.shadows = [...new Set(t.shadows)];
@@ -416,6 +457,20 @@ function extractDesignTokens(node: SceneNode): any {
 
 function rgbToHex(r: number, g: number, b: number): string {
   return '#' + ((1 << 24) + (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b)).toString(16).slice(1);
+}
+
+// Map Figma font style string to CSS font-weight number
+function _styleToWeight(style: string): number {
+  const s = (style || '').toLowerCase();
+  if (s.includes('thin') || s.includes('hairline')) return 100;
+  if (s.includes('extralight') || s.includes('ultralight')) return 200;
+  if (s.includes('light')) return 300;
+  if (s.includes('semibold') || s.includes('demibold')) return 600;
+  if (s.includes('extrabold') || s.includes('ultrabold')) return 800;
+  if (s.includes('black') || s.includes('heavy')) return 900;
+  if (s.includes('bold')) return 700;
+  if (s.includes('medium')) return 500;
+  return 400; // Regular / Normal / Roman
 }
 
 function determineSemanticRole(node: SceneNode): string {
