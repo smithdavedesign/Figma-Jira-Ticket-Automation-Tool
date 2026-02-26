@@ -917,20 +917,43 @@ export class WorkItemOrchestrator {
       header += `**Storybook:** TBD\n`;
       header += `**QA Test Case:** TBD\n`;
       header += `---\n\n`;
-      
-      // Basic conversion of Jira Markup to Markdown
-      // Note: This is a simple regex-based conversion. For full fidelity, a parser is needed.
-      let converted = markdown
-          .replace(/^h1\. (.*)$/gm, '# $1')      // h1. -> #
-          .replace(/^h2\. (.*)$/gm, '## $1')     // h2. -> ##
-          .replace(/^h3\. (.*)$/gm, '### $1')    // h3. -> ###
-          .replace(/^h4\. (.*)$/gm, '#### $1')   // h4. -> ####
-          .replace(/\{code(:[a-z]+)?\}/g, '```') // {code} -> ```
-          .replace(/\[(.+)\|(.+)\]/g, '[$1]($2)') // [text|url] -> [text](url)
-          .replace(/_(.+)_/g, '*$1*')            // _italic_ -> *italic* (Markdown uses * or _)
-          .replace(/\*(.+)\*/g, '**$1**')        // *bold* -> **bold**
-          .replace(/^{noformat}/gm, '```')        // {noformat} -> ```
-          .replace(/^----/gm, '---');            // ---- -> ---
+
+      let converted = markdown;
+
+      // Step 1: Convert {code:lang}...{code} to fenced code blocks FIRST
+      // so subsequent regexes don't corrupt the code content.
+      // Mark opening tag with language hint, closing tag stays as ```
+      converted = converted.replace(/\{code:([a-z]+)\}/g, '```$1');
+      converted = converted.replace(/\{code\}/g, '```');
+      converted = converted.replace(/\{noformat\}/g, '```');
+
+      // Step 2: Convert Jira headings
+      converted = converted
+          .replace(/^h1\. (.*)$/gm, '# $1')
+          .replace(/^h2\. (.*)$/gm, '## $1')
+          .replace(/^h3\. (.*)$/gm, '### $1')
+          .replace(/^h4\. (.*)$/gm, '#### $1');
+
+      // Step 3: Convert Jira bullet levels to Markdown.
+      // Must be done BEFORE bold/italic conversions to avoid corrupting ** prefixes.
+      converted = converted
+          .replace(/^\*{3} /gm, '      - ')  // *** → 3rd level
+          .replace(/^\*{2} /gm, '   - ')     // **  → 2nd level
+          .replace(/^\* /gm,    '- ');        // *   → 1st level
+
+      // Step 4: Convert inline {{code}} to `code`
+      converted = converted.replace(/\{\{([^}]+)\}\}/g, '`$1`');
+
+      // Step 5: Convert Jira links [text|url] → [text](url)
+      converted = converted.replace(/\[([^\]|]+)\|([^\]]+)\]/g, '[$1]($2)');
+
+      // Step 6: Convert Jira bold *text* → **text** and italic _text_ → _text_
+      // Use word-boundary-style anchors to avoid matching bullet dashes or loose asterisks.
+      // Only match *...* where preceded/followed by non-asterisk (avoids **bold** already done).
+      converted = converted.replace(/(?<!\*)\*(?!\s)([^*\n]+?)(?<!\s)\*(?!\*)/g, '**$1**');
+
+      // Step 7: Normalise horizontal rules
+      converted = converted.replace(/^----$/gm, '---');
 
       return header + converted;
   }
