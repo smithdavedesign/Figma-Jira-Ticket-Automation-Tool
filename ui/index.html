@@ -160,6 +160,14 @@
     .creation-link.wiki  { background: #faf5ff; color: #6d28d9; border-color: #ddd6fe; }
     .creation-link.qa    { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
     .creation-link.failed { background: #fef2f2; color: #991b1b; border-color: #fecaca; cursor: default; }
+    .retry-btn {
+      flex-shrink: 0; margin-left: auto; padding: 3px 10px; border-radius: 4px;
+      font-size: .72rem; font-weight: 700; cursor: pointer;
+      background: #fecaca; color: #7f1d1d; border: 1px solid #fca5a5;
+      transition: all .15s;
+    }
+    .retry-btn:hover:not(:disabled) { background: #fca5a5; }
+    .retry-btn:disabled { opacity: .5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -237,8 +245,14 @@
           <a id="wikiLink"   class="creation-link wiki"   href="#" style="display:none;">📄 View Wiki Page</a>
           <a id="qaLink"    class="creation-link qa"     href="#" style="display:none;">🧪 View QA Test Case</a>
           <span id="jiraFailed" class="creation-link failed" style="display:none;">⚠️ Jira ticket creation failed</span>
-          <span id="wikiFailed" class="creation-link failed" style="display:none;">⚠️ Wiki page creation failed</span>
-          <span id="qaFailed"  class="creation-link failed" style="display:none;">⚠️ QA page creation failed</span>
+          <div id="wikiFailed" class="creation-link failed" style="display:none; justify-content:space-between; align-items:center;">
+            <span>⚠️ Wiki page creation failed</span>
+            <button id="wikiRetryBtn" class="retry-btn" disabled>↻ Retry</button>
+          </div>
+          <div id="qaFailed" class="creation-link failed" style="display:none; justify-content:space-between; align-items:center;">
+            <span>⚠️ QA page creation failed</span>
+            <button id="qaRetryBtn" class="retry-btn" disabled>↻ Retry</button>
+          </div>
         </div>
       </div>
     </div>
@@ -269,6 +283,8 @@
     const jiraFailedEl          = document.getElementById('jiraFailed');
     const wikiFailedEl          = document.getElementById('wikiFailed');
     const qaFailedEl            = document.getElementById('qaFailed');
+    const wikiRetryBtnEl        = document.getElementById('wikiRetryBtn');
+    const qaRetryBtnEl          = document.getElementById('qaRetryBtn');
 
     // ─── State ─────────────────────────────────────────────────
     let frameData         = null;   // last selection-context from Figma
@@ -278,6 +294,8 @@
     let generating        = false;
     let lastRequestParams = null;   // params sent to /api/generate (for context download)
     let lastApiResponse   = null;   // full response from /api/generate (for context download)
+    let wikiRetryContext  = null;   // { title, content, spaceKey, parentId } saved on wiki failure
+    let qaRetryContext    = null;   // { title, content, spaceKey, parentId } saved on QA failure
 
     // ─── Tech-stack templates ──────────────────────────────────
     const STACKS = {
@@ -529,7 +547,81 @@
         creationLinksEl.style.display = 'none';
       }
 
+      saveRetryContext(orch);
       toast('Done!', 'success');
+    }
+
+    // ─── saveRetryContext ─────────────────────────────────────────
+    // Reads retryContext blobs from the orchestration result and stores
+    // them so retryWiki() / retryQA() can reuse the generated content.
+    function saveRetryContext(orch) {
+      wikiRetryContext = orch?.wiki?.retryContext || null;
+      qaRetryContext   = orch?.qa?.retryContext  || null;
+      if (wikiRetryBtnEl) { wikiRetryBtnEl.disabled = !wikiRetryContext; wikiRetryBtnEl.textContent = '↻ Retry'; }
+      if (qaRetryBtnEl)   { qaRetryBtnEl.disabled   = !qaRetryContext;   qaRetryBtnEl.textContent   = '↻ Retry'; }
+    }
+
+    // ─── retryWiki ────────────────────────────────────────────────
+    // Calls POST /api/retry-wiki with the saved wiki context and swaps
+    // the error row for a live link on success.
+    async function retryWiki() {
+      if (!wikiRetryContext) return;
+      wikiRetryBtnEl.disabled = true;
+      wikiRetryBtnEl.textContent = 'Retrying…';
+      try {
+        const res  = await fetch('http://localhost:3000/api/retry-wiki', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'wiki', ...wikiRetryContext })
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+          wikiFailedEl.style.display = 'none';
+          wikiLinkEl.onclick = (e) => { e.preventDefault(); parent.postMessage({ pluginMessage: { type: 'open-url', url: data.url } }, '*'); };
+          wikiLinkEl.style.display = 'flex';
+          wikiRetryContext = null;
+          toast('Wiki page created!', 'success');
+        } else {
+          wikiRetryBtnEl.disabled = false;
+          wikiRetryBtnEl.textContent = '↻ Retry';
+          toast('Retry failed — ' + (data.error || 'unknown'), 'error', 5000);
+        }
+      } catch (e) {
+        wikiRetryBtnEl.disabled = false;
+        wikiRetryBtnEl.textContent = '↻ Retry';
+        toast('Retry failed — ' + e.message, 'error', 5000);
+      }
+    }
+
+    // ─── retryQA ──────────────────────────────────────────────────
+    // Same as retryWiki but for the QA Test Case page.
+    async function retryQA() {
+      if (!qaRetryContext) return;
+      qaRetryBtnEl.disabled = true;
+      qaRetryBtnEl.textContent = 'Retrying…';
+      try {
+        const res  = await fetch('http://localhost:3000/api/retry-wiki', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'qa', ...qaRetryContext })
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+          qaFailedEl.style.display = 'none';
+          qaLinkEl.onclick = (e) => { e.preventDefault(); parent.postMessage({ pluginMessage: { type: 'open-url', url: data.url } }, '*'); };
+          qaLinkEl.style.display = 'flex';
+          qaRetryContext = null;
+          toast('QA page created!', 'success');
+        } else {
+          qaRetryBtnEl.disabled = false;
+          qaRetryBtnEl.textContent = '↻ Retry';
+          toast('Retry failed — ' + (data.error || 'unknown'), 'error', 5000);
+        }
+      } catch (e) {
+        qaRetryBtnEl.disabled = false;
+        qaRetryBtnEl.textContent = '↻ Retry';
+        toast('Retry failed — ' + e.message, 'error', 5000);
+      }
     }
 
     /** Content may be a string or [{type:'text', text:'…'}] array */
@@ -552,6 +644,10 @@
       aiTicketData      = null;
       lastRequestParams = null;
       lastApiResponse   = null;
+      wikiRetryContext  = null;
+      qaRetryContext    = null;
+      if (wikiRetryBtnEl) { wikiRetryBtnEl.disabled = true; wikiRetryBtnEl.textContent = '↻ Retry'; }
+      if (qaRetryBtnEl)   { qaRetryBtnEl.disabled   = true; qaRetryBtnEl.textContent   = '↻ Retry'; }
       generateBtn.disabled = true;
       downloadContextBtn.style.display = 'none';
       creationLinksEl.style.display = 'none';
@@ -605,6 +701,8 @@
     });
 
     // ─── Init ──────────────────────────────────────────────────
+    wikiRetryBtnEl.addEventListener('click', retryWiki);
+    qaRetryBtnEl.addEventListener('click', retryQA);
     checkServer();
     setInterval(checkServer, 30000);
     parent.postMessage({ pluginMessage: { type: 'get-context' } }, '*');

@@ -29,6 +29,7 @@ import { FigmaSessionManager } from '../core/data/figma-session-manager.js';
 import { GenerateRoutes } from './routes/generate.js';
 import { HealthRoutes } from './routes/health.js';
 import { FigmaRoutes } from './routes/figma/figma.js';
+import { RetryWikiRoutes } from './routes/retry-wiki.js';
 
 export class Server {
   constructor() {
@@ -170,6 +171,10 @@ export class Server {
     // Figma API endpoints (screenshot, etc.)
     const figmaRoutes = new FigmaRoutes(sc);
     figmaRoutes.registerRoutes(router);
+
+    // Retry a failed wiki/QA page using already-generated content
+    const retryWikiRoutes = new RetryWikiRoutes(sc);
+    retryWikiRoutes.registerRoutes(router);
 
     this.app.use(router);
     this.logger.info('Routes registered');

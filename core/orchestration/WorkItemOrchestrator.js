@@ -519,6 +519,8 @@ export class WorkItemOrchestrator {
           this.logger.error(`Failed to create Wiki page: ${e.message}`, e);
           results.wiki.error = e.message;
           results.wiki.status = 'failed_creation';
+          // Surface enough context for the UI to offer a one-click retry
+          results.wiki.retryContext = { title: finalWikiTitle, content: safeContent, spaceKey: wikiSpace, parentId: wikiParentId };
         }
 
         // --- Step E: Create QA Test Case Wiki Page ---
@@ -647,7 +649,8 @@ export class WorkItemOrchestrator {
 
         } catch (qaErr) {
           this.logger.warn(`QA Test Case wiki creation failed: ${qaErr.message}`);
-          results.qa = { status: 'failed', error: qaErr.message };
+          // Surface enough context for the UI to offer a one-click retry
+          results.qa = { status: 'failed', error: qaErr.message, retryContext: { title: qaBaseTitle, content: qaContent, spaceKey: wikiSpace, parentId: qaWikiParentId } };
         }
 
         } finally {
