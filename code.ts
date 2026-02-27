@@ -293,6 +293,26 @@ async function handleMakeAIRequest(msg: any) {
   }
 }
 
+// ─── Token subtree extractor (for INSTANCE master components) ──────────
+// Recursively collects design tokens from a node tree without polluting the
+// layer hierarchy. Used to capture canonical typography/spacing values from
+// master components when the selected frame contains INSTANCE nodes.
+async function extractTokensFromSubtree(
+  node: any,
+  tokens: { colors: Set<string>; typography: Set<string>; spacing: Set<number>; borderRadius: Set<number>; shadows: Set<string>; typographyRichMap: Map<string, any> }
+): Promise<void> {
+  const extracted = extractDesignTokens(node as SceneNode);
+  extracted.colors.forEach((c: string) => tokens.colors.add(c));
+  extracted.typography.forEach((t: string) => tokens.typography.add(t));
+  extracted.typographyRich?.forEach((t: any) => { const k = `${t.family}-${t.size}-${t.weight}`; tokens.typographyRichMap.set(k, t); });
+  extracted.spacing.forEach((s: number) => tokens.spacing.add(s));
+  extracted.borderRadius.forEach((r: number) => tokens.borderRadius.add(r));
+  extracted.shadows.forEach((sh: string) => tokens.shadows.add(sh));
+  if ('children' in node && node.children) {
+    for (const child of node.children) await extractTokensFromSubtree(child, tokens);
+  }
+}
+
 // ─── Hierarchy builder (recursive) ────────────────────────────────────
 
 async function buildHierarchy(node: SceneNode): Promise<any> {
@@ -328,6 +348,9 @@ async function buildHierarchy(node: SceneNode): Promise<any> {
         const master = await (n as InstanceNode).getMainComponentAsync();
         layer.masterComponent = { id: master?.id, name: master?.name };
         if ((n as any).componentProperties) layer.componentProperties = (n as any).componentProperties;
+        // Fix 1+2: Extract tokens from master component's full subtree so that
+        // typography/spacing inside nested instances is captured with canonical values.
+        if (master) await extractTokensFromSubtree(master as any, tokens);
       } catch { /* skip */ }
     }
 

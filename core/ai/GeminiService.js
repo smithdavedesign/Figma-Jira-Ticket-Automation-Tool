@@ -363,7 +363,8 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
     }
 
     // ── Color tokens ────────────────────────────────────────────────────────
-    const rawColors = dt.colors?.length ? dt.colors : (() => {
+    const _dtColorsPresent = dt.colors?.length > 0;
+    const rawColors = _dtColorsPresent ? dt.colors : (() => {
       const v = context.design?.colors;
       if (!v) return [];
       if (Array.isArray(v)) return v;
@@ -391,7 +392,7 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
         const role = colorRoles.get(hex);
         return role ? `  ${hex}  (${role})` : `  ${hex}`;
       });
-      sections.push(`### Color Tokens\n${colorLines.join('\n')}`);
+      sections.push(`${_dtColorsPresent ? '### Color Tokens' : '### Color Tokens ⚠️ estimated'}\n${colorLines.join('\n')}`);
     }
 
     // ── Typography ──────────────────────────────────────────────────────────
@@ -411,14 +412,14 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
         if (typeof v === 'object') return Object.values(v).flat();
         return String(v).split(', ');
       })();
-      if (fonts.length > 0) sections.push(`### Typography\n${fonts.map(f => `  ${f}`).join('\n')}`);
+      if (fonts.length > 0) sections.push(`### Typography ⚠️ estimated\n${fonts.map(f => `  ${f}`).join('\n')}`);
     }
 
     // ── Spacing / border-radius / shadows ───────────────────────────────────
     if (dt.spacing?.length) {
       sections.push(`### Spacing Scale\n  ${dt.spacing.map(v => `${v}px`).join(', ')}`);
     } else if (context.design?.spacing?.base_unit) {
-      sections.push(`### Spacing\n  Base unit: ${context.design.spacing.base_unit}`);
+      sections.push(`### Spacing ⚠️ estimated\n  Base unit: ${context.design.spacing.base_unit}`);
     }
     if (dt.borderRadius?.length) {
       sections.push(`### Border Radius\n  ${dt.borderRadius.map(r => `${r}px`).join(', ')}`);

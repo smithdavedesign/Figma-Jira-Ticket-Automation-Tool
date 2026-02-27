@@ -181,4 +181,55 @@ export class FigmaRestClient {
       return null;
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Fix 4 — Main component fetch (INSTANCE → master variant props)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * When the selected node is an INSTANCE, the Figma REST API returns a
+   * `componentId` field pointing to the master COMPONENT node.  This method
+   * fetches that master and extracts its componentPropertyDefinitions so we
+   * can surface variant options even when the frame itself has none.
+   *
+   * @param {string} fileKey
+   * @param {string} componentId — value of rawNode.componentId from fetchNodeData
+   * @returns {{ variants: Object } | null}
+   */
+  async fetchMainComponent(fileKey, componentId) {
+    if (!this.token || !fileKey || !componentId) return null;
+    try {
+      const encodedId = encodeURIComponent(componentId.replace(/-/g, ':'));
+      const url = `${this.baseUrl}/files/${fileKey}/nodes?ids=${encodedId}&depth=1`;
+      const res = await fetch(url, { headers: this.headers });
+      if (!res.ok) {
+        this.logger.warn(`Figma main-component API ${res.status} for ${componentId}`);
+        return null;
+      }
+      const data = await res.json();
+      const nodeDoc = data.nodes?.[componentId]?.document
+        || data.nodes?.[componentId.replace(/-/g, ':')]?.document
+        || Object.values(data.nodes || {})[0]?.document;
+      if (!nodeDoc) return null;
+
+      const rawVariants = nodeDoc.componentPropertyDefinitions
+        || nodeDoc.componentProperties
+        || {};
+      const variants = {};
+      for (const [propName, propDef] of Object.entries(rawVariants)) {
+        const cleanName = propName.replace(/#\d+$/, '');
+        if (propDef.variantOptions?.length) {
+          variants[cleanName] = propDef.variantOptions;
+        } else if (propDef.defaultValue !== undefined) {
+          variants[cleanName] = propDef.defaultValue;
+        } else if (propDef.type) {
+          variants[cleanName] = propDef.type;
+        }
+      }
+      return Object.keys(variants).length > 0 ? { variants } : null;
+    } catch (err) {
+      this.logger.warn('fetchMainComponent error:', err.message);
+      return null;
+    }
+  }
 }

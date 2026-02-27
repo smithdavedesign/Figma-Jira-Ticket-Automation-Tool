@@ -276,6 +276,24 @@ async function handleMakeAIRequest(msg) {
         });
     }
 }
+// ─── Token subtree extractor (for INSTANCE master components) ──────────
+// Recursively collects design tokens from a node tree without polluting the
+// layer hierarchy. Used to capture canonical typography/spacing values from
+// master components when the selected frame contains INSTANCE nodes.
+async function extractTokensFromSubtree(node, tokens) {
+    var _a;
+    const extracted = extractDesignTokens(node);
+    extracted.colors.forEach((c) => tokens.colors.add(c));
+    extracted.typography.forEach((t) => tokens.typography.add(t));
+    (_a = extracted.typographyRich) === null || _a === void 0 ? void 0 : _a.forEach((t) => { const k = `${t.family}-${t.size}-${t.weight}`; tokens.typographyRichMap.set(k, t); });
+    extracted.spacing.forEach((s) => tokens.spacing.add(s));
+    extracted.borderRadius.forEach((r) => tokens.borderRadius.add(r));
+    extracted.shadows.forEach((sh) => tokens.shadows.add(sh));
+    if ('children' in node && node.children) {
+        for (const child of node.children)
+            await extractTokensFromSubtree(child, tokens);
+    }
+}
 // ─── Hierarchy builder (recursive) ────────────────────────────────────
 async function buildHierarchy(node) {
     const layers = [];
@@ -302,6 +320,10 @@ async function buildHierarchy(node) {
                 layer.masterComponent = { id: master === null || master === void 0 ? void 0 : master.id, name: master === null || master === void 0 ? void 0 : master.name };
                 if (n.componentProperties)
                     layer.componentProperties = n.componentProperties;
+                // Fix 1+2: Extract tokens from master component's full subtree so that
+                // typography/spacing inside nested instances is captured with canonical values.
+                if (master)
+                    await extractTokensFromSubtree(master, tokens);
             }
             catch ( /* skip */_b) { /* skip */ }
         }

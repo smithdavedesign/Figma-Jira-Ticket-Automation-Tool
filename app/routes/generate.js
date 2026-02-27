@@ -105,6 +105,20 @@ export class GenerateRoutes extends BaseRoute {
             if (nodeResult.status === 'fulfilled' && nodeResult.value) {
               figmaRestData = nodeResult.value;
               this.logger.info('Figma REST node enrichment: ok');
+              // Fix 4: If the selected node is an INSTANCE, fetch master component
+              // to get its canonical componentPropertyDefinitions (variant props).
+              const _mcId = figmaRestData?.rawNode?.componentId;
+              if (_mcId) {
+                try {
+                  const mcResult = await client.fetchMainComponent(enrichFileKey, _mcId);
+                  if (mcResult?.variants && Object.keys(mcResult.variants).length > 0) {
+                    figmaRestData.variants = { ...figmaRestData.variants, ...mcResult.variants };
+                    this.logger.info('Figma main-component variants merged from master');
+                  }
+                } catch (mcErr) {
+                  this.logger.warn('fetchMainComponent skipped:', mcErr.message);
+                }
+              }
             }
             if (ccResult.status === 'fulfilled' && ccResult.value) {
               codeConnect = ccResult.value;
