@@ -1,19 +1,24 @@
 /**
  * GeminiService — Unit tests for pure prompt-building and formatting methods.
  *
- * These are all synchronous, deterministic helpers with no Gemini API calls.
- * We stub GoogleGenerativeAI so the constructor doesn't need a real key.
+ * These are all synchronous, deterministic helpers with no live provider calls.
+ * We stub OpenAI so the constructor doesn't need a real key.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// ── Mock @google/generative-ai so constructor never tries to initialise the SDK
-vi.mock('@google/generative-ai', () => {
-  class GoogleGenerativeAI {
-    constructor() {}
-    getGenerativeModel() { return {}; }
+// ── Mock openai so constructor never tries to initialise the SDK
+vi.mock('openai', () => {
+  class OpenAI {
+    constructor() {
+      this.chat = {
+        completions: {
+          create: vi.fn(),
+        },
+      };
+    }
   }
-  return { GoogleGenerativeAI };
+  return { default: OpenAI };
 });
 
 // ── Stub UnifiedContextBuilder to avoid Figma/file-system dependencies
@@ -28,7 +33,12 @@ vi.mock('../../core/data/unified-context-builder.js', () => {
 import { GeminiService } from '../../core/ai/GeminiService.js';
 
 function makeService() {
-  return new GeminiService({ apiKey: 'test-key-12345' });
+  return new GeminiService({
+    apiKey: 'test-key-12345',
+    host: 'https://dataiku.example.com',
+    projectKey: 'TESTPROJ',
+    model: 'gpt-4o-mini',
+  });
 }
 
 // ── _buildFigmaDeepLink ───────────────────────────────────────────────────────
@@ -382,9 +392,9 @@ describe('GeminiService._formatContext', () => {
   let svc;
   beforeEach(() => { svc = makeService(); });
 
-  it('returns fallback message when context is empty', () => {
+  it('returns a minimal component section when context is empty', () => {
     const result = svc._formatContext({});
-    expect(result).toContain('Context data limited');
+    expect(result).toContain('### Component Info');
   });
 
   it('includes component name from figma.component_name', () => {
@@ -416,14 +426,15 @@ describe('GeminiService._formatContext', () => {
     expect(svc._formatContext(ctx)).toContain('#4f00b5');
   });
 
-  it('includes frame hierarchy from requestData.enhancedFrameData', () => {
+  it('includes frame metadata from requestData.enhancedFrameData', () => {
     const ctx = {
       requestData: {
         enhancedFrameData: [{ name: 'Button', type: 'FRAME', width: 200, height: 48 }],
       },
     };
-    expect(svc._formatContext(ctx)).toContain('Frame Hierarchy');
-    expect(svc._formatContext(ctx)).toContain('Button');
+    const result = svc._formatContext(ctx);
+    expect(result).toContain('### Component Info');
+    expect(result).toContain('Button');
   });
 
   it('includes tech stack from context.project', () => {

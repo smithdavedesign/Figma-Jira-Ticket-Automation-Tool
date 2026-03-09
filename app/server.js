@@ -4,7 +4,7 @@
  * Figma AI Ticket Generator — Server
  *
  * Streamlined Express server with explicit service/route registration.
- * Services: GeminiService → TicketGenerationService → WorkItemOrchestrator
+ * Services: Dataiku-backed GeminiService wrapper -> TicketGenerationService -> WorkItemOrchestrator
  */
 
 import './env-setup.js';
@@ -75,11 +75,19 @@ export class Server {
     // Configuration
     sc.register('configurationService', (_c, redis) => new ConfigurationService(redis), true, ['redis']);
 
-    // AI — GeminiService (primary generation engine)
+    // AI - Dataiku-backed generation engine (keeps GeminiService interface)
     sc.register('geminiService', (_c, _r, cfg) => {
-      const apiKey = cfg?.get('ai.gemini.apiKey') || process.env.GEMINI_API_KEY;
-      if (!apiKey) throw new Error('GEMINI_API_KEY not found');
-      return new GeminiService({ apiKey, configService: cfg });
+      const apiKey = cfg?.get('ai.providers.dataiku.apiKey') || process.env.DATAIKU_API_KEY;
+      const host = cfg?.get('ai.providers.dataiku.host') || process.env.DATAIKU_HOST;
+      const projectKey = cfg?.get('ai.providers.dataiku.projectKey') || process.env.DATAIKU_PROJECT_KEY;
+      const model = cfg?.get('ai.providers.dataiku.model') || process.env.DATAIKU_MODEL;
+
+      if (!apiKey) throw new Error('DATAIKU_API_KEY not found');
+      if (!host) throw new Error('DATAIKU_HOST not found');
+      if (!projectKey) throw new Error('DATAIKU_PROJECT_KEY not found');
+      if (!model) throw new Error('DATAIKU_MODEL not found');
+
+      return new GeminiService({ apiKey, host, projectKey, model, configService: cfg });
     }, true, ['redis', 'configurationService']);
 
     // Screenshot

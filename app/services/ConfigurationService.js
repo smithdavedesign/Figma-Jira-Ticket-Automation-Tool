@@ -63,8 +63,8 @@ export class ConfigurationService extends BaseService {
     defaults.set('logging.directory', 'logs');
 
     // AI configuration
-    defaults.set('ai.provider', 'gemini');
-    defaults.set('ai.model', 'gemini-2.0-flash');
+    defaults.set('ai.provider', 'dataiku');
+    defaults.set('ai.model', 'gpt-4o-mini');
     defaults.set('ai.temperature', 0.7);
     defaults.set('ai.maxTokens', 2000);
     defaults.set('ai.timeout', 30000);
@@ -105,7 +105,10 @@ export class ConfigurationService extends BaseService {
       'PORT': 'server.port',
       'HOST': 'server.host',
       'LOG_LEVEL': 'logging.level',
-      'GEMINI_API_KEY': 'ai.apiKey',
+      'DATAIKU_API_KEY': 'ai.apiKey',
+      'DATAIKU_HOST': 'ai.host',
+      'DATAIKU_PROJECT_KEY': 'ai.projectKey',
+      'DATAIKU_MODEL': 'ai.model',
       'FIGMA_ACCESS_TOKEN': 'figma.accessToken',
       'REDIS_URL': 'cache.redis.url',
       'NODE_ENV': 'environment.mode'

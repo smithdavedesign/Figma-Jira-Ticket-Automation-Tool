@@ -2,7 +2,7 @@
 
 ## Overview
 
-The system has two parts: a **Figma plugin** (TypeScript) and a **Node.js server** (Express). The plugin fetches the Figma frame image via the Figma Export REST API (CDN URL) and sends it to the server, which uses Gemini AI for vision-based analysis and MCP servers to create work items.
+The system has two parts: a **Figma plugin** (TypeScript) and a **Node.js server** (Express). The plugin fetches the Figma frame image via the Figma Export REST API (CDN URL) and sends it to the server, which uses a Dataiku OpenAI-compatible model for vision-based analysis and MCP servers to create work items.
 
 ---
 
@@ -28,7 +28,7 @@ The system has two parts: a **Figma plugin** (TypeScript) and a **Node.js server
 │   └─ normalizeRequest() / validate()            │
 │   └─ GeminiService.generate()  ←── PRIMARY      │
 │       └─ UnifiedContextBuilder (frame + tokens) │
-│       └─ Gemini 2.0 Flash (vision: CDN URL)     │
+│       └─ Dataiku OpenAI-compatible model (vision: CDN URL) │
 │       └─ returns { content, metadata }          │
 │                                                 │
 │  [if enableActiveCreation = true]               │
@@ -78,11 +78,11 @@ The system has two parts: a **Figma plugin** (TypeScript) and a **Node.js server
 
 ## Fallback Path
 
-When Gemini is unavailable (no API key, rate limit, error), the server falls back to YAML template generation via `ContextTemplateBridge` → `UniversalTemplateEngine`. No AI required — pre--baked templates for each platform/tech stack.
+When the Dataiku LLM is unavailable (missing config, rate limit, error), the server falls back to YAML template generation via `ContextTemplateBridge` -> `UniversalTemplateEngine`. No AI required - pre-baked templates for each platform/tech stack.
 
 ```
 GenerateRoutes
-  └─ GeminiService.generate() → ERROR
+    └─ GeminiService.generate() -> ERROR
   └─ ContextTemplateBridge.generateDocumentation()
       └─ UniversalTemplateEngine (YAML templates)
       └─ returns template-based content
@@ -100,11 +100,11 @@ ServiceContainer
   ├─ sessionManager         ← session persistence
   ├─ figmaSessionManager    ← Figma API + screenshot
   ├─ configurationService   ← env var wrapper
-  ├─ geminiService          ← Gemini 2.0 Flash
+    ├─ geminiService          ← Dataiku OpenAI-compatible endpoint
   ├─ screenshotService      ← Figma frame export
   ├─ contextManager         ← Figma data extraction
   ├─ mcpAdapter             ← JSON-RPC MCP client
-  ├─ ticketGenerationService← thin Gemini wrapper
+    ├─ ticketGenerationService← thin AI wrapper
   ├─ ticketService          ← alias of above
   └─ workItemOrchestrator   ← Jira + Wiki + Git
 ```
@@ -155,7 +155,7 @@ Both default to markdown. The `MCPAdapter` intentionally omits the rejected para
 sequenceDiagram
     participant FP as Figma Plugin
     participant SRV as Express Server :3000
-    participant GEM as Gemini 2.0 Flash
+    participant GEM as Dataiku LLM
     participant JIRA as Jira MCP
     participant CONF as Confluence MCP
     participant GIT as Git MCP
@@ -210,7 +210,7 @@ flowchart TD
 
     subgraph Server["Express Server :3000"]
         GEN["GenerateRoutes"]
-        GEMINI["GeminiService\nGemini 2.0 Flash\n(vision analysis)"]
+        GEMINI["GeminiService\nDataiku OpenAI-compatible\n(vision analysis)"]
         ORCH["WorkItemOrchestrator"]
     end
 
@@ -258,10 +258,10 @@ Plugin → Server communication is a single `POST /api/generate` with frame data
 |---|---|---|
 | `app/server.js` | ~250 | Express setup, service + route registration |
 | `app/routes/generate.js` | ~143 | POST /api/generate handler |
-| `core/ai/GeminiService.js` | ~450 | Gemini 2.0 Flash integration + vision prompts |
+| `core/ai/GeminiService.js` | ~450 | Dataiku OpenAI-compatible integration + vision prompts |
 | `core/adapters/MCPAdapter.js` | ~745 | Multi-server MCP client, Jira/Confluence/Git ops |
 | `core/orchestration/WorkItemOrchestrator.js` | ~903 | Full Jira + Impl-Wiki + QA-Wiki + back-patch + cross-links + Git flow |
-| `core/data/unified-context-builder.js` | ~1,144 | Builds rich context for Gemini prompt |
+| `core/data/unified-context-builder.js` | ~1,144 | Builds rich context for AI prompt |
 | `core/bridge/ContextTemplateBridge.js` | 144 | YAML fallback |
 | `core/template/UniversalTemplateEngine.js` | ~876 | YAML template processor |
 | `code.ts` | ~440 | Figma plugin source |

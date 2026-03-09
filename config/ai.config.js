@@ -1,7 +1,7 @@
 /**
  * AI Configuration
  *
- * Configuration for AI providers including Gemini, Claude, GPT-4
+ * Configuration for AI providers with Dataiku OpenAI-compatible endpoint
  * and fallback strategies.
  */
 
@@ -10,19 +10,21 @@ export const aiConfig = {
   enabled: true,
 
   // Primary AI provider
-  primaryProvider: 'gemini',
+  primaryProvider: 'dataiku',
 
   // Provider configurations
   providers: {
-    gemini: {
-      enabled: Boolean(process.env.GEMINI_API_KEY),
-      apiKey: process.env.GEMINI_API_KEY,
-      model: 'gemini-2.0-flash',
+    dataiku: {
+      enabled: Boolean(process.env.DATAIKU_API_KEY && process.env.DATAIKU_HOST && process.env.DATAIKU_PROJECT_KEY),
+      apiKey: process.env.DATAIKU_API_KEY,
+      host: process.env.DATAIKU_HOST,
+      projectKey: process.env.DATAIKU_PROJECT_KEY,
+      model: process.env.DATAIKU_MODEL || 'gpt-4o-mini',
       maxTokens: 8192,
-      temperature: 0.7,
+      temperature: 0,
       vision: {
         enabled: true,
-        model: 'gemini-2.0-flash'
+        model: process.env.DATAIKU_MODEL || 'gpt-4o-mini'
       }
     }
   },
@@ -31,12 +33,12 @@ export const aiConfig = {
   fallback: {
     enabled: true,
     strategy: 'waterfall', // 'waterfall' or 'round-robin'
-    order: ['gemini', 'standard']
+    order: ['dataiku', 'standard']
   },
 
   // Rate limiting
   rateLimits: {
-    gemini: {
+    dataiku: {
       requestsPerMinute: 60,
       tokensPerDay: 100000
     }

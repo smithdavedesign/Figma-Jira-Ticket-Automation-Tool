@@ -1,7 +1,7 @@
 /**
  * Ticket Generation Service Tests
  *
- * Tests the thin GeminiService wrapper — happy path, fallback, and health check.
+ * Tests the thin AI service wrapper - happy path, fallback, and health check.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -16,7 +16,7 @@ describe('TicketGenerationService', () => {
       generate: vi.fn().mockResolvedValue({
         content: 'h1. LoginButton\n\nh2. Description\nAI generated ticket',
         metadata: {
-          model: 'gemini-pro',
+          model: 'gpt-4o-mini',
           tokens: 42,
         },
       }),
@@ -28,7 +28,7 @@ describe('TicketGenerationService', () => {
   // ── generateTicket — happy path ───────────────────────────────────────────
 
   describe('generateTicket — success', () => {
-    it('returns content and gemini strategy when GeminiService succeeds', async () => {
+    it('returns content and dataiku strategy when AI service succeeds', async () => {
       const request = {
         enhancedFrameData: [{ name: 'LoginButton', id: 'btn-1' }],
         techStack: 'React',
@@ -38,7 +38,7 @@ describe('TicketGenerationService', () => {
       const result = await service.generateTicket(request);
 
       expect(result.content).toContain('LoginButton');
-      expect(result.metadata.strategy).toBe('gemini');
+      expect(result.metadata.strategy).toBe('dataiku');
       expect(result.metadata.service).toBe('TicketGenerationService');
     });
 
@@ -93,9 +93,9 @@ describe('TicketGenerationService', () => {
       const resultB = await service.generateTicket(request, 'template');
       const resultC = await service.generateTicket(request, 'ignored-value');
 
-      expect(resultA.metadata.strategy).toBe('gemini');
-      expect(resultB.metadata.strategy).toBe('gemini');
-      expect(resultC.metadata.strategy).toBe('gemini');
+      expect(resultA.metadata.strategy).toBe('dataiku');
+      expect(resultB.metadata.strategy).toBe('dataiku');
+      expect(resultC.metadata.strategy).toBe('dataiku');
     });
   });
 
@@ -106,7 +106,7 @@ describe('TicketGenerationService', () => {
       mockGeminiService.generate.mockRejectedValue(new Error('AI service unavailable'));
     });
 
-    it('returns emergency-fallback strategy when GeminiService throws', async () => {
+    it('returns emergency-fallback strategy when AI service throws', async () => {
       const result = await service.generateTicket({ componentName: 'ErrorComp' });
 
       expect(result.metadata.strategy).toBe('emergency-fallback');
@@ -145,14 +145,14 @@ describe('TicketGenerationService', () => {
       const health = service.healthCheck();
 
       expect(health.service).toBe('TicketGenerationService');
-      expect(health.geminiAvailable).toBe(true);
+      expect(health.aiServiceAvailable).toBe(true);
     });
 
     it('reports geminiAvailable: false when no service injected', () => {
       const svc = new TicketGenerationService(null);
       const health = svc.healthCheck();
 
-      expect(health.geminiAvailable).toBe(false);
+      expect(health.aiServiceAvailable).toBe(false);
     });
   });
 });

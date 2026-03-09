@@ -4,25 +4,36 @@
  * Replaces the previous 4,900-line dual-service setup (VisualEnhancedAIService +
  * TemplateGuidedAIService) with a single focused module.
  *
- * Flow: context + screenshot + tech stack → prompt → Gemini 2.0 Flash → ticket content
+ * Flow: context + screenshot + tech stack -> prompt -> Dataiku OpenAI endpoint -> ticket content
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { Logger } from '../utils/logger.js';
 import { UnifiedContextBuilder } from '../data/unified-context-builder.js';
 
 export class GeminiService {
   constructor(options = {}) {
-    const apiKey = options.apiKey || process.env.GEMINI_API_KEY;
+    const apiKey = options.apiKey || process.env.DATAIKU_API_KEY;
+    const host = (options.host || process.env.DATAIKU_HOST || '').replace(/\/$/, '');
+    const projectKey = options.projectKey || process.env.DATAIKU_PROJECT_KEY;
+    const model = options.model || process.env.DATAIKU_MODEL;
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is required');
+      throw new Error('DATAIKU_API_KEY is required');
+    }
+    if (!host) {
+      throw new Error('DATAIKU_HOST is required');
+    }
+    if (!projectKey) {
+      throw new Error('DATAIKU_PROJECT_KEY is required');
+    }
+    if (!model) {
+      throw new Error('DATAIKU_MODEL is required');
     }
 
     this.logger = new Logger('GeminiService');
-    this.client = new GoogleGenerativeAI(apiKey);
-    this.model = this.client.getGenerativeModel({
-      model: options.model || process.env.GEMINI_MODEL || 'gemini-2.0-flash'
-    });
+    this.model = model;
+    this.baseURL = `${host}/public/api/projects/${projectKey}/llms/openai/v1/`;
+    this.client = new OpenAI({ apiKey, baseURL: this.baseURL });
     this.maxRetries = 2;
 
     // Context builder for merging Figma data into a unified object
@@ -31,7 +42,7 @@ export class GeminiService {
       logger: this.logger,
     });
 
-    this.logger.info('GeminiService initialized');
+    this.logger.info(`GeminiService initialized (Dataiku endpoint: ${this.baseURL})`);
   }
 
   // ---------------------------------------------------------------------------
@@ -89,21 +100,21 @@ export class GeminiService {
         documentType,
       });
 
-      // 3. Prepare multimodal parts (text + optional image)
-      const parts = [{ text: prompt }];
+      // 3. Prepare OpenAI-compatible multimodal user content (text + optional image)
+      const userContent = [{ type: 'text', text: prompt }];
       const screenshotBase64 = await this._resolveScreenshot(params, context);
       if (screenshotBase64) {
-        parts.push({
-          inlineData: {
-            mimeType: 'image/png',
-            data: screenshotBase64,
+        userContent.push({
+          type: 'image_url',
+          image_url: {
+            url: `data:image/png;base64,${screenshotBase64}`,
           },
         });
         this.logger.info('Screenshot attached to LLM request');
       }
 
-      // 4. Call Gemini with retry
-      const generatedText = await this._callWithRetry(parts);
+      // 4. Call Dataiku OpenAI-compatible endpoint with retry
+      const generatedText = await this._callWithRetry(userContent);
 
       // 5. Clean up response
       const content = this._cleanResponse(generatedText, platform);
@@ -115,6 +126,7 @@ export class GeminiService {
         content,
         metadata: {
           generationMethod: 'gemini-service',
+          provider: 'dataiku-openai',
           platform,
           documentType,
           componentName,
@@ -520,9 +532,9 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
       base64 = base64.split(',')[1];
     }
 
-    // Reject SVG (can't send to Gemini vision)
+    // Reject SVG since image_url payload expects a raster image
     if (base64 && /^PHN2Zy|data:image\/svg/.test(base64)) {
-      this.logger.warn('SVG screenshot detected — skipping (Gemini requires raster images)');
+      this.logger.warn('SVG screenshot detected - skipping (provider expects raster images)');
       return null;
     }
 
@@ -546,19 +558,26 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
   }
 
   // ---------------------------------------------------------------------------
-  // Gemini API call with retry
+  // Dataiku OpenAI-compatible API call with retry
   // ---------------------------------------------------------------------------
 
-  async _callWithRetry(parts, attempt = 1) {
+  async _callWithRetry(userContent, attempt = 1) {
     try {
-      const result = await this.model.generateContent(parts);
-      const response = await result.response;
-      return response.text();
+      const result = await this.client.chat.completions.create({
+        model: this.model,
+        messages: [
+          { role: 'system', content: 'You are a senior technical analyst that creates precise implementation tickets and wiki docs.' },
+          { role: 'user', content: userContent },
+        ],
+        temperature: 0,
+      });
+
+      return result?.choices?.[0]?.message?.content || '';
     } catch (error) {
       if (attempt <= this.maxRetries) {
-        this.logger.warn(`Gemini API error (attempt ${attempt}/${this.maxRetries}), retrying: ${error.message}`);
+        this.logger.warn(`Dataiku API error (attempt ${attempt}/${this.maxRetries}), retrying: ${error.message}`);
         await new Promise(r => setTimeout(r, 1000 * attempt));
-        return this._callWithRetry(parts, attempt + 1);
+        return this._callWithRetry(userContent, attempt + 1);
       }
       throw error;
     }
@@ -570,7 +589,7 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
 
   _cleanResponse(text, platform) {
     let cleaned = text;
-    // Remove trailing "Design Analysis" sections Gemini sometimes appends
+    // Remove trailing "Design Analysis" sections that some models append
     cleaned = cleaned.split(/\n#+\s*Design Analysis/i)[0];
     // Remove markdown code fences that wrap the entire output
     cleaned = cleaned.replace(/^```(?:markdown|jira|text)?\n/i, '').replace(/\n```\s*$/, '');

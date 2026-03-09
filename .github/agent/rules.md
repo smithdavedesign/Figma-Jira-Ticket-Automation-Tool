@@ -13,7 +13,7 @@
 ```
 Figma Plugin (code.ts → code.js)
   └─ POST /api/generate
-       └─ GeminiService (Gemini 2.0 Flash — vision via CDN image URL)
+     └─ GeminiService (Dataiku OpenAI-compatible endpoint - vision via CDN image URL)
             └─ WorkItemOrchestrator (when enableActiveCreation = true)
                  ├─ Step A: MCPAdapter → Jira      (ticket + image attachment)
                  ├─ Step B: MCPAdapter → Confluence (Implementation Plan wiki + image)
@@ -23,7 +23,7 @@ Figma Plugin (code.ts → code.js)
                  └─ Step D: MCPAdapter → Git       (⚠️ OPTIONAL — skipped if GIT_MCP_URL is blank)
 ```
 
-Fallback: When Gemini fails → `ContextTemplateBridge` → YAML templates (no AI).
+Fallback: When AI generation fails -> `ContextTemplateBridge` -> YAML templates (no AI).
 
 ---
 
@@ -36,7 +36,7 @@ Fallback: When Gemini fails → `ContextTemplateBridge` → YAML templates (no A
 ## Required Env Vars (source of truth: `.env.example`)
 
 ```
-GEMINI_API_KEY, FIGMA_API_KEY
+DATAIKU_API_KEY, DATAIKU_HOST, DATAIKU_PROJECT_KEY, DATAIKU_MODEL, FIGMA_API_KEY
 JIRA_BASE_URL, CONFLUENCE_BASE_URL          ← direct REST (image uploads)
 MCP_JIRA_URL, MCP_JIRA_KEY
 MCP_CONFLUENCE_URL, MCP_WIKI_KEY
@@ -87,8 +87,8 @@ Corporate Confluence MCP rejects `content_format` and `version` params — `MCPA
 
 ## Mandatory Rules
 
-1. **No new AI providers** — Gemini 2.0 Flash only
-2. **No strategy selectors** — single generation path: request → Gemini → Orchestrator
+1. **No new AI providers** - Dataiku OpenAI-compatible endpoint only
+2. **No strategy selectors** - single generation path: request -> GeminiService -> Orchestrator
 3. **No health dashboards** — `/health` endpoint is sufficient
 4. **Docs in docs/** — never create `.md` files in root (except `README.md`)
 5. **Git is optional** — always gate on `GIT_MCP_URL`; blank = clean skip

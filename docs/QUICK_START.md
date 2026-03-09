@@ -5,7 +5,7 @@
 - Node.js 20+
 - Redis running locally (`redis-server`) or via Docker
 - Figma Desktop app
-- Google Gemini API key (free at [makersuite.google.com](https://makersuite.google.com/app/apikey))
+- Dataiku LLM credentials (host, project key, API key, model)
 
 ---
 
@@ -28,7 +28,10 @@ cp .env.example .env
 
 Minimum required:
 ```env
-GEMINI_API_KEY=your_key_here
+DATAIKU_API_KEY=your_dataiku_api_key
+DATAIKU_HOST=https://your-dataiku-host.example.com
+DATAIKU_PROJECT_KEY=YOUR_PROJECT_KEY
+DATAIKU_MODEL=gpt-4o-mini
 FIGMA_API_KEY=your_figma_personal_access_token
 ```
 
@@ -123,7 +126,7 @@ This starts the server + Redis together. Server available at `http://localhost:3
 
 **Server won't start**
 - Check Redis is running: `redis-cli ping` should return `PONG`
-- Check `GEMINI_API_KEY` is set in `.env`
+- Check `DATAIKU_API_KEY`, `DATAIKU_HOST`, `DATAIKU_PROJECT_KEY`, and `DATAIKU_MODEL` are set in `.env`
 
 **Plugin can't connect to server**
 - Make sure the server is running on port 3000

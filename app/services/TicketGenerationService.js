@@ -1,5 +1,5 @@
 /**
- * Ticket Generation Service — Thin wrapper around GeminiService
+ * Ticket Generation Service - Thin wrapper around AI generation service
  *
  * Kept for backward compatibility with WorkItemOrchestrator and other callers.
  * Delegates all generation to GeminiService; falls back to a hardcoded
@@ -15,7 +15,7 @@ export class TicketGenerationService extends BaseService {
   }
 
   async onInitialize() {
-    this.logger.info('TicketGenerationService ready (delegates to GeminiService)');
+    this.logger.info('TicketGenerationService ready (delegates to AI service)');
   }
 
   /**
@@ -49,12 +49,12 @@ export class TicketGenerationService extends BaseService {
         content: result.content,
         metadata: {
           ...result.metadata,
-          strategy: 'gemini',
+          strategy: 'dataiku',
           service: 'TicketGenerationService',
         },
       };
     } catch (error) {
-      this.logger.error('GeminiService failed, using hardcoded fallback:', error.message);
+      this.logger.error('AI service failed, using hardcoded fallback:', error.message);
       return this._hardcodedFallback(componentName, request);
     }
   }
@@ -82,7 +82,7 @@ _Generated via fallback (AI unavailable)_`,
       metadata: {
         strategy: 'emergency-fallback',
         service: 'TicketGenerationService',
-        error: 'GeminiService unavailable',
+        error: 'AI service unavailable',
       },
     };
   }
@@ -90,7 +90,7 @@ _Generated via fallback (AI unavailable)_`,
   healthCheck() {
     return {
       ...super.healthCheck(),
-      geminiAvailable: !!this.geminiService,
+      aiServiceAvailable: !!this.geminiService,
     };
   }
 }

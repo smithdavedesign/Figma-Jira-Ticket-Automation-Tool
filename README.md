@@ -2,7 +2,7 @@
 
 Select a frame. Pick a tech stack. Hit Generate.
 
-The plugin fetches the Figma frame image via Figma’s Export API, passes it to **Gemini 2.0 Flash** for vision-based analysis, generates structured documentation, then uses MCP to automatically create a **Jira ticket**, **Confluence Implementation Plan wiki**, **QA Test Case wiki**, and optionally a **Git branch** — no copy-pasting required.
+The plugin fetches the Figma frame image via Figma’s Export API, passes it to a **Dataiku LLM Mesh (OpenAI-compatible) model** for vision-based analysis, generates structured documentation, then uses MCP to automatically create a **Jira ticket**, **Confluence Implementation Plan wiki**, **QA Test Case wiki**, and optionally a **Git branch** - no copy-pasting required.
 
 ---
 
@@ -28,7 +28,7 @@ npm install
 
 # 2. Configure
 cp .env.example .env
-# Set GEMINI_API_KEY, FIGMA_API_KEY, JIRA/CONFLUENCE credentials
+# Set DATAIKU_* vars, FIGMA_API_KEY, JIRA/CONFLUENCE credentials
 
 # 3. Start
 node app/server.js
@@ -50,7 +50,7 @@ Then in Figma: select a frame → choose tech stack → click **Generate**.
 | Node.js | 20+ |
 | Redis | 7+ (running locally or via Docker) |
 | Figma Desktop | Latest |
-| Google Gemini API key | [Get free key](https://makersuite.google.com/app/apikey) |
+| Dataiku LLM API credentials | Dataiku host + project key + API key + model |
 | Figma API key | Personal access token from figma.com/settings |
 
 ---
@@ -66,7 +66,7 @@ Figma Plugin
         ▼
   Express Server :3000
         │
-        ├─ GeminiService (Gemini 2.0 Flash)
+      ├─ GeminiService (Dataiku OpenAI-compatible endpoint)
         │    └─ vision analysis of CDN image URL
         │    └─ generates Jira/Wiki content (markdown)
         │
@@ -144,7 +144,10 @@ Configured in `config/mcp.config.js`:
 
 ```env
 # Required
-GEMINI_API_KEY=your_key
+DATAIKU_API_KEY=your_dataiku_api_key
+DATAIKU_HOST=https://your-dataiku-host.example.com
+DATAIKU_PROJECT_KEY=YOUR_PROJECT_KEY
+DATAIKU_MODEL=gpt-4o-mini
 FIGMA_API_KEY=your_figma_personal_access_token
 
 # Direct Jira/Confluence REST (for image attachment uploads)
@@ -211,7 +214,7 @@ figma-ticket-generator/
 │
 ├── core/
 │   ├── ai/
-│   │   └── GeminiService.js          ← Gemini 2.0 Flash
+│   │   └── GeminiService.js          ← Dataiku OpenAI-compatible endpoint
 │   ├── adapters/
 │   │   └── MCPAdapter.js             ← multi-server MCP client
 │   ├── orchestration/
@@ -278,7 +281,7 @@ docker-compose up --build
 |---|---|
 | Plugin | TypeScript → ES2017 (Figma API) |
 | Server | Node.js 20, Express 4, ES modules |
-| AI | Google Gemini 2.0 Flash (`@google/generative-ai`) |
+| AI | Dataiku LLM Mesh via OpenAI-compatible API (`openai`) |
 | Image source | Figma Export REST API → CDN URL (not base64) |
 | MCP | JSON-RPC 2.0 over HTTP/SSE |
 | Cache | Redis 7 (ioredis) |

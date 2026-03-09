@@ -9,7 +9,7 @@ A Figma plugin + Express server that auto-creates Jira tickets, Confluence Imple
 **Flow:**
 1. User selects frame + tech stack in Figma plugin
 2. Plugin POSTs frame data + Figma export URL to local server (port 3000)
-3. Server calls **Gemini 2.0 Flash** (vision) to generate documentation
+3. Server calls **Dataiku LLM Mesh (OpenAI-compatible)** for generation
 4. **WorkItemOrchestrator** uses MCP to create all artifacts automatically
 5. Plugin UI displays live links to every created artifact
 
@@ -30,7 +30,7 @@ code.ts (Figma plugin) → POST /api/generate → GeminiService → WorkItemOrch
 |---|---|
 | `app/server.js` | Express server (~250 lines) |
 | `app/routes/generate.js` | POST /api/generate |
-| `core/ai/GeminiService.js` | Gemini 2.0 Flash (vision analysis) |
+| `core/ai/GeminiService.js` | Dataiku OpenAI-compatible generation (vision analysis) |
 | `core/adapters/MCPAdapter.js` | JSON-RPC 2.0 MCP client — custom, NOT `@modelcontextprotocol/sdk` |
 | `core/orchestration/WorkItemOrchestrator.js` | Full Jira + Impl Wiki + QA Wiki + cross-links + Git (~903 lines) |
 | `config/mcp.config.js` | MCP server URLs |
@@ -48,7 +48,7 @@ We use a **custom JSON-RPC 2.0 implementation** in `MCPAdapter.js`. Never sugges
 
 ## Coding Rules
 
-1. **One AI**: Gemini 2.0 Flash only. No OpenAI/Anthropic/multi-model routing.
+1. **One AI**: Dataiku OpenAI-compatible endpoint only. No multi-provider routing.
 2. **Simple flow**: request → GeminiService → WorkItemOrchestrator. No strategy selectors.
 3. **MCP calls**: Always use `MCPAdapter.callTool(server, tool, params)`.
 4. **Git is optional**: Git step must check `GIT_MCP_URL` — blank = skip without error.
