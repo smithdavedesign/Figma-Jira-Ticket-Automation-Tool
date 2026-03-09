@@ -75,6 +75,16 @@ GIT_REPO_PATH=/path/to/repo
 node app/server.js
 ```
 
+Corporate TLS note (if Dataiku calls fail with certificate verification errors):
+
+```bash
+# Use a trusted CA bundle PEM that includes your corporate root/intermediate certs
+NODE_EXTRA_CA_CERTS=/path/to/corp-ca-bundle.pem npm start
+
+# Or use the helper script
+CORP_CA_BUNDLE_PATH=/path/to/corp-ca-bundle.pem npm run start:corp
+```
+
 You should see:
 
 ```
@@ -127,6 +137,7 @@ This starts the server + Redis together. Server available at `http://localhost:3
 **Server won't start**
 - Check Redis is running: `redis-cli ping` should return `PONG`
 - Check `DATAIKU_API_KEY`, `DATAIKU_HOST`, `DATAIKU_PROJECT_KEY`, and `DATAIKU_MODEL` are set in `.env`
+- If you see certificate errors (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`), set `NODE_EXTRA_CA_CERTS` to your corporate CA bundle PEM
 
 **Plugin can't connect to server**
 - Make sure the server is running on port 3000

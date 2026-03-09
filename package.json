@@ -6,6 +6,7 @@
   "main": "code.js",
   "scripts": {
     "start": "node app/server.js",
+    "start:corp": "./scripts/start-with-ca.sh",
     "start:dev": "nodemon --watch app/ --watch core/ --watch config/ --ext js app/server.js",
     "dev": "npm run start:dev",
     "build": "./scripts/build-simple.sh",
