@@ -2,7 +2,7 @@
  * Unified Generation Route
  *
  * Single endpoint: POST /api/generate
- * Flow: request → GeminiService → (optional) WorkItemOrchestrator → response
+ * Flow: request -> AI service -> (optional) WorkItemOrchestrator -> response
  *
  * Falls back to ContextTemplateBridge (YAML templates) when LLM is unavailable.
  */
@@ -34,7 +34,7 @@ export class GenerateRoutes extends BaseRoute {
 
       this.logger.info(`Generating ${request.platform}/${request.documentType} for "${request.componentName}"`);
 
-      // ---- Primary path: GeminiService ----------------------------------
+      // ---- Primary path: AI service --------------------------------------
       // Snapshot everything we send to the LLM (strip raw base64 screenshot to keep JSON lean)
       const contextSnapshot = {
         sentAt: new Date().toISOString(),
@@ -57,7 +57,7 @@ export class GenerateRoutes extends BaseRoute {
 
       // --- Fetch Figma export URL for LLM vision + wiki/jira image embedding ---
       // If the plugin didn't send a screenshot, call the Figma REST Images API to get
-      // a signed CDN URL. This URL is (a) downloaded as base64 so Gemini can see the
+      // a signed CDN URL. This URL is (a) downloaded as base64 so the AI provider can see the
       // actual design, and (b) stored on request.figmaExportUrl for the orchestrator
       // to embed directly in Confluence/Jira without needing a file upload.
       let resolvedScreenshot = request.screenshot;
@@ -75,7 +75,7 @@ export class GenerateRoutes extends BaseRoute {
               const figmaData = await figmaApiRes.json();
               const exportUrl = figmaData.images?.[nodeId] || Object.values(figmaData.images || {})[0];
               if (exportUrl) {
-                resolvedScreenshot = exportUrl;     // GeminiService downloads this as base64
+                resolvedScreenshot = exportUrl;     // AI service downloads this as base64
                 request.figmaExportUrl = exportUrl; // stored for orchestrator embedding
                 this.logger.info(`📸 Figma export URL fetched for LLM vision: ${exportUrl.substring(0, 70)}...`);
               }
@@ -134,8 +134,8 @@ export class GenerateRoutes extends BaseRoute {
 
       let result;
       try {
-        const gemini = this.getService('geminiService');
-        const generated = await gemini.generate({
+        const aiService = this.getService('geminiService');
+        const generated = await aiService.generate({
           componentName: request.componentName,
           techStack: request.techStack,
           platform: request.platform,
@@ -155,11 +155,11 @@ export class GenerateRoutes extends BaseRoute {
         result = {
           content: generated.content,
           format: request.platform,
-          strategy: 'gemini',
+          strategy: 'dataiku',
           metadata: { ...generated.metadata, debugContext: contextSnapshot },
         };
       } catch (aiError) {
-        this.logger.warn('GeminiService failed, falling back to YAML templates:', aiError.message);
+        this.logger.warn('AI service failed, falling back to YAML templates:', aiError.message);
 
         // ---- Fallback: ContextTemplateBridge (no LLM) -------------------
         const { ContextTemplateBridge } = await import('../../core/bridge/ContextTemplateBridge.js');

@@ -1,5 +1,5 @@
 /**
- * GeminiService — Unified AI service for ticket/wiki generation
+ * GeminiService - Unified AI service for ticket/wiki generation
  *
  * Replaces the previous 4,900-line dual-service setup (VisualEnhancedAIService +
  * TemplateGuidedAIService) with a single focused module.
@@ -30,7 +30,7 @@ export class GeminiService {
       throw new Error('DATAIKU_MODEL is required');
     }
 
-    this.logger = new Logger('GeminiService');
+    this.logger = new Logger('AIService');
     this.model = model;
     this.baseURL = `${host}/public/api/projects/${projectKey}/llms/openai/v1/`;
     this.client = new OpenAI({ apiKey, baseURL: this.baseURL });
@@ -42,7 +42,7 @@ export class GeminiService {
       logger: this.logger,
     });
 
-    this.logger.info(`GeminiService initialized (Dataiku endpoint: ${this.baseURL})`);
+    this.logger.info(`AI service initialized (Dataiku endpoint: ${this.baseURL})`);
   }
 
   // ---------------------------------------------------------------------------
@@ -125,7 +125,7 @@ export class GeminiService {
       return {
         content,
         metadata: {
-          generationMethod: 'gemini-service',
+          generationMethod: 'dataiku-service',
           provider: 'dataiku-openai',
           platform,
           documentType,

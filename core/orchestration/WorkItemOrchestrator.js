@@ -89,7 +89,7 @@ export class WorkItemOrchestrator {
       // 1. Generate Content — use pre-generated content if available
       let ticketContent;
       if (context.generatedContent) {
-        this.logger.info('Using pre-generated content from GeminiService');
+        this.logger.info('Using pre-generated content from AI service');
         ticketContent = context.generatedContent;
       } else {
         const generatedResult = await this.ticketGenerator.generateTicket({

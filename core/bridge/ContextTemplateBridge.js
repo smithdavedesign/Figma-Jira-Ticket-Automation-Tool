@@ -2,7 +2,7 @@
  * Context-Template Bridge — Lightweight non-AI fallback
  *
  * Extracts Figma design context and renders a YAML-based template when the
- * primary GeminiService is unavailable.
+ * primary AI service is unavailable.
  *
  * Flow: Figma data → ContextManager → UniversalTemplateEngine → formatted doc
  */
