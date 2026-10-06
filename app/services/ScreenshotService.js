@@ -391,7 +391,7 @@ export class ScreenshotService extends BaseService {
   generateTestImage(text, color) {
     // Return a 1x1 transparent PNG to prevent "Provided image is not valid" error from Gemini
     // This replaces the SVG generation which is not supported by Gemini vision capabilities
-    return { dataUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==", performance: { captureTime: Date.now(), cached: false } };
+    return { dataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==', performance: { captureTime: Date.now(), cached: false } };
   }
 
   /**

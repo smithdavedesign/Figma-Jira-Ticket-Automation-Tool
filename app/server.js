@@ -78,7 +78,7 @@ export class Server {
     // AI — GeminiService (primary generation engine)
     sc.register('geminiService', (_c, _r, cfg) => {
       const apiKey = cfg?.get('ai.gemini.apiKey') || process.env.GEMINI_API_KEY;
-      if (!apiKey) throw new Error('GEMINI_API_KEY not found');
+      if (!apiKey) {throw new Error('GEMINI_API_KEY not found');}
       return new GeminiService({ apiKey, configService: cfg });
     }, true, ['redis', 'configurationService']);
 
@@ -121,7 +121,7 @@ export class Server {
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
       res.header('Access-Control-Allow-Credentials', 'false');
-      if (req.method === 'OPTIONS') return res.sendStatus(200);
+      if (req.method === 'OPTIONS') {return res.sendStatus(200);}
       next();
     });
 
@@ -161,7 +161,7 @@ export class Server {
 
     // Core generation endpoint
     const generateRoutes = new GenerateRoutes(sc);
-    if (generateRoutes.initialize) await generateRoutes.initialize();
+    if (generateRoutes.initialize) {await generateRoutes.initialize();}
     generateRoutes.registerRoutes(router);
 
     // Health endpoints
@@ -223,9 +223,9 @@ export class Server {
   }
 
   async shutdown() {
-    if (!this.isStarted) return;
-    if (this.server) await new Promise(r => this.server.close(r));
-    if (this.serviceContainer) await this.serviceContainer.shutdown();
+    if (!this.isStarted) {return;}
+    if (this.server) {await new Promise(r => this.server.close(r));}
+    if (this.serviceContainer) {await this.serviceContainer.shutdown();}
     this.isStarted = false;
     this.logger.info('Shutdown complete');
   }

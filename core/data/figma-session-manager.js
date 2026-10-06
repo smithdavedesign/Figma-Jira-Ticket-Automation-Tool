@@ -262,13 +262,13 @@ export class FigmaSessionManager {
       async captureScreenshot(fileKey, nodeId, options = {}) {
         // Validation Logic for API key
         if (!process.env.FIGMA_API_KEY && !sessionManager.figmaApiKey) {
-           sessionManager.logger.error("❌ Figma API Key is missing!");
-           throw new Error("Figma API Key is missing within session manager.");
+          sessionManager.logger.error('❌ Figma API Key is missing!');
+          throw new Error('Figma API Key is missing within session manager.');
         }
-        
+
         // Ensure session capabilities are respected, but handle missing 'api' flag loosely if key present
         if (!session.capabilities.api) {
-           sessionManager.logger.warn('⚠️ Session capabilities missing "api" flag, but proceeding since function was called.');
+          sessionManager.logger.warn('⚠️ Session capabilities missing "api" flag, but proceeding since function was called.');
         }
 
         try {

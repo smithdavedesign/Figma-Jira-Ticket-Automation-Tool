@@ -22,9 +22,9 @@ export class FigmaCoreRoutes extends BaseFigmaRoute {
     try {
       const params = { ...req.query, ...req.body };
       const fileKey = params.fileKey || this.extractFileKeyFromURL(params.figmaUrl);
-      const nodeId  = params.nodeId  || this.extractNodeIdFromURL(params.figmaUrl);
-      const scale   = parseInt(params.scale) || 2;
-      const format  = params.format || 'png';
+      const nodeId = params.nodeId || this.extractNodeIdFromURL(params.figmaUrl);
+      const scale = parseInt(params.scale) || 2;
+      const format = params.format || 'png';
 
       this.validateRequired({ fileKey, nodeId }, ['fileKey', 'nodeId']);
 
