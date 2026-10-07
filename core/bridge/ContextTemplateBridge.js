@@ -122,7 +122,7 @@ export class ContextTemplateBridge {
   }
 
   _extractFileKey(url) {
-    if (!url) return 'unknown';
+    if (!url) {return 'unknown';}
     const m = url.match(/\/(file|design)\/([^/?#]+)/);
     return m ? m[2] : 'unknown';
   }

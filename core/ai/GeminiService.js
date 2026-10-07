@@ -148,7 +148,7 @@ export class GeminiService {
       || null;
 
     const fileKey = this._extractFileKey(context);
-    if (!fileKey || fileKey === 'unknown') return base || null;
+    if (!fileKey || fileKey === 'unknown') {return base || null;}
 
     let url = base ? base.split('?')[0] : `https://www.figma.com/design/${fileKey}`;
 
@@ -167,8 +167,8 @@ export class GeminiService {
     const figmaDeepLink = this._buildFigmaDeepLink(context);
     const figmaLinkText = figmaDeepLink
       ? (platform === 'jira' || platform === 'Jira'
-          ? `[View in Figma|${figmaDeepLink}]`
-          : `[View in Figma](${figmaDeepLink})`)
+        ? `[View in Figma|${figmaDeepLink}]`
+        : `[View in Figma](${figmaDeepLink})`)
       : 'See Figma file context below';
 
     // Figma export URL — CDN image of the selected frame (passed from route via requestData)
@@ -190,7 +190,7 @@ Platform: ${platform}
 - Figma Link (use this EXACT link text in the Design References section, do not replace it): ${figmaLinkText}
 - File: ${context.figma?.file_name || context.fileContext?.fileName || context.requestData?.fileContext?.fileName || 'See context'}
 ${figmaExportUrl ? `- Design Image URL: ${figmaExportUrl}` : ''}
-${hasImage ? `- Screenshot: Attached as image — analyze it carefully for layout, colors, spacing, and components.` : ''}
+${hasImage ? '- Screenshot: Attached as image — analyze it carefully for layout, colors, spacing, and components.' : ''}
 
 ## Design Context Data
 ${this._formatContext(context)}
@@ -354,13 +354,13 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
     if (design.colors || design.typography || design.spacing) {
       // colors / fonts may be arrays, objects, or scalars — normalise to string
       const toStr = (v) => {
-        if (!v) return null;
-        if (Array.isArray(v)) return v.join(', ');
-        if (typeof v === 'object') return Object.values(v).flat().join(', ');
+        if (!v) {return null;}
+        if (Array.isArray(v)) {return v.join(', ');}
+        if (typeof v === 'object') {return Object.values(v).flat().join(', ');}
         return String(v);
       };
       const colors = toStr(design.colors) || 'Extract from screenshot';
-      const fonts  = toStr(design.typography?.fonts) || 'Extract from screenshot';
+      const fonts = toStr(design.typography?.fonts) || 'Extract from screenshot';
       sections.push(`### Design Tokens
 - Colors: ${colors}
 - Typography: ${fonts}
@@ -404,8 +404,8 @@ __* {{variable}} text    ← WRONG: double-underscore is not a bullet`,
 
   async _resolveScreenshot(params, context) {
     // Direct base64 from plugin
-    let screenshot = params.screenshot || context.requestData?.screenshot;
-    if (!screenshot) return null;
+    const screenshot = params.screenshot || context.requestData?.screenshot;
+    if (!screenshot) {return null;}
 
     let base64 = null;
 

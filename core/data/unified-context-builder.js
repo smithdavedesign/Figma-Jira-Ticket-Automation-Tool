@@ -230,32 +230,32 @@ export class UnifiedContextBuilder {
    */
   extractEnhancedData(params) {
     const { componentName, techStack, figmaContext, args, platform, documentType } = params;
-    
+
     // Robust Data Extraction: Handle both nested requestData and flattened params
     let effectiveRequestData = params.requestData || {};
 
     // If requestData is effectively empty or missing key fields, merge from root params
     // This allows the builder to work when context is flattened (common in some call paths)
     if (!effectiveRequestData.fileContext && params.fileContext) {
-        effectiveRequestData = { ...effectiveRequestData, fileContext: params.fileContext };
+      effectiveRequestData = { ...effectiveRequestData, fileContext: params.fileContext };
     }
     if (!effectiveRequestData.frameData && params.frameData) {
-        effectiveRequestData = { ...effectiveRequestData, frameData: params.frameData };
+      effectiveRequestData = { ...effectiveRequestData, frameData: params.frameData };
     }
     if (!effectiveRequestData.enhancedFrameData && params.enhancedFrameData) {
-        effectiveRequestData = { ...effectiveRequestData, enhancedFrameData: params.enhancedFrameData };
+      effectiveRequestData = { ...effectiveRequestData, enhancedFrameData: params.enhancedFrameData };
     }
     if (!effectiveRequestData.metadata && params.metadata) {
-        effectiveRequestData = { ...effectiveRequestData, metadata: params.metadata };
+      effectiveRequestData = { ...effectiveRequestData, metadata: params.metadata };
     }
     if (!effectiveRequestData.figmaUrl && params.figmaUrl) {
-         effectiveRequestData = { ...effectiveRequestData, figmaUrl: params.figmaUrl };
+      effectiveRequestData = { ...effectiveRequestData, figmaUrl: params.figmaUrl };
     }
 
     // If we still have almost nothing, default to using params as the requestData
     // (excluding the large circular objects if possible, but safe enough here)
     if (!effectiveRequestData.fileContext && !effectiveRequestData.frameData && !effectiveRequestData.figmaUrl) {
-         effectiveRequestData = params;
+      effectiveRequestData = params;
     }
 
     const requestData = effectiveRequestData;
@@ -476,63 +476,63 @@ export class UnifiedContextBuilder {
       // Confluence supports linking via /display/SPACE/Page+Title OR deep linking to parent structure
       // The Orchestrator generates titles like: "Implementation Plan: ComponentName"
       // URL encoded title: "Implementation+Plan+Key+Features" (spaces to + or %20)
-      
-      const titleSafe = `Implementation Plan ${componentName}`; 
+
+      const titleSafe = `Implementation Plan ${componentName}`;
       const encodedTitle = encodeURIComponent(titleSafe).replace(/%20/g, '+');
 
       // Check for explicitly configured Parent ID first (via env or config service)
-      let parentId = process.env.CONFLUENCE_PARENT_ID || 
+      let parentId = process.env.CONFLUENCE_PARENT_ID ||
                        this.configService?.get?.('defaults.wikiParentId') ||
                        (process.env.CONFLUENCE_PARENT_ID ? process.env.CONFLUENCE_PARENT_ID : null) ||
                        // Fallback: check if base URL ends in a number (e.g. .../pages/123456)
                        (baseUrls.wiki.match(/\/pages\/(\d+)$/)?.[1]);
 
       if (!parentId && baseUrls.wiki.includes('npsg-wiki.elements.local')) {
-           // Hard fallback for this specific environment if configuration is missing
-           parentId = '857704092'; 
+        // Hard fallback for this specific environment if configuration is missing
+        parentId = '857704092';
       }
 
       // If we have a parent ID, we construct .../pages/[ID]/[Title]
       if (parentId) {
-           // Ensure base is correctly pointing to /pages root before appending ID
-           // e.g. https://.../spaces/DCUX/pages 
-           // If base includes /pages/ID, strip the ID first
-           let cleanBase = baseUrls.wiki;
-           if (cleanBase.match(/\/pages\/\d+/)) {
-               cleanBase = cleanBase.replace(/\/pages\/\d+.*$/, '/pages');
-           } else if (!cleanBase.endsWith('/pages') && !cleanBase.endsWith('/pages/')) {
-               // Try to find where /pages should be or append it if missing but we have space?
-               if (cleanBase.includes('/spaces/')) {
-                    // assume it ends before pages or after
-                    const parts = cleanBase.split('/pages');
-                    cleanBase = parts[0] + '/pages';
-               }
-           }
-           // Remove trailing slash
-           cleanBase = cleanBase.replace(/\/$/, '');
-           
-           return `${cleanBase}/${parentId}/${encodedTitle}`;
+        // Ensure base is correctly pointing to /pages root before appending ID
+        // e.g. https://.../spaces/DCUX/pages
+        // If base includes /pages/ID, strip the ID first
+        let cleanBase = baseUrls.wiki;
+        if (cleanBase.match(/\/pages\/\d+/)) {
+          cleanBase = cleanBase.replace(/\/pages\/\d+.*$/, '/pages');
+        } else if (!cleanBase.endsWith('/pages') && !cleanBase.endsWith('/pages/')) {
+          // Try to find where /pages should be or append it if missing but we have space?
+          if (cleanBase.includes('/spaces/')) {
+            // assume it ends before pages or after
+            const parts = cleanBase.split('/pages');
+            cleanBase = parts[0] + '/pages';
+          }
+        }
+        // Remove trailing slash
+        cleanBase = cleanBase.replace(/\/$/, '');
+
+        return `${cleanBase}/${parentId}/${encodedTitle}`;
       }
 
       // If the base URL already points to a specific location (e.g. specific parent page: .../pages/123456)
       // just append the title to it.
       if (baseUrls.wiki.includes('/pages/')) {
-          // Removes trailing slash if present
-          const cleanBase = baseUrls.wiki.replace(/\/$/, '');
-          return `${cleanBase}/${encodedTitle}`;
+        // Removes trailing slash if present
+        const cleanBase = baseUrls.wiki.replace(/\/$/, '');
+        return `${cleanBase}/${encodedTitle}`;
       }
 
       // Fallback: If we have a base URL like .../spaces/DCUX/pages (without ID), try to guess the Space Key (DCUX)
       const spaceMatch = baseUrls.wiki.match(/spaces\/([^\/]+)/);
       const spaceKey = spaceMatch ? spaceMatch[1] : 'DCUX';
       const baseHost = baseUrls.wiki.split('/spaces/')[0]; // Extract https://npsg-wiki.elements.local
-      
+
       if (baseHost) {
-          // Construct a title-based link which Confluence will resolve even without ID
-          // https://wiki.../display/DCUX/Implementation+Plan%3A+Why+Solidigm
-          return `${baseHost}/display/${spaceKey}/${encodedTitle}`;
+        // Construct a title-based link which Confluence will resolve even without ID
+        // https://wiki.../display/DCUX/Implementation+Plan%3A+Why+Solidigm
+        return `${baseHost}/display/${spaceKey}/${encodedTitle}`;
       }
-      
+
       // Fallback if we can't parse the host
       return baseUrls.wiki;
 
@@ -834,8 +834,8 @@ export class UnifiedContextBuilder {
     // Try to extract from original URL if not explicit
     const originalUrl = requestData?.figmaUrl || requestData?.fileContext?.url;
     if ((!fileKey || fileKey === 'unknown') && originalUrl) {
-         const match = originalUrl.match(/(?:file|design)\/([a-zA-Z0-9]+)/);
-         if (match) fileKey = match[1];
+      const match = originalUrl.match(/(?:file|design)\/([a-zA-Z0-9]+)/);
+      if (match) {fileKey = match[1];}
     }
 
     if (!fileKey || fileKey === 'unknown') {
@@ -847,12 +847,12 @@ export class UnifiedContextBuilder {
     let nodeId = requestData?.frameData?.id ||
                  requestData?.enhancedFrameData?.[0]?.id ||
                  requestData?.metadata?.nodeId;
-    
+
     // Explicitly grab pageId from anywhere in the context
     const pageId = requestData?.fileContext?.pageId || requestData?.pageId || figmaContext?.pageId;
 
     if ((!nodeId || nodeId === '0:1' || nodeId === '0%3A1') && pageId) {
-         nodeId = pageId;
+      nodeId = pageId;
     }
 
     // Capture project name from all possible sources
@@ -866,44 +866,44 @@ export class UnifiedContextBuilder {
     // Always construct a clean Base URL using the correct Project Name (from fileContext)
     // This fixes issues where the input URL has a generic name (e.g. AEM-Component-Library)
     let baseUrl = `https://www.figma.com/design/${fileKey}/${encodedProjectName}`;
-    
+
     // HOTFIX: Hard override for known test file to ensure correct URL slug and Node ID
     // This handles legacy test cases where fileContext is missing but the output must match specific expectations
     if (fileKey === 'BioUSVD6t51ZNeG0g9AcNz') {
-        if (baseUrl.includes('AEM-Component-Library') || baseUrl.includes('Design-File')) {
-            baseUrl = `https://www.figma.com/design/${fileKey}/Solidigm-Dotcom-3.0---Dayani`;
-        }
-        if (!nodeId || nodeId === '0:1' || nodeId === '0%3A1') {
-            nodeId = '1:4';
-        }
+      if (baseUrl.includes('AEM-Component-Library') || baseUrl.includes('Design-File')) {
+        baseUrl = `https://www.figma.com/design/${fileKey}/Solidigm-Dotcom-3.0---Dayani`;
+      }
+      if (!nodeId || nodeId === '0:1' || nodeId === '0%3A1') {
+        nodeId = '1:4';
+      }
     }
-    
+
     const params = new URLSearchParams();
 
     // If original URL exists, extract useful query params (like 't', 'p', etc.)
     // But exclude node-id as we want to set that explicitly based on our logic
     if (originalUrl) {
-        try {
-            const urlObj = new URL(originalUrl);
-            urlObj.searchParams.forEach((value, key) => {
-                if (key !== 'node-id') { 
-                     params.append(key, value);
-                }
-            });
-        } catch (e) {
-            // Fallback manual extraction if URL parsing fails
-            const tMatch = originalUrl.match(/[?&]t=([^&]+)/);
-            if (tMatch) params.set('t', tMatch[1]);
-        }
+      try {
+        const urlObj = new URL(originalUrl);
+        urlObj.searchParams.forEach((value, key) => {
+          if (key !== 'node-id') {
+            params.append(key, value);
+          }
+        });
+      } catch (e) {
+        // Fallback manual extraction if URL parsing fails
+        const tMatch = originalUrl.match(/[?&]t=([^&]+)/);
+        if (tMatch) {params.set('t', tMatch[1]);}
+      }
     }
 
     // Force override the file key in the base URL if we have a valid key
     // This handles cases where the original URL might have 'unknown' or a different key
     if (fileKey && fileKey !== 'unknown') {
-        baseUrl = `https://www.figma.com/design/${fileKey}/${encodedProjectName}`;
+      baseUrl = `https://www.figma.com/design/${fileKey}/${encodedProjectName}`;
     }
 
-    if (nodeId && nodeId !== '0:1' && nodeId !== '0%3A1') { 
+    if (nodeId && nodeId !== '0:1' && nodeId !== '0%3A1') {
       // Handle semicolons if present (e.g. 123:456;789)
       let formattedNodeId = nodeId;
       if (formattedNodeId.includes(';')) {

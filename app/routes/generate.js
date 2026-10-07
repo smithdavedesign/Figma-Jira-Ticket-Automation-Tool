@@ -75,7 +75,7 @@ export class GenerateRoutes extends BaseRoute {
               const figmaData = await figmaApiRes.json();
               const exportUrl = figmaData.images?.[nodeId] || Object.values(figmaData.images || {})[0];
               if (exportUrl) {
-                resolvedScreenshot = exportUrl;     // GeminiService downloads this as base64
+                resolvedScreenshot = exportUrl; // GeminiService downloads this as base64
                 request.figmaExportUrl = exportUrl; // stored for orchestrator embedding
                 this.logger.info(`📸 Figma export URL fetched for LLM vision: ${exportUrl.substring(0, 70)}...`);
               }
@@ -132,7 +132,7 @@ export class GenerateRoutes extends BaseRoute {
             const orchResult = await orchestrator.run({
               componentName: request.componentName,
               frameData: request.frameData,
-              screenshot: resolvedScreenshot,     // use Figma CDN URL if no plugin screenshot
+              screenshot: resolvedScreenshot, // use Figma CDN URL if no plugin screenshot
               figmaExportUrl: request.figmaExportUrl,
               projectKey: request.ticketProjectKey,
               wikiSpace: request.wikiSpace,
